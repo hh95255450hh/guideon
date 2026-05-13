@@ -1,0 +1,38 @@
+{
+  "name": "oman-explorer",
+  "version": "1.0.0",
+  "description": "Tourism marketplace platform for Oman",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "db:setup": "psql -U postgres -d oman_explorer -f database/schema.sql",
+    "db:seed": "psql -U postgres -d oman_explorer -f database/seed.sql",
+    "migrate": "node scripts/migrate.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "express-validator": "^7.1.0",
+    "firebase-admin": "^13.9.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^6.37.0",
+    "pg": "^8.11.5",
+    "resend": "^6.12.3",
+    "stripe": "^16.0.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

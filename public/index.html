@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmanExplorer API</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f4f8; color: #1a202c; }
+
+    header {
+      background: linear-gradient(135deg, #006400, #228B22);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; margin-bottom: .5rem; }
+    header p  { opacity: .85; }
+
+    .status-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: .6rem; padding: .8rem;
+      background: #fff; border-bottom: 1px solid #e2e8f0;
+      font-size: .9rem;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
+    .dot.green { background: #48bb78; }
+    .dot.red   { background: #fc8181; }
+
+    main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+
+    .card {
+      background: white; border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+    .card-header {
+      background: #2d3748; color: white;
+      padding: .8rem 1.2rem; font-weight: 600; font-size: .85rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .method {
+      font-size: .7rem; padding: .2rem .5rem; border-radius: 4px;
+      font-weight: 700; letter-spacing: .05em;
+    }
+    .GET   { background: #48bb78; color: #fff; }
+    .POST  { background: #4299e1; color: #fff; }
+
+    .card-body { padding: 1rem 1.2rem; font-size: .85rem; color: #4a5568; line-height: 1.6; }
+    .card-body .url { font-family: monospace; color: #2b6cb0; font-size: .8rem; word-break: break-all; }
+    .card-body pre {
+      background: #edf2f7; border-radius: 6px; padding: .8rem;
+      font-size: .75rem; margin-top: .6rem; overflow-x: auto;
+      white-space: pre-wrap; color: #2d3748;
+    }
+
+    .btn {
+      display: inline-block; margin-top: .8rem;
+      padding: .4rem .9rem; border-radius: 6px; border: none;
+      background: #006400; color: white; cursor: pointer;
+      font-size: .8rem;
+    }
+    .btn:hover { background: #228B22; }
+
+    .response-box {
+      margin-top: .8rem; background: #1a202c; color: #68d391;
+      border-radius: 6px; padding: .8rem;
+      font-family: monospace; font-size: .72rem;
+      white-space: pre-wrap; max-height: 200px; overflow-y: auto;
+      display: none;
+    }
+
+    .tour-list { margin-top: 1rem; }
+    .tour-item {
+      background: white; border-radius: 10px;
+      padding: 1rem 1.2rem; margin-bottom: .8rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.07);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .tour-item h3 { font-size: .95rem; color: #2d3748; }
+    .tour-item p  { font-size: .8rem; color: #718096; margin-top: .2rem; }
+    .price-badge {
+      background: #006400; color: white;
+      padding: .3rem .7rem; border-radius: 20px; font-size: .85rem; font-weight: 600;
+      white-space: nowrap; margin-right: 1rem;
+    }
+
+    section h2 { font-size: 1.2rem; color: #2d3748; margin: 2rem 0 1rem; border-right: 4px solid #006400; padding-right: .8rem; }
+    footer { text-align: center; padding: 2rem; color: #718096; font-size: .8rem; }
+
+    /* ══ OmanBot Chat Widget ══════════════════════════════════════════ */
+    :root {
+      --cb-primary: #1a6b4a;
+      --cb-dk:      #155a3e;
+      --cb-accent:  #f0a500;
+      --cb-bg:      #f5f5f0;
+      --cb-muted:   #6b7280;
+      --cb-border:  #e5e7eb;
+    }
+    #chat-fab {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      width: 58px; height: 58px;
+      background: var(--cb-primary);
+      border-radius: 50%; border: none; cursor: pointer;
+      box-shadow: 0 4px 18px rgba(26,107,74,.5);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .2s, box-shadow .2s;
+    }
+    #chat-fab:hover { transform: scale(1.09); box-shadow: 0 6px 24px rgba(26,107,74,.6); }
+    #chat-fab svg { width: 26px; height: 26px; fill: #fff; }
+    #chat-fab .fab-badge {
+      position: absolute; top: 0; right: 0;
+      width: 18px; height: 18px;
+      background: #ef4444; border-radius: 50%;
+      font-size: 10px; font-weight: 700; color: #fff;
+      display: none; align-items: center; justify-content: center;
+      border: 2px solid #f0f4f8;
+    }
+    #chat-fab.has-badge .fab-badge { display: flex; }
+
+    #chat-box {
+      position: fixed; bottom: 96px; right: 24px; z-index: 9998;
+      width: 370px; max-height: 530px;
+      background: #fff; border-radius: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.18);
+      display: flex; flex-direction: column;
+      transform: translateY(16px) scale(.97);
+      opacity: 0; pointer-events: none;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .18s;
+    }
+    #chat-box.open { transform: none; opacity: 1; pointer-events: all; }
+
+    .cb-header {
+      background: linear-gradient(135deg, var(--cb-primary), #2d9e6d);
+      border-radius: 18px 18px 0 0;
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .cb-avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .cb-title { font-size: 14px; font-weight: 700; color: #fff; }
+    .cb-status {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; color: rgba(255,255,255,.8);
+    }
+    .cb-dot {
+      width: 6px; height: 6px; background: #4ade80; border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .cb-clear {
+      background: rgba(255,255,255,.15); border: none;
+      color: rgba(255,255,255,.8); cursor: pointer;
+      font-size: 11px; padding: 3px 8px; border-radius: 6px; transition: all .2s;
+    }
+    .cb-clear:hover { background: rgba(255,255,255,.25); color: #fff; }
+    .cb-close {
+      background: rgba(255,255,255,.15); border: none; color: #fff;
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; transition: background .2s;
+    }
+    .cb-close:hover { background: rgba(255,255,255,.3); }
+
+    .cb-msgs {
+      flex: 1; overflow-y: auto; padding: 14px;
+      display: flex; flex-direction: column; gap: 9px;
+      min-height: 0; scroll-behavior: smooth;
+    }
+    .cb-msgs::-webkit-scrollbar { width: 3px; }
+    .cb-msgs::-webkit-scrollbar-thumb { background: var(--cb-border); border-radius: 3px; }
+
+    .cb-msg { display: flex; gap: 7px; max-width: 90%; animation: msgIn .22s ease-out; }
+    @keyframes msgIn { from{ opacity:0; transform:translateY(5px) } to{ opacity:1; transform:none } }
+    .cb-msg.user { margin-right: 0; margin-left: auto; flex-direction: row-reverse; }
+    .cb-msg-av {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(26,107,74,.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0; align-self: flex-end;
+    }
+    .cb-bubble {
+      padding: 9px 13px; border-radius: 14px;
+      font-size: 13px; line-height: 1.5; word-break: break-word;
+    }
+    .cb-msg.bot  .cb-bubble { background: var(--cb-bg); color: #1a202c; border-bottom-left-radius: 3px; }
+    .cb-msg.user .cb-bubble { background: var(--cb-primary); color: #fff; border-bottom-right-radius: 3px; }
+    .cb-time { font-size: 10px; color: var(--cb-muted); margin-top: 2px; }
+    .cb-msg.user .cb-time { text-align: right; }
+
+    .cb-typing { display: flex; gap: 5px; padding: 10px 13px; background: var(--cb-bg); border-radius: 14px; border-bottom-left-radius: 3px; width: fit-content; }
+    .cb-tdot { width: 6px; height: 6px; background: var(--cb-muted); border-radius: 50%; animation: tdot 1.4s infinite ease-in-out; }
+    .cb-tdot:nth-child(2){ animation-delay:.2s } .cb-tdot:nth-child(3){ animation-delay:.4s }
+    @keyframes tdot { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+    .cb-chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 14px 10px; flex-shrink: 0; }
+    .cb-chip {
+      background: rgba(26,107,74,.08); border: 1px solid rgba(26,107,74,.2);
+      border-radius: 18px; padding: 4px 11px;
+      font-size: 11.5px; color: var(--cb-primary); cursor: pointer;
+      transition: background .15s; white-space: nowrap;
+    }
+    .cb-chip:hover { background: rgba(26,107,74,.16); }
+
+    .cb-input-row {
+      padding: 10px 12px; border-top: 1px solid var(--cb-border);
+      display: flex; gap: 7px; align-items: flex-end; flex-shrink: 0;
+    }
+    #cb-input {
+      flex: 1; border: 1px solid var(--cb-border); border-radius: 10px;
+      padding: 8px 11px; font-size: 13px; font-family: inherit;
+      outline: none; resize: none; max-height: 90px; overflow-y: auto;
+      transition: border-color .2s; line-height: 1.4;
+    }
+    #cb-input:focus { border-color: var(--cb-primary); }
+    #cb-input::placeholder { color: var(--cb-muted); }
+    #cb-send {
+      width: 36px; height: 36px; background: var(--cb-primary);
+      border: none; border-radius: 9px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .1s;
+    }
+    #cb-send:hover:not(:disabled) { background: var(--cb-dk); }
+    #cb-send:active { transform: scale(.92); }
+    #cb-send:disabled { opacity: .45; cursor: not-allowed; }
+    #cb-send svg { width: 17px; height: 17px; fill: #fff; }
+    .cb-footer { font-size: 10.5px; color: var(--cb-muted); text-align: center; padding: 4px 0 9px; flex-shrink: 0; }
+
+    @media (max-width: 420px) {
+      #chat-box { width: calc(100vw - 20px); right: 10px; bottom: 84px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌍 OmanExplorer API</h1>
+  <p>منصة سياحية متكاملة لعُمان — الإصدار 1.0.0</p>
+</header>
+
+<div class="status-bar">
+  <div class="dot" id="statusDot"></div>
+  <span id="statusText">جاري الاتصال...</span>
+</div>
+
+<main>
+
+  <section>
+    <h2>الجولات المتاحة</h2>
+    <div class="tour-list" id="tourList">جاري التحميل...</div>
+  </section>
+
+  <section>
+    <h2>اختبار نقاط الـ API</h2>
+    <div class="grid">
+
+      <div class="card">
+        <div class="card-header"><span class="method GET">GET</span> حالة الخادم</div>
+        <div class="card-body">
+          <div class="url">GET /health</div>
+          <button class="btn" onclick="testApi('/health', 'res1')">اختبر</button>
+          <pre class="response-box" id="res1"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="method GET">GET</span> كل الجولات</div>
+        <div class="card-body">
+          <div class="url">GET /api/tours</div>
+          <button class="btn" onclick="testApi('/api/tours', 'res2')">اختبر</button>
+          <pre class="response-box" id="res2"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="method GET">GET</span> الشركات</div>
+        <div class="card-body">
+          <div class="url">GET /api/companies</div>
+          <button class="btn" onclick="testApi('/api/companies', 'res3')">اختبر</button>
+          <pre class="response-box" id="res3"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="method POST">POST</span> تسجيل الدخول</div>
+        <div class="card-body">
+          <div class="url">POST /api/auth/login</div>
+          <pre>{ "email": "tourist@example.com", "password": "Password123!" }</pre>
+          <button class="btn" onclick="testLogin()">اختبر</button>
+          <pre class="response-box" id="res4"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="method GET">GET</span> بحث بالسعر</div>
+        <div class="card-body">
+          <div class="url">GET /api/tours?minPrice=50&amp;maxPrice=100</div>
+          <button class="btn" onclick="testApi('/api/tours?minPrice=50&maxPrice=100', 'res5')">اختبر</button>
+          <pre class="response-box" id="res5"></pre>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="method GET">GET</span> إحصائيات Admin</div>
+        <div class="card-body">
+          <div class="url">GET /api/users/admin/stats</div>
+          <button class="btn" onclick="testAdminStats()">اختبر (Admin)</button>
+          <pre class="response-box" id="res6"></pre>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>بيانات الدخول للاختبار</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">👤 Tourist</div>
+        <div class="card-body">
+          البريد: tourist@example.com<br>
+          كلمة المرور: Password123!
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">🏢 Company</div>
+        <div class="card-body">
+          البريد: company@muscatadventures.com<br>
+          كلمة المرور: Password123!
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">🛡️ Admin</div>
+        <div class="card-body">
+          البريد: admin@omanexplorer.com<br>
+          كلمة المرور: Password123!
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>OmanExplorer API &mdash; يعمل على المنفذ 3000</footer>
+
+<script src="/app.js"></script>
+
+<!-- ══ OmanBot Chat Widget ════════════════════════════════════════════════ -->
+
+<!-- Floating Action Button -->
+<button id="chat-fab" onclick="cbToggle()" aria-label="OmanBot — AI Tourism Assistant">
+  <div class="fab-badge">1</div>
+  <svg id="fab-icon-chat" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+  <svg id="fab-icon-x"    viewBox="0 0 24 24" style="display:none"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+</button>
+
+<!-- Chat Window -->
+<div id="chat-box" role="dialog" aria-modal="true" aria-label="OmanBot Chat">
+  <div class="cb-header">
+    <div class="cb-avatar">🌴</div>
+    <div style="flex:1">
+      <div class="cb-title">OmanBot 🇴🇲</div>
+      <div class="cb-status"><div class="cb-dot"></div><span>Online · AI Tourism Assistant</span></div>
+    </div>
+    <button class="cb-clear" onclick="cbClear()" title="Clear chat">🗑 Clear</button>
+    <button class="cb-close" onclick="cbToggle()" aria-label="Close">✕</button>
+  </div>
+
+  <div class="cb-msgs" id="cb-msgs"></div>
+  <div class="cb-chips" id="cb-chips"></div>
+
+  <div class="cb-input-row">
+    <textarea id="cb-input" rows="1" placeholder="Ask about Oman tours, tips, destinations…" onkeydown="cbKey(event)" oninput="cbResize(this)" maxlength="500"></textarea>
+    <button id="cb-send" onclick="cbSend()" aria-label="Send">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+  <div class="cb-footer">Powered by OpenAI GPT-4o mini · OmanExplorer</div>
+</div>
+
+<script>
+// ── OmanBot state ──────────────────────────────────────────────────────────
+const CB_KEY     = 'omanbot_v1';
+let cbMsgs       = [];
+let cbOpen       = false;
+let cbBusy       = false;
+
+const CB_CHIPS = [
+  '🏜️ Best desert tour?',
+  '🗓️ Best time to visit?',
+  '🎒 What to pack?',
+  '🌊 Coastal adventures?',
+  '💰 Budget trip tips?',
+  '🕌 Cultural highlights?',
+];
+
+const CB_WELCOME = "مرحباً! 👋 I'm **OmanBot**, your AI guide to the Sultanate of Oman!\n\nAsk me anything — tours, destinations, travel tips, or help booking. I'm here to make your Oman adventure unforgettable. 🌴";
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+(function cbBoot() {
+  const saved = sessionStorage.getItem(CB_KEY);
+  if (saved) {
+    try { cbMsgs = JSON.parse(saved); cbRenderAll(); return; } catch {}
+  }
+  cbAppendBot(CB_WELCOME);
+  cbShowChips();
+  if (!cbOpen) cbShowBadge();
+})();
+
+// ── Toggle ─────────────────────────────────────────────────────────────────
+function cbToggle() {
+  cbOpen = !cbOpen;
+  document.getElementById('chat-box').classList.toggle('open', cbOpen);
+  document.getElementById('fab-icon-chat').style.display = cbOpen ? 'none'  : 'block';
+  document.getElementById('fab-icon-x').style.display    = cbOpen ? 'block' : 'none';
+  if (cbOpen) {
+    cbHideBadge();
+    setTimeout(() => { cbScrollEnd(false); document.getElementById('cb-input').focus(); }, 280);
+  }
+}
+function cbShowBadge() { document.getElementById('chat-fab').classList.add('has-badge'); }
+function cbHideBadge() { document.getElementById('chat-fab').classList.remove('has-badge'); }
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function cbRenderAll() {
+  const box = document.getElementById('cb-msgs');
+  box.innerHTML = '';
+  cbMsgs.forEach(m => {
+    if (m.role === 'assistant') cbRenderBot(m.content, false);
+    else if (m.role === 'user') cbRenderUser(m.content, false);
+  });
+  if (cbMsgs.length <= 1) cbShowChips();
+  cbScrollEnd(false);
+}
+
+function cbRenderUser(text, anim = true) {
+  const el = document.createElement('div');
+  el.className = 'cb-msg user';
+  el.innerHTML = `
+    <div>
+      <div class="cb-bubble">${cbEsc(text)}</div>
+      <div class="cb-time">${cbTime()}</div>
+    </div>
+    <div class="cb-msg-av">👤</div>`;
+  document.getElementById('cb-msgs').appendChild(el);
+}
+
+function cbRenderBot(text, anim = true) {
+  const el = document.createElement('div');
+  el.className = 'cb-msg bot';
+  el.innerHTML = `
+    <div class="cb-msg-av">🌴</div>
+    <div>
+      <div class="cb-bubble">${cbFmt(text)}</div>
+      <div class="cb-time">OmanBot · ${cbTime()}</div>
+    </div>`;
+  document.getElementById('cb-msgs').appendChild(el);
+}
+
+function cbAppendBot(text) {
+  cbMsgs.push({ role: 'assistant', content: text });
+  cbSave();
+  cbRenderBot(text);
+  cbScrollEnd();
+  if (!cbOpen) cbShowBadge();
+}
+
+function cbShowChips() {
+  const el = document.getElementById('cb-chips');
+  el.innerHTML = '';
+  CB_CHIPS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'cb-chip';
+    btn.textContent = c;
+    btn.onclick = () => { el.innerHTML = ''; document.getElementById('cb-input').value = c; cbSend(); };
+    el.appendChild(btn);
+  });
+}
+
+// ── Typing indicator ───────────────────────────────────────────────────────
+function cbShowTyping() {
+  const el = document.createElement('div');
+  el.className = 'cb-msg bot'; el.id = 'cb-typing';
+  el.innerHTML = `<div class="cb-msg-av">🌴</div><div class="cb-typing"><div class="cb-tdot"></div><div class="cb-tdot"></div><div class="cb-tdot"></div></div>`;
+  document.getElementById('cb-msgs').appendChild(el);
+  cbScrollEnd();
+}
+function cbHideTyping() { const e = document.getElementById('cb-typing'); if (e) e.remove(); }
+
+// ── Send ───────────────────────────────────────────────────────────────────
+async function cbSend() {
+  const input = document.getElementById('cb-input');
+  const text  = input.value.trim();
+  if (!text || cbBusy) return;
+
+  input.value = ''; cbResize(input);
+  document.getElementById('cb-chips').innerHTML = '';
+  cbSetBusy(true);
+
+  cbMsgs.push({ role: 'user', content: text });
+  cbSave();
+  cbRenderUser(text);
+  cbScrollEnd();
+  cbShowTyping();
+
+  try {
+    const res  = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: cbMsgs.slice(-14) }),
+    });
+    const data = await res.json();
+    cbHideTyping();
+
+    if (!res.ok) throw new Error(data.message || 'Error');
+    cbAppendBot(data.data.reply);
+  } catch (err) {
+    cbHideTyping();
+    cbAppendBot(
+      err.message.toLowerCase().includes('limit')
+        ? "⚠️ You've reached the hourly limit (20 messages). Please try again later!"
+        : "😔 Oops! I couldn't connect right now. Please check your connection and try again."
+    );
+  } finally {
+    cbSetBusy(false);
+  }
+}
+
+// ── Clear ──────────────────────────────────────────────────────────────────
+function cbClear() {
+  cbMsgs = [];
+  sessionStorage.removeItem(CB_KEY);
+  document.getElementById('cb-msgs').innerHTML  = '';
+  document.getElementById('cb-chips').innerHTML = '';
+  cbAppendBot(CB_WELCOME);
+  cbShowChips();
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+function cbSetBusy(on) {
+  cbBusy = on;
+  document.getElementById('cb-send').disabled  = on;
+  document.getElementById('cb-input').disabled = on;
+}
+function cbKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cbSend(); } }
+function cbResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 90) + 'px'; }
+function cbScrollEnd(smooth = true) {
+  const el = document.getElementById('cb-msgs');
+  setTimeout(() => el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'instant' }), 50);
+}
+function cbSave() { sessionStorage.setItem(CB_KEY, JSON.stringify(cbMsgs)); }
+function cbTime() { return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); }
+function cbEsc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function cbFmt(s) {
+  return s
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
+    .replace(/^#{1,3}\s(.+)$/gm,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>

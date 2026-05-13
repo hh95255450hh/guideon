@@ -1,0 +1,786 @@
+{
+  "info": {
+    "name": "OmanExplorer API",
+    "description": "Complete API collection for OmanExplorer Tourism Marketplace.\n\n## Setup\n1. Import this collection in Postman\n2. Set `base_url` variable to `http://localhost:3000` (already set)\n3. Run **Login** request — tokens save automatically\n4. All protected requests use the saved token automatically\n\n## Collection Variables\n- `base_url` — server address\n- `access_token` — auto-saved on login/register\n- `refresh_token` — auto-saved on login/register\n- `tour_id` — copy from any tour response\n- `availability_id` — copy from tour availability response\n- `booking_id` — auto-saved on create booking\n- `company_id` — copy from companies response\n- `review_id` — copy from review response\n- `user_id` — copy from admin users list",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",        "value": "http://localhost:3000" },
+    { "key": "access_token",    "value": "" },
+    { "key": "refresh_token",   "value": "" },
+    { "key": "tour_id",         "value": "" },
+    { "key": "availability_id", "value": "" },
+    { "key": "booking_id",      "value": "" },
+    { "key": "company_id",      "value": "" },
+    { "key": "review_id",       "value": "" },
+    { "key": "user_id",         "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "item": [
+
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "API Overview",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api", "host": ["{{base_url}}"], "path": ["api"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register — Tourist",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 201) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('access_token',  r.data.accessToken);",
+              "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+              "  console.log('Tokens saved');",
+              "}"
+            ]}
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Al-Balushi\",\n  \"email\": \"ahmed@test.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"tourist\",\n  \"phone\": \"+96890000001\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api","auth","register"] }
+          }
+        },
+        {
+          "name": "Register — Company",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 201) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('access_token',  r.data.accessToken);",
+              "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+              "}"
+            ]}
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Muscat Adventures\",\n  \"email\": \"info@muscatadv.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"company\",\n  \"phone\": \"+96891000001\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api","auth","register"] }
+          }
+        },
+        {
+          "name": "Login — Tourist (seed)",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 200) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('access_token',  r.data.accessToken);",
+              "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+              "  console.log('Logged in as tourist, tokens saved');",
+              "}"
+            ]}
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tourist@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "Login — Company (seed)",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 200) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('access_token',  r.data.accessToken);",
+              "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+              "  console.log('Logged in as company, tokens saved');",
+              "}"
+            ]}
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"company@muscatadventures.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "Login — Admin (seed)",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 200) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('access_token',  r.data.accessToken);",
+              "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+              "  console.log('Logged in as admin, tokens saved');",
+              "}"
+            ]}
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@omanexplorer.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "Get Current User (/me)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api","auth","me"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 200) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('access_token',  r.data.accessToken);",
+              "  pm.collectionVariables.set('refresh_token', r.data.refreshToken);",
+              "}"
+            ]}
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/refresh", "host": ["{{base_url}}"], "path": ["api","auth","refresh"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/api/auth/logout", "host": ["{{base_url}}"], "path": ["api","auth","logout"] }
+          }
+        },
+        {
+          "name": "Login — Wrong Password (expect 401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tourist@example.com\",\n  \"password\": \"WrongPassword\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api","auth","login"] }
+          }
+        },
+        {
+          "name": "Register — Weak Password (expect 422)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test\",\n  \"email\": \"test@test.com\",\n  \"password\": \"weak\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register", "host": ["{{base_url}}"], "path": ["api","auth","register"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Tours",
+      "item": [
+        {
+          "name": "List Tours (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/tours?page=1&limit=12",
+              "host": ["{{base_url}}"], "path": ["api","tours"],
+              "query": [
+                { "key": "page",      "value": "1" },
+                { "key": "limit",     "value": "12" },
+                { "key": "category",  "value": "",  "disabled": true },
+                { "key": "region",    "value": "",  "disabled": true },
+                { "key": "minPrice",  "value": "",  "disabled": true },
+                { "key": "maxPrice",  "value": "",  "disabled": true },
+                { "key": "difficulty","value": "",  "disabled": true },
+                { "key": "minRating", "value": "",  "disabled": true },
+                { "key": "search",    "value": "",  "disabled": true },
+                { "key": "sortBy",    "value": "created_at", "disabled": true },
+                { "key": "sortOrder", "value": "DESC",       "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Tours — Filter by Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/tours?category=Desert&sortBy=price&sortOrder=ASC",
+              "host": ["{{base_url}}"], "path": ["api","tours"],
+              "query": [
+                { "key": "category",  "value": "Desert" },
+                { "key": "sortBy",    "value": "price" },
+                { "key": "sortOrder", "value": "ASC" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Tours — Search",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/tours?search=wadi",
+              "host": ["{{base_url}}"], "path": ["api","tours"],
+              "query": [{ "key": "search", "value": "wadi" }]
+            }
+          }
+        },
+        {
+          "name": "Get Tour by ID",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}"] }
+          }
+        },
+        {
+          "name": "Get Tour Availability",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}/availability", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}","availability"] }
+          }
+        },
+        {
+          "name": "Get Tour Reviews",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}/reviews", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}","reviews"] }
+          }
+        },
+        {
+          "name": "Create Tour [company/admin]",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 201) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('tour_id', r.data.tour.id);",
+              "  console.log('tour_id saved:', r.data.tour.id);",
+              "}"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Wahiba Sands Desert Safari\",\n  \"description\": \"Two-day desert adventure through the golden dunes of Wahiba Sands. Includes camel riding, dune bashing, and stargazing.\",\n  \"location\": \"Wahiba Sands\",\n  \"region\": \"Al Sharqiyah\",\n  \"price\": 150.00,\n  \"duration_days\": 2,\n  \"max_participants\": 12,\n  \"category\": \"Desert\",\n  \"difficulty\": \"moderate\",\n  \"includes\": [\"Transport\", \"Meals\", \"Accommodation\", \"Guide\"],\n  \"excludes\": [\"Travel insurance\", \"Personal items\", \"Tips\"],\n  \"meeting_point\": \"Muscat Grand Mall Parking\",\n  \"availability\": [\n    { \"date\": \"2026-07-01\", \"available_spots\": 12 },\n    { \"date\": \"2026-07-15\", \"available_spots\": 12 },\n    { \"date\": \"2026-08-01\", \"available_spots\": 12 }\n  ]\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/tours", "host": ["{{base_url}}"], "path": ["api","tours"] }
+          }
+        },
+        {
+          "name": "Update Tour [company/admin]",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 165.00,\n  \"max_participants\": 15,\n  \"status\": \"active\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}"] }
+          }
+        },
+        {
+          "name": "Add Tour Image — URL [company/admin]",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://example.com/images/wahiba-sands.jpg\",\n  \"is_primary\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}/images", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}","images"] }
+          }
+        },
+        {
+          "name": "Add Tour Image — File Upload [company/admin]",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "image", "type": "file", "src": "" },
+                { "key": "is_primary", "value": "false", "type": "text" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}/images", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}","images"] }
+          }
+        },
+        {
+          "name": "Add Availability [company/admin]",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 201) {",
+              "  const r = pm.response.json();",
+              "  if (r.data && r.data.availability && r.data.availability[0]) {",
+              "    pm.collectionVariables.set('availability_id', r.data.availability[0].id);",
+              "    console.log('availability_id saved');",
+              "  }",
+              "}"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availability\": [\n    { \"date\": \"2026-09-10\", \"available_spots\": 10 },\n    { \"date\": \"2026-09-20\", \"available_spots\": 8 }\n  ]\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}/availability", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}","availability"] }
+          }
+        },
+        {
+          "name": "Update Availability Spots [company/admin]",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"available_spots\": 6\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}/availability/{{availability_id}}", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}","availability","{{availability_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Availability [company/admin]",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}/availability/{{availability_id}}", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}","availability","{{availability_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Tour [admin only]",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/tours/{{tour_id}}", "host": ["{{base_url}}"], "path": ["api","tours","{{tour_id}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "List Companies (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/companies", "host": ["{{base_url}}"], "path": ["api","companies"] }
+          }
+        },
+        {
+          "name": "Get Company by ID (public)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/companies/{{company_id}}", "host": ["{{base_url}}"], "path": ["api","companies","{{company_id}}"] }
+          }
+        },
+        {
+          "name": "Get My Company Profile [company]",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/companies/me/profile", "host": ["{{base_url}}"], "path": ["api","companies","me","profile"] }
+          }
+        },
+        {
+          "name": "Create/Update Company Profile [company]",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"Muscat Adventures LLC\",\n  \"description\": \"Leading adventure tourism company in Oman since 2010.\",\n  \"license_number\": \"OMN-2024-001\",\n  \"website\": \"https://muscatadventures.com\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/companies/profile", "host": ["{{base_url}}"], "path": ["api","companies","profile"] }
+          }
+        },
+        {
+          "name": "Upload Company Logo [company]",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "logo", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/api/companies/logo", "host": ["{{base_url}}"], "path": ["api","companies","logo"] }
+          }
+        },
+        {
+          "name": "Verify Company [admin]",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verified\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/companies/{{company_id}}/verify", "host": ["{{base_url}}"], "path": ["api","companies","{{company_id}}","verify"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking [tourist]",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 201) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('booking_id', r.data.booking.id);",
+              "  console.log('booking_id saved:', r.data.booking.id);",
+              "}"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tour_id\": \"{{tour_id}}\",\n  \"availability_id\": \"{{availability_id}}\",\n  \"participants\": 2,\n  \"special_requests\": \"Vegetarian meals please\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/bookings", "host": ["{{base_url}}"], "path": ["api","bookings"] }
+          }
+        },
+        {
+          "name": "List My Bookings",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/bookings?page=1&limit=10",
+              "host": ["{{base_url}}"], "path": ["api","bookings"],
+              "query": [
+                { "key": "page",   "value": "1" },
+                { "key": "limit",  "value": "10" },
+                { "key": "status", "value": "pending", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Booking by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/bookings/{{booking_id}}", "host": ["{{base_url}}"], "path": ["api","bookings","{{booking_id}}"] }
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Change of travel plans\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/bookings/{{booking_id}}/cancel", "host": ["{{base_url}}"], "path": ["api","bookings","{{booking_id}}","cancel"] }
+          }
+        },
+        {
+          "name": "Update Booking Status [admin/company]",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/bookings/{{booking_id}}/status", "host": ["{{base_url}}"], "path": ["api","bookings","{{booking_id}}","status"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Payment Intent",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 200) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('client_secret', r.data.clientSecret);",
+              "  console.log('clientSecret saved — use it with Stripe.js on the frontend');",
+              "}"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": \"{{booking_id}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/payments/create-intent", "host": ["{{base_url}}"], "path": ["api","payments","create-intent"] }
+          }
+        },
+        {
+          "name": "Issue Refund [admin]",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": \"{{booking_id}}\",\n  \"reason\": \"requested_by_customer\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/payments/refund", "host": ["{{base_url}}"], "path": ["api","payments","refund"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review [tourist]",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "if (pm.response.code === 201) {",
+              "  const r = pm.response.json();",
+              "  pm.collectionVariables.set('review_id', r.data.review.id);",
+              "  console.log('review_id saved');",
+              "}"
+            ]}
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tour_id\": \"{{tour_id}}\",\n  \"booking_id\": \"{{booking_id}}\",\n  \"rating\": 5,\n  \"comment\": \"Absolutely incredible experience! The guide was knowledgeable and the dunes were breathtaking.\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/reviews", "host": ["{{base_url}}"], "path": ["api","reviews"] }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/reviews/{{review_id}}", "host": ["{{base_url}}"], "path": ["api","reviews","{{review_id}}"] }
+          }
+        },
+        {
+          "name": "Create Review — Invalid Rating (expect 422)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tour_id\": \"{{tour_id}}\",\n  \"booking_id\": \"{{booking_id}}\",\n  \"rating\": 10,\n  \"comment\": \"Great!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/reviews", "host": ["{{base_url}}"], "path": ["api","reviews"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/users/profile", "host": ["{{base_url}}"], "path": ["api","users","profile"] }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ahmed Al-Balushi\",\n  \"phone\": \"+96890123456\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/users/profile", "host": ["{{base_url}}"], "path": ["api","users","profile"] }
+          }
+        },
+        {
+          "name": "Upload Avatar",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "avatar", "type": "file", "src": "" }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/api/users/avatar", "host": ["{{base_url}}"], "path": ["api","users","avatar"] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Password123!\",\n  \"newPassword\": \"NewPassword456!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/users/change-password", "host": ["{{base_url}}"], "path": ["api","users","change-password"] }
+          }
+        },
+        {
+          "name": "List All Users [admin]",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/users/admin/users?page=1&limit=20",
+              "host": ["{{base_url}}"], "path": ["api","users","admin","users"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "role",  "value": "tourist", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Role/Status [admin]",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"guide\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/users/admin/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["api","users","admin","users","{{user_id}}"] }
+          }
+        },
+        {
+          "name": "Dashboard Stats [admin]",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/users/admin/stats", "host": ["{{base_url}}"], "path": ["api","users","admin","stats"] }
+          }
+        },
+        {
+          "name": "Access Admin Route as Tourist (expect 403)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/users/admin/stats", "host": ["{{base_url}}"], "path": ["api","users","admin","stats"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "No Token (expect 401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/bookings", "host": ["{{base_url}}"], "path": ["api","bookings"] }
+          }
+        },
+        {
+          "name": "Invalid Token (expect 401)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "this.is.not.valid", "type": "string" }]
+            },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api","auth","me"] }
+          }
+        },
+        {
+          "name": "Route Not Found (expect 404)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/nonexistent", "host": ["{{base_url}}"], "path": ["api","nonexistent"] }
+          }
+        },
+        {
+          "name": "Get Tour — Invalid UUID (expect 400/404)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/tours/not-a-real-id", "host": ["{{base_url}}"], "path": ["api","tours","not-a-real-id"] }
+          }
+        }
+      ]
+    }
+
+  ]
+}
