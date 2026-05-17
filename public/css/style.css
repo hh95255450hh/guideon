@@ -16,7 +16,7 @@
   --radius: 12px;
 }
 
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-width: 1280px; overflow-x: auto; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
 
 /* ── NAVBAR ── */
 .navbar { background: linear-gradient(135deg, var(--navy-dark), var(--navy) 55%, var(--teal)) !important; box-shadow: 0 2px 20px rgba(15,28,62,0.35); }
@@ -502,4 +502,122 @@ body.dark-mode footer { background: #060d1a; }
   .dest-spotlight { height: 190px; }
   .cal-grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); }
   .cal-day { font-size: 0.8rem; }
+}
+
+/* ── MOBILE (≤768px) ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Navbar collapse */
+  .navbar-collapse .navbar-controls {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    margin-top: 8px;
+  }
+
+  /* Hero */
+  .hero { padding: 40px 0 30px; }
+  .hero h1 { font-size: 1.9rem; }
+  .hero p { font-size: 0.95rem; }
+  .search-box { padding: 16px; border-radius: 12px; }
+
+  /* Stats */
+  .stats-strip { padding: 24px 0; }
+  .stat-item .stat-num { font-size: 1.8rem; }
+
+  /* Guide cards */
+  .guide-card-header { height: 110px; }
+  .guide-card-header .big-avatar { width: 65px; height: 65px; font-size: 1.4rem; }
+
+  /* Dashboard */
+  .dash-header { padding: 20px 0 16px; }
+  .dash-stat .num { font-size: 1.5rem; }
+  .dash-stat .lbl { font-size: 0.75rem; }
+
+  /* Booking panel: not sticky on mobile */
+  .booking-panel { position: static; }
+
+  /* Profile */
+  .profile-header { padding: 24px 0 20px; }
+  .profile-avatar { width: 80px; height: 80px; font-size: 1.8rem; }
+
+  /* Section title */
+  .section-title { font-size: 1.3rem; }
+
+  /* Calendar */
+  .cal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+  .cal-day { width: auto; padding: 8px 4px; font-size: 0.72rem; }
+  .cal-day .cal-date { font-size: 0.9rem; }
+
+  /* Destinations */
+  .dest-spotlight { height: 140px; }
+  .dest-spotlight .dest-bg { font-size: 2.8rem; }
+
+  /* Banners */
+  .app-banner { padding: 24px 20px; }
+  .plan-trip-banner { padding: 24px 20px; }
+  .plan-trip-banner::before { font-size: 3rem; right: 16px; }
+
+  /* Trip form */
+  .trip-form-card { padding: 20px; }
+
+  /* Toast */
+  #toast-container { bottom: 80px; right: 12px; left: 12px; }
+  .toast-msg { font-size: 0.82rem; }
+
+  /* Tables */
+  .table-card { padding: 12px; overflow-x: auto; }
+  .table { font-size: 0.82rem; }
+
+  /* Admin */
+  .admin-stat-card { padding: 16px; }
+  .admin-stat-card .big-num { font-size: 1.8rem; }
+
+  /* Footer */
+  footer { padding: 28px 0 16px; }
+}
+
+/* ── SMALL MOBILE (≤576px) ──────────────────────────────────────────────── */
+@media (max-width: 576px) {
+  .hero h1 { font-size: 1.6rem; }
+  .hero { padding: 32px 0 24px; }
+  .navbar-brand img { height: 40px; }
+  .search-box { margin-top: -16px; }
+
+  /* Stats */
+  .stat-item .stat-num { font-size: 1.4rem; }
+  .stat-item .stat-label { font-size: 0.75rem; }
+
+  /* Guide card */
+  .guide-card-header { height: 100px; }
+
+  /* Dashboard */
+  .dash-stat .num { font-size: 1.2rem; }
+
+  /* Admin */
+  .admin-stat-card .big-num { font-size: 1.5rem; }
+
+  /* Booking card */
+  .booking-card { padding: 14px; }
+
+  /* Avail days */
+  .avail-day { width: 80px; padding: 8px; font-size: 0.72rem; }
+
+  /* Trip form */
+  .trip-form-card { padding: 16px; }
+
+  /* About */
+  .about-logo { height: 80px; }
+
+  /* Destinations: smaller */
+  .dest-spotlight { height: 120px; }
+  .dest-spotlight .dest-bg { font-size: 2.2rem; }
+  .dest-spotlight .dest-name { font-size: 0.95rem; }
+
+  /* Navbar controls: compact */
+  .navbar-controls .btn-sm { padding: 4px 8px; font-size: 0.75rem; }
+  .currency-selector { padding: 4px 6px; font-size: 0.75rem; }
+
+  /* Sections: less padding */
+  section.py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
 }
