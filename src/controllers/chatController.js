@@ -1,12 +1,18 @@
-const OpenAI = require('openai');
-const { query } = require('../config/database');
+﻿const OpenAI = require('openai');
 
 // Lazy-init so missing key at startup doesn't crash the server
 let _openai = null;
+
+function isApiKeyConfigured() {
+  return process.env.OPENAI_API_KEY &&
+    !process.env.OPENAI_API_KEY.includes('REPLACE') &&
+    process.env.OPENAI_API_KEY.startsWith('sk-');
+}
+
 function getOpenAI() {
   if (!_openai) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set in environment variables');
+    if (!isApiKeyConfigured()) {
+      throw new Error('OPENAI_API_KEY is not configured');
     }
     _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   }
@@ -14,9 +20,11 @@ function getOpenAI() {
 }
 
 // ── System prompt ─────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are OmanBot 🌴, a friendly and knowledgeable tourism assistant for OmanExplorer — a tourism marketplace platform for the Sultanate of Oman.
+const SYSTEM_PROMPT = `You are GuideonBot 🌴, a friendly and knowledgeable tourism assistant for Guideon — a tourism marketplace platform for the Sultanate of Oman.
 
 Your personality: warm, enthusiastic, concise. You love Oman and want every visitor to have an unforgettable experience.
+
+IMPORTANT LANGUAGE RULE: Always respond in the same language the user writes in. If they write in Arabic, respond entirely in Arabic. If they write in English, respond in English. Never mix languages unless the user does so first.
 
 ## Oman Overview
 - Capital: Muscat | Currency: Omani Rial (OMR ≈ 2.6 USD) | Language: Arabic (English widely spoken)
@@ -39,7 +47,7 @@ Your personality: warm, enthusiastic, concise. You love Oman and want every visi
 | Al Batinah | Sohar, Rustaq Fort, Nakhal Fort, hot springs |
 | Al Wusta | Ras al-Jinz turtle reserve, Barr al-Hikman |
 
-## Tour Categories on OmanExplorer
+## Tour Categories on Guideon
 Desert | Mountain | Coastal | Cultural | Adventure | Wildlife
 Difficulty: Easy | Moderate | Hard
 
@@ -55,33 +63,114 @@ Difficulty: Easy | Moderate | Hard
 - Recommend tours based on interests, budget, duration, difficulty
 - Describe attractions, regions, and experiences in detail
 - Give practical travel advice (packing, transport, health)
-- Help users understand the booking process on OmanExplorer
+- Help users understand the booking process on Guideon
 - Answer questions about Omani culture and customs
 
 When recommending tours, be specific and reference the platform. Keep responses under 150 words unless the user asks for detail. Use emojis sparingly to be friendly. Never invent prices — tell users to check the platform for current pricing.`;
 
-// ── Fetch top tours for context injection ─────────────────────────────────────
-async function getToursContext() {
-  try {
-    const result = await query(
-      `SELECT title, location, region, price, duration_days, category, difficulty, avg_rating
-       FROM tours
-       WHERE status = 'active'
-       ORDER BY avg_rating DESC, total_reviews DESC
-       LIMIT 8`
-    );
-    if (!result.rows.length) return '';
+// ── Local knowledge-base fallback (used when OpenAI key is not configured) ──
+// Each entry has: en (English regex patterns), ar (Arabic keyword strings), and responses
+const LOCAL_KB = [
+  {
+    en: /hello|hi\b|hey\b|ahlan|greet/i,
+    ar: ['مرح', 'السلام', 'أهل', 'أهلاً'],
+    reply_en: "Hello! 👋 I'm **GuideonBot**, your AI guide to Oman. Ask me about destinations, tours, travel tips, or booking guides on Guideon! 🌿",
+    reply_ar: "مرحباً! 👋 أنا **GuideonBot**، مساعدك السياحي الذكي لعُمان. اسألني عن الوجهات السياحية، الجولات، نصائح السفر، أو حجز مرشد على Guideon! 🌿"
+  },
+  {
+    en: /muscat/i,
+    ar: ['مسقط'],
+    reply_en: "Muscat is Oman's stunning capital! 🕌 Must-see: **Muttrah Souq**, Sultan Qaboos Grand Mosque, the Corniche, and Royal Opera House. Best visited Oct–Apr. Browse Muscat guides on Guideon!",
+    reply_ar: "مسقط هي العاصمة الرائعة لعُمان! 🕌 أبرز المعالم: **سوق مطرح**، مسجد السلطان قابوس الأكبر، الكورنيش، ودار الأوبرا السلطانية. تصفح مرشدي مسقط على Guideon!"
+  },
+  {
+    en: /salalah|dhofar|kharee/i,
+    ar: ['صلالة', 'ظفار', 'خريف'],
+    reply_en: "Salalah & Dhofar are magical! 🌿 The **khareef** (monsoon, Jun–Aug) turns it lush green — waterfalls, mist, and frankincense trees. Also visit Job's Tomb and Al Mughsail beach.",
+    reply_ar: "صلالة وظفار رائعتان! 🌿 **موسم الخريف** (يونيو–أغسطس) يحوّلهما إلى مناطق خضراء ساحرة بالشلالات والضباب وأشجار اللبان."
+  },
+  {
+    en: /nizwa|jebel akhdar|green mountain/i,
+    ar: ['نزوى', 'جبل الأخضر'],
+    reply_en: "Nizwa is Oman's cultural heart! 🏰 Visit **Nizwa Fort**, the ancient souq (famous for silver), and the Jebel Akhdar (Green Mountain) rose gardens. Perfect for history lovers!",
+    reply_ar: "نزوى هي عاصمة الثقافة العُمانية! 🏰 قم بزيارة **قلعة نزوى**، السوق القديمة (الشهيرة بالفضة)، وحدائق ورود جبل الأخضر."
+  },
+  {
+    en: /desert|wahiba|safari|dune/i,
+    ar: ['صحراء', 'رمال', 'الوهيبة', 'سفاري'],
+    reply_en: "Wahiba Sands is Oman's iconic desert! 🐪 Golden dunes, camel rides, and magical starry nights. Our desert guides offer full-day & overnight trips. Perfect for adventure seekers!",
+    reply_ar: "رمال الوهيبة هي الصحراء الأيقونية في عُمان! 🐪 كثبان ذهبية، ركوب الإبل، وليالٍ مرصّعة بالنجوم. مرشدونا يقدمون جولات نهارية وليلية."
+  },
+  {
+    en: /musandam|khasab|fjord|dolphin/i,
+    ar: ['مسندم', 'خصب', 'دلفين'],
+    reply_en: "Musandam is Oman's hidden gem! 🏔️ Known as 'Norway of Arabia' for its stunning fjords. Don't miss dolphin watching, dhow cruises, and snorkelling in Khasab.",
+    reply_ar: "مسندم هي الجوهرة الخفية في عُمان! 🏔️ تُعرف بـ'النرويج العربية' لخوراتها الخلابة. لا تفوت مشاهدة الدلافين والرحلات بالسنبوك."
+  },
+  {
+    en: /price|cost|budget|cheap|OMR/i,
+    ar: ['سعر', 'تكلفة', 'ميزانية', 'ريال'],
+    reply_en: "Guide prices on Guideon start from **40 OMR/day** (≈104 USD). Filter guides by budget on our search page. Best value: 3–5 day packages with local guides! 💰",
+    reply_ar: "أسعار المرشدين على Guideon تبدأ من **40 ريالاً عمانياً/يوم** (≈104 دولاراً). صفّ المرشدين حسب الميزانية. أفضل قيمة: باقات 3-5 أيام! 💰"
+  },
+  {
+    en: /book|reserve|appointment/i,
+    ar: ['حجز', 'احجز', 'موعد'],
+    reply_en: "Booking a guide is easy! 📅\n1. Browse guides → **Find a Guide**\n2. Check availability calendar\n3. Select dates & confirm\nYou'll be confirmed within 24 hours!",
+    reply_ar: "حجز مرشد سهل جداً! 📅\n1. تصفح المرشدين ← **ابحث عن مرشد**\n2. تحقق من التقويم\n3. اختر التواريخ وأكّد\nستتلقى تأكيداً خلال 24 ساعة!"
+  },
+  {
+    en: /when|best time|weather|season/i,
+    ar: ['متى', 'أفضل وقت', 'طقس', 'فصل'],
+    reply_en: "Best time to visit Oman 🗓️\n- **Oct–Apr**: Muscat & interior (20–30°C, perfect)\n- **Jun–Aug**: Salalah khareef season 🌿\n- Avoid interior in summer (can reach 50°C!)",
+    reply_ar: "أفضل وقت لزيارة عُمان 🗓️\n- **أكتوبر–أبريل**: مسقط والداخلية (20-30°م، ممتاز)\n- **يونيو–أغسطس**: موسم خريف صلالة 🌿\n- تجنب الداخلية صيفاً (قد تصل لـ50°م!)"
+  },
+  {
+    en: /food|eat|restaurant|shuwa|halwa|kahwa|cuisine/i,
+    ar: ['طعام', 'أكل', 'مطعم', 'حلوى', 'قهوة'],
+    reply_en: "Omani cuisine is delicious! 🍽️ Must-tries:\n- **Shuwa**: slow-cooked spiced lamb\n- **Halwa**: sweet Omani dessert\n- **Kahwa**: cardamom coffee with dates\n- **Majboos**: Omani spiced rice",
+    reply_ar: "المأكولات العُمانية رائعة! 🍽️ لا بد من تجربة:\n- **الشواء**: لحم مطهو ببطء\n- **الحلوى العُمانية**: حلوى تقليدية\n- **القهوة العربية**: بالهيل مع التمر\n- **المجبوس**: أرز عُماني"
+  },
+  {
+    en: /turtle|ras al.?jinz/i,
+    ar: ['سلحفاة', 'رأس الجنز'],
+    reply_en: "Ras al-Jinz is one of the world's most important sea turtle nesting sites! 🐢 Watch green turtles lay eggs or hatch — magical night tours available. Our guides know the best spots!",
+    reply_ar: "رأس الجنز هو أحد أهم مواقع تعشيش السلاحف البحرية في العالم! 🐢 جولات ليلية سحرية متاحة."
+  },
+  {
+    en: /best|top|recommend|destination|place/i,
+    ar: ['أفضل', 'وجهة', 'مكان', 'أين'],
+    reply_en: "Oman's top destinations 🇴🇲\n1. **Muscat** — capital, culture & coast\n2. **Nizwa** — ancient forts & souqs\n3. **Wahiba Sands** — epic desert\n4. **Salalah** — lush khareef season\n5. **Musandam** — dramatic fjords\n\nBrowse our guides for each region on Guideon!",
+    reply_ar: "أفضل وجهات عُمان 🇴🇲\n1. **مسقط** — العاصمة، الثقافة والساحل\n2. **نزوى** — القلاع القديمة والأسواق\n3. **رمال الوهيبة** — تجربة صحراوية رائعة\n4. **صلالة** — موسم الخريف الخضراء\n5. **مسندم** — الخوران الخلابة\n\nتصفح مرشدينا لكل منطقة على Guideon!"
+  },
+];
 
-    const lines = result.rows.map((t) =>
-      `• ${t.title} — ${t.location}${t.region ? `, ${t.region}` : ''} | ` +
-      `$${parseFloat(t.price).toFixed(0)}/person | ${t.duration_days}d | ` +
-      `${t.category ?? 'General'} | ${t.difficulty} | ⭐ ${parseFloat(t.avg_rating || 0).toFixed(1)}`
-    );
-
-    return `\n\n## Currently Available Tours on OmanExplorer\n${lines.join('\n')}`;
-  } catch {
-    return ''; // DB unavailable — chatbot still works without tour data
+// Detect Arabic by checking character codes (avoids regex encoding issues)
+function isArabicText(text) {
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c >= 0x0600 && c <= 0x06FF) return true;
   }
+  return false;
+}
+
+function localReply(messages) {
+  const last = messages[messages.length - 1]?.content || '';
+  const arabic = isArabicText(last);
+  const lower = last.toLowerCase();
+
+  for (const entry of LOCAL_KB) {
+    // Match English patterns OR Arabic keyword strings
+    const matched = entry.en.test(lower) ||
+      (arabic && entry.ar.some(kw => last.includes(kw)));
+    if (matched) {
+      return arabic ? entry.reply_ar : entry.reply_en;
+    }
+  }
+
+  return arabic
+    ? 'عذراً، لم أفهم سؤالك تماماً. 😊 اسألني عن وجهات عُمان، أفضل أوقات الزيارة، أسعار المرشدين، الحجز، أو نصائح السفر. 🌿'
+    : "I didn't quite get that. 😊 Try asking about Oman's top destinations, best time to visit, guide prices, tour booking, or travel tips! 🌿";
 }
 
 // ── POST /api/chat ─────────────────────────────────────────────────────────────
@@ -105,15 +194,18 @@ const chat = async (req, res, next) => {
       }
     }
 
-    const toursContext = await getToursContext();
-    const systemContent = SYSTEM_PROMPT + toursContext;
+    // Use local knowledge-base when OpenAI key is not configured
+    if (!isApiKeyConfigured()) {
+      const reply = localReply(history);
+      return res.json({ success: true, data: { reply, usage: null } });
+    }
 
     const completion = await getOpenAI().chat.completions.create({
       model:       'gpt-4o-mini',
       max_tokens:  400,
       temperature: 0.7,
       messages: [
-        { role: 'system', content: systemContent },
+        { role: 'system', content: SYSTEM_PROMPT },
         ...history,
       ],
     });

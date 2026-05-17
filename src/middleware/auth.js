@@ -1,33 +1,36 @@
-const jwt = require('jsonwebtoken');
-const { query } = require('../config/database');
-
-const authenticate = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Access token required' });
+exports.requireLogin = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Please log in to continue.' });
   }
-
-  const token = authHeader.split(' ')[1];
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const result = await query(
-      'SELECT id, name, email, role, is_active FROM users WHERE id = $1',
-      [decoded.userId]
-    );
-
-    if (!result.rows.length || !result.rows[0].is_active) {
-      return res.status(401).json({ success: false, message: 'User not found or inactive' });
-    }
-
-    req.user = result.rows[0];
-    next();
-  } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ success: false, message: 'Token expired' });
-    }
-    return res.status(401).json({ success: false, message: 'Invalid token' });
-  }
+  next();
 };
 
-module.exports = { authenticate };
+exports.requireGuide = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Please log in to continue.' });
+  }
+  if (req.session.userType !== 'guide') {
+    return res.status(403).json({ success: false, message: 'Guide access required.' });
+  }
+  next();
+};
+
+exports.requireTourist = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Please log in to continue.' });
+  }
+  if (req.session.userType !== 'tourist') {
+    return res.status(403).json({ success: false, message: 'Tourist access required.' });
+  }
+  next();
+};
+
+exports.requireAdmin = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Please log in to continue.' });
+  }
+  if (req.session.userType !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Admin access required.' });
+  }
+  next();
+};

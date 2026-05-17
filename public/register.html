@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>Guideon — Register</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
+</head>
+<body class="auth-bg" style="min-height:100vh">
+
+<nav class="navbar navbar-dark">
+  <div class="container d-flex justify-content-between align-items-center">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+  </div>
+</nav>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7">
+      <div class="auth-card p-4 p-md-5">
+        <div class="text-center mb-4">
+          <img src="/logo.png" alt="Guideon" style="height:88px;margin-bottom:8px">
+          <h3 class="fw-800 mt-2" data-i18n="reg_title">Create Your Account</h3>
+          <p class="text-muted small" data-i18n="reg_sub">Join Guideon as a Tourist or a Certified Guide</p>
+        </div>
+
+        <div class="d-flex mb-4 border rounded-3 overflow-hidden">
+          <button class="flex-1 border-0 py-2 fw-600 tab-btn active" id="tabTourist" onclick="switchType('tourist')" data-i18n="tab_tourist">👤 Tourist</button>
+          <button class="flex-1 border-0 py-2 fw-600 tab-btn" id="tabGuide" onclick="switchType('guide')" data-i18n="tab_guide">🎒 Licensed Guide</button>
+        </div>
+
+        <div id="errMsg" class="alert alert-danger d-none small"></div>
+
+        <form id="regForm" onsubmit="doRegister(event)">
+          <input type="hidden" id="userType" value="tourist">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-600 small" data-i18n="full_name">Full Name *</label>
+              <input type="text" class="form-control" id="fullName" data-i18n-ph="full_name_ph" placeholder="Your full name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600 small" data-i18n="email_addr">Email Address *</label>
+              <input type="email" class="form-control" id="email" data-i18n-ph="email_ph" placeholder="you@example.com" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600 small" data-i18n="pass_req">Password *</label>
+              <input type="password" class="form-control" id="password" data-i18n-ph="pass_ph2" placeholder="Min 8 characters" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600 small" data-i18n="phone_lbl">Phone</label>
+              <input type="tel" class="form-control" id="phone" data-i18n-ph="phone_ph" placeholder="+968 XXXX XXXX">
+            </div>
+
+            <!-- Tourist fields -->
+            <div id="touristFields">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label fw-600 small" data-i18n="nationality">Nationality</label>
+                  <input type="text" class="form-control" id="nationality" data-i18n-ph="nat_ph" placeholder="e.g. British">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-600 small" data-i18n="pref_lang">Preferred Language</label>
+                  <select class="form-select" id="preferredLanguage">
+                    <option>English</option><option>Arabic</option><option>French</option><option>German</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guide fields -->
+            <div id="guideFields" class="d-none">
+              <div class="row g-3">
+                <div class="col-12">
+                  <div class="alert-teal mb-2 small" data-i18n="guide_note">Note: Your account will be reviewed and verified by an administrator before appearing in search results.</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-600 small" data-i18n="licence_lbl">Ministry Licence Number *</label>
+                  <input type="text" class="form-control" id="licenceNumber" data-i18n-ph="licence_ph" placeholder="MOT-YYYY-XXXX">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-600 small" data-i18n="price_day">Price Per Day (OMR) *</label>
+                  <input type="number" class="form-control" id="pricePerDay" placeholder="45" min="1">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-600 small" data-i18n="langs_spoken">Languages Spoken *</label>
+                  <input type="text" class="form-control" id="languages" data-i18n-ph="langs_ph" placeholder="Arabic, English, French">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label fw-600 small" data-i18n="dests_covered">Destinations Covered *</label>
+                  <input type="text" class="form-control" id="destinations" data-i18n-ph="dests_ph" placeholder="Muscat, Nizwa, Bahla">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-600 small" data-i18n="specs_lbl">Specialisations *</label>
+                  <input type="text" class="form-control" id="specialisations" data-i18n-ph="specs_ph" placeholder="Historical Sites, Desert Safaris, Cultural Tours">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-600 small" data-i18n="bio_lbl">Professional Bio</label>
+                  <textarea class="form-control" id="bio" rows="3" data-i18n-ph="bio_ph" placeholder="Tell tourists about your experience..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn-teal btn w-100 py-2 mt-4" id="submitBtn" data-i18n="reg_btn">Create Account</button>
+        </form>
+
+        <p class="text-center small text-muted mt-4">
+          <span data-i18n="have_account">Already have an account?</span>
+          <a href="/login.html" class="fw-600" style="color:var(--teal)" data-i18n="signin_link">Sign In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
+<script>
+function switchType(type) {
+  document.getElementById('userType').value = type;
+  document.getElementById('touristFields').classList.toggle('d-none', type !== 'tourist');
+  document.getElementById('guideFields').classList.toggle('d-none', type !== 'guide');
+  document.getElementById('tabTourist').classList.toggle('active', type === 'tourist');
+  document.getElementById('tabGuide').classList.toggle('active', type === 'guide');
+}
+
+async function doRegister(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const err = document.getElementById('errMsg');
+  err.classList.add('d-none');
+  btn.disabled = true; btn.textContent = I18N.t('reg_loading');
+
+  const type = document.getElementById('userType').value;
+  const body = {
+    fullName: document.getElementById('fullName').value,
+    email: document.getElementById('email').value,
+    password: document.getElementById('password').value,
+    phone: document.getElementById('phone').value,
+    userType: type,
+  };
+
+  if (type === 'tourist') {
+    body.nationality = document.getElementById('nationality').value;
+    body.preferredLanguage = document.getElementById('preferredLanguage').value;
+  } else {
+    body.licenceNumber = document.getElementById('licenceNumber').value;
+    body.pricePerDay = document.getElementById('pricePerDay').value;
+    body.languages = document.getElementById('languages').value;
+    body.specialisations = document.getElementById('specialisations').value;
+    body.destinations = document.getElementById('destinations').value;
+    body.bio = document.getElementById('bio').value;
+  }
+
+  try {
+    const r = await fetch('/api/auth/register', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html' };
+    window.location.href = dashMap[d.user.userType] || '/';
+  } catch(ex) {
+    err.textContent = ex.message; err.classList.remove('d-none');
+  } finally {
+    btn.disabled = false; btn.textContent = I18N.t('reg_btn');
+  }
+}
+</script>
+<style>.tab-btn{background:#f8f9fa;color:var(--muted)}.tab-btn.active{background:var(--teal);color:#fff}.flex-1{flex:1}</style>
+<script src="/js/pwa.js?v=10"></script>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>Guideon — Find a Guide</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
+</head>
+<body>
+
+<nav class="navbar navbar-expand navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="navbar-controls ms-auto">
+      <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+      <select class="currency-selector" id="currencySelect" onchange="setCurrency(this.value)">
+        <option value="OMR">OMR</option><option value="USD">USD</option>
+        <option value="EUR">EUR</option><option value="GBP">GBP</option>
+      </select>
+      <div id="navAuth" class="d-flex gap-2">
+        <a href="/login.html" class="btn btn-outline-light btn-sm" data-i18n="nav_login">Log In</a>
+        <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
+      </div>
+      <div id="navUser" class="d-none d-flex gap-2 align-items-center">
+        <span class="text-white opacity-75 small" id="navName"></span>
+        <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn" data-i18n="nav_dashboard">Dashboard</a>
+        <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── SEARCH BAR ── -->
+<div style="background:linear-gradient(135deg,var(--teal-dark),var(--teal));padding:20px 0">
+  <div class="container">
+    <!-- Row 1: Main filters -->
+    <div class="row g-2 align-items-end mb-2">
+      <div class="col-md-3">
+        <label class="form-label text-white small fw-600 mb-1" data-i18n="search_dest">Destination</label>
+        <select class="form-select" id="fDest">
+          <option value="" data-i18n="search_all_dest">All Destinations</option>
+          <option>Muscat</option><option>Nizwa</option><option>Salalah</option>
+          <option>Musandam</option><option>Sur</option><option>Dhofar</option>
+          <option>Bahla</option><option>Ibri</option><option>Adam</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-white small fw-600 mb-1" data-i18n="search_lang">Language</label>
+        <select class="form-select" id="fLang">
+          <option value="" data-i18n="search_any_lang">Any</option>
+          <option>English</option><option>Arabic</option><option>French</option><option>German</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-white small fw-600 mb-1" data-i18n="search_date">Date</label>
+        <input type="date" class="form-control" id="fDate">
+      </div>
+      <!-- Guests -->
+      <div class="col-md-2">
+        <label class="form-label text-white small fw-600 mb-1" data-i18n="guests_lbl">Guests</label>
+        <div class="d-flex align-items-center bg-white rounded-3 px-2" style="height:38px">
+          <button class="part-btn" onclick="changeGuests(-1)">−</button>
+          <span class="part-count flex-grow-1 text-center" id="guestCount">1</span>
+          <button class="part-btn" onclick="changeGuests(1)">+</button>
+          <input type="hidden" id="fGuests" value="1">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label text-white small fw-600 mb-1" data-i18n="search_sort_lbl">Sort By</label>
+        <select class="form-select" id="fSort">
+          <option value="" data-i18n="sort_rating">Rating ↓</option>
+          <option value="price_asc" data-i18n="sort_price_asc">Price ↑</option>
+          <option value="price_desc" data-i18n="sort_price_desc">Price ↓</option>
+        </select>
+      </div>
+      <div class="col-md-1">
+        <button class="btn-search btn w-100" onclick="loadGuides()" style="background:var(--gold);border:none;border-radius:10px;padding:9px;font-size:1.2rem">🔍</button>
+      </div>
+    </div>
+
+    <!-- Row 2: Advanced filters -->
+    <div class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label text-white small fw-600 mb-1" data-i18n="filter_min_rating">Min Rating</label>
+        <select class="form-select form-select-sm" id="fRating">
+          <option value="" data-i18n="search_any_rating">Any</option>
+          <option value="4">4+ ★</option>
+          <option value="4.5">4.5+ ★</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label text-white small fw-600 mb-1" data-i18n="price_range">Price Range (OMR)</label>
+        <div class="price-range-wrap">
+          <input type="number" class="form-control form-control-sm" id="fMinPrice" placeholder="0" min="0" style="background:#fff;border-radius:8px">
+          <span class="text-white fw-600">—</span>
+          <input type="number" class="form-control form-control-sm" id="fMaxPrice" placeholder="500" min="0" style="background:#fff;border-radius:8px">
+          <span class="text-white small" data-i18n="omr_day">OMR</span>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label text-white small fw-600 mb-1">Specialisation</label>
+        <select class="form-select form-select-sm" id="fSpec">
+          <option value="">All</option>
+          <option>Historical Sites</option>
+          <option>Desert Safari</option>
+          <option>Cultural Tours</option>
+          <option>Nature & Hiking</option>
+          <option>Marine & Diving</option>
+          <option>Adventure</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <button class="btn btn-sm btn-outline-light w-100" onclick="clearFilters()" data-i18n="clear_filters">Clear Filters</button>
+        <button class="btn btn-sm w-100" id="wishlistToggleBtn" onclick="toggleWishlistView()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4)">❤️ <span data-i18n="saved_guides">Saved</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CATEGORY TABS ── -->
+<div style="background:#fff;border-bottom:1px solid var(--border);padding:12px 0">
+  <div class="container">
+    <div class="category-tabs" id="catTabs">
+      <div class="cat-tab active" onclick="selectCategory('',this)" data-cat="">
+        <span class="cat-icon">🌍</span>
+        <span data-i18n="cat_all">All</span>
+      </div>
+      <div class="cat-tab" onclick="selectCategory('Historical',this)" data-cat="Historical">
+        <span class="cat-icon">🏛️</span>
+        <span data-i18n="cat_historical">Historical</span>
+      </div>
+      <div class="cat-tab" onclick="selectCategory('Desert',this)" data-cat="Desert">
+        <span class="cat-icon">🐪</span>
+        <span data-i18n="cat_desert">Desert Safari</span>
+      </div>
+      <div class="cat-tab" onclick="selectCategory('Cultural',this)" data-cat="Cultural">
+        <span class="cat-icon">🎭</span>
+        <span data-i18n="cat_cultural">Cultural</span>
+      </div>
+      <div class="cat-tab" onclick="selectCategory('Nature',this)" data-cat="Nature">
+        <span class="cat-icon">🌿</span>
+        <span data-i18n="cat_nature">Nature</span>
+      </div>
+      <div class="cat-tab" onclick="selectCategory('Marine',this)" data-cat="Marine">
+        <span class="cat-icon">🤿</span>
+        <span data-i18n="cat_marine">Marine</span>
+      </div>
+      <div class="cat-tab" onclick="selectCategory('Adventure',this)" data-cat="Adventure">
+        <span class="cat-icon">🧗</span>
+        <span data-i18n="cat_adventure">Adventure</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESULTS ── -->
+<div class="container py-4">
+  <!-- Wishlist bar (hidden by default) -->
+  <div id="wishlistBar" class="wishlist-bar d-none">
+    <span class="wishlist-count">❤️ <span data-i18n="saved_guides">Saved Guides</span>: <span id="wishlistCountNum">0</span></span>
+    <button class="btn btn-sm btn-outline-danger" onclick="clearWishlist()" data-i18n="clear_wishlist">Clear All</button>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0 fw-700" id="resultCount">...</h5>
+    <a href="/" class="text-muted small" data-i18n="back_home">← Back to Home</a>
+  </div>
+
+  <!-- Active filter tags -->
+  <div id="activeFilters" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+  <div class="row g-4" id="guideGrid">
+    <div class="col-12 text-center py-5 text-muted" data-i18n="loading_guides">Loading guides...</div>
+  </div>
+</div>
+
+<footer style="background:var(--teal-dark);color:rgba(255,255,255,.7);text-align:center;padding:20px;margin-top:40px">
+  <span data-i18n="footer_bottom">Guideon © 2025. All rights reserved.</span>
+</footer>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
+<script>
+/* ── CURRENCY (TourHQ) ── */
+const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
+function getCurrency() { return localStorage.getItem('og_currency') || 'OMR'; }
+function setCurrency(cur) { localStorage.setItem('og_currency', cur); renderGuides(SHOWING_WISHLIST ? ALL_GUIDES.filter(g => isWishlisted(g.id)) : ALL_GUIDES); }
+function convertPrice(omr) { const c = getCurrency(); return (omr * RATES[c]).toFixed(2) + ' ' + c; }
+document.addEventListener('DOMContentLoaded', () => { const s = document.getElementById('currencySelect'); if (s) s.value = getCurrency(); });
+
+/* ── WISHLIST stored in localStorage ── */
+function getWishlist() { return JSON.parse(localStorage.getItem('og_wishlist') || '[]'); }
+function saveWishlist(list) { localStorage.setItem('og_wishlist', JSON.stringify(list)); }
+function isWishlisted(id) { return getWishlist().includes(id); }
+function toggleWishlist(id) {
+  let list = getWishlist();
+  if (list.includes(id)) {
+    list = list.filter(x => x !== id);
+    toast(I18N.t('wishlist_removed'));
+  } else {
+    list.push(id);
+    toast(I18N.t('wishlist_saved'), 'success');
+  }
+  saveWishlist(list);
+  document.querySelectorAll(`.wishlist-btn[data-id="${id}"]`).forEach(btn => {
+    btn.classList.toggle('saved', list.includes(id));
+  });
+  updateWishlistBar();
+}
+
+let SHOWING_WISHLIST = false;
+let ALL_GUIDES = [];
+let ACTIVE_CATEGORY = '';
+
+function updateWishlistBar() {
+  const count = getWishlist().length;
+  document.getElementById('wishlistCountNum').textContent = count;
+}
+
+function toggleWishlistView() {
+  SHOWING_WISHLIST = !SHOWING_WISHLIST;
+  document.getElementById('wishlistBar').classList.toggle('d-none', !SHOWING_WISHLIST);
+  if (SHOWING_WISHLIST) renderGuides(ALL_GUIDES.filter(g => isWishlisted(g.id)));
+  else renderGuides(ALL_GUIDES);
+}
+
+function clearWishlist() {
+  saveWishlist([]);
+  updateWishlistBar();
+  document.querySelectorAll('.wishlist-btn').forEach(b => b.classList.remove('saved'));
+  if (SHOWING_WISHLIST) renderGuides([]);
+}
+
+/* ── GUESTS ── */
+let guestValue = 1;
+function changeGuests(delta) {
+  guestValue = Math.max(1, Math.min(20, guestValue + delta));
+  document.getElementById('guestCount').textContent = guestValue;
+  document.getElementById('fGuests').value = guestValue;
+}
+
+/* ── CATEGORY TABS ── */
+function selectCategory(cat, el) {
+  ACTIVE_CATEGORY = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadGuides();
+}
+
+/* ── ACTIVE FILTER TAGS ── */
+function renderFilterTags(params) {
+  const container = document.getElementById('activeFilters');
+  container.innerHTML = '';
+  const labels = {
+    destination: I18N.t('search_dest'),
+    language: I18N.t('search_lang'),
+    date: I18N.t('search_date'),
+    minRating: I18N.t('filter_min_rating'),
+    minPrice: I18N.t('min_price'),
+    maxPrice: I18N.t('max_price'),
+    specialisation: 'Category',
+    participants: I18N.t('guests_lbl'),
+  };
+  for (const [key, val] of params.entries()) {
+    if (!val) continue;
+    const tag = document.createElement('span');
+    tag.className = 'active-filter-tag';
+    tag.innerHTML = `${labels[key] || key}: ${val} ✕`;
+    tag.onclick = () => { clearParam(key); };
+    container.appendChild(tag);
+  }
+}
+
+function clearParam(key) {
+  const map = { destination: 'fDest', language: 'fLang', date: 'fDate', minRating: 'fRating', specialisation: 'fSpec', minPrice: 'fMinPrice', maxPrice: 'fMaxPrice' };
+  if (map[key]) document.getElementById(map[key]).value = '';
+  if (key === 'participants') { guestValue = 1; document.getElementById('guestCount').textContent = 1; document.getElementById('fGuests').value = 1; }
+  loadGuides();
+}
+
+/* ── UTILITY ── */
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function stars(r) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) s += `<span class="${i <= r ? 'star-full' : 'star-empty'}">★</span>`;
+  return s;
+}
+function initials(n) { return (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
+
+function getBadge(g) {
+  if (g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2) return `<div class="super-guide-medal">${I18N.t('super_guide')}</div>`;
+  if (g.totalReviews >= 3 && g.rating >= 4.8) return `<div class="guest-fav-badge">${I18N.t('guest_fav')}</div>`;
+  if (g.rating >= 4.5) return `<div class="top-rated-badge">${I18N.t('top_rated')}</div>`;
+  if (!g.totalReviews || g.totalReviews === 0) return `<div class="new-guide-badge">${I18N.t('new_guide')}</div>`;
+  return '';
+}
+
+/* ── SESSION ── */
+async function checkSession() {
+  try {
+    const r = await fetch('/api/auth/me', { credentials: 'include' });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('navAuth').classList.add('d-none');
+      document.getElementById('navUser').classList.remove('d-none');
+      document.getElementById('navName').textContent = d.user.fullName.split(' ')[0];
+      const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html' };
+      document.getElementById('navDashBtn').href = dashMap[d.user.userType] || '/';
+    }
+  } catch {}
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  window.location.href = '/';
+}
+
+/* ── LOAD GUIDES ── */
+async function loadGuides() {
+  const params = new URLSearchParams();
+  const dest      = document.getElementById('fDest').value;
+  const lang      = document.getElementById('fLang').value;
+  const date      = document.getElementById('fDate').value;
+  const rating    = document.getElementById('fRating').value;
+  const sort      = document.getElementById('fSort').value;
+  const minPrice  = document.getElementById('fMinPrice').value;
+  const maxPrice  = document.getElementById('fMaxPrice').value;
+  const spec      = ACTIVE_CATEGORY || document.getElementById('fSpec').value;
+  const guests    = document.getElementById('fGuests').value;
+
+  if (dest)     params.set('destination', dest);
+  if (lang)     params.set('language', lang);
+  if (date)     params.set('date', date);
+  if (rating)   params.set('minRating', rating);
+  if (sort)     params.set('sortBy', sort);
+  if (minPrice) params.set('minPrice', minPrice);
+  if (maxPrice) params.set('maxPrice', maxPrice);
+  if (spec)     params.set('specialisation', spec);
+  if (guests && guests > 1) params.set('participants', guests);
+
+  history.replaceState(null, '', '?' + params.toString());
+  renderFilterTags(params);
+
+  document.getElementById('guideGrid').innerHTML = `<div class="col-12 text-center py-5 text-muted">${I18N.t('loading_guides')}</div>`;
+
+  try {
+    const r = await fetch('/api/guides?' + params, { credentials: 'include' });
+    const data = await r.json();
+    ALL_GUIDES = data.guides || [];
+    updateWishlistBar();
+    renderGuides(SHOWING_WISHLIST ? ALL_GUIDES.filter(g => isWishlisted(g.id)) : ALL_GUIDES);
+  } catch {
+    document.getElementById('guideGrid').innerHTML = '<div class="col-12 text-center text-danger py-4">Error loading guides.</div>';
+  }
+}
+
+function renderGuides(guides) {
+  document.getElementById('resultCount').textContent = guides.length
+    ? I18N.t('results_found', guides.length)
+    : I18N.t('no_results');
+
+  if (!guides.length) {
+    document.getElementById('guideGrid').innerHTML = `
+      <div class="col-12 empty-state">
+        <div class="icon">${SHOWING_WISHLIST ? '❤️' : '🔍'}</div>
+        <h5>${SHOWING_WISHLIST ? I18N.t('wishlist_empty') : I18N.t('no_results')}</h5>
+        <p class="text-muted">${SHOWING_WISHLIST ? I18N.t('wishlist_empty_sub') : I18N.t('no_results_sub')}</p>
+        ${!SHOWING_WISHLIST ? `<button class="btn-teal btn mt-2" onclick="clearFilters()">${I18N.t('clear_filters')}</button>` : ''}
+      </div>`;
+    return;
+  }
+
+  document.getElementById('guideGrid').innerHTML = guides.map(g => {
+    const wishlisted = isWishlisted(g.id);
+    const badge = getBadge(g);
+    return `
+      <div class="col-md-6 col-lg-4">
+        <div class="guide-card h-100 guide-card-wrap">
+          <!-- Airbnb-style header with avatar -->
+          <div class="guide-card-header">
+            ${badge}
+            <button class="wishlist-btn ${wishlisted ? 'saved' : ''}" data-id="${g.id}" onclick="toggleWishlist('${g.id}')" title="${I18N.t('saved_guides')}">
+              <span class="heart-icon">${wishlisted ? '♥' : '♡'}</span>
+            </button>
+            <div class="big-avatar">${initials(g.fullName)}</div>
+          </div>
+
+          <div class="p-3">
+            <div class="d-flex align-items-start justify-content-between mb-1">
+              <div>
+                <h6 class="mb-0 fw-700">${g.fullName}</h6>
+                ${g.isVerified ? `<span class="verified-badge">✓ ${I18N.t('status_verified')}</span>` : ''}
+              </div>
+              <div class="text-end">
+                <div class="fw-800" style="color:var(--teal);font-size:1.1rem">${convertPrice(g.pricePerDay)}</div>
+                <div class="text-muted" style="font-size:0.75rem" data-i18n="per_day">/day</div>
+              </div>
+            </div>
+
+            <div class="rating small mb-1">
+              ${stars(Math.round(g.rating))}
+              <span class="text-muted ms-1">${g.rating} · ${I18N.t('reviews_count', g.totalReviews)}</span>
+            </div>
+
+            <div class="small text-muted mb-2">📍 ${g.destinations.join(', ')}</div>
+            <div class="mb-2">${g.languages.map(l => `<span class="lang-badge me-1">${l}</span>`).join('')}</div>
+            <div class="mb-2">${g.specialisations.slice(0,3).map(s => `<span class="spec-badge me-1">${s}</span>`).join('')}</div>
+            <p class="small text-muted mb-3" style="line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${g.bio || ''}</p>
+
+            <button class="btn-view btn btn-sm w-100" onclick="location.href='/guide-profile.html?id=${g.id}'">${I18N.t('view_profile')}</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function clearFilters() {
+  ['fDest','fLang','fDate','fRating','fSort','fSpec','fMinPrice','fMaxPrice'].forEach(id => document.getElementById(id).value = '');
+  guestValue = 1; document.getElementById('guestCount').textContent = 1; document.getElementById('fGuests').value = 1;
+  ACTIVE_CATEGORY = '';
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.cat-tab[data-cat=""]').classList.add('active');
+  SHOWING_WISHLIST = false;
+  document.getElementById('wishlistBar').classList.add('d-none');
+  loadGuides();
+}
+
+/* ── PRE-FILL FROM URL ── */
+const urlParams = new URLSearchParams(location.search);
+if (urlParams.get('destination')) document.getElementById('fDest').value = urlParams.get('destination');
+if (urlParams.get('language'))    document.getElementById('fLang').value = urlParams.get('language');
+if (urlParams.get('date'))        document.getElementById('fDate').value = urlParams.get('date');
+if (urlParams.get('minRating'))   document.getElementById('fRating').value = urlParams.get('minRating');
+if (urlParams.get('sortBy'))      document.getElementById('fSort').value = urlParams.get('sortBy');
+if (urlParams.get('minPrice'))    document.getElementById('fMinPrice').value = urlParams.get('minPrice');
+if (urlParams.get('maxPrice'))    document.getElementById('fMaxPrice').value = urlParams.get('maxPrice');
+if (urlParams.get('specialisation')) {
+  document.getElementById('fSpec').value = urlParams.get('specialisation');
+  ACTIVE_CATEGORY = urlParams.get('specialisation');
+  const matchTab = document.querySelector(`.cat-tab[data-cat="${ACTIVE_CATEGORY}"]`);
+  if (matchTab) { document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active')); matchTab.classList.add('active'); }
+}
+if (urlParams.get('participants')) {
+  guestValue = parseInt(urlParams.get('participants')) || 1;
+  document.getElementById('guestCount').textContent = guestValue;
+  document.getElementById('fGuests').value = guestValue;
+}
+
+window.onLangChange = () => loadGuides();
+
+checkSession();
+loadGuides();
+</script>
+<style>
+.btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }
+</style>
+<script src="/js/pwa.js?v=10"></script>
+</body>
+</html>

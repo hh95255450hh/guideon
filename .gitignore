@@ -5,3 +5,7 @@ uploads/
 .DS_Store
 dist/
 coverage/
+.env.local
+
+Tempcookie*.txt
+*.docx

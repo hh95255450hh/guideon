@@ -1,571 +1,821 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OmanExplorer API</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f4f8; color: #1a202c; }
-
-    header {
-      background: linear-gradient(135deg, #006400, #228B22);
-      color: white;
-      padding: 2rem;
-      text-align: center;
-    }
-    header h1 { font-size: 2rem; margin-bottom: .5rem; }
-    header p  { opacity: .85; }
-
-    .status-bar {
-      display: flex; align-items: center; justify-content: center;
-      gap: .6rem; padding: .8rem;
-      background: #fff; border-bottom: 1px solid #e2e8f0;
-      font-size: .9rem;
-    }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; }
-    .dot.green { background: #48bb78; }
-    .dot.red   { background: #fc8181; }
-
-    main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
-
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
-
-    .card {
-      background: white; border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
-      overflow: hidden;
-    }
-    .card-header {
-      background: #2d3748; color: white;
-      padding: .8rem 1.2rem; font-weight: 600; font-size: .85rem;
-      display: flex; align-items: center; gap: .5rem;
-    }
-    .method {
-      font-size: .7rem; padding: .2rem .5rem; border-radius: 4px;
-      font-weight: 700; letter-spacing: .05em;
-    }
-    .GET   { background: #48bb78; color: #fff; }
-    .POST  { background: #4299e1; color: #fff; }
-
-    .card-body { padding: 1rem 1.2rem; font-size: .85rem; color: #4a5568; line-height: 1.6; }
-    .card-body .url { font-family: monospace; color: #2b6cb0; font-size: .8rem; word-break: break-all; }
-    .card-body pre {
-      background: #edf2f7; border-radius: 6px; padding: .8rem;
-      font-size: .75rem; margin-top: .6rem; overflow-x: auto;
-      white-space: pre-wrap; color: #2d3748;
-    }
-
-    .btn {
-      display: inline-block; margin-top: .8rem;
-      padding: .4rem .9rem; border-radius: 6px; border: none;
-      background: #006400; color: white; cursor: pointer;
-      font-size: .8rem;
-    }
-    .btn:hover { background: #228B22; }
-
-    .response-box {
-      margin-top: .8rem; background: #1a202c; color: #68d391;
-      border-radius: 6px; padding: .8rem;
-      font-family: monospace; font-size: .72rem;
-      white-space: pre-wrap; max-height: 200px; overflow-y: auto;
-      display: none;
-    }
-
-    .tour-list { margin-top: 1rem; }
-    .tour-item {
-      background: white; border-radius: 10px;
-      padding: 1rem 1.2rem; margin-bottom: .8rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,.07);
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .tour-item h3 { font-size: .95rem; color: #2d3748; }
-    .tour-item p  { font-size: .8rem; color: #718096; margin-top: .2rem; }
-    .price-badge {
-      background: #006400; color: white;
-      padding: .3rem .7rem; border-radius: 20px; font-size: .85rem; font-weight: 600;
-      white-space: nowrap; margin-right: 1rem;
-    }
-
-    section h2 { font-size: 1.2rem; color: #2d3748; margin: 2rem 0 1rem; border-right: 4px solid #006400; padding-right: .8rem; }
-    footer { text-align: center; padding: 2rem; color: #718096; font-size: .8rem; }
-
-    /* ══ OmanBot Chat Widget ══════════════════════════════════════════ */
-    :root {
-      --cb-primary: #1a6b4a;
-      --cb-dk:      #155a3e;
-      --cb-accent:  #f0a500;
-      --cb-bg:      #f5f5f0;
-      --cb-muted:   #6b7280;
-      --cb-border:  #e5e7eb;
-    }
-    #chat-fab {
-      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-      width: 58px; height: 58px;
-      background: var(--cb-primary);
-      border-radius: 50%; border: none; cursor: pointer;
-      box-shadow: 0 4px 18px rgba(26,107,74,.5);
-      display: flex; align-items: center; justify-content: center;
-      transition: transform .2s, box-shadow .2s;
-    }
-    #chat-fab:hover { transform: scale(1.09); box-shadow: 0 6px 24px rgba(26,107,74,.6); }
-    #chat-fab svg { width: 26px; height: 26px; fill: #fff; }
-    #chat-fab .fab-badge {
-      position: absolute; top: 0; right: 0;
-      width: 18px; height: 18px;
-      background: #ef4444; border-radius: 50%;
-      font-size: 10px; font-weight: 700; color: #fff;
-      display: none; align-items: center; justify-content: center;
-      border: 2px solid #f0f4f8;
-    }
-    #chat-fab.has-badge .fab-badge { display: flex; }
-
-    #chat-box {
-      position: fixed; bottom: 96px; right: 24px; z-index: 9998;
-      width: 370px; max-height: 530px;
-      background: #fff; border-radius: 18px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.18);
-      display: flex; flex-direction: column;
-      transform: translateY(16px) scale(.97);
-      opacity: 0; pointer-events: none;
-      transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .18s;
-    }
-    #chat-box.open { transform: none; opacity: 1; pointer-events: all; }
-
-    .cb-header {
-      background: linear-gradient(135deg, var(--cb-primary), #2d9e6d);
-      border-radius: 18px 18px 0 0;
-      padding: 14px 16px;
-      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-    }
-    .cb-avatar {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: rgba(255,255,255,.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-    }
-    .cb-title { font-size: 14px; font-weight: 700; color: #fff; }
-    .cb-status {
-      display: flex; align-items: center; gap: 4px;
-      font-size: 11px; color: rgba(255,255,255,.8);
-    }
-    .cb-dot {
-      width: 6px; height: 6px; background: #4ade80; border-radius: 50%;
-      animation: blink 2s infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .cb-clear {
-      background: rgba(255,255,255,.15); border: none;
-      color: rgba(255,255,255,.8); cursor: pointer;
-      font-size: 11px; padding: 3px 8px; border-radius: 6px; transition: all .2s;
-    }
-    .cb-clear:hover { background: rgba(255,255,255,.25); color: #fff; }
-    .cb-close {
-      background: rgba(255,255,255,.15); border: none; color: #fff;
-      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px; transition: background .2s;
-    }
-    .cb-close:hover { background: rgba(255,255,255,.3); }
-
-    .cb-msgs {
-      flex: 1; overflow-y: auto; padding: 14px;
-      display: flex; flex-direction: column; gap: 9px;
-      min-height: 0; scroll-behavior: smooth;
-    }
-    .cb-msgs::-webkit-scrollbar { width: 3px; }
-    .cb-msgs::-webkit-scrollbar-thumb { background: var(--cb-border); border-radius: 3px; }
-
-    .cb-msg { display: flex; gap: 7px; max-width: 90%; animation: msgIn .22s ease-out; }
-    @keyframes msgIn { from{ opacity:0; transform:translateY(5px) } to{ opacity:1; transform:none } }
-    .cb-msg.user { margin-right: 0; margin-left: auto; flex-direction: row-reverse; }
-    .cb-msg-av {
-      width: 26px; height: 26px; border-radius: 50%;
-      background: rgba(26,107,74,.1);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; flex-shrink: 0; align-self: flex-end;
-    }
-    .cb-bubble {
-      padding: 9px 13px; border-radius: 14px;
-      font-size: 13px; line-height: 1.5; word-break: break-word;
-    }
-    .cb-msg.bot  .cb-bubble { background: var(--cb-bg); color: #1a202c; border-bottom-left-radius: 3px; }
-    .cb-msg.user .cb-bubble { background: var(--cb-primary); color: #fff; border-bottom-right-radius: 3px; }
-    .cb-time { font-size: 10px; color: var(--cb-muted); margin-top: 2px; }
-    .cb-msg.user .cb-time { text-align: right; }
-
-    .cb-typing { display: flex; gap: 5px; padding: 10px 13px; background: var(--cb-bg); border-radius: 14px; border-bottom-left-radius: 3px; width: fit-content; }
-    .cb-tdot { width: 6px; height: 6px; background: var(--cb-muted); border-radius: 50%; animation: tdot 1.4s infinite ease-in-out; }
-    .cb-tdot:nth-child(2){ animation-delay:.2s } .cb-tdot:nth-child(3){ animation-delay:.4s }
-    @keyframes tdot { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
-
-    .cb-chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 14px 10px; flex-shrink: 0; }
-    .cb-chip {
-      background: rgba(26,107,74,.08); border: 1px solid rgba(26,107,74,.2);
-      border-radius: 18px; padding: 4px 11px;
-      font-size: 11.5px; color: var(--cb-primary); cursor: pointer;
-      transition: background .15s; white-space: nowrap;
-    }
-    .cb-chip:hover { background: rgba(26,107,74,.16); }
-
-    .cb-input-row {
-      padding: 10px 12px; border-top: 1px solid var(--cb-border);
-      display: flex; gap: 7px; align-items: flex-end; flex-shrink: 0;
-    }
-    #cb-input {
-      flex: 1; border: 1px solid var(--cb-border); border-radius: 10px;
-      padding: 8px 11px; font-size: 13px; font-family: inherit;
-      outline: none; resize: none; max-height: 90px; overflow-y: auto;
-      transition: border-color .2s; line-height: 1.4;
-    }
-    #cb-input:focus { border-color: var(--cb-primary); }
-    #cb-input::placeholder { color: var(--cb-muted); }
-    #cb-send {
-      width: 36px; height: 36px; background: var(--cb-primary);
-      border: none; border-radius: 9px; cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .2s, transform .1s;
-    }
-    #cb-send:hover:not(:disabled) { background: var(--cb-dk); }
-    #cb-send:active { transform: scale(.92); }
-    #cb-send:disabled { opacity: .45; cursor: not-allowed; }
-    #cb-send svg { width: 17px; height: 17px; fill: #fff; }
-    .cb-footer { font-size: 10.5px; color: var(--cb-muted); text-align: center; padding: 4px 0 9px; flex-shrink: 0; }
-
-    @media (max-width: 420px) {
-      #chat-box { width: calc(100vw - 20px); right: 10px; bottom: 84px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>Guideon — Find Your Certified Local Guide</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
 </head>
 <body>
 
-<header>
-  <h1>🌍 OmanExplorer API</h1>
-  <p>منصة سياحية متكاملة لعُمان — الإصدار 1.0.0</p>
-</header>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <ul class="navbar-nav me-3">
+      <li class="nav-item"><a class="nav-link active" href="/" data-i18n="nav_home">Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="/search.html" data-i18n="nav_find">Find a Guide</a></li>
+    </ul>
+    <div class="navbar-controls ms-auto">
+      <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+      <button class="btn btn-sm btn-outline-light theme-btn" id="themeBtn" onclick="toggleDark()" title="Dark Mode">🌙</button>
+      <select class="currency-selector" id="currencySelect" onchange="setCurrency(this.value)">
+        <option value="OMR">OMR</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+      </select>
+      <a href="/plan-trip.html" class="btn btn-sm btn-outline-light fw-600" data-i18n="plan_trip_btn">✈️ Plan Trip</a>
+      <div id="navAuth" class="d-flex gap-2">
+        <a href="/login.html" class="btn btn-outline-light btn-sm fw-600" data-i18n="nav_login">Log In</a>
+        <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
+      </div>
+      <div id="navUser" class="d-none d-flex gap-2 align-items-center">
+        <span class="text-white opacity-75 small" id="navName"></span>
+        <a href="/wishlist.html" class="btn btn-sm btn-outline-light" title="Wishlist">❤️</a>
+        <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn" data-i18n="nav_dashboard">Dashboard</a>
+        <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
 
-<div class="status-bar">
-  <div class="dot" id="statusDot"></div>
-  <span id="statusText">جاري الاتصال...</span>
+<!-- HERO -->
+<section class="hero">
+  <div class="container text-center">
+    <div class="mb-3"><span class="badge-gold" data-i18n="hero_badge">Certified Ministry-Licensed Guides</span></div>
+    <h1 class="mb-3">
+      <span data-i18n="hero_title">Discover Oman With a</span><br>
+      <span style="color:var(--gold)" data-i18n="hero_highlight">Verified Local Expert</span>
+    </h1>
+    <p class="mb-4 mx-auto" style="max-width:580px" data-i18n="hero_sub">Connect with certified tourist guides across Muscat, Nizwa, Salalah, Musandam and beyond.</p>
+
+    <!-- SEARCH -->
+    <div class="row justify-content-center">
+      <div class="col-lg-10">
+        <div class="search-box">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label fw-600 small text-muted" data-i18n="search_dest">Destination</label>
+              <select class="form-select" id="sDestination">
+                <option value="" data-i18n="search_dest_all">All Destinations</option>
+                <option>Muscat</option><option>Nizwa</option><option>Salalah</option>
+                <option>Musandam</option><option>Sur</option><option>Dhofar</option>
+                <option>Bahla</option><option>Ibri</option><option>Adam</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-600 small text-muted" data-i18n="search_lang">Language</label>
+              <select class="form-select" id="sLanguage">
+                <option value="" data-i18n="search_lang_any">Any Language</option>
+                <option>English</option><option>Arabic</option><option>French</option>
+                <option>German</option><option>Spanish</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-600 small text-muted" data-i18n="search_date">Tour Date</label>
+              <input type="date" class="form-control" id="sDate">
+            </div>
+            <div class="col-md-3">
+              <button class="btn-search w-100" onclick="doSearch()" data-i18n="search_btn">🔍 Search Guides</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<section class="stats-strip">
+  <div class="container">
+    <div class="row text-center g-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-item"><div class="stat-num">3</div><div class="stat-label" data-i18n="stat_guides">Certified Guides</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item"><div class="stat-num">6</div><div class="stat-label" data-i18n="stat_dests">Destinations Covered</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item"><div class="stat-num">4.8 ★</div><div class="stat-label" data-i18n="stat_rating">Average Rating</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-item"><div class="stat-num">148</div><div class="stat-label" data-i18n="stat_tourists">Happy Tourists</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST STRIP (TourHQ-style) -->
+<div class="trust-strip">
+  <div class="container">
+    <div class="row g-3 text-center">
+      <div class="col-6 col-md-3">
+        <div class="trust-item"><div class="trust-num">3+</div><div class="trust-label" data-i18n="trust_guides">Verified Guides</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="trust-item"><div class="trust-num">9</div><div class="trust-label" data-i18n="trust_dests">Destinations</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="trust-item"><div class="trust-num">8+</div><div class="trust-label" data-i18n="trust_reviews">Happy Reviews</div></div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="trust-item"><div class="trust-num">🏛️</div><div class="trust-label" data-i18n="trust_since">Est. 2025</div></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<main>
-
-  <section>
-    <h2>الجولات المتاحة</h2>
-    <div class="tour-list" id="tourList">جاري التحميل...</div>
-  </section>
-
-  <section>
-    <h2>اختبار نقاط الـ API</h2>
-    <div class="grid">
-
-      <div class="card">
-        <div class="card-header"><span class="method GET">GET</span> حالة الخادم</div>
-        <div class="card-body">
-          <div class="url">GET /health</div>
-          <button class="btn" onclick="testApi('/health', 'res1')">اختبر</button>
-          <pre class="response-box" id="res1"></pre>
+<!-- PLAN MY HOLIDAY BANNER (TourHQ feature) -->
+<section class="py-4">
+  <div class="container">
+    <div class="plan-trip-banner">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h3 class="fw-800 mb-2" data-i18n="plan_trip_title">Plan My Holiday</h3>
+          <p class="mb-0" data-i18n="plan_trip_sub">Tell us your dream trip — our verified guides will tailor an itinerary just for you.</p>
         </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="method GET">GET</span> كل الجولات</div>
-        <div class="card-body">
-          <div class="url">GET /api/tours</div>
-          <button class="btn" onclick="testApi('/api/tours', 'res2')">اختبر</button>
-          <pre class="response-box" id="res2"></pre>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="method GET">GET</span> الشركات</div>
-        <div class="card-body">
-          <div class="url">GET /api/companies</div>
-          <button class="btn" onclick="testApi('/api/companies', 'res3')">اختبر</button>
-          <pre class="response-box" id="res3"></pre>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="method POST">POST</span> تسجيل الدخول</div>
-        <div class="card-body">
-          <div class="url">POST /api/auth/login</div>
-          <pre>{ "email": "tourist@example.com", "password": "Password123!" }</pre>
-          <button class="btn" onclick="testLogin()">اختبر</button>
-          <pre class="response-box" id="res4"></pre>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="method GET">GET</span> بحث بالسعر</div>
-        <div class="card-body">
-          <div class="url">GET /api/tours?minPrice=50&amp;maxPrice=100</div>
-          <button class="btn" onclick="testApi('/api/tours?minPrice=50&maxPrice=100', 'res5')">اختبر</button>
-          <pre class="response-box" id="res5"></pre>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><span class="method GET">GET</span> إحصائيات Admin</div>
-        <div class="card-body">
-          <div class="url">GET /api/users/admin/stats</div>
-          <button class="btn" onclick="testAdminStats()">اختبر (Admin)</button>
-          <pre class="response-box" id="res6"></pre>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <section>
-    <h2>بيانات الدخول للاختبار</h2>
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">👤 Tourist</div>
-        <div class="card-body">
-          البريد: tourist@example.com<br>
-          كلمة المرور: Password123!
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">🏢 Company</div>
-        <div class="card-body">
-          البريد: company@muscatadventures.com<br>
-          كلمة المرور: Password123!
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">🛡️ Admin</div>
-        <div class="card-body">
-          البريد: admin@omanexplorer.com<br>
-          كلمة المرور: Password123!
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+          <a href="/plan-trip.html" class="btn-gold btn px-4 py-2 fw-700" data-i18n="plan_trip_btn">✈️ Plan My Holiday</a>
         </div>
       </div>
     </div>
-  </section>
-
-</main>
-
-<footer>OmanExplorer API &mdash; يعمل على المنفذ 3000</footer>
-
-<script src="/app.js"></script>
-
-<!-- ══ OmanBot Chat Widget ════════════════════════════════════════════════ -->
-
-<!-- Floating Action Button -->
-<button id="chat-fab" onclick="cbToggle()" aria-label="OmanBot — AI Tourism Assistant">
-  <div class="fab-badge">1</div>
-  <svg id="fab-icon-chat" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
-  <svg id="fab-icon-x"    viewBox="0 0 24 24" style="display:none"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-</button>
-
-<!-- Chat Window -->
-<div id="chat-box" role="dialog" aria-modal="true" aria-label="OmanBot Chat">
-  <div class="cb-header">
-    <div class="cb-avatar">🌴</div>
-    <div style="flex:1">
-      <div class="cb-title">OmanBot 🇴🇲</div>
-      <div class="cb-status"><div class="cb-dot"></div><span>Online · AI Tourism Assistant</span></div>
-    </div>
-    <button class="cb-clear" onclick="cbClear()" title="Clear chat">🗑 Clear</button>
-    <button class="cb-close" onclick="cbToggle()" aria-label="Close">✕</button>
   </div>
+</section>
 
-  <div class="cb-msgs" id="cb-msgs"></div>
-  <div class="cb-chips" id="cb-chips"></div>
-
-  <div class="cb-input-row">
-    <textarea id="cb-input" rows="1" placeholder="Ask about Oman tours, tips, destinations…" onkeydown="cbKey(event)" oninput="cbResize(this)" maxlength="500"></textarea>
-    <button id="cb-send" onclick="cbSend()" aria-label="Send">
-      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-    </button>
+<!-- CATEGORY TABS (Airbnb-style) -->
+<div style="background:#fff;border-bottom:1px solid var(--border);padding:16px 0">
+  <div class="container">
+    <div class="category-tabs">
+      <div class="cat-tab" onclick="window.location.href='/search.html'" data-cat="">
+        <span class="cat-icon">🌍</span>
+        <span data-i18n="cat_all">All</span>
+      </div>
+      <div class="cat-tab" onclick="window.location.href='/search.html?specialisation=Historical'" data-cat="Historical">
+        <span class="cat-icon">🏛️</span>
+        <span data-i18n="cat_historical">Historical</span>
+      </div>
+      <div class="cat-tab" onclick="window.location.href='/search.html?specialisation=Desert'" data-cat="Desert">
+        <span class="cat-icon">🐪</span>
+        <span data-i18n="cat_desert">Desert Safari</span>
+      </div>
+      <div class="cat-tab" onclick="window.location.href='/search.html?specialisation=Cultural'" data-cat="Cultural">
+        <span class="cat-icon">🎭</span>
+        <span data-i18n="cat_cultural">Cultural</span>
+      </div>
+      <div class="cat-tab" onclick="window.location.href='/search.html?specialisation=Nature'" data-cat="Nature">
+        <span class="cat-icon">🌿</span>
+        <span data-i18n="cat_nature">Nature</span>
+      </div>
+      <div class="cat-tab" onclick="window.location.href='/search.html?specialisation=Marine'" data-cat="Marine">
+        <span class="cat-icon">🤿</span>
+        <span data-i18n="cat_marine">Marine</span>
+      </div>
+      <div class="cat-tab" onclick="window.location.href='/search.html?specialisation=Adventure'" data-cat="Adventure">
+        <span class="cat-icon">🧗</span>
+        <span data-i18n="cat_adventure">Adventure</span>
+      </div>
+    </div>
   </div>
-  <div class="cb-footer">Powered by OpenAI GPT-4o mini · OmanExplorer</div>
 </div>
 
+<!-- FEATURED GUIDES -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div><h2 class="section-title" data-i18n="sec_top">Top-Rated Guides</h2></div>
+      <a href="/search.html" class="btn-outline-teal btn btn-sm" data-i18n="sec_view_all">View All →</a>
+    </div>
+    <div class="row g-4" id="featuredGuides">
+      <div class="col-12 text-center py-5 text-muted" data-i18n="loading_guides">Loading guides...</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="py-5" style="background:var(--teal-light)">
+  <div class="container">
+    <h2 class="section-title text-center mb-5" data-i18n="sec_how">How It Works</h2>
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="step-icon">🔍</div>
+        <h5 class="fw-700" data-i18n="step1_title">1. Search & Filter</h5>
+        <p class="text-muted" data-i18n="step1_desc">Browse verified guides by destination, language, and date.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="step-icon">📅</div>
+        <h5 class="fw-700" data-i18n="step2_title">2. Book Instantly</h5>
+        <p class="text-muted" data-i18n="step2_desc">Submit a booking request for your chosen guide.</p>
+      </div>
+      <div class="col-md-4">
+        <div class="step-icon">🌿</div>
+        <h5 class="fw-700" data-i18n="step3_title">3. Explore Oman</h5>
+        <p class="text-muted" data-i18n="step3_desc">Enjoy an authentic, expertly guided experience.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS SECTION (TourHQ) -->
+<section class="py-5" style="background:var(--white)">
+  <div class="container">
+    <h2 class="section-title text-center mb-2" data-i18n="benefits_title">Why Choose Guideon?</h2>
+    <p class="text-center text-muted mb-5" style="max-width:560px;margin:0 auto 2rem">Connect with certified, Ministry-licensed guides for authentic experiences across Oman.</p>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="benefit-card">
+          <div class="benefit-icon mb-3">🌐</div>
+          <h5 class="fw-700 mb-2" data-i18n="benefit1_title">Largest Guide Network in Oman</h5>
+          <p class="text-muted mb-0" data-i18n="benefit1_desc">Connect with certified, Ministry-licensed guides across all major Oman destinations.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="benefit-card">
+          <div class="benefit-icon mb-3">🗺️</div>
+          <h5 class="fw-700 mb-2" data-i18n="benefit2_title">Fully Customizable Itineraries</h5>
+          <p class="text-muted mb-0" data-i18n="benefit2_desc">Every tour is tailored to your group size, language, budget, and interests.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="benefit-card">
+          <div class="benefit-icon mb-3">🤝</div>
+          <h5 class="fw-700 mb-2" data-i18n="benefit3_title">Book Directly with Local Guides</h5>
+          <p class="text-muted mb-0" data-i18n="benefit3_desc">No middlemen. Support local communities and get authentic Omani experiences.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT GUIDEON -->
+<section class="about-section py-5">
+  <div class="container">
+    <div class="row align-items-center g-5">
+
+      <!-- Left: Logo + Description -->
+      <div class="col-lg-5 text-center text-lg-start">
+        <img src="/logo.png" alt="Guideon" class="about-logo mb-4">
+        <h2 class="fw-800 mb-3" data-i18n="about_title">About Guideon</h2>
+        <p class="about-desc mb-3" data-i18n="about_p1">Guideon is Oman's leading platform connecting travellers with Ministry-licensed local guides. Founded in 2025, we make authentic Omani experiences accessible to everyone — from ancient forts to desert dunes.</p>
+        <p class="about-desc mb-4" data-i18n="about_p2">Every guide on our platform is personally verified, licensed by the Ministry of Heritage & Tourism, and committed to delivering genuine, memorable journeys across the Sultanate.</p>
+        <div class="d-flex gap-3 flex-wrap justify-content-center justify-content-lg-start">
+          <a href="/search.html" class="btn-teal btn px-4 py-2 fw-700" data-i18n="nav_find">Find a Guide</a>
+          <a href="/register.html" class="btn-outline-teal btn px-4 py-2 fw-700" data-i18n="about_join">Join the Community</a>
+        </div>
+      </div>
+
+      <!-- Right: Values Grid -->
+      <div class="col-lg-7">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="about-value-card">
+              <div class="about-value-icon">🎯</div>
+              <h6 class="fw-700 mb-1" data-i18n="about_v1_title">Our Mission</h6>
+              <p class="small text-muted mb-0" data-i18n="about_v1_desc">To make authentic Omani travel experiences accessible to every visitor through verified, professional local guides.</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="about-value-card">
+              <div class="about-value-icon">🌟</div>
+              <h6 class="fw-700 mb-1" data-i18n="about_v2_title">Our Vision</h6>
+              <p class="small text-muted mb-0" data-i18n="about_v2_desc">To become the most trusted travel platform in Oman, celebrating the country's rich heritage and natural beauty.</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="about-value-card">
+              <div class="about-value-icon">🤝</div>
+              <h6 class="fw-700 mb-1" data-i18n="about_v3_title">Our Values</h6>
+              <p class="small text-muted mb-0" data-i18n="about_v3_desc">Authenticity, transparency, and community. We connect people, not just places — supporting local guides and their families.</p>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="about-value-card">
+              <div class="about-value-icon">🏛️</div>
+              <h6 class="fw-700 mb-1" data-i18n="about_v4_title">Ministry Certified</h6>
+              <p class="small text-muted mb-0" data-i18n="about_v4_desc">Every guide holds an official Ministry of Heritage & Tourism licence — your guarantee of quality and professionalism.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SPOTLIGHT DESTINATIONS (TourHQ-style) -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="section-title mb-4" data-i18n="sec_dests">Popular Destinations</h2>
+    <div class="row g-3">
+      <div class="col-6 col-md-4">
+        <div class="dest-spotlight dest-colors" onclick="goSearch('Muscat')" style="cursor:pointer">
+          <div class="dest-bg">🕌</div>
+          <div class="dest-overlay"></div>
+          <div class="dest-info">
+            <div class="fw-800 fs-5">Muscat</div>
+            <div class="small opacity-75">Capital City</div>
+            <div class="small mt-1"><span data-i18n="explore_tours">Explore Tours →</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="dest-spotlight dest-colors-2" onclick="goSearch('Nizwa')" style="cursor:pointer">
+          <div class="dest-bg">🏰</div>
+          <div class="dest-overlay"></div>
+          <div class="dest-info">
+            <div class="fw-800 fs-5">Nizwa</div>
+            <div class="small opacity-75">Ancient Fort City</div>
+            <div class="small mt-1"><span data-i18n="explore_tours">Explore Tours →</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="dest-spotlight dest-colors-3" onclick="goSearch('Salalah')" style="cursor:pointer">
+          <div class="dest-bg">🌳</div>
+          <div class="dest-overlay"></div>
+          <div class="dest-info">
+            <div class="fw-800 fs-5">Salalah</div>
+            <div class="small opacity-75">Frankincense Land</div>
+            <div class="small mt-1"><span data-i18n="explore_tours">Explore Tours →</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="dest-spotlight dest-colors-4" onclick="goSearch('Musandam')" style="cursor:pointer">
+          <div class="dest-bg">⛵</div>
+          <div class="dest-overlay"></div>
+          <div class="dest-info">
+            <div class="fw-800 fs-5">Musandam</div>
+            <div class="small opacity-75">Fjords & Dhows</div>
+            <div class="small mt-1"><span data-i18n="explore_tours">Explore Tours →</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="dest-spotlight dest-colors-5" onclick="goSearch('Sur')" style="cursor:pointer">
+          <div class="dest-bg">🐢</div>
+          <div class="dest-overlay"></div>
+          <div class="dest-info">
+            <div class="fw-800 fs-5">Sur</div>
+            <div class="small opacity-75">Turtles & Heritage</div>
+            <div class="small mt-1"><span data-i18n="explore_tours">Explore Tours →</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-4">
+        <div class="dest-spotlight dest-colors-6" onclick="goSearch('Dhofar')" style="cursor:pointer">
+          <div class="dest-bg">🏔️</div>
+          <div class="dest-overlay"></div>
+          <div class="dest-info">
+            <div class="fw-800 fs-5">Dhofar</div>
+            <div class="small opacity-75">Nature & Khareef</div>
+            <div class="small mt-1"><span data-i18n="explore_tours">Explore Tours →</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR TOURS (TourHQ-style) -->
+<section class="py-5" style="background:var(--teal-light)">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <h2 class="section-title mb-0" data-i18n="popular_tours">Popular Tours</h2>
+      <a href="/search.html" class="btn-outline-teal btn btn-sm" data-i18n="sec_view_all">View All →</a>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="tour-card">
+          <div class="tour-card-header" style="background:linear-gradient(135deg,#1e3a5f,#2d6a8a)">
+            <span class="tour-type-badge">🏰 Historical</span>
+            <span class="tour-duration">Full Day</span>
+            <div style="font-size:3.5rem;opacity:0.4;position:absolute;bottom:10px;right:10px">🕌</div>
+          </div>
+          <div class="p-3">
+            <h6 class="fw-700 mb-1">Muscat Heritage Trail</h6>
+            <div class="small text-muted mb-2">Mutrah Souq · Grand Mosque · Royal Opera</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small text-muted"><span data-i18n="from_price">From</span> <strong class="text-teal">25 OMR</strong></span>
+              <button class="btn btn-sm btn-outline-secondary" onclick="location.href='/search.html?specialisation=Historical&destination=Muscat'" data-i18n="view_profile">View →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="tour-card">
+          <div class="tour-card-header" style="background:linear-gradient(135deg,#c8963e,#a0722a)">
+            <span class="tour-type-badge">🐪 Desert</span>
+            <span class="tour-duration">2 Days</span>
+            <div style="font-size:3.5rem;opacity:0.4;position:absolute;bottom:10px;right:10px">🏜️</div>
+          </div>
+          <div class="p-3">
+            <h6 class="fw-700 mb-1">Wahiba Sands Overnight</h6>
+            <div class="small text-muted mb-2">Dune Bashing · Bedouin Camp · Stargazing</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small text-muted"><span data-i18n="from_price">From</span> <strong class="text-teal">40 OMR</strong></span>
+              <button class="btn btn-sm btn-outline-secondary" onclick="location.href='/search.html?specialisation=Desert'" data-i18n="view_profile">View →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="tour-card">
+          <div class="tour-card-header" style="background:linear-gradient(135deg,#1b5e3e,#2d8a5a)">
+            <span class="tour-type-badge">🌊 Marine</span>
+            <span class="tour-duration">Half Day</span>
+            <div style="font-size:3.5rem;opacity:0.4;position:absolute;bottom:10px;right:10px">🐬</div>
+          </div>
+          <div class="p-3">
+            <h6 class="fw-700 mb-1">Musandam Dhow Cruise</h6>
+            <div class="small text-muted mb-2">Fjord Sailing · Snorkelling · Dolphin Watch</div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="small text-muted"><span data-i18n="from_price">From</span> <strong class="text-teal">35 OMR</strong></span>
+              <button class="btn btn-sm btn-outline-secondary" onclick="location.href='/search.html?specialisation=Marine&destination=Musandam'" data-i18n="view_profile">View →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ONLINE EXPERIENCES (TourHQ-style) -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="section-title mb-1" data-i18n="online_exp">Online Experiences</h2>
+      <p class="text-muted" data-i18n="online_exp_sub">Explore Oman virtually with our certified guides.</p>
+    </div>
+    <div class="row g-3 justify-content-center">
+      <div class="col-6 col-md-3">
+        <div class="online-exp-card" onclick="location.href='/search.html?specialisation=Cultural'">
+          <div style="font-size:2.8rem;margin-bottom:12px">🎭</div>
+          <div class="fw-700" data-i18n="cat_cultural">Cultural</div>
+          <div class="small text-muted">Virtual Tour</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="online-exp-card" onclick="location.href='/search.html?specialisation=Historical'">
+          <div style="font-size:2.8rem;margin-bottom:12px">🏛️</div>
+          <div class="fw-700" data-i18n="cat_historical">Historical</div>
+          <div class="small text-muted">Virtual Tour</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="online-exp-card" onclick="location.href='/search.html?specialisation=Nature'">
+          <div style="font-size:2.8rem;margin-bottom:12px">🌿</div>
+          <div class="fw-700" data-i18n="cat_nature">Nature</div>
+          <div class="small text-muted">Virtual Tour</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="online-exp-card" onclick="location.href='/search.html?specialisation=Adventure'">
+          <div style="font-size:2.8rem;margin-bottom:12px">🧗</div>
+          <div class="fw-700" data-i18n="cat_adventure">Adventure</div>
+          <div class="small text-muted">Virtual Tour</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG / TRAVEL TIPS (TourHQ-style) -->
+<section class="py-5" style="background:var(--white)">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <h2 class="section-title mb-0" data-i18n="blog_title">Oman Travel Tips & Stories</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="blog-card">
+          <div class="blog-card-img" style="background:linear-gradient(135deg,#1e3a5f,#2d6a8a)">
+            <span style="font-size:3rem">🕌</span>
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-date">May 2025</div>
+            <div class="blog-card-title">Top 10 Things to Do in Muscat</div>
+            <div class="blog-card-excerpt">From the Grand Mosque to Mutrah Souq, discover the best of Oman's capital with a certified local guide.</div>
+            <a href="/search.html?destination=Muscat" class="blog-read-more" data-i18n="blog_read">Read More →</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="blog-card">
+          <div class="blog-card-img" style="background:linear-gradient(135deg,#c8963e,#a0722a)">
+            <span style="font-size:3rem">🐪</span>
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-date">April 2025</div>
+            <div class="blog-card-title">Desert Safari: A Wahiba Sands Guide</div>
+            <div class="blog-card-excerpt">Everything you need to know before heading into the stunning red dunes of Wahiba Sands with a local guide.</div>
+            <a href="/search.html?specialisation=Desert" class="blog-read-more" data-i18n="blog_read">Read More →</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="blog-card">
+          <div class="blog-card-img" style="background:linear-gradient(135deg,#1b5e3e,#2d8a5a)">
+            <span style="font-size:3rem">🌊</span>
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-date">March 2025</div>
+            <div class="blog-card-title">Musandam: Oman's Hidden Fjords</div>
+            <div class="blog-card-excerpt">Journey through the dramatic fjords of Musandam on a traditional dhow — a once-in-a-lifetime experience.</div>
+            <a href="/search.html?destination=Musandam" class="blog-read-more" data-i18n="blog_read">Read More →</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="blog-card">
+          <div class="blog-card-img" style="background:linear-gradient(135deg,#5b2d8e,#8a4abf)">
+            <span style="font-size:3rem">🌳</span>
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-date">February 2025</div>
+            <div class="blog-card-title">Salalah Khareef Season: When to Visit</div>
+            <div class="blog-card-excerpt">Learn the best time to visit Salalah's lush green season and how to book the right guide for your group.</div>
+            <a href="/search.html?destination=Salalah" class="blog-read-more" data-i18n="blog_read">Read More →</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="blog-card">
+          <div class="blog-card-img" style="background:linear-gradient(135deg,#8a2d3e,#bf4a60)">
+            <span style="font-size:3rem">🏰</span>
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-date">January 2025</div>
+            <div class="blog-card-title">Nizwa Fort & the Goat Market</div>
+            <div class="blog-card-excerpt">Step back in time at Nizwa's ancient fort and Friday goat market — a cultural experience unlike any other.</div>
+            <a href="/search.html?destination=Nizwa" class="blog-read-more" data-i18n="blog_read">Read More →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AS SEEN ON (TourHQ media strip) -->
+<div class="seen-on-strip">
+  <div class="container text-center">
+    <div class="small fw-700 text-muted mb-3 text-uppercase letter-spacing-1" data-i18n="seen_on">As Featured In</div>
+    <div class="seen-on-logos justify-content-center">
+      <div class="seen-on-logo">🏛️ Ministry of Tourism</div>
+      <div class="seen-on-logo">📰 Oman Observer</div>
+      <div class="seen-on-logo">📡 Oman TV</div>
+      <div class="seen-on-logo">🏆 MOT Oman</div>
+      <div class="seen-on-logo">🌍 Times of Oman</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP BANNER (TourHQ-style) -->
+<section class="app-banner py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-7 text-white mb-4 mb-md-0">
+        <h2 class="fw-800 mb-2" data-i18n="app_title">Plan Your Trip on the Go</h2>
+        <p class="opacity-75 mb-4" data-i18n="app_sub">Access your bookings, chat with guides, and explore Oman — all from your phone.</p>
+        <div class="d-flex gap-3 flex-wrap">
+          <button class="app-store-btn">
+            <span style="font-size:1.5rem">🍎</span>
+            <div><div class="small opacity-75">Download on the</div><div class="fw-700">App Store <span class="badge bg-warning text-dark ms-1 small" data-i18n="app_soon">Coming Soon</span></div></div>
+          </button>
+          <button class="app-store-btn">
+            <span style="font-size:1.5rem">▶️</span>
+            <div><div class="small opacity-75">Get it on</div><div class="fw-700">Google Play <span class="badge bg-warning text-dark ms-1 small" data-i18n="app_soon">Coming Soon</span></div></div>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-5 text-center">
+        <div style="font-size:8rem;opacity:0.25">📱</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div style="font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:10px"><img src="/logo.png" alt="Guideon" height="52"></div>
+        <p class="small opacity-75" data-i18n="footer_desc">Connecting tourists with certified guides across Oman.</p>
+      </div>
+      <div class="col-md-2">
+        <h6 data-i18n="footer_platform">Platform</h6>
+        <a href="/search.html" data-i18n="nav_find">Find a Guide</a>
+        <a href="/register.html" data-i18n="nav_signup">Sign Up</a>
+        <a href="/login.html" data-i18n="nav_login">Log In</a>
+      </div>
+      <div class="col-md-3">
+        <h6 data-i18n="footer_dests">Destinations</h6>
+        <a href="/search.html?destination=Muscat">Muscat</a>
+        <a href="/search.html?destination=Nizwa">Nizwa</a>
+        <a href="/search.html?destination=Salalah">Salalah</a>
+        <a href="/search.html?destination=Musandam">Musandam</a>
+      </div>
+      <div class="col-md-3">
+        <h6 data-i18n="footer_demo">Demo Accounts</h6>
+        <div class="small opacity-75">
+          <div class="mb-1"><strong>Tourist:</strong> tourist@example.com</div>
+          <div class="mb-1"><strong>Guide:</strong> mohammed@Guideon.om</div>
+          <div class="mb-1"><strong>Admin:</strong> admin@Guideon.om</div>
+          <div class="opacity-50">Password: Password123! / Admin123!</div>
+        </div>
+      </div>
+    </div>
+    <hr style="border-color:rgba(255,255,255,0.1);margin:24px 0 16px">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <div class="small opacity-50 mb-2" data-i18n="payment_accept">Secure Payment Methods</div>
+        <div class="payment-icons">
+          <div class="payment-icon">💳 Visa</div>
+          <div class="payment-icon">💳 MC</div>
+          <div class="payment-icon">🅿️ PayPal</div>
+          <div class="payment-icon">🍎 Pay</div>
+          <div class="payment-icon">🌐 Bank</div>
+        </div>
+      </div>
+      <div class="trustpilot-badge">
+        <div style="font-size:1.1rem;font-weight:800;color:#fff">★★★★★</div>
+        <div style="font-size:0.7rem;opacity:0.6;color:#fff">Excellent · 4.8/5</div>
+      </div>
+    </div>
+    <div class="footer-bottom" data-i18n="footer_bottom">Guideon © 2025. All rights reserved.</div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
 <script>
-// ── OmanBot state ──────────────────────────────────────────────────────────
-const CB_KEY     = 'omanbot_v1';
-let cbMsgs       = [];
-let cbOpen       = false;
-let cbBusy       = false;
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (type ? ' '+type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
 
-const CB_CHIPS = [
-  '🏜️ Best desert tour?',
-  '🗓️ Best time to visit?',
-  '🎒 What to pack?',
-  '🌊 Coastal adventures?',
-  '💰 Budget trip tips?',
-  '🕌 Cultural highlights?',
-];
+async function api(method, path, body) {
+  const r = await fetch('/api' + path, {
+    method, credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.message || 'Error');
+  return d;
+}
 
-const CB_WELCOME = "مرحباً! 👋 I'm **OmanBot**, your AI guide to the Sultanate of Oman!\n\nAsk me anything — tours, destinations, travel tips, or help booking. I'm here to make your Oman adventure unforgettable. 🌴";
+function stars(r) {
+  let s = '';
+  for (let i=1; i<=5; i++) s += `<span class="${i<=r?'star-full':'star-empty'}">★</span>`;
+  return s;
+}
+function initials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 
-// ── Boot ───────────────────────────────────────────────────────────────────
-(function cbBoot() {
-  const saved = sessionStorage.getItem(CB_KEY);
-  if (saved) {
-    try { cbMsgs = JSON.parse(saved); cbRenderAll(); return; } catch {}
+function goSearch(dest) { window.location.href = '/search.html?destination=' + encodeURIComponent(dest); }
+
+function doSearch() {
+  const dest = document.getElementById('sDestination').value;
+  const lang = document.getElementById('sLanguage').value;
+  const date = document.getElementById('sDate').value;
+  const p = new URLSearchParams();
+  if (dest) p.set('destination', dest);
+  if (lang) p.set('language', lang);
+  if (date) p.set('date', date);
+  window.location.href = '/search.html?' + p.toString();
+}
+
+/* ── CURRENCY (TourHQ) ── */
+const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
+function getCurrency() { return localStorage.getItem('og_currency') || 'OMR'; }
+function setCurrency(cur) { localStorage.setItem('og_currency', cur); loadFeatured(); }
+function convertPrice(omr) { const c = getCurrency(); return (omr * RATES[c]).toFixed(2) + ' ' + c; }
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('currencySelect');
+  if (sel) sel.value = getCurrency();
+});
+
+function getWishlist() { return JSON.parse(localStorage.getItem('og_wishlist') || '[]'); }
+function saveWishlist(list) { localStorage.setItem('og_wishlist', JSON.stringify(list)); }
+function isWishlisted(id) { return getWishlist().includes(id); }
+function toggleWishlist(id) {
+  let list = getWishlist();
+  if (list.includes(id)) { list = list.filter(x => x !== id); toast(I18N.t('wishlist_removed')); }
+  else { list.push(id); toast(I18N.t('wishlist_saved'), 'success'); }
+  saveWishlist(list);
+  document.querySelectorAll(`.wishlist-btn[data-id="${id}"]`).forEach(btn => {
+    btn.classList.toggle('saved', list.includes(id));
+    btn.querySelector('.heart-icon').textContent = list.includes(id) ? '♥' : '♡';
+  });
+}
+
+function getBadge(g) {
+  if (g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2) return `<div class="super-guide-medal">${I18N.t('super_guide')}</div>`;
+  if (g.totalReviews >= 3 && g.rating >= 4.8) return `<div class="guest-fav-badge">${I18N.t('guest_fav')}</div>`;
+  if (g.rating >= 4.5) return `<div class="top-rated-badge">${I18N.t('top_rated')}</div>`;
+  if (!g.totalReviews || g.totalReviews === 0) return `<div class="new-guide-badge">${I18N.t('new_guide')}</div>`;
+  return '';
+}
+
+async function loadFeatured() {
+  try {
+    const data = await api('GET', '/guides/top');
+    const guides = data.guides || [];
+    const el = document.getElementById('featuredGuides');
+    if (!guides.length) {
+      el.innerHTML = `<div class="col-12 text-center text-muted py-4">${I18N.t('no_guides')}</div>`;
+      return;
+    }
+    el.innerHTML = guides.map(g => {
+      const wishlisted = isWishlisted(g.id);
+      return `
+      <div class="col-md-4">
+        <div class="guide-card guide-card-wrap h-100">
+          <div class="guide-card-header">
+            ${getBadge(g)}
+            <button class="wishlist-btn ${wishlisted ? 'saved' : ''}" data-id="${g.id}" onclick="toggleWishlist('${g.id}')" title="${I18N.t('saved_guides')}">
+              <span class="heart-icon">${wishlisted ? '♥' : '♡'}</span>
+            </button>
+            <div class="big-avatar">${initials(g.fullName)}</div>
+          </div>
+          <div class="p-3">
+            <div class="d-flex align-items-start justify-content-between mb-1">
+              <div>
+                <h6 class="mb-0 fw-700">${g.fullName}</h6>
+                ${g.isVerified ? `<span class="verified-badge">✓ ${I18N.t('status_verified')}</span>` : ''}
+              </div>
+              <div class="text-end">
+                <div class="fw-800" style="color:var(--teal)">${convertPrice(g.pricePerDay)}</div>
+                <div class="text-muted" style="font-size:0.75rem" data-i18n="per_day">/day</div>
+              </div>
+            </div>
+            <div class="rating small mb-1">${stars(Math.round(g.rating))} <span class="text-muted">${g.rating} · ${I18N.t('reviews_count', g.totalReviews)}</span></div>
+            <div class="mb-2">${g.languages.map(l=>`<span class="lang-badge me-1">${l}</span>`).join('')}</div>
+            <div class="mb-2 small text-muted">📍 ${g.destinations.join(' · ')}</div>
+            <div class="mb-3">${g.specialisations.slice(0,2).map(s=>`<span class="spec-badge me-1">${s}</span>`).join('')}</div>
+            <button class="btn-view btn btn-sm w-100" onclick="location.href='/guide-profile.html?id=${g.id}'">${I18N.t('view_profile')}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch {
+    document.getElementById('featuredGuides').innerHTML = '<div class="col-12 text-center text-muted">Could not load guides.</div>';
   }
-  cbAppendBot(CB_WELCOME);
-  cbShowChips();
-  if (!cbOpen) cbShowBadge();
+}
+
+async function checkSession() {
+  try {
+    const data = await api('GET', '/auth/me');
+    const u = data.user;
+    document.getElementById('navAuth').classList.add('d-none');
+    document.getElementById('navUser').classList.remove('d-none');
+    document.getElementById('navName').textContent = u.fullName.split(' ')[0];
+    const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html' };
+    document.getElementById('navDashBtn').href = dashMap[u.userType] || '/';
+  } catch {}
+}
+
+async function doLogout() {
+  try { await api('POST', '/auth/logout'); } catch {}
+  window.location.href = '/';
+}
+
+window.onLangChange = () => loadFeatured();
+
+/* ── DARK MODE ── */
+function toggleDark() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('og_dark', isDark ? '1' : '0');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+}
+(function initDark() {
+  const saved = localStorage.getItem('og_dark');
+  if (saved === '1') {
+    document.body.classList.add('dark-mode');
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = '☀️';
+  }
 })();
 
-// ── Toggle ─────────────────────────────────────────────────────────────────
-function cbToggle() {
-  cbOpen = !cbOpen;
-  document.getElementById('chat-box').classList.toggle('open', cbOpen);
-  document.getElementById('fab-icon-chat').style.display = cbOpen ? 'none'  : 'block';
-  document.getElementById('fab-icon-x').style.display    = cbOpen ? 'block' : 'none';
-  if (cbOpen) {
-    cbHideBadge();
-    setTimeout(() => { cbScrollEnd(false); document.getElementById('cb-input').focus(); }, 280);
-  }
-}
-function cbShowBadge() { document.getElementById('chat-fab').classList.add('has-badge'); }
-function cbHideBadge() { document.getElementById('chat-fab').classList.remove('has-badge'); }
-
-// ── Render ─────────────────────────────────────────────────────────────────
-function cbRenderAll() {
-  const box = document.getElementById('cb-msgs');
-  box.innerHTML = '';
-  cbMsgs.forEach(m => {
-    if (m.role === 'assistant') cbRenderBot(m.content, false);
-    else if (m.role === 'user') cbRenderUser(m.content, false);
-  });
-  if (cbMsgs.length <= 1) cbShowChips();
-  cbScrollEnd(false);
-}
-
-function cbRenderUser(text, anim = true) {
-  const el = document.createElement('div');
-  el.className = 'cb-msg user';
-  el.innerHTML = `
-    <div>
-      <div class="cb-bubble">${cbEsc(text)}</div>
-      <div class="cb-time">${cbTime()}</div>
-    </div>
-    <div class="cb-msg-av">👤</div>`;
-  document.getElementById('cb-msgs').appendChild(el);
-}
-
-function cbRenderBot(text, anim = true) {
-  const el = document.createElement('div');
-  el.className = 'cb-msg bot';
-  el.innerHTML = `
-    <div class="cb-msg-av">🌴</div>
-    <div>
-      <div class="cb-bubble">${cbFmt(text)}</div>
-      <div class="cb-time">OmanBot · ${cbTime()}</div>
-    </div>`;
-  document.getElementById('cb-msgs').appendChild(el);
-}
-
-function cbAppendBot(text) {
-  cbMsgs.push({ role: 'assistant', content: text });
-  cbSave();
-  cbRenderBot(text);
-  cbScrollEnd();
-  if (!cbOpen) cbShowBadge();
-}
-
-function cbShowChips() {
-  const el = document.getElementById('cb-chips');
-  el.innerHTML = '';
-  CB_CHIPS.forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'cb-chip';
-    btn.textContent = c;
-    btn.onclick = () => { el.innerHTML = ''; document.getElementById('cb-input').value = c; cbSend(); };
-    el.appendChild(btn);
-  });
-}
-
-// ── Typing indicator ───────────────────────────────────────────────────────
-function cbShowTyping() {
-  const el = document.createElement('div');
-  el.className = 'cb-msg bot'; el.id = 'cb-typing';
-  el.innerHTML = `<div class="cb-msg-av">🌴</div><div class="cb-typing"><div class="cb-tdot"></div><div class="cb-tdot"></div><div class="cb-tdot"></div></div>`;
-  document.getElementById('cb-msgs').appendChild(el);
-  cbScrollEnd();
-}
-function cbHideTyping() { const e = document.getElementById('cb-typing'); if (e) e.remove(); }
-
-// ── Send ───────────────────────────────────────────────────────────────────
-async function cbSend() {
-  const input = document.getElementById('cb-input');
-  const text  = input.value.trim();
-  if (!text || cbBusy) return;
-
-  input.value = ''; cbResize(input);
-  document.getElementById('cb-chips').innerHTML = '';
-  cbSetBusy(true);
-
-  cbMsgs.push({ role: 'user', content: text });
-  cbSave();
-  cbRenderUser(text);
-  cbScrollEnd();
-  cbShowTyping();
-
-  try {
-    const res  = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: cbMsgs.slice(-14) }),
-    });
-    const data = await res.json();
-    cbHideTyping();
-
-    if (!res.ok) throw new Error(data.message || 'Error');
-    cbAppendBot(data.data.reply);
-  } catch (err) {
-    cbHideTyping();
-    cbAppendBot(
-      err.message.toLowerCase().includes('limit')
-        ? "⚠️ You've reached the hourly limit (20 messages). Please try again later!"
-        : "😔 Oops! I couldn't connect right now. Please check your connection and try again."
-    );
-  } finally {
-    cbSetBusy(false);
-  }
-}
-
-// ── Clear ──────────────────────────────────────────────────────────────────
-function cbClear() {
-  cbMsgs = [];
-  sessionStorage.removeItem(CB_KEY);
-  document.getElementById('cb-msgs').innerHTML  = '';
-  document.getElementById('cb-chips').innerHTML = '';
-  cbAppendBot(CB_WELCOME);
-  cbShowChips();
-}
-
-// ── Utils ──────────────────────────────────────────────────────────────────
-function cbSetBusy(on) {
-  cbBusy = on;
-  document.getElementById('cb-send').disabled  = on;
-  document.getElementById('cb-input').disabled = on;
-}
-function cbKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cbSend(); } }
-function cbResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 90) + 'px'; }
-function cbScrollEnd(smooth = true) {
-  const el = document.getElementById('cb-msgs');
-  setTimeout(() => el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'instant' }), 50);
-}
-function cbSave() { sessionStorage.setItem(CB_KEY, JSON.stringify(cbMsgs)); }
-function cbTime() { return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }); }
-function cbEsc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
-function cbFmt(s) {
-  return s
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,'<em>$1</em>')
-    .replace(/`([^`]+)`/g,'<code style="background:#f0f0f0;padding:1px 4px;border-radius:3px;font-size:11px">$1</code>')
-    .replace(/^#{1,3}\s(.+)$/gm,'<strong>$1</strong>')
-    .replace(/\n/g,'<br>');
-}
+checkSession();
+loadFeatured();
 </script>
+<script src="/js/pwa.js?v=10"></script>
 </body>
 </html>

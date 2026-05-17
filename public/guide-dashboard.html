@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>Guide Dashboard — Guideon</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
+</head>
+<body>
+
+<nav class="navbar navbar-expand navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="navbar-controls ms-auto">
+      <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+      <span class="text-white opacity-75 small" id="navName"></span>
+      <a href="/profile.html" class="btn btn-sm btn-outline-light" title="Edit Profile">👤 Edit Profile</a>
+      <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
+    </div>
+  </div>
+</nav>
+
+<div class="dash-header">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff" id="guideAvatar">?</div>
+      <div>
+        <h4 class="fw-800 mb-0" id="guideName">—</h4>
+        <div id="guideVerified" class="small opacity-75"></div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statTotal">—</div><div class="lbl" data-i18n="total_bk2">Total Bookings</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statPending">—</div><div class="lbl" data-i18n="pending_req">Pending Requests</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statRevenue">—</div><div class="lbl" data-i18n="total_earn">Total Earnings (OMR)</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statRating">—</div><div class="lbl" data-i18n="avg_rating">Average Rating</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <!-- LEFT: Bookings -->
+    <div class="col-lg-8">
+      <div class="mb-4">
+        <h5 class="fw-700 mb-3" data-i18n="pending_section">⏳ Pending Booking Requests</h5>
+        <div id="pendingList">
+          <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h5 class="fw-700 mb-3" data-i18n="confirmed_section">✅ Upcoming Confirmed Bookings</h5>
+        <div id="confirmedList">
+          <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h5 class="fw-700 mb-3" data-i18n="past_section">📋 Past Bookings</h5>
+        <div id="pastList">
+          <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Trip Requests (TourHQ feature) -->
+      <div>
+        <h5 class="fw-700 mb-3" data-i18n="matching_trips">✈️ Trip Requests Matching Your Area</h5>
+        <div id="tripRequestsList">
+          <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Availability -->
+    <div class="col-lg-4">
+      <div class="info-card sticky-top" style="top:80px">
+        <h5 class="fw-700 mb-1" data-i18n="manage_avail">📅 Manage Availability</h5>
+        <p class="text-muted small mb-3" data-i18n="avail_note">Click dates to toggle availability for the next 60 days.</p>
+        <div class="cal-grid" id="calGrid"></div>
+        <button class="btn-teal btn w-100 mt-3" onclick="saveAvailability()" data-i18n="save_avail">Save Availability</button>
+        <div class="small text-muted mt-2 text-center" id="calStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
+<script>
+let GUIDE = null;
+let ALL_BOOKINGS = [];
+let AVAILABILITY = [];
+
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function initials(n) {
+  return (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function formatDate(d) {
+  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+  return new Date(d + 'T00:00:00').toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  window.location.href = '/';
+}
+
+async function checkAuth() {
+  try {
+    const r = await fetch('/api/auth/me', { credentials: 'include' });
+    const d = await r.json();
+    if (!d.success || d.user.userType !== 'guide') {
+      window.location.href = '/login.html'; return;
+    }
+    GUIDE = d.user;
+    AVAILABILITY = [...(GUIDE.availability || [])];
+    renderGuideHeader();
+    buildCalendar();
+    loadBookings();
+    loadTripRequests();
+  } catch { window.location.href = '/login.html'; }
+}
+
+function renderGuideHeader() {
+  document.getElementById('navName').textContent = GUIDE.fullName.split(' ')[0];
+  document.getElementById('guideAvatar').textContent = initials(GUIDE.fullName);
+  document.getElementById('guideName').textContent = GUIDE.fullName;
+  document.getElementById('guideVerified').textContent = GUIDE.isVerified
+    ? I18N.t('verified_lbl') + ' ' + GUIDE.licenceNumber
+    : I18N.t('pending_lbl');
+}
+
+async function loadBookings() {
+  try {
+    const r = await fetch('/api/bookings/guide', { credentials: 'include' });
+    const d = await r.json();
+    ALL_BOOKINGS = d.bookings || [];
+
+    const today = new Date().toISOString().slice(0, 10);
+    const pending   = ALL_BOOKINGS.filter(b => b.status === 'pending');
+    const confirmed = ALL_BOOKINGS.filter(b => b.status === 'confirmed' && b.tourDate >= today);
+    const past      = ALL_BOOKINGS.filter(b => b.status === 'completed' || (b.status === 'confirmed' && b.tourDate < today) || b.status === 'cancelled');
+
+    document.getElementById('statTotal').textContent = ALL_BOOKINGS.length;
+    document.getElementById('statPending').textContent = pending.length;
+    const revenue = ALL_BOOKINGS.filter(b => b.status !== 'cancelled').reduce((s, b) => s + b.totalAmount, 0);
+    document.getElementById('statRevenue').textContent = revenue.toFixed(0);
+    document.getElementById('statRating').textContent = GUIDE.rating ? GUIDE.rating + ' ★' : I18N.t('na_lbl');
+
+    renderPending(pending);
+    renderConfirmed(confirmed);
+    renderPast(past);
+  } catch { toast('Error loading bookings.', 'error'); }
+}
+
+function bookingCard(b, actions = '') {
+  const durationLabel = b.duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
+  const pLabel = b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl');
+  const statusLabel = I18N.t('status_' + b.status) || b.status;
+  return `
+  <div class="booking-card ${b.status}">
+    <div class="d-flex justify-content-between align-items-start mb-1">
+      <div>
+        <div class="fw-700">👤 ${b.touristName}</div>
+        <div class="small text-muted">${b.touristEmail}</div>
+      </div>
+      <span class="status-badge status-${b.status}">${statusLabel}</span>
+    </div>
+    <div class="small text-muted mb-1">📅 ${formatDate(b.tourDate)} &nbsp;·&nbsp; ${durationLabel} &nbsp;·&nbsp; 📍 ${b.destination} &nbsp;·&nbsp; ${b.participants} ${pLabel}</div>
+    ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${b.specialRequests}"</div>` : ''}
+    <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+      <div class="fw-700" style="color:var(--teal)">${I18N.t('omr_day')} ${b.totalAmount}</div>
+      <div class="d-flex gap-2">${actions}</div>
+    </div>
+  </div>`;
+}
+
+function renderPending(list) {
+  const el = document.getElementById('pendingList');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:20px"><div class="icon">📭</div><p class="text-muted small">${I18N.t('no_pending')}</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(b => bookingCard(b, `
+    <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','confirmed')">${I18N.t('accept_btn')}</button>
+    <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
+  `)).join('');
+}
+
+function renderConfirmed(list) {
+  const el = document.getElementById('confirmedList');
+  if (!list.length) {
+    el.innerHTML = `<div class="text-muted small text-center py-2">${I18N.t('no_confirmed')}</div>`;
+    return;
+  }
+  el.innerHTML = list.map(b => bookingCard(b)).join('');
+}
+
+function renderPast(list) {
+  const el = document.getElementById('pastList');
+  if (!list.length) {
+    el.innerHTML = `<div class="text-muted small text-center py-2">${I18N.t('no_past')}</div>`;
+    return;
+  }
+  el.innerHTML = list.slice(0, 5).map(b => bookingCard(b)).join('');
+}
+
+async function updateStatus(id, status) {
+  const msg = status === 'confirmed' ? I18N.t('accept_confirm') : I18N.t('reject_confirm');
+  if (!confirm(msg)) return;
+  try {
+    const r = await fetch(`/api/bookings/${id}/status`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('status_' + status) + ' ✓', 'success');
+    loadBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function buildCalendar() {
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  const today = new Date();
+  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const isOn = AVAILABILITY.includes(dateStr);
+
+    const el = document.createElement('div');
+    el.className = 'cal-day' + (isOn ? ' on' : '');
+    el.innerHTML = `<span class="cal-date">${d.getDate()}</span><span>${d.toLocaleDateString(locale,{month:'short'})}</span>`;
+    el.addEventListener('click', () => toggleDay(dateStr, el));
+    grid.appendChild(el);
+  }
+}
+
+function toggleDay(dateStr, el) {
+  const idx = AVAILABILITY.indexOf(dateStr);
+  if (idx === -1) { AVAILABILITY.push(dateStr); el.classList.add('on'); }
+  else { AVAILABILITY.splice(idx, 1); el.classList.remove('on'); }
+  document.getElementById('calStatus').textContent = AVAILABILITY.length + (I18N.lang === 'ar' ? ' تاريخ متاح' : ' available date(s) selected');
+}
+
+async function saveAvailability() {
+  try {
+    const r = await fetch('/api/guides/me/availability', {
+      method: 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ availability: AVAILABILITY }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('save_avail') + ' ✓', 'success');
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function loadTripRequests() {
+  try {
+    const r = await fetch('/api/trips/matching', { credentials: 'include' });
+    const d = await r.json();
+    const list = d.requests || [];
+    const el = document.getElementById('tripRequestsList');
+    if (!list.length) {
+      el.innerHTML = `<div class="text-muted small text-center py-2">${I18N.t('no_trips')}</div>`;
+      return;
+    }
+    const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+    el.innerHTML = list.slice(0, 5).map(t => `
+      <div class="trip-request-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <span class="trip-badge me-2">${t.destination}</span>
+            ${t.specialisation ? `<span class="spec-badge">${t.specialisation}</span>` : ''}
+          </div>
+          <span class="open-badge">${I18N.t('trip_status_open')}</span>
+        </div>
+        <div class="small text-muted mb-1">
+          📅 ${new Date(t.startDate+'T00:00:00').toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}
+          ${t.endDate ? ' → ' + new Date(t.endDate+'T00:00:00').toLocaleDateString(locale,{day:'numeric',month:'short'}) : ''}
+          · 👥 ${t.groupSize} ${I18N.t('persons_lbl')}
+          ${t.language ? ` · 🌐 ${t.language}` : ''}
+          ${t.budget ? ` · 💰 ${I18N.t('omr_day')} ${t.budget}` : ''}
+        </div>
+        ${t.notes ? `<div class="small text-muted border-top pt-2 mt-2">${t.notes}</div>` : ''}
+        <div class="border-top pt-2 mt-2">
+          <a href="mailto:${t.touristEmail}" class="btn btn-sm btn-verify">${I18N.t('contact_tourist')}: ${t.touristName}</a>
+        </div>
+      </div>`).join('');
+  } catch {}
+}
+
+window.onLangChange = () => {
+  if (GUIDE) {
+    renderGuideHeader();
+    buildCalendar();
+    loadBookings();
+    loadTripRequests();
+  }
+};
+
+checkAuth();
+</script>
+<style>.btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }</style>
+<script src="/js/pwa.js?v=10"></script>
+</body>
+</html>

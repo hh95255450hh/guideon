@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>My Dashboard — Guideon</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
+</head>
+<body>
+
+<nav class="navbar navbar-expand navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="navbar-controls ms-auto">
+      <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+      <span class="text-white opacity-75 small" id="navName"></span>
+      <a href="/wishlist.html" class="btn btn-sm btn-outline-light" title="Wishlist">❤️</a>
+      <a href="/profile.html" class="btn btn-sm btn-outline-light" title="My Profile">👤</a>
+      <a href="/search.html" class="btn btn-outline-light btn-sm" data-i18n="nav_find">Find a Guide</a>
+      <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
+    </div>
+  </div>
+</nav>
+
+<div class="dash-header">
+  <div class="container">
+    <h2 class="mb-3" data-i18n="tourist_dash">My Dashboard 📋</h2>
+    <div class="row g-3">
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statTotal">—</div><div class="lbl" data-i18n="total_bk">Total Bookings</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statConfirmed">—</div><div class="lbl" data-i18n="confirmed_bk">Confirmed</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statPending">—</div><div class="lbl" data-i18n="pending_bk">Pending</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statCompleted">—</div><div class="lbl" data-i18n="completed_bk">Completed</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="d-flex gap-2 mb-4 flex-wrap" id="filterTabs">
+    <button class="btn btn-sm btn-teal active tab-btn" onclick="filterBookings('all',this)" data-i18n="tab_all">All</button>
+    <button class="btn btn-sm btn-outline-secondary tab-btn" onclick="filterBookings('pending',this)" data-i18n="tab_pending">Pending</button>
+    <button class="btn btn-sm btn-outline-secondary tab-btn" onclick="filterBookings('confirmed',this)" data-i18n="tab_confirmed">Confirmed</button>
+    <button class="btn btn-sm btn-outline-secondary tab-btn" onclick="filterBookings('completed',this)" data-i18n="tab_completed">Completed</button>
+    <button class="btn btn-sm btn-outline-secondary tab-btn" onclick="filterBookings('cancelled',this)" data-i18n="tab_cancelled">Cancelled</button>
+  </div>
+
+  <div id="bookingList">
+    <div class="text-center py-5 text-muted" data-i18n="loading_guides">Loading bookings...</div>
+  </div>
+
+  <div class="mt-4 text-center">
+    <a href="/search.html" class="btn-teal btn" data-i18n="find_guides">🔍 Find More Guides</a>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--teal);color:#fff">
+        <h5 class="modal-title" data-i18n="review_title">Write a Review</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="rvBookingId">
+        <div class="mb-3">
+          <label class="form-label fw-600" data-i18n="rating_req">Rating</label>
+          <div class="d-flex gap-2 fs-2" id="starPicker">
+            <span class="star-picker" onclick="setRating(1)">★</span>
+            <span class="star-picker" onclick="setRating(2)">★</span>
+            <span class="star-picker" onclick="setRating(3)">★</span>
+            <span class="star-picker" onclick="setRating(4)">★</span>
+            <span class="star-picker" onclick="setRating(5)">★</span>
+          </div>
+          <input type="hidden" id="rvRating" value="0">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600" data-i18n="review_lbl">Your Review</label>
+          <textarea class="form-control" id="rvComment" rows="4" data-i18n-ph="review_ph" placeholder="Share your experience with this guide..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="cancel_btn">Cancel</button>
+        <button class="btn-teal btn" onclick="submitReview()" data-i18n="submit_review">Submit Review</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
+<script>
+let ALL_BOOKINGS = [];
+let CURRENT_FILTER = 'all';
+
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  window.location.href = '/';
+}
+
+function formatDate(d) {
+  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+  return new Date(d + 'T00:00:00').toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+async function checkAuth() {
+  try {
+    const r = await fetch('/api/auth/me', { credentials: 'include' });
+    const d = await r.json();
+    if (!d.success || d.user.userType !== 'tourist') {
+      window.location.href = '/login.html'; return;
+    }
+    document.getElementById('navName').textContent = d.user.fullName.split(' ')[0];
+    loadBookings();
+  } catch { window.location.href = '/login.html'; }
+}
+
+async function loadBookings() {
+  try {
+    const r = await fetch('/api/bookings/mine', { credentials: 'include' });
+    const d = await r.json();
+    ALL_BOOKINGS = d.bookings || [];
+
+    const stats = ALL_BOOKINGS.reduce((acc, b) => {
+      acc.total++; acc[b.status] = (acc[b.status] || 0) + 1; return acc;
+    }, { total: 0 });
+
+    document.getElementById('statTotal').textContent = stats.total;
+    document.getElementById('statConfirmed').textContent = stats.confirmed || 0;
+    document.getElementById('statPending').textContent = stats.pending || 0;
+    document.getElementById('statCompleted').textContent = stats.completed || 0;
+
+    renderBookings();
+  } catch {
+    document.getElementById('bookingList').innerHTML = '<div class="text-center text-danger py-4">Error loading bookings.</div>';
+  }
+}
+
+function filterBookings(status, btn) {
+  CURRENT_FILTER = status;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.className = b.className.replace('btn-teal', 'btn-outline-secondary');
+    b.classList.remove('active');
+  });
+  btn.className = btn.className.replace('btn-outline-secondary', 'btn-teal');
+  btn.classList.add('active');
+  renderBookings();
+}
+
+function renderBookings() {
+  const list = CURRENT_FILTER === 'all' ? ALL_BOOKINGS : ALL_BOOKINGS.filter(b => b.status === CURRENT_FILTER);
+  const container = document.getElementById('bookingList');
+
+  if (!list.length) {
+    const emptyLabel = CURRENT_FILTER === 'all' ? '' : I18N.t('tab_' + CURRENT_FILTER);
+    container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><h5>${I18N.t('no_bookings')}${emptyLabel ? ' — ' + emptyLabel : ''}</h5><p class="text-muted">${CURRENT_FILTER === 'all' ? I18N.t('no_bookings_sub') : ''}</p></div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(b => {
+    const canCancel = ['pending', 'confirmed'].includes(b.status);
+    const tourDatePast = new Date(b.tourDate + 'T23:59:59') < new Date();
+    const canReview = b.status === 'completed' && tourDatePast;
+    const statusIcon = { pending: '⏳', confirmed: '✅', completed: '🎉', cancelled: '❌' }[b.status] || '';
+    const durationLabel = b.duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
+    const pLabel = b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl');
+    const statusLabel = I18N.t('status_' + b.status) || b.status;
+
+    return `
+    <div class="booking-card ${b.status}">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          <h6 class="fw-700 mb-1">📍 ${b.destination} — ${b.guideName}</h6>
+          <div class="small text-muted">📅 ${formatDate(b.tourDate)} &nbsp;·&nbsp; ${durationLabel} &nbsp;·&nbsp; ${b.participants} ${pLabel}</div>
+        </div>
+        <span class="status-badge status-${b.status}">${statusIcon} ${statusLabel}</span>
+      </div>
+      ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${b.specialRequests}"</div>` : ''}
+      <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+        <div class="fw-700 fs-5" style="color:var(--teal)">${I18N.t('omr_day')} ${b.totalAmount}</div>
+        <div class="d-flex gap-2">
+          <a href="/guide-profile.html?id=${b.guideId}" class="btn btn-sm btn-outline-secondary">${I18N.t('view_guide')}</a>
+          ${b.status === 'confirmed' ? `<a href="/checkout.html?booking_id=${b.id}" class="btn btn-sm btn-gold">💳 Pay Now</a>` : ''}
+          ${canReview ? `<button class="btn btn-sm btn-teal" onclick="openReview('${b.id}')">${I18N.t('write_review')}</button>` : ''}
+          ${canCancel ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${b.id}')">${I18N.t('cancel_bk')}</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function cancelBooking(id) {
+  if (!confirm(I18N.t('cancel_confirm'))) return;
+  try {
+    const r = await fetch(`/api/bookings/${id}/status`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'cancelled' }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('status_cancelled') + '.', 'success');
+    loadBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+let CURRENT_REVIEW_BOOKING = null;
+function openReview(bookingId) {
+  CURRENT_REVIEW_BOOKING = bookingId;
+  document.getElementById('rvBookingId').value = bookingId;
+  document.getElementById('rvComment').value = '';
+  setRating(0);
+  new bootstrap.Modal(document.getElementById('reviewModal')).show();
+}
+
+function setRating(val) {
+  document.getElementById('rvRating').value = val;
+  document.querySelectorAll('.star-picker').forEach((s, i) => {
+    s.style.color = i < val ? '#f59e0b' : '#d1d5db';
+  });
+}
+
+async function submitReview() {
+  const rating = parseInt(document.getElementById('rvRating').value);
+  const comment = document.getElementById('rvComment').value;
+  if (!rating) { toast(I18N.t('rating_required'), 'error'); return; }
+  try {
+    const r = await fetch('/api/reviews', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId: CURRENT_REVIEW_BOOKING, rating, comment }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+    toast(I18N.t('submit_review') + ' ✓', 'success');
+    loadBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+window.onLangChange = () => renderBookings();
+
+checkAuth();
+</script>
+<style>
+.btn-teal { background: var(--teal) !important; color: #fff !important; border-color: var(--teal) !important; }
+.star-picker { cursor: pointer; color: #d1d5db; transition: color .1s; }
+.star-picker:hover { color: #f59e0b; }
+</style>
+<script src="/js/pwa.js?v=10"></script>
+</body>
+</html>

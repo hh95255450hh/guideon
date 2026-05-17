@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>Plan My Holiday — Guideon</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
+</head>
+<body>
+
+<nav class="navbar navbar-expand navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="navbar-controls ms-auto">
+      <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+      <div id="navAuth" class="d-flex gap-2">
+        <a href="/login.html" class="btn btn-outline-light btn-sm" data-i18n="nav_login">Log In</a>
+        <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
+      </div>
+      <div id="navUser" class="d-none d-flex gap-2 align-items-center">
+        <span class="text-white opacity-75 small" id="navName"></span>
+        <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn" data-i18n="nav_dashboard">Dashboard</a>
+        <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO BANNER -->
+<div class="plan-trip-banner mx-0" style="border-radius:0;padding:48px 0">
+  <div class="container">
+    <div class="badge-gold d-inline-block mb-3" style="background:var(--gold);color:#fff;padding:6px 16px;border-radius:20px;font-weight:700">✈️ <span data-i18n="plan_trip_title">Plan My Holiday</span></div>
+    <h2 class="fw-800 mb-2 text-white" style="font-size:2rem" data-i18n="plan_trip_title">Plan My Holiday</h2>
+    <p class="text-white opacity-75 mb-0" style="max-width:520px" data-i18n="plan_trip_sub">Tell us your dream trip — our verified guides will tailor an itinerary just for you.</p>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-4">
+
+    <!-- LEFT: Form -->
+    <div class="col-lg-7">
+      <div class="trip-form-card">
+        <h4 class="fw-800 mb-1" data-i18n="plan_trip_title">Plan My Holiday</h4>
+        <p class="text-muted small mb-4" data-i18n="plan_trip_sub">Tell us your dream trip — verified guides will respond with proposals.</p>
+
+        <div id="notTouristAlert" class="alert alert-warning d-none small">
+          <span data-i18n="only_tourist">Only tourist accounts can post trip requests.</span>
+          <a href="/login.html" class="fw-700 ms-1" data-i18n="nav_login">Log In</a>
+        </div>
+        <div id="successAlert" class="alert alert-success d-none small" data-i18n="trip_posted">Request posted!</div>
+        <div id="errAlert" class="alert alert-danger d-none small"></div>
+
+        <form id="tripForm" onsubmit="submitTrip(event)">
+          <!-- Destination -->
+          <div class="mb-3">
+            <label class="form-label fw-600 small" data-i18n="trip_dest">Destination *</label>
+            <select class="form-select" id="tDest" required>
+              <option value="" data-i18n="search_all_dest">Select destination</option>
+              <option>Muscat</option><option>Nizwa</option><option>Salalah</option>
+              <option>Musandam</option><option>Sur</option><option>Dhofar</option>
+              <option>Bahla</option><option>Ibri</option><option>Adam</option>
+            </select>
+          </div>
+
+          <!-- Dates -->
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-600 small" data-i18n="trip_from">From Date *</label>
+              <input type="date" class="form-control" id="tFrom" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-600 small" data-i18n="trip_to">To Date (optional)</label>
+              <input type="date" class="form-control" id="tTo">
+            </div>
+          </div>
+
+          <!-- Group & Language -->
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-600 small" data-i18n="trip_group">Group Size</label>
+              <div class="d-flex align-items-center gap-2 bg-light rounded-3 px-3 py-2">
+                <button type="button" class="part-btn" onclick="changeGroup(-1)">−</button>
+                <span class="part-count flex-grow-1 text-center fw-700" id="groupCount">2</span>
+                <button type="button" class="part-btn" onclick="changeGroup(1)">+</button>
+                <input type="hidden" id="tGroup" value="2">
+              </div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-600 small" data-i18n="trip_lang">Preferred Language</label>
+              <select class="form-select" id="tLang">
+                <option value="">Any</option>
+                <option>English</option><option>Arabic</option><option>French</option><option>German</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tour Type & Budget -->
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-600 small" data-i18n="trip_spec">Tour Type</label>
+              <select class="form-select" id="tSpec">
+                <option value="">Any</option>
+                <option>Historical Sites</option><option>Desert Safari</option>
+                <option>Cultural Tours</option><option>Nature & Hiking</option>
+                <option>Marine & Diving</option><option>Adventure</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-600 small" data-i18n="trip_budget">Daily Budget (OMR)</label>
+              <input type="number" class="form-control" id="tBudget" placeholder="e.g. 50" min="0">
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="mb-4">
+            <label class="form-label fw-600 small" data-i18n="trip_notes">Notes & Preferences</label>
+            <textarea class="form-control" id="tNotes" rows="4" data-i18n-ph="trip_notes_ph" placeholder="Tell guides about your interests..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-teal btn w-100 py-3 fw-700" id="submitBtn" data-i18n="trip_submit">Post Trip Request</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT: How it works + My Requests -->
+    <div class="col-lg-5">
+      <!-- How it works -->
+      <div class="info-card mb-4">
+        <h5 class="fw-700 mb-3" data-i18n="sec_how">How It Works</h5>
+        <div class="d-flex gap-3 mb-3">
+          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem">📝</div>
+          <div>
+            <div class="fw-700 small" data-i18n="step1_title">1. Post Your Request</div>
+            <div class="text-muted small" data-i18n="step1_desc">Describe your destination, dates, and preferences.</div>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem">🎒</div>
+          <div>
+            <div class="fw-700 small" data-i18n="step2_title">2. Guides Respond</div>
+            <div class="text-muted small" data-i18n="step2_desc">Verified local guides matching your request will reach out.</div>
+          </div>
+        </div>
+        <div class="d-flex gap-3">
+          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem">🌿</div>
+          <div>
+            <div class="fw-700 small" data-i18n="step3_title">3. Explore Oman</div>
+            <div class="text-muted small" data-i18n="step3_desc">Book your preferred guide and enjoy an authentic experience.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Requests -->
+      <div class="info-card" id="myRequestsPanel" style="display:none">
+        <h5 class="fw-700 mb-3" data-i18n="open_requests">My Trip Requests</h5>
+        <div id="myRequestsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="background:var(--teal-dark);color:rgba(255,255,255,.7);text-align:center;padding:20px;margin-top:40px">
+  <span data-i18n="footer_bottom">Guideon © 2025. All rights reserved.</span>
+</footer>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
+<script>
+let SESSION = null;
+let groupValue = 2;
+
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function changeGroup(d) {
+  groupValue = Math.max(1, Math.min(50, groupValue + d));
+  document.getElementById('groupCount').textContent = groupValue;
+  document.getElementById('tGroup').value = groupValue;
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  window.location.href = '/';
+}
+
+async function checkAuth() {
+  try {
+    const r = await fetch('/api/auth/me', { credentials: 'include' });
+    const d = await r.json();
+    if (d.success) {
+      SESSION = d.user;
+      document.getElementById('navAuth').classList.add('d-none');
+      document.getElementById('navUser').classList.remove('d-none');
+      document.getElementById('navName').textContent = d.user.fullName.split(' ')[0];
+      const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html' };
+      document.getElementById('navDashBtn').href = dashMap[d.user.userType] || '/';
+
+      if (d.user.userType !== 'tourist') {
+        document.getElementById('notTouristAlert').classList.remove('d-none');
+        document.getElementById('tripForm').querySelectorAll('select,input,textarea,button[type=submit]').forEach(el => el.disabled = true);
+      } else {
+        loadMyRequests();
+      }
+    } else {
+      document.getElementById('notTouristAlert').classList.remove('d-none');
+    }
+  } catch {}
+}
+
+async function submitTrip(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const err = document.getElementById('errAlert');
+  const suc = document.getElementById('successAlert');
+  err.classList.add('d-none'); suc.classList.add('d-none');
+  btn.disabled = true; btn.textContent = I18N.t('trip_loading');
+
+  try {
+    const r = await fetch('/api/trips', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        destination: document.getElementById('tDest').value,
+        startDate:   document.getElementById('tFrom').value,
+        endDate:     document.getElementById('tTo').value,
+        groupSize:   document.getElementById('tGroup').value,
+        language:    document.getElementById('tLang').value,
+        specialisation: document.getElementById('tSpec').value,
+        budget:      document.getElementById('tBudget').value,
+        notes:       document.getElementById('tNotes').value,
+      }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    suc.textContent = I18N.t('trip_posted');
+    suc.classList.remove('d-none');
+    document.getElementById('tripForm').reset();
+    groupValue = 2; document.getElementById('groupCount').textContent = 2;
+    loadMyRequests();
+  } catch (ex) {
+    err.textContent = ex.message; err.classList.remove('d-none');
+  } finally {
+    btn.disabled = false; btn.textContent = I18N.t('trip_submit');
+  }
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+  return new Date(d + 'T00:00:00').toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+async function loadMyRequests() {
+  try {
+    const r = await fetch('/api/trips/mine', { credentials: 'include' });
+    const d = await r.json();
+    const list = d.requests || [];
+    const panel = document.getElementById('myRequestsPanel');
+    const container = document.getElementById('myRequestsList');
+    if (!list.length) { panel.style.display = 'none'; return; }
+    panel.style.display = '';
+    container.innerHTML = list.map(t => `
+      <div class="trip-request-card ${t.status === 'closed' ? 'closed' : ''}">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h6 class="fw-700 mb-0">📍 ${t.destination}</h6>
+            <div class="small text-muted">${formatDate(t.startDate)}${t.endDate ? ' → ' + formatDate(t.endDate) : ''}</div>
+          </div>
+          <span class="${t.status === 'open' ? 'open-badge' : 'closed-badge'}">
+            ${t.status === 'open' ? I18N.t('trip_status_open') : I18N.t('trip_status_closed')}
+          </span>
+        </div>
+        <div class="small text-muted mb-2">
+          👥 ${t.groupSize} ${I18N.t('persons_lbl')}
+          ${t.language ? ` · 🌐 ${t.language}` : ''}
+          ${t.budget ? ` · 💰 ${I18N.t('omr_day')} ${t.budget}/day` : ''}
+        </div>
+        ${t.notes ? `<div class="small text-muted border-top pt-2 mt-2" style="line-height:1.5">${t.notes}</div>` : ''}
+        ${t.status === 'open' ? `<button class="btn btn-sm btn-outline-danger mt-2" onclick="closeRequest('${t.id}')">${I18N.t('close_request')}</button>` : ''}
+      </div>`).join('');
+  } catch {}
+}
+
+async function closeRequest(id) {
+  if (!confirm(I18N.t('close_request') + '?')) return;
+  try {
+    const r = await fetch(`/api/trips/${id}/close`, { method: 'PATCH', credentials: 'include' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('trip_status_closed') + ' ✓', 'success');
+    loadMyRequests();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+window.onLangChange = () => { if (SESSION?.userType === 'tourist') loadMyRequests(); };
+
+checkAuth();
+</script>
+<style>.btn-teal{background:var(--teal)!important;color:#fff!important;border:none}</style>
+<script src="/js/pwa.js?v=10"></script>
+</body>
+</html>

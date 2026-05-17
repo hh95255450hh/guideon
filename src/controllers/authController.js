@@ -1,171 +1,152 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { query, getClient } = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
+const SupabaseDB = require('../models/SupabaseDB');
 
-const signAccessToken = (userId) =>
-  jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+const users = new SupabaseDB('users');
 
-const signRefreshToken = (userId) =>
-  jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
-  });
-
-// POST /api/auth/register
-const register = async (req, res, next) => {
-  const client = await getClient();
+exports.register = async (req, res) => {
   try {
-    await client.query('BEGIN');
+    const { fullName, email, password, userType, phone, nationality, preferredLanguage,
+            licenceNumber, languages, specialisations, destinations, pricePerDay, bio } = req.body;
 
-    const { name, email, password, role = 'tourist', phone, company_name } = req.body;
-
-    const existing = await client.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (existing.rows.length) {
-      await client.query('ROLLBACK');
-      return res.status(409).json({ success: false, message: 'Email already registered' });
+    if (!fullName || !email || !password || !userType) {
+      return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, message: 'Invalid email address.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
     }
 
-    const allowedSelfRoles = ['tourist', 'guide', 'company'];
-    const assignedRole = allowedSelfRoles.includes(role) ? role : 'tourist';
-
-    const passwordHash = await bcrypt.hash(password, 10);
-    const result = await client.query(
-      `INSERT INTO users (name, email, password_hash, role, phone)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, name, email, role, created_at`,
-      [name, email, passwordHash, assignedRole, phone || null]
-    );
-
-    const user = result.rows[0];
-
-    // Auto-create company profile when registering as 'company'
-    let company = null;
-    if (assignedRole === 'company') {
-      const compResult = await client.query(
-        `INSERT INTO companies (user_id, company_name)
-         VALUES ($1, $2) RETURNING id, company_name, verified`,
-        [user.id, company_name || name]
-      );
-      company = compResult.rows[0];
+    const existing = await users.findOne(u => u.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'Email already registered. Please log in.' });
     }
 
-    const accessToken = signAccessToken(user.id);
-    const refreshToken = signRefreshToken(user.id);
+    const hashed = await bcrypt.hash(password, 10);
+    const prefix = userType === 'guide' ? 'guide' : userType === 'admin' ? 'admin' : 'tourist';
+    const id = prefix + '-' + uuidv4().slice(0, 8);
 
-    await client.query('UPDATE users SET refresh_token = $1 WHERE id = $2', [refreshToken, user.id]);
+    const base = {
+      id, fullName, email: email.toLowerCase(), password: hashed,
+      phone: phone || '', userType,
+      createdAt: new Date().toISOString(), isSuspended: false,
+    };
 
-    await client.query('COMMIT');
+    let record;
+    if (userType === 'tourist') {
+      record = { ...base, nationality: nationality || '', preferredLanguage: preferredLanguage || 'English' };
+    } else if (userType === 'guide') {
+      const langArr = Array.isArray(languages) ? languages : (languages ? languages.split(',').map(s => s.trim()) : []);
+      const specArr = Array.isArray(specialisations) ? specialisations : (specialisations ? specialisations.split(',').map(s => s.trim()) : []);
+      const destArr = Array.isArray(destinations) ? destinations : (destinations ? destinations.split(',').map(s => s.trim()) : []);
+      record = {
+        ...base, licenceNumber: licenceNumber || '',
+        languages: langArr, specialisations: specArr, destinations: destArr,
+        rating: 0, totalReviews: 0,
+        pricePerDay: parseFloat(pricePerDay) || 0,
+        bio: bio || '', isVerified: false, availability: [], photo: '',
+      };
+    } else {
+      record = base;
+    }
 
-    res.status(201).json({
-      success: true,
-      message: 'Registration successful',
-      data: { user, company, accessToken, refreshToken },
-    });
+    await users.insert(record);
+    req.session.userId = record.id;
+    req.session.userType = record.userType;
+
+    const safe = { ...record };
+    delete safe.password;
+    res.status(201).json({ success: true, message: 'Account created successfully.', user: safe });
   } catch (err) {
-    await client.query('ROLLBACK');
-    next(err);
-  } finally {
-    client.release();
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-// POST /api/auth/login
-const login = async (req, res, next) => {
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    const result = await query(
-      'SELECT id, name, email, role, password_hash, is_active FROM users WHERE email = $1',
-      [email]
-    );
-
-    if (!result.rows.length) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required.' });
     }
 
-    const user = result.rows[0];
-    if (!user.is_active) {
-      return res.status(403).json({ success: false, message: 'Account is deactivated' });
+    const user = await users.findOne(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+    }
+    if (user.isSuspended) {
+      return res.status(403).json({ success: false, message: 'Your account has been suspended. Please contact support.' });
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password_hash);
-    if (!passwordMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    const accessToken = signAccessToken(user.id);
-    const refreshToken = signRefreshToken(user.id);
+    req.session.userId = user.id;
+    req.session.userType = user.userType;
 
-    await query('UPDATE users SET refresh_token = $1 WHERE id = $2', [refreshToken, user.id]);
-
-    const { password_hash, ...safeUser } = user;
-
-    res.json({
-      success: true,
-      message: 'Login successful',
-      data: { user: safeUser, accessToken, refreshToken },
-    });
+    const safe = { ...user };
+    delete safe.password;
+    res.json({ success: true, message: 'Login successful.', user: safe });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
 
-// POST /api/auth/refresh
-const refresh = async (req, res, next) => {
-  try {
-    const { refreshToken } = req.body;
-    if (!refreshToken) {
-      return res.status(401).json({ success: false, message: 'Refresh token required' });
-    }
-
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const result = await query(
-      'SELECT id, name, email, role, refresh_token, is_active FROM users WHERE id = $1',
-      [decoded.userId]
-    );
-
-    if (!result.rows.length || result.rows[0].refresh_token !== refreshToken) {
-      return res.status(401).json({ success: false, message: 'Invalid refresh token' });
-    }
-
-    const user = result.rows[0];
-    const newAccessToken = signAccessToken(user.id);
-    const newRefreshToken = signRefreshToken(user.id);
-
-    await query('UPDATE users SET refresh_token = $1 WHERE id = $2', [newRefreshToken, user.id]);
-
-    res.json({
-      success: true,
-      data: { accessToken: newAccessToken, refreshToken: newRefreshToken },
-    });
-  } catch (err) {
-    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-      return res.status(401).json({ success: false, message: 'Invalid or expired refresh token' });
-    }
-    next(err);
-  }
+exports.logout = (req, res) => {
+  req.session.destroy(() => {
+    res.json({ success: true, message: 'Logged out.' });
+  });
 };
 
-// POST /api/auth/logout
-const logout = async (req, res, next) => {
-  try {
-    await query('UPDATE users SET refresh_token = NULL WHERE id = $1', [req.user.id]);
-    res.json({ success: true, message: 'Logged out successfully' });
-  } catch (err) {
-    next(err);
-  }
+exports.updateProfile = async (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
+  const { fullName, phone, nationality, preferredLanguage } = req.body;
+  const changes = {};
+  if (fullName)            changes.fullName = fullName;
+  if (phone !== undefined) changes.phone = phone;
+  if (nationality)         changes.nationality = nationality;
+  if (preferredLanguage)   changes.preferredLanguage = preferredLanguage;
+  const updated = await users.update(req.session.userId, changes);
+  if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });
+  const { password, ...safe } = updated;
+  res.json({ success: true, message: 'Profile updated.', user: safe });
 };
 
-// GET /api/auth/me
-const getMe = async (req, res, next) => {
-  try {
-    const result = await query(
-      'SELECT id, name, email, role, phone, avatar_url, email_verified, created_at FROM users WHERE id = $1',
-      [req.user.id]
-    );
-    res.json({ success: true, data: { user: result.rows[0] } });
-  } catch (err) {
-    next(err);
+exports.changePassword = async (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword || newPassword.length < 8) {
+    return res.status(400).json({ success: false, message: 'Invalid password data.' });
   }
+  const user = await users.findById(req.session.userId);
+  if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+  const match = await bcrypt.compare(currentPassword, user.password);
+  if (!match) return res.status(401).json({ success: false, message: 'Current password is incorrect.' });
+  const hashed = await bcrypt.hash(newPassword, 10);
+  await users.update(req.session.userId, { password: hashed });
+  res.json({ success: true, message: 'Password changed successfully.' });
 };
 
-module.exports = { register, login, refresh, logout, getMe };
+exports.uploadPhoto = async (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
+  if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+  const photoUrl = '/uploads/avatars/' + req.file.filename;
+  await users.update(req.session.userId, { photo: photoUrl });
+  res.json({ success: true, photo: photoUrl });
+};
+
+exports.me = async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Not authenticated.' });
+  }
+  const user = await users.findById(req.session.userId);
+  if (!user) return res.status(401).json({ success: false, message: 'User not found.' });
+  const safe = { ...user };
+  delete safe.password;
+  res.json({ success: true, user: safe });
+};

@@ -1,0 +1,71 @@
+﻿{
+  "name": "Guideon — Tourist Guide Booking",
+  "short_name": "Guideon",
+  "description": "Find and book licensed tour guides across Oman. Explore Muscat, Nizwa, Salalah, and more.",
+  "lang": "en",
+  "dir": "ltr",
+  "theme_color": "#0f7b6c",
+  "background_color": "#0f7b6c",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "id": "/",
+  "categories": ["travel", "lifestyle", "tourism"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Find a Guide",
+      "short_name": "Search",
+      "url": "/search?source=shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Bookings",
+      "short_name": "Bookings",
+      "url": "/tourist-dashboard?source=shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Plan a Trip",
+      "short_name": "Plan Trip",
+      "url": "/plan-trip?source=shortcut",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Guideon Home"
+    }
+  ],
+  "prefer_related_applications": false
+}

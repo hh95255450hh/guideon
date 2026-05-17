@@ -1,0 +1,221 @@
+[
+  {
+    "id": "admin-001",
+    "fullName": "Admin Guideon",
+    "email": "admin@Guideon.om",
+    "password": "$2a$10$gqlGfaVn6KSbErXkAY6tq.FLQd4yCu2jigv.4dphwNKIu013MsutK",
+    "phone": "+968 9000 0000",
+    "userType": "admin",
+    "createdAt": "2025-09-01T08:00:00.000Z",
+    "isSuspended": false
+  },
+  {
+    "id": "tourist-001",
+    "fullName": "James Wilson",
+    "email": "tourist@example.com",
+    "password": "$2a$10$EEoVGKA9k6M0KjnofJWEu./kTRQ7LXOlhcD8B8R/y1z0a83U3blyq",
+    "phone": "+44 7911 123456",
+    "userType": "tourist",
+    "nationality": "British",
+    "preferredLanguage": "English",
+    "createdAt": "2025-10-01T10:00:00.000Z",
+    "isSuspended": false,
+    "isVerified": false
+  },
+  {
+    "id": "tourist-002",
+    "fullName": "Anna Müller",
+    "email": "anna@example.com",
+    "password": "$2a$10$EEoVGKA9k6M0KjnofJWEu./kTRQ7LXOlhcD8B8R/y1z0a83U3blyq",
+    "phone": "+49 170 1234567",
+    "userType": "tourist",
+    "nationality": "German",
+    "preferredLanguage": "English",
+    "createdAt": "2025-10-05T11:00:00.000Z",
+    "isSuspended": false
+  },
+  {
+    "id": "tourist-003",
+    "fullName": "Yuki Tanaka",
+    "email": "yuki@example.com",
+    "password": "$2a$10$EEoVGKA9k6M0KjnofJWEu./kTRQ7LXOlhcD8B8R/y1z0a83U3blyq",
+    "phone": "+81 90 1234 5678",
+    "userType": "tourist",
+    "nationality": "Japanese",
+    "preferredLanguage": "English",
+    "createdAt": "2025-10-10T09:00:00.000Z",
+    "isSuspended": false
+  },
+  {
+    "id": "guide-001",
+    "fullName": "Mohammed Al-Balushi",
+    "email": "mohammed@Guideon.om",
+    "password": "$2a$10$EEoVGKA9k6M0KjnofJWEu./kTRQ7LXOlhcD8B8R/y1z0a83U3blyq",
+    "phone": "+968 9111 0001",
+    "userType": "guide",
+    "licenceNumber": "MOT-2023-0451",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "specialisations": [
+      "Historical Sites",
+      "Desert Safaris",
+      "Cultural Tours"
+    ],
+    "destinations": [
+      "Muscat",
+      "Nizwa",
+      "Bahla"
+    ],
+    "rating": 4.8,
+    "totalReviews": 47,
+    "pricePerDay": 45,
+    "bio": "Licensed guide with over 8 years of experience leading tours across Muscat, Nizwa, and the Hajar Mountains. Specialising in historical sites and cultural heritage, I have guided tourists from over 30 countries and hold a Ministry of Heritage and Tourism licence. My aim is to give every visitor a genuine and memorable experience of Oman.",
+    "isVerified": true,
+    "availability": [
+      "2026-05-21",
+      "2026-05-22",
+      "2026-05-25",
+      "2026-05-26",
+      "2026-05-28",
+      "2026-05-29",
+      "2026-06-01",
+      "2026-06-02",
+      "2026-06-03",
+      "2026-06-05",
+      "2026-06-08",
+      "2026-06-09",
+      "2026-06-10"
+    ],
+    "createdAt": "2025-09-05T09:00:00.000Z",
+    "isSuspended": false,
+    "photo": ""
+  },
+  {
+    "id": "guide-002",
+    "fullName": "Fatima Al-Harthi",
+    "email": "fatima@Guideon.om",
+    "password": "$2a$10$EEoVGKA9k6M0KjnofJWEu./kTRQ7LXOlhcD8B8R/y1z0a83U3blyq",
+    "phone": "+968 9222 0002",
+    "userType": "guide",
+    "licenceNumber": "MOT-2022-0317",
+    "languages": [
+      "Arabic",
+      "English",
+      "French"
+    ],
+    "specialisations": [
+      "Nature & Eco Tours",
+      "Wadi Exploration",
+      "Birdwatching"
+    ],
+    "destinations": [
+      "Salalah",
+      "Dhofar"
+    ],
+    "rating": 4.9,
+    "totalReviews": 63,
+    "pricePerDay": 50,
+    "bio": "Certified guide specialising in the Dhofar region and Salalah's unique khareef season. My tours cover wadis, mountains, and the frankincense trail. I am also a qualified eco-tour guide and passionate about sustainable tourism. Fluent in Arabic, English, and French.",
+    "isVerified": true,
+    "availability": [
+      "2026-05-19",
+      "2026-05-20",
+      "2026-05-23",
+      "2026-05-24",
+      "2026-05-27",
+      "2026-05-30",
+      "2026-05-31",
+      "2026-06-01",
+      "2026-06-04",
+      "2026-06-06",
+      "2026-06-07",
+      "2026-06-10",
+      "2026-06-11",
+      "2026-06-12"
+    ],
+    "createdAt": "2025-09-07T10:00:00.000Z",
+    "isSuspended": false,
+    "photo": ""
+  },
+  {
+    "id": "guide-003",
+    "fullName": "Khalid Al-Rawahi",
+    "email": "khalid@Guideon.om",
+    "password": "$2a$10$EEoVGKA9k6M0KjnofJWEu./kTRQ7LXOlhcD8B8R/y1z0a83U3blyq",
+    "phone": "+968 9333 0003",
+    "userType": "guide",
+    "licenceNumber": "MOT-2021-0189",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "specialisations": [
+      "Marine & Diving",
+      "Dhow Cruises",
+      "Fishing Villages"
+    ],
+    "destinations": [
+      "Sur",
+      "Musandam"
+    ],
+    "rating": 4.7,
+    "totalReviews": 38,
+    "pricePerDay": 40,
+    "bio": "Marine specialist and certified guide based in Sur. Over 10 years guiding diving, snorkelling, and dhow tours around Sur Lagoon, Ras Al Hadd, and the fjords of Musandam. I can arrange turtle watching trips, overnight dhow stays, and coastal heritage walks.",
+    "isVerified": true,
+    "availability": [
+      "2026-05-18",
+      "2026-05-19",
+      "2026-05-22",
+      "2026-05-23",
+      "2026-05-26",
+      "2026-05-27",
+      "2026-05-30",
+      "2026-06-02",
+      "2026-06-03",
+      "2026-06-06",
+      "2026-06-07",
+      "2026-06-09",
+      "2026-06-10",
+      "2026-06-12"
+    ],
+    "createdAt": "2025-09-10T11:00:00.000Z",
+    "isSuspended": false,
+    "photo": ""
+  },
+  {
+    "id": "guide-004",
+    "fullName": "Aisha Al-Mamari",
+    "email": "aisha@Guideon.om",
+    "password": "$2a$10$EEoVGKA9k6M0KjnofJWEu./kTRQ7LXOlhcD8B8R/y1z0a83U3blyq",
+    "phone": "+968 9444 0004",
+    "userType": "guide",
+    "licenceNumber": "MOT-2025-0802",
+    "languages": [
+      "Arabic",
+      "English",
+      "German"
+    ],
+    "specialisations": [
+      "Archaeology",
+      "Heritage Walks",
+      "Village Tours"
+    ],
+    "destinations": [
+      "Muscat",
+      "Adam",
+      "Ibri"
+    ],
+    "rating": 0,
+    "totalReviews": 0,
+    "pricePerDay": 42,
+    "bio": "Recently certified guide with a background in Omani archaeology and heritage. Specialising in lesser-visited interior regions including Adam and Ibri. Fluent in Arabic, English, and German.",
+    "isVerified": true,
+    "availability": [],
+    "createdAt": "2025-11-01T14:00:00.000Z",
+    "isSuspended": false,
+    "photo": ""
+  }
+]

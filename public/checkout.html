@@ -1,351 +1,177 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Complete Payment – OmanExplorer</title>
-  <script src="https://js.stripe.com/v3/"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.08);
-      width: 100%;
-      max-width: 460px;
-      overflow: hidden;
-    }
-
-    .card-header {
-      background: linear-gradient(135deg, #1a6b4a 0%, #2d9e6d 100%);
-      padding: 28px 32px;
-      color: #fff;
-    }
-
-    .card-header .logo {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 16px;
-    }
-
-    .card-header .logo span { opacity: .7; }
-
-    .booking-summary h2 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .booking-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      padding: 4px 0;
-      opacity: .9;
-    }
-
-    .booking-row.total {
-      border-top: 1px solid rgba(255,255,255,.3);
-      margin-top: 10px;
-      padding-top: 10px;
-      font-weight: 700;
-      font-size: 18px;
-      opacity: 1;
-    }
-
-    .card-body { padding: 32px; }
-
-    #payment-element { margin-bottom: 24px; }
-
-    #submit-btn {
-      width: 100%;
-      padding: 14px;
-      background: #1a6b4a;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background .2s, opacity .2s;
-    }
-
-    #submit-btn:hover:not(:disabled) { background: #155a3e; }
-    #submit-btn:disabled { opacity: .6; cursor: not-allowed; }
-
-    #submit-btn .spinner {
-      display: inline-block;
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.4);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #error-msg {
-      color: #c0392b;
-      font-size: 14px;
-      margin-top: 12px;
-      padding: 10px 14px;
-      background: #fdf2f2;
-      border-radius: 8px;
-      display: none;
-    }
-
-    #error-msg.visible { display: block; }
-
-    .secure-note {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #888;
-      margin-top: 16px;
-      justify-content: center;
-    }
-
-    /* Success screen */
-    #success-screen {
-      display: none;
-      padding: 48px 32px;
-      text-align: center;
-    }
-
-    #success-screen .checkmark {
-      width: 64px; height: 64px;
-      background: #e8f5ee;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 32px;
-    }
-
-    #success-screen h2 { font-size: 22px; color: #1a6b4a; margin-bottom: 8px; }
-    #success-screen p  { color: #666; font-size: 14px; line-height: 1.6; }
-
-    #success-screen .booking-id {
-      margin-top: 16px;
-      padding: 12px 16px;
-      background: #f5f5f0;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #333;
-      word-break: break-all;
-    }
-
-    /* Loading skeleton */
-    #loading-screen {
-      padding: 48px 32px;
-      text-align: center;
-      color: #999;
-    }
-
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-      border-radius: 6px;
-      height: 14px;
-      margin-bottom: 10px;
-    }
-
-    @keyframes shimmer { to { background-position: -200% 0; } }
-
-    #payment-screen { display: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>Complete Payment — Guideon</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/style.css?v=10">
+<style>
+  body { background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .pay-card { background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.12); width: 100%; max-width: 480px; overflow: hidden; }
+  .pay-header { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); padding: 28px 32px; color: #fff; }
+  .pay-header .logo { font-size: 1.3rem; font-weight: 800; margin-bottom: 16px; }
+  .pay-row { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; opacity: .9; }
+  .pay-row.total { border-top: 1px solid rgba(255,255,255,.3); margin-top: 10px; padding-top: 10px; font-weight: 700; font-size: 1.1rem; opacity: 1; }
+  .pay-body { padding: 28px 32px; }
+  .card-field { border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 14px; font-family: 'Courier New', monospace; letter-spacing: 2px; width: 100%; outline: none; transition: border-color .2s; }
+  .card-field:focus { border-color: var(--teal); }
+  .pay-btn { width: 100%; padding: 14px; background: var(--teal); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .2s; }
+  .pay-btn:hover { background: var(--teal-dark); }
+  .pay-btn:disabled { opacity: .6; cursor: not-allowed; }
+  .success-screen { text-align: center; padding: 48px 32px; display: none; }
+  .success-icon { width: 72px; height: 72px; background: #e8f5ee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2.2rem; }
+  .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; height: 14px; margin-bottom: 10px; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+</style>
 </head>
 <body>
 
-<div class="card">
+<div class="pay-card" id="mainCard">
 
   <!-- Loading -->
-  <div id="loading-screen">
-    <div style="padding: 32px;">
-      <div class="skeleton" style="width:60%; margin: 0 auto 24px;"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton" style="width:80%;"></div>
-      <div class="skeleton" style="width:90%;"></div>
-    </div>
+  <div id="loadScreen" style="padding:40px 32px">
+    <div class="skeleton" style="width:40%;margin-bottom:20px"></div>
+    <div class="skeleton"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:60%"></div>
   </div>
 
   <!-- Payment form -->
-  <div id="payment-screen">
-    <div class="card-header">
-      <div class="logo">Oman<span>Explorer</span></div>
-      <div class="booking-summary">
-        <h2>Order Summary</h2>
-        <div class="booking-row">
-          <span id="summary-tour">–</span>
-          <span></span>
-        </div>
-        <div class="booking-row">
-          <span>Date</span>
-          <span id="summary-date">–</span>
-        </div>
-        <div class="booking-row">
-          <span>Participants</span>
-          <span id="summary-participants">–</span>
-        </div>
-        <div class="booking-row total">
-          <span>Total</span>
-          <span id="summary-total">–</span>
-        </div>
-      </div>
+  <div id="payScreen" style="display:none">
+    <div class="pay-header">
+      <div class="logo"><img src="/logo.png" alt="Guideon" height="52"></div>
+      <h6 class="mb-3">Order Summary</h6>
+      <div class="pay-row"><span id="sGuideName">Guide</span><span></span></div>
+      <div class="pay-row"><span>Date</span><span id="sDate">—</span></div>
+      <div class="pay-row"><span>Duration</span><span id="sDuration">—</span></div>
+      <div class="pay-row"><span>Participants</span><span id="sParticipants">—</span></div>
+      <div class="pay-row total"><span>Total</span><span id="sTotal">—</span></div>
     </div>
-
-    <div class="card-body">
-      <form id="payment-form">
-        <div id="payment-element"></div>
-        <button id="submit-btn" type="submit">Pay Now</button>
-        <div id="error-msg"></div>
-        <div class="secure-note">
-          <svg width="12" height="14" viewBox="0 0 12 14" fill="none">
-            <path d="M6 0L1 2.5V7c0 3.3 2.1 6.3 5 7 2.9-.7 5-3.7 5-7V2.5L6 0z" fill="#aaa"/>
-          </svg>
-          Secured by Stripe · SSL encrypted
+    <div class="pay-body">
+      <div id="errMsg" class="alert alert-danger d-none mb-3"></div>
+      <form id="payForm" onsubmit="submitPayment(event)">
+        <div class="mb-3">
+          <label class="form-label fw-600 small text-muted">Card Number</label>
+          <input class="card-field" id="cardNum" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)" required>
         </div>
+        <div class="row g-2 mb-3">
+          <div class="col-7">
+            <label class="form-label fw-600 small text-muted">Expiry</label>
+            <input class="card-field" id="cardExp" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)" required>
+          </div>
+          <div class="col-5">
+            <label class="form-label fw-600 small text-muted">CVV</label>
+            <input class="card-field" id="cardCvv" placeholder="123" maxlength="3" type="password" required>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600 small text-muted">Name on Card</label>
+          <input class="form-control" id="cardName" placeholder="Your Full Name" required>
+        </div>
+        <button type="submit" class="pay-btn" id="payBtn">💳 Pay Now</button>
+        <div class="text-center mt-3 small text-muted">🔒 Demo payment — no real charge will occur</div>
       </form>
     </div>
   </div>
 
-  <!-- Success screen -->
-  <div id="success-screen">
-    <div class="checkmark">✓</div>
-    <h2>Payment Successful!</h2>
-    <p>Your booking is confirmed. A confirmation email has been sent to you.</p>
-    <div class="booking-id">
-      Booking ID: <strong id="success-booking-id"></strong>
-    </div>
+  <!-- Success -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✅</div>
+    <h3 class="fw-800 mb-2" style="color:var(--teal)">Payment Successful!</h3>
+    <p class="text-muted mb-3">Your tour is confirmed. Enjoy your Oman adventure!</p>
+    <div style="background:#f8f9fa;border-radius:10px;padding:14px;font-size:13px;color:#555;word-break:break-all" id="bookingIdDisplay"></div>
+    <a href="/tourist-dashboard.html" class="btn-teal btn mt-4 px-4">View My Bookings</a>
   </div>
 
 </div>
 
 <script>
-  // ─── Config ──────────────────────────────────────────────────────────────────
-  const API_BASE    = window.location.origin; // same origin as the server
-  const STRIPE_KEY  = 'pk_test_REPLACE_WITH_YOUR_PUBLISHABLE_KEY'; // ← replace
-  const stripe      = Stripe(STRIPE_KEY);
+const qs = (p) => new URLSearchParams(window.location.search).get(p);
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────────
-  const $  = (id) => document.getElementById(id);
-  const qs = (p)  => new URLSearchParams(window.location.search).get(p);
+async function api(method, url, body) {
+  const r = await fetch(url, { method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.message || 'Error');
+  return d;
+}
 
-  function showError(msg) {
-    const el = $('error-msg');
-    el.textContent = msg;
-    el.classList.add('visible');
+let BOOKING = null;
+
+(async () => {
+  const bookingId = qs('booking_id');
+  if (!bookingId) {
+    document.getElementById('loadScreen').innerHTML = '<p class="text-danger p-4">Missing booking ID. <a href="/tourist-dashboard.html">Go back</a></p>';
+    return;
   }
 
-  function clearError() {
-    $('error-msg').classList.remove('visible');
+  try {
+    // Load booking info
+    const d = await api('GET', '/api/bookings/mine');
+    BOOKING = (d.bookings || []).find(b => b.id === bookingId);
+    if (!BOOKING) throw new Error('Booking not found');
+    if (BOOKING.status === 'cancelled') throw new Error('This booking is cancelled.');
+
+    document.getElementById('sGuideName').textContent = BOOKING.guideName || 'Guide';
+    document.getElementById('sDate').textContent = BOOKING.tourDate;
+    document.getElementById('sDuration').textContent = BOOKING.duration === 'half' ? 'Half Day' : 'Full Day';
+    document.getElementById('sParticipants').textContent = BOOKING.participants + ' person(s)';
+    document.getElementById('sTotal').textContent = 'OMR ' + BOOKING.totalAmount;
+
+    document.getElementById('loadScreen').style.display = 'none';
+    document.getElementById('payScreen').style.display = 'block';
+  } catch (err) {
+    document.getElementById('loadScreen').innerHTML = `<p class="text-danger p-4">${err.message} <a href="/tourist-dashboard.html">Go back</a></p>`;
+  }
+})();
+
+function fmtCard(el) {
+  let v = el.value.replace(/\D/g,'');
+  el.value = v.replace(/(.{4})/g,'$1 ').trim().slice(0,19);
+}
+function fmtExp(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length >= 2) v = v.slice(0,2) + ' / ' + v.slice(2,4);
+  el.value = v;
+}
+
+async function submitPayment(e) {
+  e.preventDefault();
+  const btn = document.getElementById('payBtn');
+  const err = document.getElementById('errMsg');
+  err.classList.add('d-none');
+  btn.disabled = true;
+  btn.textContent = '⏳ Processing...';
+
+  // Validate demo card
+  const num = document.getElementById('cardNum').value.replace(/\s/g,'');
+  if (num.length < 16) {
+    err.textContent = 'Please enter a valid 16-digit card number.';
+    err.classList.remove('d-none');
+    btn.disabled = false; btn.textContent = '💳 Pay Now'; return;
   }
 
-  function setLoading(on) {
-    const btn = $('submit-btn');
-    btn.disabled = on;
-    btn.innerHTML = on
-      ? '<span class="spinner"></span>Processing…'
-      : 'Pay Now';
+  // Simulate payment delay
+  await new Promise(r => setTimeout(r, 1800));
+
+  try {
+    // Mark booking as completed (simulated payment success)
+    await api('PATCH', `/api/bookings/${BOOKING.id}`, { status: 'completed' });
+    document.getElementById('payScreen').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    document.getElementById('bookingIdDisplay').innerHTML = `Booking ID: <strong>${BOOKING.id}</strong>`;
+  } catch (err2) {
+    err.textContent = err2.message;
+    err.classList.remove('d-none');
+    btn.disabled = false; btn.textContent = '💳 Pay Now';
   }
-
-  function formatDate(dateStr) {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-OM', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-
-  // ─── Init ─────────────────────────────────────────────────────────────────────
-  (async () => {
-    const bookingId   = qs('booking_id');
-    const accessToken = qs('token') || localStorage.getItem('oman_access_token');
-
-    if (!bookingId || !accessToken) {
-      $('loading-screen').innerHTML =
-        '<p style="padding:32px;color:#c0392b;">Missing booking_id or token. Please go back and try again.</p>';
-      return;
-    }
-
-    // ── 1. Create / retrieve Payment Intent ─────────────────────────────────
-    let clientSecret, booking;
-    try {
-      const res = await fetch(`${API_BASE}/api/payments/create-intent`, {
-        method:  'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ booking_id: bookingId }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to create payment intent');
-
-      clientSecret = data.data.clientSecret;
-      booking      = data.data.booking;
-    } catch (err) {
-      $('loading-screen').innerHTML =
-        `<p style="padding:32px;color:#c0392b;">${err.message}</p>`;
-      return;
-    }
-
-    // ── 2. Populate summary ──────────────────────────────────────────────────
-    $('summary-tour').textContent         = booking.tour_title;
-    $('summary-date').textContent         = formatDate(booking.tour_date);
-    $('summary-participants').textContent = booking.participants;
-    $('summary-total').textContent        = `$${parseFloat(booking.total_price).toFixed(2)}`;
-    $('success-booking-id').textContent   = booking.id;
-
-    // ── 3. Mount Stripe Payment Element ─────────────────────────────────────
-    const elements = stripe.elements({ clientSecret });
-    const paymentElement = elements.create('payment', {
-      layout: 'tabs',
-    });
-    paymentElement.mount('#payment-element');
-
-    // ── 4. Show payment form ──────────────────────────────────────────────────
-    $('loading-screen').style.display  = 'none';
-    $('payment-screen').style.display  = 'block';
-
-    // ── 5. Handle submit ─────────────────────────────────────────────────────
-    $('payment-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearError();
-      setLoading(true);
-
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${API_BASE}/checkout-success.html?booking_id=${bookingId}`,
-        },
-        redirect: 'if_required', // avoid redirect when not needed (cards)
-      });
-
-      if (error) {
-        showError(error.message);
-        setLoading(false);
-        return;
-      }
-
-      // Payment succeeded without redirect
-      $('payment-screen').style.display  = 'none';
-      $('success-screen').style.display  = 'block';
-    });
-  })();
+}
 </script>
+<script src="/js/pwa.js?v=10"></script>
 </body>
 </html>

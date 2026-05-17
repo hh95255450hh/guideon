@@ -1,252 +1,155 @@
-const { query, getClient } = require('../config/database');
-const notify = require('../services/notificationService');
+const { v4: uuidv4 } = require('uuid');
+const SupabaseDB = require('../models/SupabaseDB');
 
-// POST /api/bookings
-const createBooking = async (req, res, next) => {
-  const client = await getClient();
+const bookings = new SupabaseDB('bookings');
+const users    = new SupabaseDB('users');
+
+exports.createBooking = async (req, res) => {
   try {
-    await client.query('BEGIN');
+    const { guideId, tourDate, duration, destination, participants, specialRequests } = req.body;
+    const touristId = req.session.userId;
 
-    const { tour_id, availability_id, participants = 1, special_requests } = req.body;
-
-    // Lock the availability row to prevent overbooking
-    const avail = await client.query(
-      'SELECT * FROM tour_availability WHERE id = $1 AND tour_id = $2 FOR UPDATE',
-      [availability_id, tour_id]
-    );
-
-    if (!avail.rows.length) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ success: false, message: 'Availability slot not found' });
+    if (!guideId || !tourDate || !duration || !destination) {
+      return res.status(400).json({ success: false, message: 'Missing required booking fields.' });
     }
 
-    if (avail.rows[0].available_spots < participants) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({
-        success: false,
-        message: `Only ${avail.rows[0].available_spots} spots available`,
-      });
+    const guide = await users.findById(guideId);
+    if (!guide || guide.userType !== 'guide') {
+      return res.status(404).json({ success: false, message: 'Guide not found.' });
+    }
+    if (!guide.isVerified) {
+      return res.status(400).json({ success: false, message: 'Guide is not verified.' });
     }
 
-    const tourResult = await client.query('SELECT price FROM tours WHERE id = $1', [tour_id]);
-    if (!tourResult.rows.length) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ success: false, message: 'Tour not found' });
+    const availability = Array.isArray(guide.availability) ? guide.availability : [];
+    if (!availability.includes(tourDate)) {
+      return res.status(400).json({ success: false, message: 'Guide is not available on the selected date.' });
     }
 
-    const total_price = parseFloat(tourResult.rows[0].price) * parseInt(participants);
+    const pricePerDay = parseFloat(guide.pricePerDay) || 0;
+    const totalAmount = duration === 'half' ? pricePerDay * 0.6 : pricePerDay;
+    const participantCount = parseInt(participants) || 1;
 
-    const booking = await client.query(
-      `INSERT INTO bookings
-         (tour_id, user_id, availability_id, participants, total_price, special_requests)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [tour_id, req.user.id, availability_id, participants, total_price, special_requests || null]
-    );
+    const booking = {
+      id: 'bk-' + uuidv4().slice(0, 8),
+      touristId, guideId,
+      tourDate, duration, destination,
+      participants: participantCount,
+      totalAmount: Math.round(totalAmount * 100) / 100,
+      status: 'pending',
+      specialRequests: specialRequests || '',
+      createdAt: new Date().toISOString(),
+    };
 
-    // Decrement available spots
-    await client.query(
-      'UPDATE tour_availability SET available_spots = available_spots - $1 WHERE id = $2',
-      [participants, availability_id]
-    );
-
-    await client.query('COMMIT');
-
-    res.status(201).json({
-      success: true,
-      message: 'Booking created. Complete payment to confirm.',
-      data: { booking: booking.rows[0] },
-    });
+    await bookings.insert(booking);
+    res.status(201).json({ success: true, message: 'Booking request sent. Waiting for guide confirmation.', booking });
   } catch (err) {
-    await client.query('ROLLBACK');
-    next(err);
-  } finally {
-    client.release();
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
-// GET /api/bookings  (tourist sees own; admin sees all)
-const listBookings = async (req, res, next) => {
+exports.myBookings = async (req, res) => {
   try {
-    const { page = 1, limit = 10, status } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    const params = [];
-    const conditions = [];
+    const touristId = req.session.userId;
+    const list = await bookings.findAll(b => b.touristId === touristId);
+    list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    if (req.user.role === 'tourist') {
-      params.push(req.user.id);
-      conditions.push(`b.user_id = $${params.length}`);
-    } else if (req.user.role === 'company') {
-      const comp = await query('SELECT id FROM companies WHERE user_id = $1', [req.user.id]);
-      if (comp.rows.length) {
-        params.push(comp.rows[0].id);
-        conditions.push(`t.company_id = $${params.length}`);
+    const enriched = await Promise.all(list.map(async b => {
+      const guide = await users.findById(b.guideId);
+      return { ...b, guideName: guide ? guide.fullName : 'Unknown', guideRating: guide ? guide.rating : 0 };
+    }));
+    res.json({ success: true, bookings: enriched });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+exports.guideBookings = async (req, res) => {
+  try {
+    const guideId = req.session.userId;
+    const list = await bookings.findAll(b => b.guideId === guideId);
+    list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const enriched = await Promise.all(list.map(async b => {
+      const tourist = await users.findById(b.touristId);
+      return { ...b, touristName: tourist ? tourist.fullName : 'Unknown', touristEmail: tourist ? tourist.email : '' };
+    }));
+    res.json({ success: true, bookings: enriched });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+exports.updateStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const booking = await bookings.findById(id);
+
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
+
+    const userId   = req.session.userId;
+    const userType = req.session.userType;
+
+    if (userType === 'guide'   && booking.guideId   !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
+    if (userType === 'tourist' && booking.touristId !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
+
+    if (userType === 'tourist' && status === 'cancelled') {
+      const hoursUntil = (new Date(booking.tourDate) - new Date()) / 36e5;
+      if (hoursUntil < 48) {
+        return res.status(400).json({ success: false, message: 'Cancellations must be made at least 48 hours before the tour.' });
       }
     }
 
-    if (status) {
-      params.push(status);
-      conditions.push(`b.status = $${params.length}`);
+    const allowedTransitions = {
+      guide:   ['confirmed', 'cancelled'],
+      tourist: ['cancelled'],
+      admin:   ['confirmed', 'cancelled', 'completed'],
+    };
+
+    if (!allowedTransitions[userType]?.includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status transition.' });
     }
 
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const updated = await bookings.update(id, { status });
 
-    const [bookingsResult, countResult] = await Promise.all([
-      query(
-        `SELECT
-           b.id, b.participants, b.total_price, b.status, b.payment_status,
-           b.special_requests, b.created_at,
-           t.title AS tour_title, t.location AS tour_location,
-           ta.date AS tour_date,
-           u.name AS tourist_name, u.email AS tourist_email
-         FROM bookings b
-         LEFT JOIN tours t ON t.id = b.tour_id
-         LEFT JOIN tour_availability ta ON ta.id = b.availability_id
-         LEFT JOIN users u ON u.id = b.user_id
-         ${where}
-         ORDER BY b.created_at DESC
-         LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
-        [...params, parseInt(limit), offset]
-      ),
-      query(`SELECT COUNT(*) FROM bookings b LEFT JOIN tours t ON t.id = b.tour_id ${where}`, params),
-    ]);
+    if (status === 'confirmed') {
+      const guide = await users.findById(booking.guideId);
+      if (guide) {
+        const avail = Array.isArray(guide.availability) ? guide.availability : [];
+        const newAvail = avail.filter(d => d !== booking.tourDate);
+        await users.update(booking.guideId, { availability: newAvail });
+      }
+    }
 
-    res.json({
-      success: true,
-      data: {
-        bookings: bookingsResult.rows,
-        pagination: {
-          total: parseInt(countResult.rows[0].count),
-          page: parseInt(page),
-          limit: parseInt(limit),
-        },
-      },
-    });
+    res.json({ success: true, message: 'Booking updated.', booking: updated });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
-// GET /api/bookings/:id
-const getBooking = async (req, res, next) => {
+exports.allBookings = async (req, res) => {
   try {
-    const result = await query(
-      `SELECT
-         b.*, t.title AS tour_title, t.location AS tour_location, t.price AS tour_price,
-         ta.date AS tour_date,
-         u.name AS tourist_name, u.email AS tourist_email, u.phone AS tourist_phone
-       FROM bookings b
-       LEFT JOIN tours t ON t.id = b.tour_id
-       LEFT JOIN tour_availability ta ON ta.id = b.availability_id
-       LEFT JOIN users u ON u.id = b.user_id
-       WHERE b.id = $1`,
-      [req.params.id]
-    );
+    const list = await bookings.readAll();
+    list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
-    }
-
-    const booking = result.rows[0];
-
-    // Tourists can only view their own bookings
-    if (req.user.role === 'tourist' && booking.user_id !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Access denied' });
-    }
-
-    res.json({ success: true, data: { booking } });
+    const enriched = await Promise.all(list.map(async b => {
+      const guide   = await users.findById(b.guideId);
+      const tourist = await users.findById(b.touristId);
+      return {
+        ...b,
+        guideName:    guide   ? guide.fullName   : 'Unknown',
+        touristName:  tourist ? tourist.fullName  : 'Unknown',
+        touristEmail: tourist ? tourist.email     : '',
+      };
+    }));
+    res.json({ success: true, bookings: enriched });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
-
-// PATCH /api/bookings/:id/cancel
-const cancelBooking = async (req, res, next) => {
-  const client = await getClient();
-  try {
-    await client.query('BEGIN');
-
-    const result = await client.query(
-      'SELECT * FROM bookings WHERE id = $1 FOR UPDATE',
-      [req.params.id]
-    );
-
-    if (!result.rows.length) {
-      await client.query('ROLLBACK');
-      return res.status(404).json({ success: false, message: 'Booking not found' });
-    }
-
-    const booking = result.rows[0];
-
-    if (req.user.role === 'tourist' && booking.user_id !== req.user.id) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ success: false, message: 'Access denied' });
-    }
-
-    if (['cancelled', 'completed'].includes(booking.status)) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, message: `Booking is already ${booking.status}` });
-    }
-
-    await client.query(
-      `UPDATE bookings
-       SET status = 'cancelled', cancelled_at = NOW(), cancellation_reason = $1
-       WHERE id = $2`,
-      [req.body.reason || null, booking.id]
-    );
-
-    // Restore available spots
-    await client.query(
-      'UPDATE tour_availability SET available_spots = available_spots + $1 WHERE id = $2',
-      [booking.participants, booking.availability_id]
-    );
-
-    await client.query('COMMIT');
-
-    // Push notification (fire-and-forget — don't await)
-    const tourResult = await query(
-      'SELECT t.title FROM tours t JOIN bookings b ON b.tour_id = t.id WHERE b.id = $1',
-      [booking.id]
-    ).catch(() => ({ rows: [] }));
-    if (tourResult.rows.length) {
-      notify.sendBookingCancellation({
-        userId:    booking.user_id,
-        tourTitle: tourResult.rows[0].title,
-        bookingId: booking.id,
-      });
-    }
-
-    res.json({ success: true, message: 'Booking cancelled' });
-  } catch (err) {
-    await client.query('ROLLBACK');
-    next(err);
-  } finally {
-    client.release();
-  }
-};
-
-// PATCH /api/bookings/:id/status  (admin/company)
-const updateBookingStatus = async (req, res, next) => {
-  try {
-    const { status } = req.body;
-    const allowed = ['confirmed', 'completed', 'cancelled'];
-    if (!allowed.includes(status)) {
-      return res.status(400).json({ success: false, message: 'Invalid status' });
-    }
-
-    const result = await query(
-      'UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *',
-      [status, req.params.id]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
-    }
-
-    res.json({ success: true, data: { booking: result.rows[0] } });
-  } catch (err) {
-    next(err);
-  }
-};
-
-module.exports = { createBooking, listBookings, getBooking, cancelBooking, updateBookingStatus };

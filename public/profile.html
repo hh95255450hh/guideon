@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>My Profile — Guideon</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
+</head>
+<body>
+
+<nav class="navbar navbar-expand navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="navbar-controls ms-auto">
+      <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+      <a href="/" class="btn btn-sm btn-outline-light">← Home</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5" style="max-width:780px">
+
+  <!-- PROFILE PHOTO -->
+  <div class="text-center mb-4">
+    <div id="avatarWrap" style="position:relative;display:inline-block">
+      <div id="avatarCircle" style="width:110px;height:110px;border-radius:50%;background:var(--teal);color:#fff;font-size:2.5rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto;border:4px solid #fff;box-shadow:var(--shadow-lg)">?</div>
+      <label for="photoInput" style="position:absolute;bottom:0;right:0;width:32px;height:32px;background:var(--gold);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff" title="Change Photo">📷</label>
+      <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
+    </div>
+    <div id="photoStatus" class="small text-muted mt-2"></div>
+    <h4 id="profileName" class="fw-800 mt-2 mb-0"></h4>
+    <span id="profileType" class="badge bg-secondary mt-1"></span>
+  </div>
+
+  <div id="alertBox" class="alert d-none mb-3"></div>
+
+  <!-- TABS -->
+  <ul class="nav nav-tabs mb-4" id="profileTabs">
+    <li class="nav-item"><button class="nav-link active" onclick="showTab('tabInfo',this)">👤 Basic Info</button></li>
+    <li class="nav-item"><button class="nav-link" onclick="showTab('tabSecurity',this)">🔒 Password</button></li>
+    <li id="tabGuideNav" class="nav-item d-none"><button class="nav-link" onclick="showTab('tabGuide',this)">🎒 Guide Settings</button></li>
+  </ul>
+
+  <!-- TAB: Basic Info -->
+  <div id="tabInfo">
+    <div class="guide-card p-4">
+      <h5 class="fw-700 mb-4">Basic Information</h5>
+      <form onsubmit="saveBasic(event)">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Full Name *</label>
+            <input type="text" class="form-control" id="fName" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Email (read-only)</label>
+            <input type="email" class="form-control" id="fEmail" disabled>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Phone</label>
+            <input type="text" class="form-control" id="fPhone" placeholder="+968 XXXX XXXX">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Nationality</label>
+            <input type="text" class="form-control" id="fNationality" placeholder="e.g. British">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Preferred Language</label>
+            <select class="form-select" id="fLang">
+              <option>English</option><option>Arabic</option><option>French</option><option>German</option><option>Spanish</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-teal btn mt-4 px-4">💾 Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TAB: Password -->
+  <div id="tabSecurity" class="d-none">
+    <div class="guide-card p-4">
+      <h5 class="fw-700 mb-4">Change Password</h5>
+      <form onsubmit="changePassword(event)">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-600 small">Current Password *</label>
+            <input type="password" class="form-control" id="fCurPass" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">New Password *</label>
+            <input type="password" class="form-control" id="fNewPass" required minlength="8">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Confirm New Password *</label>
+            <input type="password" class="form-control" id="fConfPass" required minlength="8">
+          </div>
+        </div>
+        <button type="submit" class="btn-teal btn mt-4 px-4">🔒 Change Password</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TAB: Guide Settings -->
+  <div id="tabGuide" class="d-none">
+    <div class="guide-card p-4">
+      <h5 class="fw-700 mb-4">Guide Profile Settings</h5>
+      <form onsubmit="saveGuide(event)">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label fw-600 small">Professional Bio</label>
+            <textarea class="form-control" id="gBio" rows="4" placeholder="Tell tourists about your experience..."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Price Per Day (OMR)</label>
+            <input type="number" class="form-control" id="gPrice" min="1" step="0.5">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-600 small">Languages (comma-separated)</label>
+            <input type="text" class="form-control" id="gLangs" placeholder="Arabic, English, French">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-600 small">Destinations (comma-separated)</label>
+            <input type="text" class="form-control" id="gDests" placeholder="Muscat, Nizwa, Salalah">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-600 small">Specialisations (comma-separated)</label>
+            <input type="text" class="form-control" id="gSpecs" placeholder="Historical Sites, Desert Safaris, Cultural Tours">
+          </div>
+        </div>
+        <button type="submit" class="btn-teal btn mt-4 px-4">💾 Save Guide Settings</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
+<script>
+let currentUser = null;
+
+function showTab(id, btn) {
+  ['tabInfo','tabSecurity','tabGuide'].forEach(t => document.getElementById(t).classList.add('d-none'));
+  document.getElementById(id).classList.remove('d-none');
+  document.querySelectorAll('#profileTabs .nav-link').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function alert2(msg, type='danger') {
+  const el = document.getElementById('alertBox');
+  el.className = `alert alert-${type}`;
+  el.textContent = msg;
+  el.classList.remove('d-none');
+  setTimeout(() => el.classList.add('d-none'), 4000);
+}
+
+async function api(method, url, body) {
+  const r = await fetch(url, {
+    method, credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.message || 'Error');
+  return d;
+}
+
+function initials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+async function loadProfile() {
+  try {
+    const d = await api('GET', '/api/auth/me');
+    currentUser = d.user;
+    const u = currentUser;
+
+    // Avatar
+    const av = document.getElementById('avatarCircle');
+    if (u.photo) {
+      av.innerHTML = `<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      av.textContent = initials(u.fullName);
+    }
+
+    document.getElementById('profileName').textContent = u.fullName;
+    document.getElementById('profileType').textContent = u.userType.charAt(0).toUpperCase() + u.userType.slice(1);
+
+    // Basic info
+    document.getElementById('fName').value        = u.fullName || '';
+    document.getElementById('fEmail').value       = u.email || '';
+    document.getElementById('fPhone').value       = u.phone || '';
+    document.getElementById('fNationality').value = u.nationality || '';
+    document.getElementById('fLang').value        = u.preferredLanguage || 'English';
+
+    // Guide settings
+    if (u.userType === 'guide') {
+      document.getElementById('tabGuideNav').classList.remove('d-none');
+      document.getElementById('gBio').value   = u.bio || '';
+      document.getElementById('gPrice').value = u.pricePerDay || '';
+      document.getElementById('gLangs').value = (u.languages || []).join(', ');
+      document.getElementById('gDests').value = (u.destinations || []).join(', ');
+      document.getElementById('gSpecs').value = (u.specialisations || []).join(', ');
+    }
+  } catch {
+    window.location.href = '/login.html';
+  }
+}
+
+async function saveBasic(e) {
+  e.preventDefault();
+  try {
+    await api('PUT', '/api/auth/profile', {
+      fullName: document.getElementById('fName').value,
+      phone: document.getElementById('fPhone').value,
+      nationality: document.getElementById('fNationality').value,
+      preferredLanguage: document.getElementById('fLang').value,
+    });
+    alert2('Profile updated successfully!', 'success');
+    loadProfile();
+  } catch (err) { alert2(err.message); }
+}
+
+async function changePassword(e) {
+  e.preventDefault();
+  const np = document.getElementById('fNewPass').value;
+  const cp = document.getElementById('fConfPass').value;
+  if (np !== cp) return alert2('Passwords do not match.');
+  try {
+    await api('PUT', '/api/auth/change-password', {
+      currentPassword: document.getElementById('fCurPass').value,
+      newPassword: np,
+    });
+    alert2('Password changed successfully!', 'success');
+    document.getElementById('fCurPass').value = '';
+    document.getElementById('fNewPass').value = '';
+    document.getElementById('fConfPass').value = '';
+  } catch (err) { alert2(err.message); }
+}
+
+async function saveGuide(e) {
+  e.preventDefault();
+  try {
+    await api('PUT', '/api/guides/me/profile', {
+      bio: document.getElementById('gBio').value,
+      pricePerDay: document.getElementById('gPrice').value,
+      languages: document.getElementById('gLangs').value,
+      specialisations: document.getElementById('gSpecs').value,
+      destinations: document.getElementById('gDests').value,
+    });
+    alert2('Guide settings updated!', 'success');
+  } catch (err) { alert2(err.message); }
+}
+
+async function uploadPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('photoStatus');
+  status.textContent = 'Uploading...';
+  const form = new FormData();
+  form.append('photo', file);
+  try {
+    const r = await fetch('/api/auth/upload-photo', { method: 'POST', credentials: 'include', body: form });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    const av = document.getElementById('avatarCircle');
+    av.innerHTML = `<img src="${d.photo}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    status.textContent = '✅ Photo updated!';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } catch (err) { status.textContent = '❌ ' + err.message; }
+}
+
+loadProfile();
+</script>
+<script src="/js/pwa.js?v=10"></script>
+</body>
+</html>

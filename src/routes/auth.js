@@ -1,28 +1,37 @@
-const router = require('express').Router();
-const { body } = require('express-validator');
-const { register, login, refresh, logout, getMe } = require('../controllers/authController');
-const { authenticate } = require('../middleware/auth');
-const { validate } = require('../middleware/errorHandler');
+const router  = require('express').Router();
+const multer  = require('multer');
+const path    = require('path');
+const fs      = require('fs');
+const { v4: uuidv4 } = require('uuid');
+const auth    = require('../controllers/authController');
+const { requireLogin } = require('../middleware/auth');
 
-const registerRules = [
-  body('name').trim().notEmpty().withMessage('Name is required'),
-  body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
-  body('password')
-    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
-    .matches(/[A-Z]/).withMessage('Password must contain an uppercase letter')
-    .matches(/[0-9]/).withMessage('Password must contain a number'),
-  body('role').optional().isIn(['tourist', 'guide', 'company']),
-];
+const avatarStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(process.cwd(), 'public', 'uploads', 'avatars');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, uuidv4() + ext);
+  },
+});
+const upload = multer({
+  storage: avatarStorage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.webp'];
+    cb(null, allowed.includes(path.extname(file.originalname).toLowerCase()));
+  },
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
-const loginRules = [
-  body('email').isEmail().normalizeEmail(),
-  body('password').notEmpty(),
-];
-
-router.post('/register', registerRules, validate, register);
-router.post('/login',    loginRules,    validate, login);
-router.post('/refresh',  refresh);
-router.post('/logout',   authenticate, logout);
-router.get('/me',        authenticate, getMe);
+router.post('/register', auth.register);
+router.post('/login', auth.login);
+router.post('/logout', auth.logout);
+router.get('/me', requireLogin, auth.me);
+router.put('/profile', requireLogin, auth.updateProfile);
+router.put('/change-password', requireLogin, auth.changePassword);
+router.post('/upload-photo', requireLogin, upload.single('photo'), auth.uploadPhoto);
 
 module.exports = router;

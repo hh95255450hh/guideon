@@ -1,107 +1,58 @@
-const { query } = require('../config/database');
+const { v4: uuidv4 } = require('uuid');
+const SupabaseDB = require('../models/SupabaseDB');
 
-// POST /api/reviews
-const createReview = async (req, res, next) => {
+const reviews  = new SupabaseDB('reviews', 'reviewId');
+const bookings = new SupabaseDB('bookings');
+const users    = new SupabaseDB('users');
+
+exports.submitReview = async (req, res) => {
   try {
-    const { tour_id, booking_id, rating, comment } = req.body;
+    const { bookingId, rating, comment } = req.body;
+    const touristId = req.session.userId;
 
-    // Verify booking belongs to user and is completed
-    const bookingResult = await query(
-      `SELECT * FROM bookings
-       WHERE id = $1 AND user_id = $2 AND tour_id = $3 AND status = 'completed'`,
-      [booking_id, req.user.id, tour_id]
-    );
+    const booking = await bookings.findById(bookingId);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
+    if (booking.touristId !== touristId) return res.status(403).json({ success: false, message: 'Access denied.' });
+    if (booking.status !== 'completed') return res.status(400).json({ success: false, message: 'You can only review completed tours.' });
+    if (new Date(booking.tourDate) > new Date()) return res.status(400).json({ success: false, message: 'Tour has not taken place yet.' });
 
-    if (!bookingResult.rows.length) {
-      return res.status(400).json({
-        success: false,
-        message: 'You can only review completed tours that you booked',
-      });
-    }
+    const existing = await reviews.findOne(r => r.bookingId === bookingId);
+    if (existing) return res.status(409).json({ success: false, message: 'You have already reviewed this booking.' });
 
-    const result = await query(
-      `INSERT INTO reviews (tour_id, user_id, booking_id, rating, comment)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [tour_id, req.user.id, booking_id, rating, comment || null]
-    );
+    const tourist = await users.findById(touristId);
+    const review = {
+      reviewId: 'rv-' + uuidv4().slice(0, 8),
+      bookingId, touristId,
+      guideId: booking.guideId,
+      rating: parseInt(rating),
+      comment: comment || '',
+      touristName: tourist ? tourist.fullName : 'Anonymous',
+      createdAt: new Date().toISOString(),
+    };
+    await reviews.insert(review);
 
-    res.status(201).json({ success: true, message: 'Review submitted', data: { review: result.rows[0] } });
-  } catch (err) {
-    // Unique violation means user already reviewed this booking
-    if (err.code === '23505') {
-      return res.status(409).json({ success: false, message: 'You have already reviewed this booking' });
-    }
-    next(err);
-  }
-};
-
-// GET /api/tours/:tourId/reviews
-const getTourReviews = async (req, res, next) => {
-  try {
-    const { tourId } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-
-    const [reviewsResult, countResult, statsResult] = await Promise.all([
-      query(
-        `SELECT r.id, r.rating, r.comment, r.created_at, u.name AS reviewer_name, u.avatar_url
-         FROM reviews r
-         JOIN users u ON u.id = r.user_id
-         WHERE r.tour_id = $1
-         ORDER BY r.created_at DESC
-         LIMIT $2 OFFSET $3`,
-        [tourId, parseInt(limit), offset]
-      ),
-      query('SELECT COUNT(*) FROM reviews WHERE tour_id = $1', [tourId]),
-      query(
-        `SELECT
-           ROUND(AVG(rating), 2) AS avg_rating,
-           COUNT(*) AS total,
-           SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) AS five_star,
-           SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) AS four_star,
-           SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) AS three_star,
-           SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) AS two_star,
-           SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) AS one_star
-         FROM reviews WHERE tour_id = $1`,
-        [tourId]
-      ),
-    ]);
-
-    res.json({
-      success: true,
-      data: {
-        reviews: reviewsResult.rows,
-        stats: statsResult.rows[0],
-        pagination: {
-          total: parseInt(countResult.rows[0].count),
-          page: parseInt(page),
-          limit: parseInt(limit),
-        },
-      },
+    const guideReviews = await reviews.findAll(r => r.guideId === booking.guideId);
+    const avg = guideReviews.reduce((s, r) => s + r.rating, 0) / guideReviews.length;
+    await users.update(booking.guideId, {
+      rating: Math.round(avg * 10) / 10,
+      totalReviews: guideReviews.length,
     });
+
+    res.status(201).json({ success: true, message: 'Review submitted. Thank you!', review });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
-// DELETE /api/reviews/:id  (owner or admin)
-const deleteReview = async (req, res, next) => {
+exports.guideReviews = async (req, res) => {
   try {
-    const result = await query('SELECT * FROM reviews WHERE id = $1', [req.params.id]);
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: 'Review not found' });
-    }
-
-    if (req.user.role !== 'admin' && result.rows[0].user_id !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Access denied' });
-    }
-
-    await query('DELETE FROM reviews WHERE id = $1', [req.params.id]);
-    res.json({ success: true, message: 'Review deleted' });
+    const { guideId } = req.params;
+    const list = await reviews.findAll(r => r.guideId === guideId);
+    list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({ success: true, reviews: list });
   } catch (err) {
-    next(err);
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
-
-module.exports = { createReview, getTourReviews, deleteReview };

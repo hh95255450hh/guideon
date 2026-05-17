@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f7b6c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Guideon">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+<title>Guide Profile — Guideon</title>
+<link id="bs-ltr" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=10">
+</head>
+<body>
+
+<nav class="navbar navbar-expand navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="navbar-controls ms-auto">
+      <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+      <select class="currency-selector" id="currencySelect" onchange="setCurrency(this.value)">
+        <option value="OMR">OMR</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+      </select>
+      <div id="navAuth" class="d-flex gap-2">
+        <a href="/login.html" class="btn btn-outline-light btn-sm" data-i18n="nav_login">Log In</a>
+        <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
+      </div>
+      <div id="navUser" class="d-none d-flex gap-2 align-items-center">
+        <span class="text-white opacity-75 small" id="navName"></span>
+        <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn" data-i18n="nav_dashboard">Dashboard</a>
+        <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div id="pageContent" class="d-none">
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="container">
+      <div class="row align-items-center g-4">
+        <div class="col-md-auto text-center">
+          <div class="profile-avatar mx-auto mb-2" id="pAvatar">?</div>
+        </div>
+        <div class="col-md">
+          <h2 class="fw-800 mb-1" id="pName">—</h2>
+          <div id="pVerified" class="mb-2"></div>
+          <div class="rating mb-2" id="pRating"></div>
+          <div class="d-flex flex-wrap gap-2 mb-2" id="pLangs"></div>
+          <div class="text-white opacity-75 small" id="pDests"></div>
+        </div>
+        <div class="col-md-auto text-center">
+          <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:20px 32px">
+            <div style="font-size:2rem;font-weight:800;color:var(--gold)" id="pPrice">OMR 0</div>
+            <div class="small opacity-75" data-i18n="per_day">/day</div>
+            <div style="font-size:.85rem;opacity:.7;margin-top:4px" id="pReviews">0 reviews</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    <div class="row g-4">
+      <!-- LEFT: Info -->
+      <div class="col-lg-8">
+        <div class="info-card">
+          <h5 class="fw-700 mb-3" data-i18n="about">About</h5>
+          <p class="text-muted mb-0" id="pBio" style="line-height:1.7">—</p>
+        </div>
+
+        <div class="info-card">
+          <h5 class="fw-700 mb-3" data-i18n="specialisations">Specialisations</h5>
+          <div id="pSpecs" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <div class="info-card">
+          <h5 class="fw-700 mb-3" data-i18n="reviews_title">Tourist Reviews</h5>
+          <div id="pReviewList">
+            <div class="text-muted small" data-i18n="no_reviews">No reviews yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Booking Panel -->
+      <div class="col-lg-4">
+        <div class="booking-panel" id="bookingPanel">
+          <div class="price-big mb-0" id="bPrice">OMR 0</div>
+          <div class="price-sub mb-3" data-i18n="per_day">per day</div>
+
+          <div id="notLoggedMsg" class="alert-teal mb-3 small"></div>
+          <div id="notTouristMsg" class="d-none alert alert-info small mb-3" data-i18n="only_tourist">Only tourist accounts can make bookings.</div>
+
+          <div id="bookingForm">
+            <div class="mb-3">
+              <label class="form-label fw-600 small" data-i18n="tour_date">Tour Date *</label>
+              <select class="form-select" id="bDate">
+                <option value="" data-i18n="select_date">— Select an available date —</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-600 small" data-i18n="duration">Duration *</label>
+              <div class="d-flex gap-2">
+                <label class="flex-1 border rounded-3 p-2 text-center" style="cursor:pointer">
+                  <input type="radio" name="bDuration" value="full" checked class="me-1"><span data-i18n="full_day">Full Day</span>
+                </label>
+                <label class="flex-1 border rounded-3 p-2 text-center" style="cursor:pointer">
+                  <input type="radio" name="bDuration" value="half" class="me-1"><span data-i18n="half_day">Half Day (60%)</span>
+                </label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-600 small" data-i18n="destination">Destination</label>
+              <select class="form-select" id="bDest">
+                <option value="" data-i18n="select_dest">— Select destination —</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-600 small" data-i18n="participants">Participants</label>
+              <input type="number" class="form-control" id="bParticipants" value="1" min="1" max="10">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-600 small" data-i18n="special_req">Special Requests (optional)</label>
+              <textarea class="form-control" id="bSpecial" rows="2" data-i18n-ph="special_placeholder" placeholder="Any preferences or notes for the guide..."></textarea>
+            </div>
+
+            <div class="price-summary" id="bSummary" style="display:none">
+              <div class="row"><div class="col" data-i18n="price_label">Price</div><div class="col-auto fw-600" id="bSumPrice">—</div></div>
+              <div class="row total-row"><div class="col" data-i18n="total_label">Total</div><div class="col-auto" id="bSumTotal">—</div></div>
+            </div>
+
+            <!-- Deposit options (TourHQ feature) -->
+            <div class="mb-3 mt-2">
+              <label class="form-label fw-600 small" data-i18n="deposit_lbl">Payment Option</label>
+              <div class="row g-2" id="depositOptions">
+                <div class="col-4"><div class="deposit-option selected" onclick="selectDeposit(this,'20')"><div class="dep-pct">20%</div><div class="dep-label" data-i18n="deposit_20">Deposit</div><div class="dep-amount" id="dep20">—</div></div></div>
+                <div class="col-4"><div class="deposit-option" onclick="selectDeposit(this,'50')"><div class="dep-pct">50%</div><div class="dep-label" data-i18n="deposit_50">Deposit</div><div class="dep-amount" id="dep50">—</div></div></div>
+                <div class="col-4"><div class="deposit-option" onclick="selectDeposit(this,'100')"><div class="dep-pct">100%</div><div class="dep-label" data-i18n="deposit_full">Full</div><div class="dep-amount" id="dep100">—</div></div></div>
+              </div>
+              <div class="small text-muted mt-1" data-i18n="deposit_note">Remaining balance paid to guide on the day of the tour.</div>
+              <input type="hidden" id="bDeposit" value="20">
+            </div>
+
+            <button class="btn-book btn mt-2" onclick="submitBooking()" id="bBtn" data-i18n="book_btn">Request Booking</button>
+            <div class="small text-muted mt-2 text-center" data-i18n="book_note">The guide will confirm your request within 24 hours.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="loadingState" class="text-center py-5 text-muted" data-i18n="loading_guides">Loading guide profile...</div>
+<div id="errorState" class="d-none text-center py-5">
+  <div style="font-size:3rem">⚠️</div>
+  <h5 data-i18n="guide_not_found">Guide not found</h5>
+  <a href="/search.html" class="btn-teal btn mt-2" data-i18n="back_search">Back to Search</a>
+</div>
+
+<div id="toast-container"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=10"></script>
+<script src="/js/chatbot.js?v=11"></script>
+<script>
+let GUIDE = null;
+let SESSION = null;
+
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function stars(r) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) s += `<span class="${i <= Math.round(r) ? 'star-full' : 'star-empty'}">★</span>`;
+  return s;
+}
+
+function initials(n) {
+  return (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function formatDate(d) {
+  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+  return new Date(d + 'T00:00:00').toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+async function doLogout() {
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  window.location.href = '/';
+}
+
+async function loadGuide() {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { showError(); return; }
+
+  try {
+    const [profileRes, sessionRes] = await Promise.allSettled([
+      fetch(`/api/guides/${id}`, { credentials: 'include' }),
+      fetch('/api/auth/me', { credentials: 'include' }),
+    ]);
+
+    if (profileRes.status === 'rejected') { showError(); return; }
+    const profileData = await profileRes.value.json();
+    if (!profileData.success) { showError(); return; }
+
+    GUIDE = profileData.guide;
+    const reviews = profileData.reviews || [];
+
+    if (sessionRes.status === 'fulfilled') {
+      const sd = await sessionRes.value.json();
+      if (sd.success) SESSION = sd.user;
+    }
+
+    renderProfile(GUIDE, reviews);
+    setupNav();
+    setCurrency(getCurrency());
+    document.getElementById('loadingState').classList.add('d-none');
+    document.getElementById('pageContent').classList.remove('d-none');
+  } catch { showError(); }
+}
+
+function showError() {
+  document.getElementById('loadingState').classList.add('d-none');
+  document.getElementById('errorState').classList.remove('d-none');
+}
+
+function renderProfile(g, reviews) {
+  document.title = g.fullName + ' — Guideon';
+  const av = document.getElementById('pAvatar');
+  if (g.photo) { av.innerHTML = `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; }
+  else { av.textContent = initials(g.fullName); }
+  document.getElementById('pName').textContent = g.fullName;
+  document.getElementById('pPrice').textContent = I18N.t('omr_day') + ' ' + g.pricePerDay;
+  document.getElementById('bPrice').textContent = I18N.t('omr_day') + ' ' + g.pricePerDay;
+  document.getElementById('pReviews').textContent = I18N.t('reviews_count', g.totalReviews);
+  document.getElementById('pBio').textContent = g.bio || I18N.t('no_reviews');
+  document.getElementById('pRating').innerHTML = stars(g.rating) + ` <span class="text-white opacity-75 ms-1">${g.rating} (${I18N.t('reviews_count', g.totalReviews)})</span>`;
+
+  const isSuperGuide = g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2;
+  if (g.isVerified) {
+    document.getElementById('pVerified').innerHTML =
+      `<span class="verified-pill">${I18N.t('verified_lbl')} ${g.licenceNumber}</span>` +
+      (isSuperGuide ? ` <span class="super-guide-badge ms-2">${I18N.t('super_guide')}</span>` : '');
+  } else {
+    document.getElementById('pVerified').innerHTML = `<span class="verified-pill pending">${I18N.t('pending_lbl')}</span>`;
+  }
+
+  document.getElementById('pLangs').innerHTML = g.languages.map(l => `<span class="lang-badge">${l}</span>`).join('');
+  document.getElementById('pDests').innerHTML = '📍 ' + g.destinations.join(' · ');
+  document.getElementById('pSpecs').innerHTML = g.specialisations.map(s => `<span class="spec-badge">${s}</span>`).join('');
+
+  // Availability dates
+  const dateSelect = document.getElementById('bDate');
+  dateSelect.innerHTML = `<option value="">${I18N.t('select_date')}</option>`;
+  g.availability.sort();
+  g.availability.forEach(d => {
+    if (d >= new Date().toISOString().slice(0, 10)) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = formatDate(d);
+      dateSelect.appendChild(opt);
+    }
+  });
+
+  // Destinations
+  const destSelect = document.getElementById('bDest');
+  destSelect.innerHTML = `<option value="">${I18N.t('select_dest')}</option>`;
+  g.destinations.forEach(d => {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    destSelect.appendChild(opt);
+  });
+
+  // Reviews
+  if (reviews.length) {
+    const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+    document.getElementById('pReviewList').innerHTML = reviews.slice(0, 5).map(r => `
+      <div class="review-card">
+        <div class="d-flex justify-content-between mb-1">
+          <span class="reviewer">${r.touristName}</span>
+          <span class="rating">${stars(r.rating)}</span>
+        </div>
+        <p class="mb-1 small" style="line-height:1.6">${r.comment}</p>
+        <div class="review-date">${new Date(r.createdAt).toLocaleDateString(locale, {month:'short',day:'numeric',year:'numeric'})}</div>
+      </div>`).join('');
+  } else {
+    document.getElementById('pReviewList').innerHTML = `<div class="text-muted small">${I18N.t('no_reviews')}</div>`;
+  }
+
+  document.querySelectorAll('[name=bDuration]').forEach(r => r.addEventListener('change', updatePrice));
+  document.getElementById('bDate').addEventListener('change', updatePrice);
+  updatePrice();
+  setupBookingAccess();
+}
+
+/* ── CURRENCY (TourHQ feature) ── */
+const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
+function getCurrency() { return localStorage.getItem('og_currency') || 'OMR'; }
+function convertPrice(omr) {
+  const cur = getCurrency();
+  return (omr * RATES[cur]).toFixed(2) + ' ' + cur;
+}
+
+function selectDeposit(el, pct) {
+  document.querySelectorAll('.deposit-option').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('bDeposit').value = pct;
+  updatePrice();
+}
+
+function updatePrice() {
+  if (!GUIDE) return;
+  const duration = document.querySelector('[name=bDuration]:checked')?.value || 'full';
+  const price = duration === 'half' ? GUIDE.pricePerDay * 0.6 : GUIDE.pricePerDay;
+  const pct = parseInt(document.getElementById('bDeposit').value || '20') / 100;
+  const summary = document.getElementById('bSummary');
+  const date = document.getElementById('bDate').value;
+  const dayLabel = duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
+
+  // Update deposit amounts
+  document.getElementById('dep20').textContent = convertPrice(price * 0.20);
+  document.getElementById('dep50').textContent = convertPrice(price * 0.50);
+  document.getElementById('dep100').textContent = convertPrice(price);
+
+  if (date) {
+    summary.style.display = '';
+    document.getElementById('bSumPrice').textContent = `${convertPrice(price)} (${dayLabel})`;
+    document.getElementById('bSumTotal').textContent = `${convertPrice(price * pct)} (${parseInt(pct * 100)}% ${I18N.t('deposit_lbl')})`;
+  } else {
+    summary.style.display = 'none';
+  }
+}
+
+function setupBookingAccess() {
+  const form = document.getElementById('bookingForm');
+  const notLogged = document.getElementById('notLoggedMsg');
+  const notTourist = document.getElementById('notTouristMsg');
+
+  if (!SESSION) {
+    notLogged.innerHTML = `<a href="/login.html" style="color:var(--teal-dark);font-weight:700">${I18N.t('nav_login')}</a> ${I18N.t('signin_to_book')}`;
+    notLogged.style.display = '';
+    form.querySelectorAll('select,input,textarea,button').forEach(el => el.disabled = true);
+  } else if (SESSION.userType !== 'tourist') {
+    notLogged.style.display = 'none';
+    notTourist.classList.remove('d-none');
+    form.querySelectorAll('select,input,textarea,button').forEach(el => el.disabled = true);
+  } else {
+    notLogged.style.display = 'none';
+  }
+}
+
+function setupNav() {
+  if (SESSION) {
+    document.getElementById('navAuth').classList.add('d-none');
+    document.getElementById('navUser').classList.remove('d-none');
+    document.getElementById('navName').textContent = SESSION.fullName.split(' ')[0];
+    const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html' };
+    document.getElementById('navDashBtn').href = dashMap[SESSION.userType] || '/';
+  }
+}
+
+async function submitBooking() {
+  const date = document.getElementById('bDate').value;
+  const destination = document.getElementById('bDest').value;
+  const duration = document.querySelector('[name=bDuration]:checked')?.value;
+  const participants = document.getElementById('bParticipants').value;
+  const specialRequests = document.getElementById('bSpecial').value;
+
+  if (!date) { toast(I18N.t('select_date'), 'error'); return; }
+  if (!destination) { toast(I18N.t('select_dest'), 'error'); return; }
+
+  const btn = document.getElementById('bBtn');
+  btn.disabled = true; btn.textContent = I18N.t('reg_loading');
+
+  try {
+    const r = await fetch('/api/bookings', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guideId: GUIDE.id, tourDate: date, duration, destination, participants, specialRequests }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('book_note'), 'success');
+    setTimeout(() => window.location.href = '/tourist-dashboard.html', 2000);
+  } catch (e) {
+    toast(e.message, 'error');
+    btn.disabled = false; btn.textContent = I18N.t('book_btn');
+  }
+}
+
+function setCurrency(cur) {
+  localStorage.setItem('og_currency', cur);
+  updatePrice();
+  const omr = GUIDE ? GUIDE.pricePerDay : 0;
+  document.getElementById('pPrice').textContent = convertPrice(omr);
+  document.getElementById('bPrice').textContent = convertPrice(omr);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = document.getElementById('currencySelect');
+  if (sel) sel.value = getCurrency();
+});
+
+window.onLangChange = () => {
+  if (GUIDE) loadGuide();
+};
+
+loadGuide();
+</script>
+<style>.flex-1{flex:1}</style>
+<script src="/js/pwa.js?v=10"></script>
+</body>
+</html>

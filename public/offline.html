@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Offline — Guideon</title>
+<style>
+  :root { --teal:#0f7b6c; --gold:#c9a84c; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background: linear-gradient(135deg,#0f7b6c,#1a9080);
+    font-family:'Segoe UI',Arial,sans-serif;
+    color:#fff;
+    padding:24px;
+    text-align:center;
+  }
+  .icon { font-size:5rem; margin-bottom:20px; animation:sway 3s ease-in-out infinite; }
+  @keyframes sway {
+    0%,100% { transform:rotate(-5deg); }
+    50%      { transform:rotate(5deg); }
+  }
+  h1 { font-size:1.8rem; font-weight:800; margin-bottom:8px; }
+  p  { opacity:.85; line-height:1.6; max-width:340px; margin-bottom:28px; font-size:1rem; }
+  .card {
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:16px;
+    padding:20px 28px;
+    margin-bottom:28px;
+    max-width:380px;
+    width:100%;
+    text-align:left;
+  }
+  .card h3 { font-size:.95rem; margin-bottom:12px; opacity:.8; text-transform:uppercase; letter-spacing:.5px; }
+  .link-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.1); }
+  .link-row:last-child { border:none; }
+  .link-row span { font-size:1.2rem; }
+  .link-row a { color:#fff; text-decoration:none; font-weight:600; }
+  .link-row a:hover { text-decoration:underline; }
+  .btn {
+    display:inline-block;
+    background:var(--gold);
+    color:#1a1a1a;
+    font-weight:700;
+    padding:14px 36px;
+    border-radius:50px;
+    border:none;
+    cursor:pointer;
+    font-size:1rem;
+    text-decoration:none;
+    transition:opacity .2s;
+  }
+  .btn:hover { opacity:.9; }
+  .status { margin-top:20px; font-size:.85rem; opacity:.7; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444; margin-right:6px; animation:pulse 2s infinite; }
+  .dot.online { background:#22c55e; animation:none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  [dir=rtl] .link-row { text-align:right; }
+</style>
+</head>
+<body>
+
+<div class="icon">🌴</div>
+<h1 id="heading">You're Offline</h1>
+<p id="subtext">No internet connection detected. Check your connection and try again — Guideon will reload automatically when you're back online.</p>
+
+<div class="card">
+  <h3 id="pagesLabel">Cached pages available</h3>
+  <div class="link-row"><span>🏠</span><a href="/">Home</a></div>
+  <div class="link-row"><span>🔍</span><a href="/search">Find a Guide</a></div>
+  <div class="link-row"><span>🔑</span><a href="/login">Log In</a></div>
+  <div class="link-row"><span>📋</span><a href="/tourist-dashboard">My Bookings</a></div>
+</div>
+
+<button class="btn" onclick="tryReload()" id="reloadBtn">🔄 Try Again</button>
+
+<div class="status">
+  <span class="dot" id="statusDot"></span>
+  <span id="statusText">Checking connection…</span>
+</div>
+
+<script>
+  function tryReload() {
+    window.location.reload();
+  }
+
+  function checkOnline() {
+    const dot  = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    if (navigator.onLine) {
+      dot.className = 'dot online';
+      text.textContent = 'Connection restored — reloading…';
+      setTimeout(() => window.location.href = document.referrer || '/', 1200);
+    } else {
+      dot.className = 'dot';
+      text.textContent = 'Still offline';
+    }
+  }
+
+  window.addEventListener('online',  checkOnline);
+  window.addEventListener('offline', checkOnline);
+  checkOnline();
+
+  // Arabic support
+  const ar = {
+    heading:    'أنت غير متصل بالإنترنت',
+    subtext:    'لا يوجد اتصال بالإنترنت. تحقق من اتصالك وحاول مجدداً — سيُعاد تحميل التطبيق تلقائياً.',
+    pagesLabel: 'الصفحات المتاحة بدون إنترنت',
+    reloadBtn:  '🔄 إعادة المحاولة',
+  };
+  const lang = localStorage.getItem('og_lang');
+  if (lang === 'ar') {
+    document.documentElement.lang = 'ar';
+    document.documentElement.dir  = 'rtl';
+    Object.keys(ar).forEach(k => {
+      const el = document.getElementById(k);
+      if (el) el.textContent = ar[k];
+    });
+  }
+</script>
+</body>
+</html>
