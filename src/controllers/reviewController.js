@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
+const email = require('../services/emailService');
 
 const reviews  = new SupabaseDB('reviews', 'reviewId');
 const bookings = new SupabaseDB('bookings');
@@ -33,10 +34,21 @@ exports.submitReview = async (req, res) => {
 
     const guideReviews = await reviews.findAll(r => r.guideId === booking.guideId);
     const avg = guideReviews.reduce((s, r) => s + r.rating, 0) / guideReviews.length;
+    const guide = await users.findById(booking.guideId);
     await users.update(booking.guideId, {
       rating: Math.round(avg * 10) / 10,
       totalReviews: guideReviews.length,
     });
+
+    // Notify guide of new review
+    if (guide) {
+      email.sendGuideNewReview({
+        email: guide.email, name: guide.fullName,
+        touristName: review.touristName,
+        rating: review.rating, comment: review.comment,
+        destination: booking.destination,
+      }).catch(() => {});
+    }
 
     res.status(201).json({ success: true, message: 'Review submitted. Thank you!', review });
   } catch (err) {

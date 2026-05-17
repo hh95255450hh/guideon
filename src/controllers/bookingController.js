@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
+const email = require('../services/emailService');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
@@ -42,6 +43,21 @@ exports.createBooking = async (req, res) => {
     };
 
     await bookings.insert(booking);
+
+    // Emails: tourist (request sent) + guide (new booking)
+    const tourist = await users.findById(touristId);
+    email.sendTouristBookingPending({
+      email: tourist.email, name: tourist.fullName,
+      guideName: guide.fullName, destination, tourDate,
+      duration, totalAmount: booking.totalAmount, bookingId: booking.id,
+    }).catch(() => {});
+    email.sendGuideNewBooking({
+      email: guide.email, name: guide.fullName,
+      touristName: tourist.fullName, destination, tourDate,
+      duration, participants: participantCount,
+      totalAmount: booking.totalAmount, bookingId: booking.id,
+    }).catch(() => {});
+
     res.status(201).json({ success: true, message: 'Booking request sent. Waiting for guide confirmation.', booking });
   } catch (err) {
     console.error(err);
@@ -115,6 +131,25 @@ exports.updateStatus = async (req, res) => {
     }
 
     const updated = await bookings.update(id, { status });
+
+    // Send emails based on new status
+    const tourist = await users.findById(booking.touristId);
+    const guide   = await users.findById(booking.guideId);
+    const emailData = {
+      destination: booking.destination,
+      tourDate:    booking.tourDate,
+      totalAmount: booking.totalAmount,
+      bookingId:   id,
+    };
+    if (status === 'confirmed') {
+      if (tourist) email.sendTouristBookingConfirmed({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
+      if (guide)   email.sendGuideBookingConfirmed({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
+    } else if (status === 'cancelled') {
+      if (tourist) email.sendTouristBookingCancelled({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
+      if (guide)   email.sendGuideBookingCancelled({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
+    } else if (status === 'completed') {
+      if (tourist) email.sendTouristReviewReminder({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, destination: booking.destination, bookingId: id }).catch(() => {});
+    }
 
     if (status === 'confirmed') {
       const guide = await users.findById(booking.guideId);

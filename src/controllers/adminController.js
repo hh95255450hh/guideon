@@ -1,4 +1,5 @@
 const SupabaseDB = require('../models/SupabaseDB');
+const email = require('../services/emailService');
 
 const users    = new SupabaseDB('users');
 const bookings = new SupabaseDB('bookings');
@@ -70,6 +71,7 @@ exports.verifyGuide = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Guide not found.' });
     }
     await users.update(id, { isVerified: true });
+    email.sendGuideVerified({ email: guide.email, name: guide.fullName }).catch(() => {});
     res.json({ success: true, message: `${guide.fullName} has been verified and is now visible in search results.` });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
