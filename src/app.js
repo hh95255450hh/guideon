@@ -92,11 +92,7 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Guideon running on http://localhost:${PORT}`);
-  console.log('Demo accounts:');
-  console.log('  Admin:   admin@Guideon.om     / Admin123!');
-  console.log('  Tourist: tourist@example.com    / Password123!');
-  console.log('  Guide:   mohammed@Guideon.om  / Password123!');
+  console.log(`Guideon running on port ${PORT}`);
 });
 
 module.exports = app;

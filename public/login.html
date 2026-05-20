@@ -49,16 +49,6 @@
             <button type="submit" class="btn-teal btn w-100 py-2" id="submitBtn" data-i18n="login_btn">Sign In</button>
           </form>
 
-          <hr class="my-4">
-          <div class="mb-3">
-            <p class="small text-muted fw-700 text-center mb-2" data-i18n="demo_accounts">Quick Login — Demo Accounts</p>
-            <div class="d-flex flex-wrap gap-2 justify-content-center">
-              <button class="btn btn-sm btn-outline-secondary" onclick="fill('tourist@example.com','Password123!')">👤 Tourist</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="fill('mohammed@Guideon.om','Password123!')">🎒 Guide</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="fill('admin@Guideon.om','Admin123!')">🛡️ Admin</button>
-            </div>
-          </div>
-
           <p class="text-center small text-muted mt-4">
             <span data-i18n="no_account">Don't have an account?</span>
             <a href="/register.html" class="fw-600" style="color:var(--teal)" data-i18n="signup_link">Sign Up</a>
@@ -104,5 +94,25 @@ async function doLogin(e) {
 }
 </script>
 <script src="/js/pwa.js?v=10"></script>
+<script>
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;max-width:320px;background:#0f7b6c;color:#fff;border-radius:14px;padding:16px 20px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:9999;font-size:.9rem;animation:slideUp .4s ease';
+    t.innerHTML = `
+      <div style="font-size:1.3rem;margin-bottom:6px">🌍 مرحباً بك في Guideon</div>
+      <div style="opacity:.92;line-height:1.5">اكتشف أفضل المرشدين السياحيين في عُمان.<br>سجّل حسابك مجاناً الآن!</div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <a href="/register.html" style="background:#fff;color:#0f7b6c;padding:6px 16px;border-radius:8px;font-weight:700;text-decoration:none;font-size:.85rem">إنشاء حساب</a>
+        <button onclick="this.closest('div[style]').remove()" style="background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85rem">لاحقاً</button>
+      </div>`;
+    document.body.appendChild(t);
+    const s = document.createElement('style');
+    s.textContent = '@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}';
+    document.head.appendChild(s);
+    setTimeout(() => t.remove(), 12000);
+  }, 1500);
+});
+</script>
 </body>
 </html>
