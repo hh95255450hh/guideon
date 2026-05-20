@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Guideon-cdn-v1';
+const CACHE_NAME = 'Guideon-cdn-v2';
 
 const CDN_ASSETS = [
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
