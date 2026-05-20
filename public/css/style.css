@@ -16,6 +16,7 @@
   --radius: 12px;
 }
 
+html, body { overflow-x: hidden; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
 
 /* ── NAVBAR ── */
@@ -504,8 +505,20 @@ body.dark-mode footer { background: #060d1a; }
   .cal-day { font-size: 0.8rem; }
 }
 
+/* ── CAROUSEL ── */
+#omanCarousel { width: 100%; overflow: hidden; }
+#omanCarousel .carousel-item { position: relative; overflow: hidden; }
+#omanCarousel .carousel-item img { display: block; width: 100%; object-fit: cover; }
+#omanCarousel .carousel-caption { z-index: 20; }
+#omanCarousel .carousel-caption h2 { font-size: 1.8rem; font-weight: 800; }
+
 /* ── MOBILE (≤768px) ────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Carousel: shorter on mobile */
+  #omanCarousel .carousel-item img { height: 320px !important; }
+  #omanCarousel .carousel-caption { bottom: 20px !important; left: 5% !important; right: 5% !important; }
+  #omanCarousel .carousel-caption h2 { font-size: 1.2rem; }
+  #omanCarousel .carousel-caption p { display: none; }
   /* Navbar collapse */
   .navbar-collapse .navbar-controls {
     flex-wrap: wrap;
