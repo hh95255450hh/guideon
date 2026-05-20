@@ -5,7 +5,7 @@
     // Clear all old caches first, then register fresh service worker
     if ('caches' in window) {
       caches.keys().then(keys => Promise.all(
-        keys.filter(k => k !== 'Guideon-cdn-v1').map(k => caches.delete(k))
+        keys.filter(k => k !== 'Guideon-cdn-v2').map(k => caches.delete(k))
       )).catch(() => {});
     }
 
