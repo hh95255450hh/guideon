@@ -64,11 +64,6 @@
 <script src="/js/i18n.js?v=10"></script>
 <script src="/js/chatbot.js?v=11"></script>
 <script>
-function fill(e, p) {
-  document.getElementById('email').value = e;
-  document.getElementById('password').value = p;
-}
-
 async function doLogin(e) {
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
