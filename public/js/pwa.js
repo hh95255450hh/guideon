@@ -1,11 +1,16 @@
 (() => {
   const VAPID_KEY = 'NwaVO_x8unxTQqE24RG9OzAEiRlriePJQaYC4PPdXGw';
 
-  // ── Register Service Worker ─────────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
+    // Clear all old caches first, then register fresh service worker
+    if ('caches' in window) {
+      caches.keys().then(keys => Promise.all(
+        keys.filter(k => k !== 'Guideon-cdn-v1').map(k => caches.delete(k))
+      )).catch(() => {});
+    }
+
     navigator.serviceWorker.register('/sw.js')
       .then(reg => {
-        console.log('[SW] registered');
         if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         reg.addEventListener('updatefound', () => {
           const w = reg.installing;
@@ -16,10 +21,10 @@
           });
         });
       })
-      .catch(err => console.warn('[SW] registration failed:', err));
+      .catch(() => {});
   }
 
-  // ── Request push notification permission & get FCM token ───────────────────
+  // ── Request push notification permission ────────────────────────────────────
   async function requestNotificationPermission() {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
     if (Notification.permission === 'denied') return;
@@ -28,17 +33,21 @@
     if (permission !== 'granted') return;
 
     try {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+      const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
       const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js');
 
-      const app = initializeApp({
+      const firebaseConfig = {
         apiKey:            'AIzaSyPlaceholder',
         authDomain:        'guideon-55995.firebaseapp.com',
         projectId:         'guideon-55995',
         storageBucket:     'guideon-55995.appspot.com',
         messagingSenderId: '108887603705271785305',
         appId:             '1:108887603705271785305:web:placeholder',
-      }, 'guideon-pwa');
+      };
+
+      const app = getApps().find(a => a.name === 'guideon-pwa') ||
+                  (await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'))
+                    .initializeApp(firebaseConfig, 'guideon-pwa');
 
       const messaging = getMessaging(app);
       const swReg = await navigator.serviceWorker.ready;
@@ -57,7 +66,7 @@
     }
   }
 
-  // Request permission after page load (only if user is logged in)
+  // Request permission only if user is logged in
   window.addEventListener('load', () => {
     setTimeout(() => {
       fetch('/api/auth/me', { credentials: 'include' })

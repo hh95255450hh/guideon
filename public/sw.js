@@ -1,126 +1,44 @@
-const CACHE_VERSION = 'Guideon-v10';
-const STATIC_CACHE  = CACHE_VERSION + '-static';
-const IMAGE_CACHE   = CACHE_VERSION + '-images';
+const CACHE_NAME = 'Guideon-cdn-v1';
 
-// Only pre-cache CDN resources and icons (local files use network-first)
-const PRECACHE = [
-  '/offline.html',
-  '/icon-192.png',
-  '/icon-512.png',
+const CDN_ASSETS = [
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js',
 ];
 
-// ── Install: wipe ALL old caches then pre-cache fresh ────────────────────────
+// ── Install: only cache CDN assets ───────────────────────────────────────────
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
-      .then(() => caches.open(STATIC_CACHE))
-      .then(cache =>
-        cache.addAll(PRECACHE.map(url => new Request(url, { cache: 'reload' })))
-          .catch(() => {})
-      )
-  );
-});
-
-// ── Activate: claim all clients then notify them to reload ───────────────────
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    self.clients.claim().then(() =>
-      self.clients.matchAll({ type: 'window' }).then(clients =>
-        clients.forEach(c => c.postMessage({ type: 'RELOAD' }))
-      )
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(CDN_ASSETS.map(url => new Request(url, { cache: 'reload' }))).catch(() => {})
     )
   );
 });
 
-// ── Fetch strategy ────────────────────────────────────────────────────────────
+// ── Activate: remove old caches ───────────────────────────────────────────────
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// ── Fetch: local files always from network, CDN from cache ───────────────────
 self.addEventListener('fetch', event => {
-  const { request } = event;
-  const url = new URL(request.url);
+  const url = new URL(event.request.url);
 
-  // 1. API calls → Network Only (never cache)
-  if (url.pathname.startsWith('/api/')) return;
+  // Never cache API calls or non-GET
+  if (url.pathname.startsWith('/api/') || event.request.method !== 'GET') return;
 
-  // 2. Non-GET → pass through
-  if (request.method !== 'GET') return;
+  // Local files (HTML, CSS, JS, images) → always from network
+  if (url.origin === self.location.origin) return;
 
-  // 3. Images → Cache First
-  if (/\.(png|jpg|jpeg|webp|svg|gif|ico)$/i.test(url.pathname)) {
-    event.respondWith(cacheFirst(request, IMAGE_CACHE));
-    return;
-  }
-
-  // 4. Local CSS / JS → Network First (always fresh from server)
-  if (/\.(css|js|woff2?|ttf|eot)$/i.test(url.pathname) && url.origin === self.location.origin) {
-    event.respondWith(networkFirst(request, STATIC_CACHE));
-    return;
-  }
-
-  // 5. CDN assets (Bootstrap etc.) → Cache First (versioned URLs)
-  if (/\.(css|js|woff2?|ttf|eot)$/i.test(url.pathname)) {
-    event.respondWith(cacheFirst(request, STATIC_CACHE));
-    return;
-  }
-
-  // 6. HTML pages → Network First with offline fallback
-  event.respondWith(networkFirst(request, STATIC_CACHE));
-});
-
-// ── Strategies ────────────────────────────────────────────────────────────────
-async function networkFirst(request, cacheName) {
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    return offlineFallback(request);
-  }
-}
-
-async function cacheFirst(request, cacheName) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    return offlineFallback(request);
-  }
-}
-
-async function offlineFallback(request) {
-  if (request.headers.get('accept')?.includes('text/html')) {
-    const offline = await caches.match('/offline.html');
-    if (offline) return offline;
-  }
-  return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
-}
-
-// ── Message handler ───────────────────────────────────────────────────────────
-self.addEventListener('message', event => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
-});
-
-// ── Background Sync: retry failed bookings ───────────────────────────────────
-self.addEventListener('sync', event => {
-  if (event.tag === 'retry-booking') {
-    event.waitUntil(
-      self.clients.matchAll().then(clients =>
-        clients.forEach(c => c.postMessage({ type: 'SYNC_BOOKING' }))
-      ).catch(() => {})
+  // CDN assets → cache first
+  if (CDN_ASSETS.includes(event.request.url)) {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request))
     );
   }
 });
@@ -133,12 +51,11 @@ self.addEventListener('push', event => {
 
   event.waitUntil(
     self.registration.showNotification(payload.title || 'Guideon', {
-      body:    payload.body  || '',
+      body:    payload.body || '',
       icon:    '/icon-192.png',
       badge:   '/icon-192.png',
-      tag:     payload.tag   || 'Guideon',
-      data:    payload.data  || {},
-      actions: payload.actions || [],
+      tag:     payload.tag || 'guideon',
+      data:    payload.data || {},
       vibrate: [200, 100, 200],
     })
   );
@@ -148,11 +65,16 @@ self.addEventListener('notificationclick', event => {
   event.notification.close();
   const url = event.notification.data?.url || '/';
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      for (const client of clientList) {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+      for (const client of clients) {
         if (client.url === url && 'focus' in client) return client.focus();
       }
       if (self.clients.openWindow) return self.clients.openWindow(url);
     })
   );
+});
+
+// ── Message handler ───────────────────────────────────────────────────────────
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
