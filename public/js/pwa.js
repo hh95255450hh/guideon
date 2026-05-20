@@ -1,15 +1,70 @@
 (() => {
-  // ── Remove ALL service workers and caches (permanent clean state) ──────────
+  const VAPID_KEY = 'NwaVO_x8unxTQqE24RG9OzAEiRlriePJQaYC4PPdXGw';
+
+  // ── Register Service Worker ─────────────────────────────────────────────────
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations()
-      .then(regs => Promise.all(regs.map(r => r.unregister())))
-      .catch(() => {});
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('[SW] registered');
+        if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        reg.addEventListener('updatefound', () => {
+          const w = reg.installing;
+          w?.addEventListener('statechange', () => {
+            if (w.state === 'installed' && navigator.serviceWorker.controller) {
+              w.postMessage({ type: 'SKIP_WAITING' });
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[SW] registration failed:', err));
   }
-  if ('caches' in window) {
-    caches.keys()
-      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
-      .catch(() => {});
+
+  // ── Request push notification permission & get FCM token ───────────────────
+  async function requestNotificationPermission() {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    if (Notification.permission === 'denied') return;
+
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    try {
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+      const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js');
+
+      const app = initializeApp({
+        apiKey:            'AIzaSyPlaceholder',
+        authDomain:        'guideon-55995.firebaseapp.com',
+        projectId:         'guideon-55995',
+        storageBucket:     'guideon-55995.appspot.com',
+        messagingSenderId: '108887603705271785305',
+        appId:             '1:108887603705271785305:web:placeholder',
+      }, 'guideon-pwa');
+
+      const messaging = getMessaging(app);
+      const swReg = await navigator.serviceWorker.ready;
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+
+      if (token) {
+        await fetch('/api/auth/fcm-token', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+      }
+    } catch (err) {
+      console.warn('[FCM] token error:', err.message);
+    }
   }
+
+  // Request permission after page load (only if user is logged in)
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      fetch('/api/auth/me', { credentials: 'include' })
+        .then(r => r.ok && requestNotificationPermission())
+        .catch(() => {});
+    }, 3000);
+  });
 
   // ── Online/Offline indicator ────────────────────────────────────────────────
   function updateOnlineStatus() {

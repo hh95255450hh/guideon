@@ -33,5 +33,6 @@ router.get('/me', requireLogin, auth.me);
 router.put('/profile', requireLogin, auth.updateProfile);
 router.put('/change-password', requireLogin, auth.changePassword);
 router.post('/upload-photo', requireLogin, upload.single('photo'), auth.uploadPhoto);
+router.post('/fcm-token', requireLogin, auth.saveFcmToken);
 
 module.exports = router;

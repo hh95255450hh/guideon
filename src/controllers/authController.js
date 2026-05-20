@@ -163,3 +163,11 @@ exports.me = async (req, res) => {
   delete safe.password;
   res.json({ success: true, user: safe });
 };
+
+exports.saveFcmToken = async (req, res) => {
+  if (!req.session.userId) return res.status(401).json({ success: false });
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ success: false, message: 'Token required.' });
+  await users.update(req.session.userId, { fcm_token: token });
+  res.json({ success: true });
+};
