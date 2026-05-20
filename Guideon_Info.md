@@ -101,7 +101,7 @@
 ## 📁 هيكل المشروع
 
 ```
-OmanExplorer/
+GUIDEON/
 ├── public/              ← الواجهة الأمامية (HTML, CSS, JS)
 ├── src/
 │   ├── app.js           ← نقطة البداية
@@ -124,7 +124,7 @@ OmanExplorer/
 ## 🛠️ تشغيل المشروع محلياً
 
 ```bash
-cd C:\Users\hh952\OneDrive\Desktop\oman\OmanExplorer
+cd C:\Users\hh952\OneDrive\Desktop\oman\GUIDEON
 node src/app.js
 # الموقع: http://localhost:3000
 ```
@@ -132,7 +132,7 @@ node src/app.js
 ## 📤 نشر تحديث جديد
 
 ```bash
-cd C:\Users\hh952\OneDrive\Desktop\oman\OmanExplorer
+cd C:\Users\hh952\OneDrive\Desktop\oman\GUIDEON
 git add -A
 git commit -m "وصف التغيير"
 git push origin main

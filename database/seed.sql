@@ -1,11 +1,11 @@
--- OmanExplorer Seed Data
+-- GUIDEON Seed Data
 -- Passwords are all: Password123!  (bcrypt hash)
 
 INSERT INTO users (id, name, email, password_hash, role, phone, is_active, email_verified) VALUES
 (
   'a1b2c3d4-0001-0001-0001-000000000001',
   'Admin User',
-  'admin@omanexplorer.com',
+  'admin@guideon.com',
   '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
   'admin',
   '+96891000001',
@@ -25,7 +25,7 @@ INSERT INTO users (id, name, email, password_hash, role, phone, is_active, email
 (
   'a1b2c3d4-0003-0003-0003-000000000003',
   'Ahmed Al-Rashidi',
-  'guide@omanexplorer.com',
+  'guide@guideon.com',
   '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
   'guide',
   '+96891000003',

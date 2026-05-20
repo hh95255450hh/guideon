@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "OmanExplorer API",
-    "description": "Complete API collection for OmanExplorer Tourism Marketplace.\n\n## Setup\n1. Import this collection in Postman\n2. Set `base_url` variable to `http://localhost:3000` (already set)\n3. Run **Login** request — tokens save automatically\n4. All protected requests use the saved token automatically\n\n## Collection Variables\n- `base_url` — server address\n- `access_token` — auto-saved on login/register\n- `refresh_token` — auto-saved on login/register\n- `tour_id` — copy from any tour response\n- `availability_id` — copy from tour availability response\n- `booking_id` — auto-saved on create booking\n- `company_id` — copy from companies response\n- `review_id` — copy from review response\n- `user_id` — copy from admin users list",
+    "name": "GUIDEON API",
+    "description": "Complete API collection for GUIDEON Tourism Marketplace.\n\n## Setup\n1. Import this collection in Postman\n2. Set `base_url` variable to `http://localhost:3000` (already set)\n3. Run **Login** request — tokens save automatically\n4. All protected requests use the saved token automatically\n\n## Collection Variables\n- `base_url` — server address\n- `access_token` — auto-saved on login/register\n- `refresh_token` — auto-saved on login/register\n- `tour_id` — copy from any tour response\n- `availability_id` — copy from tour availability response\n- `booking_id` — auto-saved on create booking\n- `company_id` — copy from companies response\n- `review_id` — copy from review response\n- `user_id` — copy from admin users list",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -160,7 +160,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@omanexplorer.com\",\n  \"password\": \"Password123!\"\n}"
+              "raw": "{\n  \"email\": \"admin@guideon.com\",\n  \"password\": \"Password123!\"\n}"
             },
             "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api","auth","login"] }
           }

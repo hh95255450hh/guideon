@@ -1,4 +1,4 @@
--- OmanExplorer Database Schema
+-- GUIDEON Database Schema
 -- Run: psql -U postgres -c "CREATE DATABASE oman_explorer;"
 -- Then: psql -U postgres -d oman_explorer -f database/schema.sql
 

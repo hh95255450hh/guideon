@@ -679,7 +679,7 @@ const TRANSLATIONS = {
 ═══════════════════════════════════════════════ */
 
 const I18N = {
-  lang: localStorage.getItem('og_lang') || 'en',
+  lang: localStorage.getItem('gd_lang') || 'en',
 
   t(key, ...args) {
     const val = TRANSLATIONS[this.lang][key] || TRANSLATIONS['en'][key] || key;
@@ -724,7 +724,7 @@ const I18N = {
 
   toggle() {
     this.lang = this.lang === 'en' ? 'ar' : 'en';
-    localStorage.setItem('og_lang', this.lang);
+    localStorage.setItem('gd_lang', this.lang);
     this.apply();
     // Re-render dynamic content if needed
     if (typeof window.onLangChange === 'function') window.onLangChange();

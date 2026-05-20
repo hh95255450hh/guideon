@@ -61,7 +61,7 @@ const createPaymentIntent = async (req, res, next) => {
         tour_title: booking.tour_title,
         user_email: booking.email,
       },
-      description: `OmanExplorer – ${booking.tour_title}`,
+      description: `GUIDEON – ${booking.tour_title}`,
       receipt_email: booking.email,
     });
 

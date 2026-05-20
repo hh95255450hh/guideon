@@ -311,7 +311,7 @@ function renderProfile(g, reviews) {
 
 /* ── CURRENCY (TourHQ feature) ── */
 const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
-function getCurrency() { return localStorage.getItem('og_currency') || 'OMR'; }
+function getCurrency() { return localStorage.getItem('gd_currency') || 'OMR'; }
 function convertPrice(omr) {
   const cur = getCurrency();
   return (omr * RATES[cur]).toFixed(2) + ' ' + cur;
@@ -405,7 +405,7 @@ async function submitBooking() {
 }
 
 function setCurrency(cur) {
-  localStorage.setItem('og_currency', cur);
+  localStorage.setItem('gd_currency', cur);
   updatePrice();
   const omr = GUIDE ? GUIDE.pricePerDay : 0;
   document.getElementById('pPrice').textContent = convertPrice(omr);

@@ -107,7 +107,7 @@ const doc = new Document({
       default: new Header({
         children: [new Paragraph({
           alignment: AlignmentType.RIGHT,
-          children: [new TextRun({ text: '🌴 OmanExplorer – Project Documentation', size: 18, color: '999999' })],
+          children: [new TextRun({ text: '🌴 GUIDEON – Project Documentation', size: 18, color: '999999' })],
         })],
       }),
     },
@@ -115,7 +115,7 @@ const doc = new Document({
       default: new Footer({
         children: [new Paragraph({
           alignment: AlignmentType.CENTER,
-          children: [new TextRun({ text: 'OmanExplorer – Confidential Project Documentation', size: 18, color: '999999' })],
+          children: [new TextRun({ text: 'GUIDEON – Confidential Project Documentation', size: 18, color: '999999' })],
         })],
       }),
     },
@@ -125,7 +125,7 @@ const doc = new Document({
       new Paragraph({
         alignment: AlignmentType.CENTER,
         spacing: { before: 1200, after: 400 },
-        children: [new TextRun({ text: '🌴 OmanExplorer', bold: true, size: 72, color: GREEN })],
+        children: [new TextRun({ text: '🌴 GUIDEON', bold: true, size: 72, color: GREEN })],
       }),
       new Paragraph({
         alignment: AlignmentType.CENTER,
@@ -147,7 +147,7 @@ const doc = new Document({
       // ── 1. PROJECT OVERVIEW ────────────────────────────────────────────────
       pageBreak(),
       h1('1. Project Overview'),
-      p('OmanExplorer is a production-ready Node.js + PostgreSQL REST API for a tourism marketplace platform targeting the Sultanate of Oman. It handles tour listings, bookings, Stripe payments, email notifications, Firebase push notifications, and an AI-powered tourism chatbot.'),
+      p('GUIDEON is a production-ready Node.js + PostgreSQL REST API for a tourism marketplace platform targeting the Sultanate of Oman. It handles tour listings, bookings, Stripe payments, email notifications, Firebase push notifications, and an AI-powered tourism chatbot.'),
       divider(),
 
       h2('Tech Stack'),
@@ -169,7 +169,7 @@ const doc = new Document({
 
       divider(),
       h2('Project Location'),
-      code('C:\\Users\\hh952\\OneDrive\\Desktop\\oman\\OmanExplorer'),
+      code('C:\\Users\\hh952\\OneDrive\\Desktop\\oman\\GUIDEON'),
 
       divider(),
       h2('User Roles'),
@@ -187,7 +187,7 @@ const doc = new Document({
       pageBreak(),
       h1('2. Running Locally'),
       h2('Start the Server'),
-      code('cd C:\\Users\\hh952\\OneDrive\\Desktop\\oman\\OmanExplorer'),
+      code('cd C:\\Users\\hh952\\OneDrive\\Desktop\\oman\\GUIDEON'),
       code('node src/app.js'),
       p('Server runs at: http://localhost:3000'),
       p(''),
@@ -213,7 +213,7 @@ const doc = new Document({
       // ── 3. ENVIRONMENT VARIABLES ──────────────────────────────────────────
       pageBreak(),
       h1('3. Environment Variables (.env)'),
-      p('File location: C:\\Users\\hh952\\OneDrive\\Desktop\\oman\\OmanExplorer\\.env'),
+      p('File location: C:\\Users\\hh952\\OneDrive\\Desktop\\oman\\GUIDEON\\.env'),
       divider(),
 
       h2('Server'),
@@ -243,7 +243,7 @@ const doc = new Document({
       divider(),
       h2('Resend Email'),
       kv('RESEND_API_KEY', 're_43dnbDNB_C59XJtiSgQcWMvzxQFoac1qi'),
-      kv('EMAIL_FROM',     'OmanExplorer <onboarding@resend.dev>'),
+      kv('EMAIL_FROM',     'GUIDEON <onboarding@resend.dev>'),
 
       divider(),
       h2('OpenAI'),
@@ -372,9 +372,9 @@ const doc = new Document({
       table(
         ['Role', 'Email', 'Password'],
         [
-          ['admin',   'admin@omanexplorer.com',        'Password123!'],
+          ['admin',   'admin@guideon.com',        'Password123!'],
           ['company', 'company@muscatadventures.com',  'Password123!'],
-          ['guide',   'guide@omanexplorer.com',         'Password123!'],
+          ['guide',   'guide@guideon.com',         'Password123!'],
           ['tourist', 'tourist@example.com',            'Password123!'],
         ]
       ),
@@ -413,9 +413,9 @@ const doc = new Document({
       divider(),
       h2('Resend Account'),
       kv('API Key',   're_43dnbDNB_C59XJtiSgQcWMvzxQFoac1qi'),
-      kv('From',      'OmanExplorer <onboarding@resend.dev>  (test mode)'),
+      kv('From',      'GUIDEON <onboarding@resend.dev>  (test mode)'),
       kv('Dashboard', 'https://resend.com/emails'),
-      p('To send to any address (not just your own): verify domain omanexplorer.com in Resend dashboard.'),
+      p('To send to any address (not just your own): verify domain guideon.com in Resend dashboard.'),
       h3('DKIM DNS Record to add in NameBright:'),
       table(
         ['Type', 'Name', 'Value'],
@@ -447,14 +447,14 @@ const doc = new Document({
       h1('9. Deployment Guide (Railway)'),
 
       h2('Step 1 — Push to GitHub'),
-      code('git remote add origin https://github.com/YOUR_USERNAME/OmanExplorer.git'),
+      code('git remote add origin https://github.com/YOUR_USERNAME/GUIDEON.git'),
       code('git branch -M main'),
       code('git push -u origin main'),
 
       divider(),
       h2('Step 2 — Railway Setup'),
       bullet('1. Go to railway.app → Sign in with GitHub'),
-      bullet('2. New Project → Deploy from GitHub repo → Select OmanExplorer'),
+      bullet('2. New Project → Deploy from GitHub repo → Select GUIDEON'),
       bullet('3. New → Database → PostgreSQL'),
       bullet('4. Link DATABASE_URL to the Node service'),
 
@@ -472,9 +472,9 @@ const doc = new Document({
           ['STRIPE_SECRET_KEY',     'sk_test_...'],
           ['STRIPE_WEBHOOK_SECRET', 'whsec_...'],
           ['RESEND_API_KEY',        're_43dnbDNB_C59XJtiSgQcWMvzxQFoac1qi'],
-          ['EMAIL_FROM',            'OmanExplorer <onboarding@resend.dev>'],
+          ['EMAIL_FROM',            'GUIDEON <onboarding@resend.dev>'],
           ['OPENAI_API_KEY',        'sk-proj-...'],
-          ['APP_URL',               'https://api.omanexplorer.com'],
+          ['APP_URL',               'https://api.guideon.com'],
           ['CLIENT_URL',            '*'],
         ]
       ),
@@ -492,13 +492,13 @@ const doc = new Document({
           ['CNAME', 'api', '(your-service).up.railway.app'],
         ]
       ),
-      p('Add this DNS record in NameBright → DNS Records for omanexplorer.com'),
-      p('Final API URL: https://api.omanexplorer.com'),
+      p('Add this DNS record in NameBright → DNS Records for guideon.com'),
+      p('Final API URL: https://api.guideon.com'),
 
       // ── 10. POSTMAN ───────────────────────────────────────────────────────
       pageBreak(),
       h1('10. Postman Collection'),
-      p('File: OmanExplorer.postman_collection.json (in project root)'),
+      p('File: GUIDEON.postman_collection.json (in project root)'),
       p('Import into Postman → all 37 endpoints pre-configured with auto-token saving.'),
       divider(),
       h2('Collection Variables'),
@@ -584,7 +584,7 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then((buffer) => {
-  const outPath = path.join(__dirname, '../OmanExplorer_Documentation.docx');
+  const outPath = path.join(__dirname, '../GUIDEON_Documentation.docx');
   fs.writeFileSync(outPath, buffer);
   console.log(`✅ Document saved: ${outPath}`);
 });

@@ -199,14 +199,14 @@
 <script>
 /* ── CURRENCY (TourHQ) ── */
 const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
-function getCurrency() { return localStorage.getItem('og_currency') || 'OMR'; }
-function setCurrency(cur) { localStorage.setItem('og_currency', cur); renderGuides(SHOWING_WISHLIST ? ALL_GUIDES.filter(g => isWishlisted(g.id)) : ALL_GUIDES); }
+function getCurrency() { return localStorage.getItem('gd_currency') || 'OMR'; }
+function setCurrency(cur) { localStorage.setItem('gd_currency', cur); renderGuides(SHOWING_WISHLIST ? ALL_GUIDES.filter(g => isWishlisted(g.id)) : ALL_GUIDES); }
 function convertPrice(omr) { const c = getCurrency(); return (omr * RATES[c]).toFixed(2) + ' ' + c; }
 document.addEventListener('DOMContentLoaded', () => { const s = document.getElementById('currencySelect'); if (s) s.value = getCurrency(); });
 
 /* ── WISHLIST stored in localStorage ── */
-function getWishlist() { return JSON.parse(localStorage.getItem('og_wishlist') || '[]'); }
-function saveWishlist(list) { localStorage.setItem('og_wishlist', JSON.stringify(list)); }
+function getWishlist() { return JSON.parse(localStorage.getItem('gd_wishlist') || '[]'); }
+function saveWishlist(list) { localStorage.setItem('gd_wishlist', JSON.stringify(list)); }
 function isWishlisted(id) { return getWishlist().includes(id); }
 function toggleWishlist(id) {
   let list = getWishlist();

@@ -1,9 +1,9 @@
 @echo off
-title OmanExplorer Server
+title GUIDEON Server
 color 0A
 echo.
 echo  ============================================
-echo   OmanExplorer API - Starting...
+echo   GUIDEON API - Starting...
 echo  ============================================
 echo.
 

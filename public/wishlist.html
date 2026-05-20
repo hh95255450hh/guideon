@@ -50,10 +50,10 @@
 <script src="/js/chatbot.js?v=11"></script>
 <script>
 const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
-function getCurrency() { return localStorage.getItem('og_currency') || 'OMR'; }
+function getCurrency() { return localStorage.getItem('gd_currency') || 'OMR'; }
 function convertPrice(omr) { const c = getCurrency(); return (omr * RATES[c]).toFixed(2) + ' ' + c; }
-function getWishlist() { return JSON.parse(localStorage.getItem('og_wishlist') || '[]'); }
-function saveWishlist(list) { localStorage.setItem('og_wishlist', JSON.stringify(list)); }
+function getWishlist() { return JSON.parse(localStorage.getItem('gd_wishlist') || '[]'); }
+function saveWishlist(list) { localStorage.setItem('gd_wishlist', JSON.stringify(list)); }
 function stars(r) { let s=''; for(let i=1;i<=5;i++) s+=`<span class="${i<=r?'star-full':'star-empty'}">★</span>`; return s; }
 function initials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
 
