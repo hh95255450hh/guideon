@@ -1,46 +1,24 @@
-const CACHE_NAME = 'Guideon-cdn-v2';
+const CACHE_NAME = 'Guideon-v3';
 
-const CDN_ASSETS = [
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js',
-];
-
-// ── Install: only cache CDN assets ───────────────────────────────────────────
+// ── Install ───────────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache =>
-      cache.addAll(CDN_ASSETS.map(url => new Request(url, { cache: 'reload' }))).catch(() => {})
-    )
-  );
 });
 
-// ── Activate: remove old caches ───────────────────────────────────────────────
+// ── Activate: remove ALL old caches ──────────────────────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: local files always from network, CDN from cache ───────────────────
+// ── Fetch: all files always from network (no caching) ────────────────────────
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
-
-  // Never cache API calls or non-GET
   if (url.pathname.startsWith('/api/') || event.request.method !== 'GET') return;
-
-  // Local files (HTML, CSS, JS, images) → always from network
-  if (url.origin === self.location.origin) return;
-
-  // CDN assets → cache first
-  if (CDN_ASSETS.includes(event.request.url)) {
-    event.respondWith(
-      caches.match(event.request).then(cached => cached || fetch(event.request))
-    );
-  }
+  // Always fetch fresh from network — no caching
 });
 
 // ── Push Notifications ────────────────────────────────────────────────────────
