@@ -470,7 +470,7 @@ const TRANSLATIONS = {
     co_tip1:          'Add a clear company description',
     co_tip2:          'List all destinations you cover',
     co_tip3:          'Add detailed tour packages with prices',
-    co_tip4:          'Include your company website link',
+    co_tip4:          'Upload photos and an intro video to stand out',
     co_tip5:          'Keep your contact info up to date',
     pkg_name_lbl:     'Package Name *',
     pkg_name_ph:      '3-Day Desert Safari',
@@ -519,6 +519,24 @@ const TRANSLATIONS = {
     no_tourists_found:'No tourists found.',
     no_bookings_found:'No bookings found.',
     booking_complete: 'Booking marked as completed ✓',
+
+    /* ── MEDIA / GALLERY ── */
+    gallery_title:    '📸 Photo Gallery',
+    gallery_add:      '+ Add Photo',
+    gallery_max:      '(max 8 photos)',
+    gallery_empty:    'No photos yet. Add up to 8 photos to showcase your work.',
+    gallery_remove:   'Remove this photo?',
+    gallery_added:    'Photo added to gallery!',
+    gallery_removed:  'Photo removed from gallery.',
+    gallery_full:     'Maximum 8 photos reached.',
+    video_title:      '🎬 Intro Video',
+    video_url_lbl:    'YouTube Video URL',
+    video_url_ph:     'https://www.youtube.com/watch?v=...',
+    video_save:       'Save Video',
+    video_saved:      'Video URL saved!',
+    video_invalid:    'Please enter a valid YouTube URL.',
+    photo_change:     'Change Photo',
+    photo_upload_tip: 'Click to upload photo',
   },
 
   ar: {
@@ -990,7 +1008,7 @@ const TRANSLATIONS = {
     co_tip1:          'أضف وصفاً واضحاً للشركة',
     co_tip2:          'أدرج جميع الوجهات التي تغطيها',
     co_tip3:          'أضف حزم سياحية مفصّلة مع الأسعار',
-    co_tip4:          'أضف رابط موقع شركتك',
+    co_tip4:          'أضف صوراً وفيديو تعريفياً لتميّز ملفك',
     co_tip5:          'احرص على تحديث معلومات التواصل',
     pkg_name_lbl:     'اسم الحزمة *',
     pkg_name_ph:      'سفاري صحراوي ٣ أيام',
@@ -1039,6 +1057,24 @@ const TRANSLATIONS = {
     no_tourists_found:'لا يوجد سياح.',
     no_bookings_found:'لا توجد حجوزات.',
     booking_complete: 'تم تأكيد اكتمال الحجز ✓',
+
+    /* ── MEDIA / GALLERY ── */
+    gallery_title:    '📸 معرض الصور',
+    gallery_add:      '+ إضافة صورة',
+    gallery_max:      '(الحد الأقصى ٨ صور)',
+    gallery_empty:    'لا توجد صور بعد. أضف ما يصل إلى ٨ صور لعرض أعمالك.',
+    gallery_remove:   'حذف هذه الصورة؟',
+    gallery_added:    'تمت إضافة الصورة للمعرض!',
+    gallery_removed:  'تمت إزالة الصورة من المعرض.',
+    gallery_full:     'وصلت إلى الحد الأقصى ٨ صور.',
+    video_title:      '🎬 فيديو تعريفي',
+    video_url_lbl:    'رابط YouTube',
+    video_url_ph:     'https://www.youtube.com/watch?v=...',
+    video_save:       'حفظ الفيديو',
+    video_saved:      'تم حفظ رابط الفيديو!',
+    video_invalid:    'الرجاء إدخال رابط YouTube صحيح.',
+    photo_change:     'تغيير الصورة',
+    photo_upload_tip: 'انقر لتحميل صورة',
   }
 };
 

@@ -52,7 +52,11 @@
 <div class="dash-header">
   <div class="container">
     <div class="d-flex align-items-center gap-3 mb-3">
-      <div style="width:60px;height:60px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;">🏢</div>
+      <div style="position:relative;width:60px;height:60px;flex-shrink:0">
+        <div style="width:60px;height:60px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;overflow:hidden" id="companyLogo" onclick="document.getElementById('coPhotoInput').click()" title="Click to upload photo">🏢</div>
+        <input type="file" id="coPhotoInput" accept="image/*" style="display:none" onchange="uploadCompanyPhoto(this)">
+        <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:.5rem;border-radius:0 0 14px 14px;width:60px;text-align:center;padding:2px 0;pointer-events:none">📷</div>
+      </div>
       <div>
         <h4 class="fw-800 mb-0" id="companyNameDisplay">—</h4>
         <div class="small opacity-75" id="companyStatusDisplay"></div>
@@ -109,10 +113,6 @@
               <div class="small text-muted mb-1" data-i18n="co_email_lbl">Email</div>
               <div class="fw-600" id="vEmail">—</div>
             </div>
-            <div class="col-md-6">
-              <div class="small text-muted mb-1" data-i18n="co_website">Website</div>
-              <div class="fw-600" id="vWebsite">—</div>
-            </div>
             <div class="col-12">
               <div class="small text-muted mb-1" data-i18n="co_description">Description</div>
               <div style="font-size:.9rem;line-height:1.6;color:#444;" id="vDescription">—</div>
@@ -124,6 +124,23 @@
             <div class="col-12">
               <div class="small text-muted mb-2" data-i18n="co_dests">Destinations Covered</div>
               <div id="vDestinations"></div>
+            </div>
+            <!-- Gallery -->
+            <div class="col-12">
+              <div class="small text-muted mb-2" data-i18n="gallery_title">📸 Photo Gallery</div>
+              <div id="vGallery" class="d-flex flex-wrap gap-2 mb-2"></div>
+              <div class="d-flex align-items-center gap-2">
+                <label class="btn btn-sm btn-outline-secondary" style="cursor:pointer;margin:0;font-size:.8rem">
+                  <input type="file" id="coGalleryInput" accept="image/*" style="display:none" onchange="uploadGallery(this)">
+                  <span data-i18n="gallery_add">+ Add Photo</span>
+                </label>
+                <span class="small text-muted" data-i18n="gallery_max">(max 8 photos)</span>
+              </div>
+            </div>
+            <!-- Video -->
+            <div class="col-12" id="vVideoRow" style="display:none">
+              <div class="small text-muted mb-1" data-i18n="video_title">🎬 Intro Video</div>
+              <div id="vVideoWrap"></div>
             </div>
           </div>
         </div>
@@ -144,9 +161,9 @@
               <label class="form-label fw-600 small" data-i18n="phone_lbl">Phone</label>
               <input type="tel" class="form-control" id="ePhone" data-i18n-ph="phone_ph" placeholder="+968 XXXX XXXX">
             </div>
-            <div class="col-md-6">
-              <label class="form-label fw-600 small" data-i18n="website_lbl">Website</label>
-              <input type="url" class="form-control" id="eWebsite" data-i18n-ph="website_ph" placeholder="https://yourcompany.com">
+            <div class="col-12">
+              <label class="form-label fw-600 small" data-i18n="video_url_lbl">YouTube Video URL</label>
+              <input type="url" class="form-control" id="eVideoUrl" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=...">
             </div>
             <div class="col-12">
               <label class="form-label fw-600 small" data-i18n="company_services_lbl">Services Offered *</label>
@@ -271,7 +288,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=16"></script>
+<script src="/js/i18n.js?v=17"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let COMPANY = null;
@@ -334,18 +351,33 @@ function render() {
   document.getElementById('vEmail').textContent        = COMPANY.email        || '—';
   document.getElementById('vDescription').textContent  = COMPANY.companyDescription || I18N.t('co_no_desc');
 
-  const websiteEl = document.getElementById('vWebsite');
-  if (COMPANY.companyWebsite) {
-    websiteEl.innerHTML = `<a href="${COMPANY.companyWebsite}" target="_blank" rel="noopener" style="color:var(--teal)">${COMPANY.companyWebsite}</a>`;
-  } else {
-    websiteEl.textContent = I18N.t('co_not_provided');
-  }
-
   const svcEl = document.getElementById('vServices');
   svcEl.innerHTML = svcs.length ? svcs.map(s => `<span class="tag-pill">${s}</span>`).join('') : `<span class="text-muted small">${I18N.t('co_none_listed')}</span>`;
 
   const dstEl = document.getElementById('vDestinations');
   dstEl.innerHTML = dsts.length ? dsts.map(d => `<span class="tag-pill">📍 ${d}</span>`).join('') : `<span class="text-muted small">${I18N.t('co_none_listed')}</span>`;
+
+  // Gallery
+  renderGallery();
+
+  // Video
+  if (COMPANY.videoUrl) {
+    const embedUrl = getYouTubeEmbedUrl(COMPANY.videoUrl);
+    if (embedUrl) {
+      document.getElementById('vVideoWrap').innerHTML = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" allowfullscreen></iframe></div>`;
+      document.getElementById('vVideoRow').style.display = '';
+    }
+  } else {
+    document.getElementById('vVideoRow').style.display = 'none';
+  }
+
+  // Company logo/photo
+  const logoEl = document.getElementById('companyLogo');
+  if (COMPANY.photo) {
+    logoEl.innerHTML = `<img src="${COMPANY.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+  } else {
+    logoEl.textContent = '🏢';
+  }
 
   renderPackages();
 }
@@ -388,7 +420,7 @@ function toggleEdit() {
     document.getElementById('eCompanyName').value  = COMPANY.companyName  || '';
     document.getElementById('eRegNo').value        = COMPANY.companyRegNo || '';
     document.getElementById('ePhone').value        = COMPANY.phone        || '';
-    document.getElementById('eWebsite').value      = COMPANY.companyWebsite || '';
+    document.getElementById('eVideoUrl').value     = COMPANY.videoUrl     || '';
     document.getElementById('eServices').value     = (COMPANY.companyServices     || []).join(', ');
     document.getElementById('eDestinations').value = (COMPANY.companyDestinations || []).join(', ');
     document.getElementById('eDescription').value  = COMPANY.companyDescription || '';
@@ -409,7 +441,7 @@ async function saveProfile() {
     companyName,
     companyRegNo:       document.getElementById('eRegNo').value.trim(),
     phone:              document.getElementById('ePhone').value.trim(),
-    companyWebsite:     document.getElementById('eWebsite').value.trim(),
+    videoUrl:           document.getElementById('eVideoUrl').value.trim(),
     companyDescription: document.getElementById('eDescription').value.trim(),
     companyServices:    svcRaw  ? svcRaw.split(',').map(s => s.trim()).filter(Boolean)  : [],
     companyDestinations:dstRaw  ? dstRaw.split(',').map(s => s.trim()).filter(Boolean)  : [],
@@ -519,6 +551,76 @@ async function deletePackage(i) {
   } catch { showToast(I18N.t('co_remove_fail'), 'danger'); }
 }
 
+function getYouTubeEmbedUrl(url) {
+  let id;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtube.com')) id = u.searchParams.get('v');
+    else if (u.hostname === 'youtu.be') id = u.pathname.slice(1);
+  } catch {}
+  return id ? `https://www.youtube.com/embed/${id}` : null;
+}
+
+function renderGallery() {
+  const el     = document.getElementById('vGallery');
+  const photos = COMPANY.galleryPhotos || [];
+  if (!photos.length) {
+    el.innerHTML = `<div class="text-muted small">${I18N.t('gallery_empty')}</div>`;
+    return;
+  }
+  el.innerHTML = photos.map(url => `
+    <div style="position:relative">
+      <img src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')">
+      <button onclick="removeGallery('${url}')" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+}
+
+async function uploadCompanyPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('photo', file);
+  try {
+    const r = await fetch('/api/upload/photo', { method: 'POST', credentials: 'include', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      COMPANY.photo = d.photo;
+      const logoEl = document.getElementById('companyLogo');
+      logoEl.innerHTML = `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+      showToast(I18N.t('photo_change') + ' ✓', 'success');
+    } else { showToast(d.message, 'danger'); }
+  } catch { showToast('Upload failed.', 'danger'); }
+  input.value = '';
+}
+
+async function uploadGallery(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if ((COMPANY.galleryPhotos || []).length >= 8) { showToast(I18N.t('gallery_full'), 'danger'); input.value = ''; return; }
+  const fd = new FormData();
+  fd.append('photo', file);
+  try {
+    const r = await fetch('/api/upload/gallery', { method: 'POST', credentials: 'include', body: fd });
+    const d = await r.json();
+    if (d.success) { COMPANY.galleryPhotos = d.gallery; renderGallery(); showToast(I18N.t('gallery_added'), 'success'); }
+    else showToast(d.message, 'danger');
+  } catch { showToast('Upload failed.', 'danger'); }
+  input.value = '';
+}
+
+async function removeGallery(url) {
+  if (!confirm(I18N.t('gallery_remove'))) return;
+  try {
+    const r = await fetch('/api/upload/gallery', {
+      method: 'DELETE', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    const d = await r.json();
+    if (d.success) { COMPANY.galleryPhotos = d.gallery; renderGallery(); showToast(I18N.t('gallery_removed'), 'success'); }
+  } catch {}
+}
+
 function showToast(msg, type='success') {
   const t = document.createElement('div');
   t.className = `toast align-items-center text-bg-${type} border-0 show mb-2`;
@@ -537,6 +639,6 @@ window.onLangChange = () => { if (COMPANY) render(); };
 
 init();
 </script>
-<script src="/js/pwa.js?v=13"></script>
+<script src="/js/pwa.js?v=14"></script>
 </body>
 </html>

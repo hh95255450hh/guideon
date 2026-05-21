@@ -17,6 +17,7 @@ const adminRoutes   = require('./routes/admin');
 const tripRoutes    = require('./routes/trips');
 const chatRoutes    = require('./routes/chat');
 const paymentRoutes = require('./routes/payments');
+const uploadRoutes  = require('./routes/upload');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use(helmet({
       connectSrc:    ["'self'"],
       fontSrc:       ["'self'", "https:", "data:"],
       objectSrc:     ["'none'"],
+      frameSrc:      ["'self'", "https://www.youtube.com"],
       frameAncestors:["'self'"],
     },
   },
@@ -82,6 +84,7 @@ app.use('/api/admin',    adminRoutes);
 app.use('/api/trips',    tripRoutes);
 app.use('/api/chat',     chatRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/upload',   uploadRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: 'Guideon', timestamp: new Date().toISOString() });

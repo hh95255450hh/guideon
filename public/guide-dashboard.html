@@ -39,7 +39,11 @@
 <div class="dash-header">
   <div class="container">
     <div class="d-flex align-items-center gap-3 mb-3">
-      <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff" id="guideAvatar">?</div>
+      <div style="position:relative">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;cursor:pointer;overflow:hidden" id="guideAvatar" onclick="document.getElementById('avatarInput').click()" title="Click to change photo">?</div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
+        <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:.55rem;border-radius:0 0 50% 50%;width:56px;text-align:center;padding:2px 0;pointer-events:none">📷</div>
+      </div>
       <div>
         <h4 class="fw-800 mb-0" id="guideName">—</h4>
         <div id="guideVerified" class="small opacity-75"></div>
@@ -80,10 +84,32 @@
       </div>
 
       <!-- Trip Requests (TourHQ feature) -->
-      <div>
+      <div class="mb-4">
         <h5 class="fw-700 mb-3" data-i18n="matching_trips">✈️ Trip Requests Matching Your Area</h5>
         <div id="tripRequestsList">
           <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Gallery & Video -->
+      <div class="info-card mb-4">
+        <h5 class="fw-700 mb-3" data-i18n="gallery_title">📸 Photo Gallery</h5>
+        <div id="galleryGrid" class="d-flex flex-wrap gap-2 mb-3"></div>
+        <div class="d-flex align-items-center gap-2">
+          <label class="btn btn-sm btn-outline-secondary" style="cursor:pointer;margin:0">
+            <input type="file" id="galleryInput" accept="image/*" style="display:none" onchange="uploadGallery(this)">
+            <span data-i18n="gallery_add">+ Add Photo</span>
+          </label>
+          <span class="small text-muted" data-i18n="gallery_max">(max 8 photos)</span>
+        </div>
+
+        <hr class="my-3">
+
+        <h5 class="fw-700 mb-2" data-i18n="video_title">🎬 Intro Video</h5>
+        <p class="small text-muted mb-2">YouTube URL — will be shown on your public profile.</p>
+        <div class="d-flex gap-2">
+          <input type="url" class="form-control form-control-sm" id="videoUrlInput" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=..." style="flex:1">
+          <button class="btn btn-sm btn-outline-secondary" onclick="saveVideo()" data-i18n="video_save">Save Video</button>
         </div>
       </div>
     </div>
@@ -103,7 +129,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=16"></script>
+<script src="/js/i18n.js?v=17"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -145,16 +171,97 @@ async function checkAuth() {
     buildCalendar();
     loadBookings();
     loadTripRequests();
+    renderGallery();
+    if (GUIDE.videoUrl) document.getElementById('videoUrlInput').value = GUIDE.videoUrl;
   } catch { window.location.href = '/login.html'; }
 }
 
 function renderGuideHeader() {
   document.getElementById('navName').textContent = GUIDE.fullName.split(' ')[0];
-  document.getElementById('guideAvatar').textContent = initials(GUIDE.fullName);
+  const av = document.getElementById('guideAvatar');
+  if (GUIDE.photo) {
+    av.innerHTML = `<img src="${GUIDE.photo}" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    av.textContent = initials(GUIDE.fullName);
+  }
   document.getElementById('guideName').textContent = GUIDE.fullName;
   document.getElementById('guideVerified').textContent = GUIDE.isVerified
     ? I18N.t('verified_lbl') + ' ' + GUIDE.licenceNumber
     : I18N.t('pending_lbl');
+}
+
+async function uploadPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('photo', file);
+  try {
+    const r = await fetch('/api/upload/photo', { method: 'POST', credentials: 'include', body: fd });
+    const d = await r.json();
+    if (d.success) {
+      GUIDE.photo = d.photo;
+      const av = document.getElementById('guideAvatar');
+      av.innerHTML = `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover">`;
+      toast(I18N.t('photo_change') + ' ✓', 'success');
+    } else { toast(d.message, 'error'); }
+  } catch { toast('Upload failed.', 'error'); }
+  input.value = '';
+}
+
+function renderGallery() {
+  const grid   = document.getElementById('galleryGrid');
+  const photos = GUIDE.galleryPhotos || [];
+  if (!photos.length) {
+    grid.innerHTML = `<div class="text-muted small">${I18N.t('gallery_empty')}</div>`;
+    return;
+  }
+  grid.innerHTML = photos.map(url => `
+    <div style="position:relative">
+      <img src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')">
+      <button onclick="removeGallery('${url}')" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+}
+
+async function uploadGallery(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if ((GUIDE.galleryPhotos || []).length >= 8) { toast(I18N.t('gallery_full'), 'error'); input.value = ''; return; }
+  const fd = new FormData();
+  fd.append('photo', file);
+  try {
+    const r = await fetch('/api/upload/gallery', { method: 'POST', credentials: 'include', body: fd });
+    const d = await r.json();
+    if (d.success) { GUIDE.galleryPhotos = d.gallery; renderGallery(); toast(I18N.t('gallery_added'), 'success'); }
+    else toast(d.message, 'error');
+  } catch { toast('Upload failed.', 'error'); }
+  input.value = '';
+}
+
+async function removeGallery(url) {
+  if (!confirm(I18N.t('gallery_remove'))) return;
+  try {
+    const r = await fetch('/api/upload/gallery', {
+      method: 'DELETE', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+    const d = await r.json();
+    if (d.success) { GUIDE.galleryPhotos = d.gallery; renderGallery(); toast(I18N.t('gallery_removed')); }
+  } catch {}
+}
+
+async function saveVideo() {
+  const url = document.getElementById('videoUrlInput').value.trim();
+  try {
+    const r = await fetch('/api/upload/video', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ videoUrl: url }),
+    });
+    const d = await r.json();
+    if (d.success) { GUIDE.videoUrl = url; toast(I18N.t('video_saved'), 'success'); }
+    else toast(d.message || I18N.t('video_invalid'), 'error');
+  } catch { toast('Save failed.', 'error'); }
 }
 
 async function loadBookings() {
@@ -329,13 +436,14 @@ window.onLangChange = () => {
     buildCalendar();
     loadBookings();
     loadTripRequests();
+    renderGallery();
   }
 };
 
 checkAuth();
 </script>
 <style>.btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }</style>
-<script src="/js/pwa.js?v=12"></script>
+<script src="/js/pwa.js?v=14"></script>
 </body>
 </html>
 

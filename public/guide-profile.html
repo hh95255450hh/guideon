@@ -245,6 +245,18 @@
           <p id="pBio" class="text-muted mb-0" style="line-height:1.8">—</p>
         </div>
 
+        <!-- Gallery -->
+        <div class="info-card d-none" id="galleryCard">
+          <h5>📸 <span data-i18n="gallery_title">Photo Gallery</span></h5>
+          <div id="pGallery" class="d-flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Intro Video -->
+        <div class="info-card d-none" id="videoCard">
+          <h5>🎬 <span data-i18n="video_title">Intro Video</span></h5>
+          <div id="pVideo"></div>
+        </div>
+
         <!-- Specialisations -->
         <div class="info-card">
           <h5>🎯 <span data-i18n="specialisations">Specialisations</span></h5>
@@ -390,7 +402,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=16"></script>
+<script src="/js/i18n.js?v=17"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -502,6 +514,30 @@ function renderAll() {
 
   // Bio
   document.getElementById('pBio').textContent = g.bio || I18N.t('gp_no_bio');
+
+  // Gallery
+  const gallery = g.galleryPhotos || [];
+  const galleryCard = document.getElementById('galleryCard');
+  if (gallery.length) {
+    document.getElementById('pGallery').innerHTML = gallery.map(url =>
+      `<img src="${url}" style="width:120px;height:90px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')" loading="lazy">`
+    ).join('');
+    galleryCard.classList.remove('d-none');
+  } else {
+    galleryCard.classList.add('d-none');
+  }
+
+  // Intro Video
+  const videoCard = document.getElementById('videoCard');
+  if (g.videoUrl) {
+    const embedUrl = getYouTubeEmbedUrl(g.videoUrl);
+    if (embedUrl) {
+      document.getElementById('pVideo').innerHTML = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" allowfullscreen loading="lazy"></iframe></div>`;
+      videoCard.classList.remove('d-none');
+    } else { videoCard.classList.add('d-none'); }
+  } else {
+    videoCard.classList.add('d-none');
+  }
 
   // Specialisations
   document.getElementById('pSpecs').innerHTML = (g.specialisations||[]).map(s =>
@@ -862,6 +898,16 @@ function toast(msg, type='') {
 
 window.onLangChange = () => { if(GUIDE) renderAll(); };
 
+function getYouTubeEmbedUrl(url) {
+  let id;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtube.com')) id = u.searchParams.get('v');
+    else if (u.hostname === 'youtu.be') id = u.pathname.slice(1);
+  } catch {}
+  return id ? `https://www.youtube.com/embed/${id}` : null;
+}
+
 // ── Boot ──
 document.addEventListener('DOMContentLoaded',()=>{
   const sel=document.getElementById('currencySelect');
@@ -869,6 +915,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 init();
 </script>
-<script src="/js/pwa.js?v=13"></script>
+<script src="/js/pwa.js?v=14"></script>
 </body>
 </html>

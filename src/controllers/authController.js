@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
   try {
     const { fullName, email, password, userType, phone, nationality, preferredLanguage,
             hasMinistryLicence, licenceNumber, languages, specialisations, destinations, pricePerDay, bio,
-            companyName, companyRegNo, companyWebsite, companyServices, companyDestinations, companyDescription } = req.body;
+            companyName, companyRegNo, companyServices, companyDestinations, companyDescription } = req.body;
 
     if (!fullName || !email || !password || !userType) {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
@@ -63,7 +63,6 @@ exports.register = async (req, res) => {
         ...base,
         companyName: companyName || '',
         companyRegNo: companyRegNo || '',
-        companyWebsite: companyWebsite || '',
         companyServices: svcArr,
         companyDestinations: destArr,
         companyDescription: companyDescription || '',
@@ -144,7 +143,7 @@ exports.updateProfile = async (req, res) => {
   if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
   const {
     fullName, phone, nationality, preferredLanguage,
-    companyName, companyRegNo, companyWebsite, companyServices, companyDestinations, companyDescription, packages,
+    companyName, companyRegNo, companyServices, companyDestinations, companyDescription, packages, videoUrl,
   } = req.body;
   const changes = {};
   if (fullName)                 changes.fullName = fullName;
@@ -154,11 +153,11 @@ exports.updateProfile = async (req, res) => {
   // Company-specific fields
   if (companyName !== undefined)        changes.companyName = companyName;
   if (companyRegNo !== undefined)       changes.companyRegNo = companyRegNo;
-  if (companyWebsite !== undefined)     changes.companyWebsite = companyWebsite;
   if (companyServices !== undefined)    changes.companyServices = companyServices;
   if (companyDestinations !== undefined)changes.companyDestinations = companyDestinations;
   if (companyDescription !== undefined) changes.companyDescription = companyDescription;
   if (packages !== undefined)           changes.packages = packages;
+  if (videoUrl !== undefined)           changes.videoUrl = videoUrl;
 
   const updated = await users.update(req.session.userId, changes);
   if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });

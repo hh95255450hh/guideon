@@ -170,10 +170,6 @@
                 <label class="form-label fw-600 small" data-i18n="company_reg_lbl">Company Registration No.</label>
                 <input type="text" class="form-control" id="companyRegNo" data-i18n-ph="company_reg_ph" placeholder="CR-XXXXXX">
               </div>
-              <div class="col-md-6">
-                <label class="form-label fw-600 small" data-i18n="website_lbl">Website</label>
-                <input type="url" class="form-control" id="companyWebsite" data-i18n-ph="website_ph" placeholder="https://yourcompany.com">
-              </div>
               <div class="col-12">
                 <label class="form-label fw-600 small" data-i18n="company_services_lbl">Services Offered *</label>
                 <input type="text" class="form-control" id="companyServices" data-i18n-ph="company_services_ph" placeholder="Desert Safaris, Dhow Cruises, City Tours">
@@ -203,7 +199,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=16"></script>
+<script src="/js/i18n.js?v=17"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 function switchType(type) {
@@ -255,7 +251,6 @@ async function doRegister(e) {
   } else if (type === 'company') {
     body.companyName        = document.getElementById('companyName').value;
     body.companyRegNo       = document.getElementById('companyRegNo').value;
-    body.companyWebsite     = document.getElementById('companyWebsite').value;
     body.companyServices    = document.getElementById('companyServices').value;
     body.companyDestinations= document.getElementById('companyDestinations').value;
     body.companyDescription = document.getElementById('companyDescription').value;
@@ -289,4 +284,5 @@ async function doRegister(e) {
 <script src="/js/pwa.js?v=12"></script>
 </body>
 </html>
+
 
