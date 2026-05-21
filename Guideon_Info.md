@@ -98,7 +98,7 @@
 
 ---
 
-## ✅ آخر التحديثات — 2026-05-21
+## ✅ آخر التحديثات — 2026-05-21 (تحديث 2)
 
 | التغيير | التفاصيل |
 |---------|---------|
@@ -111,6 +111,12 @@
 | guide-profile.html | صفحة ملف المرشد الكاملة للسياح: تقويم، حجز، مراجعات، ودية/مشاركة |
 | emailService.js | إيميلات الترحيب والموافقة للشركات |
 | authController.js | دعم تسجيل الشركات + isMinistryLicensed للمرشدين |
+| **رفع الصور والفيديو** | src/routes/upload.js: POST /photo /gallery DELETE /gallery POST /video |
+| guide-dashboard.html | انقر الأفاتار لتغيير الصورة + معرض صور (8 صور) + رابط YouTube |
+| company-dashboard.html | انقر الشعار لتغيير الصورة + معرض صور + رابط YouTube في وضع التعديل |
+| guide-profile.html | عرض معرض الصور + فيديو YouTube مضمّن في الصفحة العامة |
+| إلغاء الموقع الإلكتروني للشركات | حذف companyWebsite من register.html + company-dashboard.html + authController.js |
+| i18n v17 | مفاتيح gallery_* و video_* و photo_* بالعربية والإنجليزية |
 
 ---
 
