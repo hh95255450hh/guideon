@@ -98,6 +98,22 @@
 
 ---
 
+## ✅ آخر التحديثات — 2026-05-22 (إصلاح أخطاء حرجة)
+
+| التغيير | التفاصيل |
+|---------|---------|
+| **حذف الكود الميت** | حذف 3 controllers + 3 routes + 2 middleware + uploadService + notificationService + FileDB + config/database.js (كانت تستخدم نظام JWT + pg مختلف وغير مربوطة في app.js) |
+| **إصلاح منطق الدفع** | paymentController.js: استخدام حقل isPaid بدل status لتحديد "تم الدفع" — الآن المرشد يمكنه تأكيد الحجز قبل الدفع دون كسر مسار الدفع |
+| **إعادة التاريخ عند الإلغاء** | bookingController.js: عند إلغاء الحجز، التاريخ يُعاد إلى توفر المرشد (كما يَعِد إيميل الإلغاء) |
+| **SupabaseDB.findById** | استخدام this.pk بدل القيم المُرمزة (id/reviewId) — يدعم الآن أي مفتاح أساسي مخصص |
+| **إزالة المفاتيح المكشوفة** | config/supabase.js: حذف Supabase URL والمفتاح المُرمَزَين كـ fallback — الآن يرمي خطأ إذا غاب env |
+| **try-catch في authController** | إضافة try-catch للدوال: updateProfile, changePassword, uploadPhoto, saveFcmToken (كانت تسبب unhandled rejections) |
+| **حذف الجلب المضاعف** | bookingController.updateStatus: إزالة استعلام مرشد مكرر داخل بلوك confirmed |
+| **حذف webhook مكرر** | routes/payments.js: حذف تسجيل /webhook المكرر — الأصلي مُسجّل في app.js مع express.raw() |
+| **إصلاح seed script** | package.json: تصحيح "scripts/seed.js" → "scripts/seed_supabase.js" |
+
+---
+
 ## ✅ آخر التحديثات — 2026-05-21 (تحديث 3)
 
 | التغيير | التفاصيل |

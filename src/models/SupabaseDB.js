@@ -14,7 +14,7 @@ class SupabaseDB {
 
   async findById(id) {
     const all = await this.readAll();
-    return all.find(r => r.id === id || r.reviewId === id) || null;
+    return all.find(r => r[this.pk] === id) || null;
   }
 
   async findOne(predicate) {

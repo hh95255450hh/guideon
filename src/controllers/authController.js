@@ -140,52 +140,67 @@ exports.logout = (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
-  const {
-    fullName, phone, nationality, preferredLanguage,
-    companyName, companyRegNo, companyServices, companyDestinations, companyDescription, packages, videoUrl,
-  } = req.body;
-  const changes = {};
-  if (fullName)                 changes.fullName = fullName;
-  if (phone !== undefined)      changes.phone = phone;
-  if (nationality)              changes.nationality = nationality;
-  if (preferredLanguage)        changes.preferredLanguage = preferredLanguage;
-  // Company-specific fields
-  if (companyName !== undefined)        changes.companyName = companyName;
-  if (companyRegNo !== undefined)       changes.companyRegNo = companyRegNo;
-  if (companyServices !== undefined)    changes.companyServices = companyServices;
-  if (companyDestinations !== undefined)changes.companyDestinations = companyDestinations;
-  if (companyDescription !== undefined) changes.companyDescription = companyDescription;
-  if (packages !== undefined)           changes.packages = packages;
-  if (videoUrl !== undefined)           changes.videoUrl = videoUrl;
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
+    const {
+      fullName, phone, nationality, preferredLanguage,
+      companyName, companyRegNo, companyServices, companyDestinations, companyDescription, packages, videoUrl,
+    } = req.body;
+    const changes = {};
+    if (fullName)                 changes.fullName = fullName;
+    if (phone !== undefined)      changes.phone = phone;
+    if (nationality)              changes.nationality = nationality;
+    if (preferredLanguage)        changes.preferredLanguage = preferredLanguage;
+    // Company-specific fields
+    if (companyName !== undefined)        changes.companyName = companyName;
+    if (companyRegNo !== undefined)       changes.companyRegNo = companyRegNo;
+    if (companyServices !== undefined)    changes.companyServices = companyServices;
+    if (companyDestinations !== undefined)changes.companyDestinations = companyDestinations;
+    if (companyDescription !== undefined) changes.companyDescription = companyDescription;
+    if (packages !== undefined)           changes.packages = packages;
+    if (videoUrl !== undefined)           changes.videoUrl = videoUrl;
 
-  const updated = await users.update(req.session.userId, changes);
-  if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });
-  const { password, ...safe } = updated;
-  res.json({ success: true, message: 'Profile updated.', user: safe });
+    const updated = await users.update(req.session.userId, changes);
+    if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });
+    const { password, ...safe } = updated;
+    res.json({ success: true, message: 'Profile updated.', user: safe });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+  }
 };
 
 exports.changePassword = async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
-  const { currentPassword, newPassword } = req.body;
-  if (!currentPassword || !newPassword || newPassword.length < 8) {
-    return res.status(400).json({ success: false, message: 'Invalid password data.' });
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword || newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Invalid password data.' });
+    }
+    const user = await users.findById(req.session.userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) return res.status(401).json({ success: false, message: 'Current password is incorrect.' });
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await users.update(req.session.userId, { password: hashed });
+    res.json({ success: true, message: 'Password changed successfully.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
-  const user = await users.findById(req.session.userId);
-  if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
-  const match = await bcrypt.compare(currentPassword, user.password);
-  if (!match) return res.status(401).json({ success: false, message: 'Current password is incorrect.' });
-  const hashed = await bcrypt.hash(newPassword, 10);
-  await users.update(req.session.userId, { password: hashed });
-  res.json({ success: true, message: 'Password changed successfully.' });
 };
 
 exports.uploadPhoto = async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
-  if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
-  const photoUrl = '/uploads/avatars/' + req.file.filename;
-  await users.update(req.session.userId, { photo: photoUrl });
-  res.json({ success: true, photo: photoUrl });
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    const photoUrl = '/uploads/avatars/' + req.file.filename;
+    await users.update(req.session.userId, { photo: photoUrl });
+    res.json({ success: true, photo: photoUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+  }
 };
 
 exports.me = async (req, res) => {
@@ -200,9 +215,14 @@ exports.me = async (req, res) => {
 };
 
 exports.saveFcmToken = async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ success: false });
-  const { token } = req.body;
-  if (!token) return res.status(400).json({ success: false, message: 'Token required.' });
-  await users.update(req.session.userId, { fcm_token: token });
-  res.json({ success: true });
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false });
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ success: false, message: 'Token required.' });
+    await users.update(req.session.userId, { fcm_token: token });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+  }
 };

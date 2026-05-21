@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed_supabase.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",

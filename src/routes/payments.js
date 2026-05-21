@@ -2,8 +2,7 @@ const router  = require('express').Router();
 const payment = require('../controllers/paymentController');
 const { requireLogin, requireAdmin } = require('../middleware/auth');
 
-// Stripe webhook — raw body, no auth
-router.post('/webhook', payment.webhook);
+// Stripe webhook is registered in app.js with express.raw() before express.json()
 
 router.post('/create-checkout', requireLogin, payment.createCheckout);
 router.get('/status/:bookingId',  requireLogin, payment.getStatus);

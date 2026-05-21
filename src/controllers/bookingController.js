@@ -144,20 +144,27 @@ exports.updateStatus = async (req, res) => {
     if (status === 'confirmed') {
       if (tourist) email.sendTouristBookingConfirmed({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
       if (guide)   email.sendGuideBookingConfirmed({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
+
+      // Block the date in guide availability
+      if (guide) {
+        const avail = Array.isArray(guide.availability) ? guide.availability : [];
+        if (avail.includes(booking.tourDate)) {
+          await users.update(booking.guideId, { availability: avail.filter(d => d !== booking.tourDate) });
+        }
+      }
     } else if (status === 'cancelled') {
       if (tourist) email.sendTouristBookingCancelled({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
       if (guide)   email.sendGuideBookingCancelled({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
-    } else if (status === 'completed') {
-      if (tourist) email.sendTouristReviewReminder({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, destination: booking.destination, bookingId: id }).catch(() => {});
-    }
 
-    if (status === 'confirmed') {
-      const guide = await users.findById(booking.guideId);
+      // Restore the date to guide availability (the email promises this)
       if (guide) {
         const avail = Array.isArray(guide.availability) ? guide.availability : [];
-        const newAvail = avail.filter(d => d !== booking.tourDate);
-        await users.update(booking.guideId, { availability: newAvail });
+        if (!avail.includes(booking.tourDate)) {
+          await users.update(booking.guideId, { availability: [...avail, booking.tourDate] });
+        }
       }
+    } else if (status === 'completed') {
+      if (tourist) email.sendTouristReviewReminder({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, destination: booking.destination, bookingId: id }).catch(() => {});
     }
 
     res.json({ success: true, message: 'Booking updated.', booking: updated });

@@ -27,8 +27,11 @@ exports.createCheckout = async (req, res) => {
     if (booking.status === 'cancelled') {
       return res.status(400).json({ success: false, message: 'Cannot pay for a cancelled booking.' });
     }
-    if (booking.status === 'confirmed' || booking.status === 'completed') {
+    if (booking.isPaid) {
       return res.status(400).json({ success: false, message: 'Booking already paid.' });
+    }
+    if (booking.status === 'completed') {
+      return res.status(400).json({ success: false, message: 'Booking already completed.' });
     }
 
     const guide   = await users.findById(booking.guideId);
@@ -103,7 +106,11 @@ exports.webhook = async (req, res) => {
       const bookingId = session.metadata?.booking_id;
 
       if (bookingId) {
-        await bookings.update(bookingId, { status: 'confirmed' });
+        await bookings.update(bookingId, {
+          isPaid: true,
+          paidAt: new Date().toISOString(),
+          status: 'confirmed',
+        });
 
         const booking = await bookings.findById(bookingId);
         if (booking) {
