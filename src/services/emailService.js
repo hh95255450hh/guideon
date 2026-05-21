@@ -294,10 +294,31 @@ function guideNewReview({ name, touristName, rating, comment, destination }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+//  COMPANY EMAILS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function companyWelcome({ name, companyName }) {
+  return layout(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🏢</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
+      Hi <strong>${name}</strong>, your company account for <strong>${companyName}</strong> has been created.
+      Our team will review your profile before it goes live to tourists.
+    </p>
+    <div style="background:#e8f0ff;border:1px solid #b0c4f5;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="margin:0;font-size:13px;color:#1a3a7a;line-height:1.6;">
+        📋 <strong>Next steps:</strong> Complete your company profile, add your tour packages and services.
+        Once reviewed, tourists can discover and contact your company.
+      </p>
+    </div>
+    ${btn('Go to Company Dashboard', `${APP_URL}/company-dashboard.html`)}
+  `);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 //  ADMIN EMAILS
 // ══════════════════════════════════════════════════════════════════════════════
 
-function adminNewGuide({ guideName, guideEmail, licenceNumber, destinations, languages }) {
+function adminNewGuide({ guideName, guideEmail, licenceNumber, isMinistryLicensed, destinations, languages }) {
   return layout(`
     <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">New Guide Registration 📋</h1>
     <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
@@ -306,11 +327,27 @@ function adminNewGuide({ guideName, guideEmail, licenceNumber, destinations, lan
     ${table(
       row('Name',         guideName),
       row('Email',        guideEmail),
+      row('MOT Status',   isMinistryLicensed ? '🏛️ Ministry Licensed' : '⚠️ Pending Licence'),
       row('Licence',      licenceNumber || 'Not provided'),
       row('Destinations', (destinations || []).join(', ') || 'Not specified'),
       row('Languages',    (languages    || []).join(', ') || 'Not specified'),
     )}
     ${btn('Verify in Admin Panel', `${APP_URL}/admin.html`, '#1a1a2e')}
+  `);
+}
+
+function adminNewCompany({ companyName, email, companyRegNo }) {
+  return layout(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">New Company Registration 🏢</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
+      A new tourism company has registered and is pending review.
+    </p>
+    ${table(
+      row('Company',  companyName),
+      row('Email',    email),
+      row('Reg. No.', companyRegNo || 'Not provided'),
+    )}
+    ${btn('Review in Admin Panel', `${APP_URL}/admin.html`, '#1a1a2e')}
   `);
 }
 
@@ -371,7 +408,14 @@ module.exports = {
   sendGuideNewReview: (data) =>
     send(data.email, `New Review from ${data.touristName} ${('⭐').repeat(data.rating)}`, guideNewReview(data)),
 
+  // Company
+  sendCompanyWelcome: (data) =>
+    send(data.email, 'Welcome to Guideon — Company Account Created 🏢', companyWelcome(data)),
+
   // Admin
   sendAdminNewGuide: (data) =>
     send(ADMIN_EMAIL, `New Guide Registration — ${data.guideName}`, adminNewGuide(data)),
+
+  sendAdminNewCompany: (data) =>
+    send(ADMIN_EMAIL, `New Company Registration — ${data.companyName}`, adminNewCompany(data)),
 };

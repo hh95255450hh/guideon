@@ -82,7 +82,7 @@ async function doLogin(e) {
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
-    const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html' };
+    const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html', company: '/company-dashboard.html' };
     window.location.href = dashMap[d.user.userType] || '/';
   } catch(ex) {
     err.textContent = ex.message; err.classList.remove('d-none');

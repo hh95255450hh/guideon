@@ -8,7 +8,8 @@ const users = new SupabaseDB('users');
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, userType, phone, nationality, preferredLanguage,
-            licenceNumber, languages, specialisations, destinations, pricePerDay, bio } = req.body;
+            hasMinistryLicence, licenceNumber, languages, specialisations, destinations, pricePerDay, bio,
+            companyName, companyRegNo, companyWebsite, companyServices, companyDestinations, companyDescription } = req.body;
 
     if (!fullName || !email || !password || !userType) {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
@@ -19,6 +20,9 @@ exports.register = async (req, res) => {
     if (password.length < 8) {
       return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
     }
+    if (userType === 'company' && !companyName) {
+      return res.status(400).json({ success: false, message: 'Company name is required.' });
+    }
 
     const existing = await users.findOne(u => u.email.toLowerCase() === email.toLowerCase());
     if (existing) {
@@ -26,7 +30,7 @@ exports.register = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const prefix = userType === 'guide' ? 'guide' : userType === 'admin' ? 'admin' : 'tourist';
+    const prefix = userType === 'guide' ? 'guide' : userType === 'company' ? 'company' : userType === 'admin' ? 'admin' : 'tourist';
     const id = prefix + '-' + uuidv4().slice(0, 8);
 
     const base = {
@@ -39,15 +43,31 @@ exports.register = async (req, res) => {
     if (userType === 'tourist') {
       record = { ...base, nationality: nationality || '', preferredLanguage: preferredLanguage || 'English' };
     } else if (userType === 'guide') {
+      const isLicensed = hasMinistryLicence === true || hasMinistryLicence === 'true';
       const langArr = Array.isArray(languages) ? languages : (languages ? languages.split(',').map(s => s.trim()) : []);
       const specArr = Array.isArray(specialisations) ? specialisations : (specialisations ? specialisations.split(',').map(s => s.trim()) : []);
       const destArr = Array.isArray(destinations) ? destinations : (destinations ? destinations.split(',').map(s => s.trim()) : []);
       record = {
-        ...base, licenceNumber: licenceNumber || '',
+        ...base,
+        isMinistryLicensed: isLicensed,
+        licenceNumber: isLicensed ? (licenceNumber || '') : '',
         languages: langArr, specialisations: specArr, destinations: destArr,
         rating: 0, totalReviews: 0,
         pricePerDay: parseFloat(pricePerDay) || 0,
         bio: bio || '', isVerified: false, availability: [], photo: '',
+      };
+    } else if (userType === 'company') {
+      const svcArr  = Array.isArray(companyServices)     ? companyServices     : (companyServices     ? companyServices.split(',').map(s => s.trim())     : []);
+      const destArr = Array.isArray(companyDestinations) ? companyDestinations : (companyDestinations ? companyDestinations.split(',').map(s => s.trim()) : []);
+      record = {
+        ...base,
+        companyName: companyName || '',
+        companyRegNo: companyRegNo || '',
+        companyWebsite: companyWebsite || '',
+        companyServices: svcArr,
+        companyDestinations: destArr,
+        companyDescription: companyDescription || '',
+        isVerified: false, photo: '',
       };
     } else {
       record = base;
@@ -65,8 +85,12 @@ exports.register = async (req, res) => {
       emailService.sendAdminNewGuide({
         guideName: record.fullName, guideEmail: record.email,
         licenceNumber: record.licenceNumber,
+        isMinistryLicensed: record.isMinistryLicensed,
         destinations: record.destinations, languages: record.languages,
       }).catch(() => {});
+    } else if (userType === 'company') {
+      emailService.sendCompanyWelcome({ email: record.email, name: record.fullName, companyName: record.companyName }).catch(() => {});
+      emailService.sendAdminNewCompany({ companyName: record.companyName, email: record.email, companyRegNo: record.companyRegNo }).catch(() => {});
     }
 
     const safe = { ...record };
@@ -118,12 +142,24 @@ exports.logout = (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
-  const { fullName, phone, nationality, preferredLanguage } = req.body;
+  const {
+    fullName, phone, nationality, preferredLanguage,
+    companyName, companyRegNo, companyWebsite, companyServices, companyDestinations, companyDescription, packages,
+  } = req.body;
   const changes = {};
-  if (fullName)            changes.fullName = fullName;
-  if (phone !== undefined) changes.phone = phone;
-  if (nationality)         changes.nationality = nationality;
-  if (preferredLanguage)   changes.preferredLanguage = preferredLanguage;
+  if (fullName)                 changes.fullName = fullName;
+  if (phone !== undefined)      changes.phone = phone;
+  if (nationality)              changes.nationality = nationality;
+  if (preferredLanguage)        changes.preferredLanguage = preferredLanguage;
+  // Company-specific fields
+  if (companyName !== undefined)        changes.companyName = companyName;
+  if (companyRegNo !== undefined)       changes.companyRegNo = companyRegNo;
+  if (companyWebsite !== undefined)     changes.companyWebsite = companyWebsite;
+  if (companyServices !== undefined)    changes.companyServices = companyServices;
+  if (companyDestinations !== undefined)changes.companyDestinations = companyDestinations;
+  if (companyDescription !== undefined) changes.companyDescription = companyDescription;
+  if (packages !== undefined)           changes.packages = packages;
+
   const updated = await users.update(req.session.userId, changes);
   if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });
   const { password, ...safe } = updated;
