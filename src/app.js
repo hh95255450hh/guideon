@@ -35,7 +35,7 @@ app.use(helmet({
       scriptSrc:     ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc:      ["'self'", "https:", "'unsafe-inline'"],
-      imgSrc:        ["'self'", "data:", "https:"],
+      imgSrc:        ["'self'", "data:", "https:", "https://upload.wikimedia.org"],
       connectSrc:    ["'self'"],
       fontSrc:       ["'self'", "https:", "data:"],
       objectSrc:     ["'none'"],
