@@ -297,6 +297,23 @@ function guideNewReview({ name, touristName, rating, comment, destination }) {
 //  COMPANY EMAILS
 // ══════════════════════════════════════════════════════════════════════════════
 
+function companyVerified({ name, companyName }) {
+  return layout(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Your Company is Approved! 🎉</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
+      Congratulations <strong>${name}</strong>! <strong>${companyName}</strong> has been reviewed and approved by the Guideon team.
+      Your company is now live and visible to tourists browsing the platform.
+    </p>
+    ${badge('✓ APPROVED & LISTED', '#0f7b6c', '#e8f5f2')}
+    <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
+        📦 <strong>Next step:</strong> Add your tour packages and services from your dashboard so tourists can discover your offerings.
+      </p>
+    </div>
+    ${btn('Go to Company Dashboard', `${APP_URL}/company-dashboard.html`)}
+  `);
+}
+
 function companyWelcome({ name, companyName }) {
   return layout(`
     <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🏢</h1>
@@ -411,6 +428,9 @@ module.exports = {
   // Company
   sendCompanyWelcome: (data) =>
     send(data.email, 'Welcome to Guideon — Company Account Created 🏢', companyWelcome(data)),
+
+  sendCompanyVerified: (data) =>
+    send(data.email, `${data.companyName} is Now Live on Guideon! 🎉`, companyVerified(data)),
 
   // Admin
   sendAdminNewGuide: (data) =>

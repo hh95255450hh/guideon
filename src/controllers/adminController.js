@@ -9,25 +9,31 @@ exports.stats = async (req, res) => {
   try {
     const allUsers    = await users.readAll();
     const allBookings = await bookings.readAll();
-    const guides   = allUsers.filter(u => u.userType === 'guide');
-    const tourists = allUsers.filter(u => u.userType === 'tourist');
-    const revenue  = allBookings
+    const guides    = allUsers.filter(u => u.userType === 'guide');
+    const tourists  = allUsers.filter(u => u.userType === 'tourist');
+    const companies = allUsers.filter(u => u.userType === 'company');
+    const revenue   = allBookings
       .filter(b => b.status !== 'cancelled')
       .reduce((s, b) => s + (b.totalAmount || 0), 0);
 
     res.json({
       success: true, stats: {
-        totalGuides:       guides.length,
-        verifiedGuides:    guides.filter(g => g.isVerified).length,
-        pendingGuides:     guides.filter(g => !g.isVerified && !g.isSuspended).length,
-        totalTourists:     tourists.length,
-        totalBookings:     allBookings.length,
-        pendingBookings:   allBookings.filter(b => b.status === 'pending').length,
-        confirmedBookings: allBookings.filter(b => b.status === 'confirmed').length,
-        completedBookings: allBookings.filter(b => b.status === 'completed').length,
-        cancelledBookings: allBookings.filter(b => b.status === 'cancelled').length,
-        totalRevenue:      Math.round(revenue * 100) / 100,
-        guideRatings:      guides.map(g => g.rating || 0),
+        totalGuides:         guides.length,
+        verifiedGuides:      guides.filter(g => g.isVerified).length,
+        pendingGuides:       guides.filter(g => !g.isVerified && !g.isSuspended).length,
+        licensedGuides:      guides.filter(g => g.isMinistryLicensed).length,
+        unlicensedGuides:    guides.filter(g => !g.isMinistryLicensed).length,
+        totalTourists:       tourists.length,
+        totalCompanies:      companies.length,
+        verifiedCompanies:   companies.filter(c => c.isVerified).length,
+        pendingCompanies:    companies.filter(c => !c.isVerified && !c.isSuspended).length,
+        totalBookings:       allBookings.length,
+        pendingBookings:     allBookings.filter(b => b.status === 'pending').length,
+        confirmedBookings:   allBookings.filter(b => b.status === 'confirmed').length,
+        completedBookings:   allBookings.filter(b => b.status === 'completed').length,
+        cancelledBookings:   allBookings.filter(b => b.status === 'cancelled').length,
+        totalRevenue:        Math.round(revenue * 100) / 100,
+        guideRatings:        guides.map(g => g.rating || 0),
       },
     });
   } catch (err) {
@@ -63,6 +69,24 @@ exports.allTourists = async (req, res) => {
   }
 };
 
+exports.allCompanies = async (req, res) => {
+  try {
+    const companies = await users.findAll(u => u.userType === 'company');
+    res.json({ success: true, companies: companies.map(({ password, ...c }) => c) });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+exports.pendingCompanies = async (req, res) => {
+  try {
+    const pending = await users.findAll(u => u.userType === 'company' && !u.isVerified && !u.isSuspended);
+    res.json({ success: true, companies: pending.map(({ password, ...c }) => c) });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 exports.verifyGuide = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,6 +97,21 @@ exports.verifyGuide = async (req, res) => {
     await users.update(id, { isVerified: true });
     email.sendGuideVerified({ email: guide.email, name: guide.fullName }).catch(() => {});
     res.json({ success: true, message: `${guide.fullName} has been verified and is now visible in search results.` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+exports.verifyCompany = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const company = await users.findById(id);
+    if (!company || company.userType !== 'company') {
+      return res.status(404).json({ success: false, message: 'Company not found.' });
+    }
+    await users.update(id, { isVerified: true });
+    email.sendCompanyVerified({ email: company.email, name: company.fullName, companyName: company.companyName }).catch(() => {});
+    res.json({ success: true, message: `${company.companyName} has been approved and is now listed on the platform.` });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
