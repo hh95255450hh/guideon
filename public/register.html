@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="shortcut icon" href="/favicon.ico">
-<title>Guideon — Register</title>
+<title>Guideon â€” Register</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
 <link rel="stylesheet" href="/css/style.css?v=14">
@@ -38,7 +38,7 @@
 <nav class="navbar navbar-dark">
   <div class="container d-flex justify-content-between align-items-center">
     <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
-    <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+    <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">ًںŒگ ط¹ط±ط¨ظٹ</button>
   </div>
 </nav>
 
@@ -48,15 +48,15 @@
       <div class="auth-card p-4 p-md-5">
         <div class="text-center mb-4">
           <img src="/logo.png" alt="Guideon" style="height:80px;margin-bottom:8px">
-          <h3 class="fw-800 mt-2">Create Your Account</h3>
-          <p class="text-muted small">Join Guideon as a Tourist, Guide, or Tourism Company</p>
+          <h3 class="fw-800 mt-2" data-i18n="reg_title">Create Your Account</h3>
+          <p class="text-muted small" data-i18n="reg_sub">Join Guideon as a Tourist, Guide, or Tourism Company</p>
         </div>
 
         <!-- TYPE TABS -->
         <div class="d-flex mb-4 border rounded-3 overflow-hidden">
-          <button class="flex-1 tab-btn active" id="tabTourist"  onclick="switchType('tourist')">👤 Tourist</button>
-          <button class="flex-1 tab-btn"        id="tabGuide"    onclick="switchType('guide')">🎒 Guide</button>
-          <button class="flex-1 tab-btn"        id="tabCompany"  onclick="switchType('company')">🏢 Company</button>
+          <button class="flex-1 tab-btn active" id="tabTourist"  onclick="switchType('tourist')" data-i18n="tab_tourist">ًں‘¤ Tourist</button>
+          <button class="flex-1 tab-btn"        id="tabGuide"    onclick="switchType('guide')"   data-i18n="tab_guide">ًںژ’ Guide</button>
+          <button class="flex-1 tab-btn"        id="tabCompany"  onclick="switchType('company')" data-i18n="tab_company">ًںڈ¢ Company</button>
         </div>
 
         <div id="errMsg" class="alert alert-danger d-none small"></div>
@@ -64,35 +64,35 @@
         <form id="regForm" onsubmit="doRegister(event)">
           <input type="hidden" id="userType" value="tourist">
 
-          <!-- ─── COMMON FIELDS ─── -->
+          <!-- â”€â”€â”€ COMMON FIELDS â”€â”€â”€ -->
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Full Name *</label>
-              <input type="text" class="form-control" id="fullName" placeholder="Your full name" required>
+              <label class="form-label fw-600 small" data-i18n="full_name">Full Name *</label>
+              <input type="text" class="form-control" id="fullName" data-i18n-ph="full_name_ph" placeholder="Your full name" required>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Email Address *</label>
-              <input type="email" class="form-control" id="email" placeholder="you@example.com" required>
+              <label class="form-label fw-600 small" data-i18n="email_addr">Email Address *</label>
+              <input type="email" class="form-control" id="email" data-i18n-ph="email_ph" placeholder="you@example.com" required>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Password *</label>
-              <input type="password" class="form-control" id="password" placeholder="Min 8 characters" required>
+              <label class="form-label fw-600 small" data-i18n="pass_req">Password *</label>
+              <input type="password" class="form-control" id="password" data-i18n-ph="pass_ph2" placeholder="Min 8 characters" required>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Phone</label>
-              <input type="tel" class="form-control" id="phone" placeholder="+968 XXXX XXXX">
+              <label class="form-label fw-600 small" data-i18n="phone_lbl">Phone</label>
+              <input type="tel" class="form-control" id="phone" data-i18n-ph="phone_ph" placeholder="+968 XXXX XXXX">
             </div>
           </div>
 
-          <!-- ═══════════════════════════════ TOURIST ═══════════════════════════════ -->
+          <!-- â•گâ•گâ•گ TOURIST â•گâ•گâ•گ -->
           <div id="touristFields">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Nationality</label>
-                <input type="text" class="form-control" id="nationality" placeholder="e.g. British">
+                <label class="form-label fw-600 small" data-i18n="nationality">Nationality</label>
+                <input type="text" class="form-control" id="nationality" data-i18n-ph="nat_ph" placeholder="e.g. British">
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Preferred Language</label>
+                <label class="form-label fw-600 small" data-i18n="pref_lang">Preferred Language</label>
                 <select class="form-select" id="preferredLanguage">
                   <option>English</option><option>Arabic</option><option>French</option><option>German</option>
                 </select>
@@ -100,100 +100,101 @@
             </div>
           </div>
 
-          <!-- ═══════════════════════════════ GUIDE ═══════════════════════════════ -->
+          <!-- â•گâ•گâ•گ GUIDE â•گâ•گâ•گ -->
           <div id="guideFields" class="d-none">
             <div class="row g-3">
 
-              <!-- Ministry Verification Status -->
+              <!-- Ministry Status -->
               <div class="col-12">
-                <label class="form-label fw-600 small mb-2">Ministry of Tourism Verification Status *</label>
+                <label class="form-label fw-600 small mb-2" data-i18n="mot_status_lbl">Ministry of Tourism Verification Status *</label>
                 <div class="ministry-toggle">
                   <div class="ministry-opt selected" id="optVerified" onclick="setMinistry(true)">
-                    <div class="opt-icon">🏛️</div>
-                    <div class="opt-label">Ministry Licensed</div>
-                    <div class="opt-sub">I have an official MOT licence</div>
+                    <div class="opt-icon">ًںڈ›ï¸ڈ</div>
+                    <div class="opt-label" data-i18n="mot_licensed_lbl">Ministry Licensed</div>
+                    <div class="opt-sub" data-i18n="mot_licensed_sub">I have an official MOT licence</div>
                   </div>
                   <div class="ministry-opt" id="optUnverified" onclick="setMinistry(false)">
-                    <div class="opt-icon">🎒</div>
-                    <div class="opt-label">Not Yet Licensed</div>
-                    <div class="opt-sub">Applying or in progress</div>
+                    <div class="opt-icon">ًںژ’</div>
+                    <div class="opt-label" data-i18n="mot_unlicensed_lbl">Not Yet Licensed</div>
+                    <div class="opt-sub" data-i18n="mot_unlicensed_sub">Applying or in progress</div>
                   </div>
                 </div>
                 <input type="hidden" id="hasMinistryLicence" value="true">
               </div>
 
-              <!-- Ministry licence number (shown only when verified) -->
+              <!-- Licence number -->
               <div class="col-12" id="licenceRow">
-                <label class="form-label fw-600 small">Ministry Licence Number *</label>
-                <input type="text" class="form-control" id="licenceNumber" placeholder="MOT-YYYY-XXXX">
-                <div class="info-box teal mt-2">✅ Your profile will be marked as <strong>Ministry Verified</strong> and appear in search results after admin review.</div>
+                <label class="form-label fw-600 small" data-i18n="licence_lbl">Ministry Licence Number *</label>
+                <input type="text" class="form-control" id="licenceNumber" data-i18n-ph="licence_ph" placeholder="MOT-YYYY-XXXX">
+                <div class="info-box teal mt-2" data-i18n="mot_verified_note">âœ… Your profile will be marked as Ministry Verified and appear in search results after admin review.</div>
               </div>
 
-              <!-- Message when unverified -->
+              <!-- Unverified note -->
               <div class="col-12 d-none" id="unverifiedNote">
-                <div class="info-box amber">⚠️ You can still register and use the platform. Your profile will be listed as <strong>"Pending Ministry Verification"</strong>. Tourists will see this status. You can update your licence number later from your dashboard once obtained.</div>
+                <div class="info-box amber" data-i18n="mot_pending_note">âڑ ï¸ڈ You can still register and use the platform. Your profile will be listed as "Pending Ministry Verification". Tourists will see this status.</div>
               </div>
 
-              <!-- Common guide fields -->
+              <!-- Guide fields -->
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Price Per Day (OMR) *</label>
+                <label class="form-label fw-600 small" data-i18n="price_day">Price Per Day (OMR) *</label>
                 <input type="number" class="form-control" id="pricePerDay" placeholder="45" min="1">
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Languages Spoken *</label>
-                <input type="text" class="form-control" id="languages" placeholder="Arabic, English, French">
+                <label class="form-label fw-600 small" data-i18n="langs_spoken">Languages Spoken *</label>
+                <input type="text" class="form-control" id="languages" data-i18n-ph="langs_ph" placeholder="Arabic, English, French">
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Destinations Covered *</label>
-                <input type="text" class="form-control" id="destinations" placeholder="Muscat, Nizwa, Bahla">
+                <label class="form-label fw-600 small" data-i18n="dests_covered">Destinations Covered *</label>
+                <input type="text" class="form-control" id="destinations" data-i18n-ph="dests_ph" placeholder="Muscat, Nizwa, Bahla">
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Specialisations *</label>
-                <input type="text" class="form-control" id="specialisations" placeholder="Historical Sites, Desert Safaris">
+                <label class="form-label fw-600 small" data-i18n="specs_lbl">Specialisations *</label>
+                <input type="text" class="form-control" id="specialisations" data-i18n-ph="specs_ph" placeholder="Historical Sites, Desert Safaris">
               </div>
               <div class="col-12">
-                <label class="form-label fw-600 small">Professional Bio</label>
-                <textarea class="form-control" id="bio" rows="3" placeholder="Tell tourists about your experience and expertise..."></textarea>
+                <label class="form-label fw-600 small" data-i18n="bio_lbl">Professional Bio</label>
+                <textarea class="form-control" id="bio" rows="3" data-i18n-ph="bio_ph" placeholder="Tell tourists about your experience..."></textarea>
               </div>
             </div>
           </div>
 
-          <!-- ═══════════════════════════════ COMPANY ═══════════════════════════════ -->
+          <!-- â•گâ•گâ•گ COMPANY â•گâ•گâ•گ -->
           <div id="companyFields" class="d-none">
-            <div class="info-box blue mb-3">🏢 Register your tourism company to list your packages, tours, and services on Guideon. Your profile will be reviewed by our team before going live.</div>
+            <div class="info-box blue mb-3" data-i18n="company_info_note">ًںڈ¢ Register your tourism company to list your packages, tours, and services on Guideon.</div>
             <div class="row g-3">
               <div class="col-12">
-                <label class="form-label fw-600 small">Company Name *</label>
-                <input type="text" class="form-control" id="companyName" placeholder="e.g. Muscat Adventures LLC">
+                <label class="form-label fw-600 small" data-i18n="company_name_lbl">Company Name *</label>
+                <input type="text" class="form-control" id="companyName" data-i18n-ph="company_name_ph" placeholder="e.g. Muscat Adventures LLC">
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Company Registration No.</label>
-                <input type="text" class="form-control" id="companyRegNo" placeholder="CR-XXXXXX">
+                <label class="form-label fw-600 small" data-i18n="company_reg_lbl">Company Registration No.</label>
+                <input type="text" class="form-control" id="companyRegNo" data-i18n-ph="company_reg_ph" placeholder="CR-XXXXXX">
               </div>
               <div class="col-md-6">
-                <label class="form-label fw-600 small">Website</label>
-                <input type="url" class="form-control" id="companyWebsite" placeholder="https://yourcompany.com">
+                <label class="form-label fw-600 small" data-i18n="website_lbl">Website</label>
+                <input type="url" class="form-control" id="companyWebsite" data-i18n-ph="website_ph" placeholder="https://yourcompany.com">
               </div>
               <div class="col-12">
-                <label class="form-label fw-600 small">Services Offered *</label>
-                <input type="text" class="form-control" id="companyServices" placeholder="Desert Safaris, Dhow Cruises, City Tours, Camping">
+                <label class="form-label fw-600 small" data-i18n="company_services_lbl">Services Offered *</label>
+                <input type="text" class="form-control" id="companyServices" data-i18n-ph="company_services_ph" placeholder="Desert Safaris, Dhow Cruises, City Tours">
               </div>
               <div class="col-12">
-                <label class="form-label fw-600 small">Destinations Covered *</label>
-                <input type="text" class="form-control" id="companyDestinations" placeholder="Muscat, Wahiba Sands, Musandam">
+                <label class="form-label fw-600 small" data-i18n="company_dests_lbl">Destinations Covered *</label>
+                <input type="text" class="form-control" id="companyDestinations" data-i18n-ph="company_dests_ph" placeholder="Muscat, Wahiba Sands, Musandam">
               </div>
               <div class="col-12">
-                <label class="form-label fw-600 small">Company Description *</label>
-                <textarea class="form-control" id="companyDescription" rows="3" placeholder="Tell tourists about your company, experience, and what makes you unique..."></textarea>
+                <label class="form-label fw-600 small" data-i18n="company_desc_lbl">Company Description *</label>
+                <textarea class="form-control" id="companyDescription" rows="3" data-i18n-ph="company_desc_ph" placeholder="Tell tourists about your company..."></textarea>
               </div>
             </div>
           </div>
 
-          <button type="submit" class="btn-teal btn w-100 py-2 mt-4" id="submitBtn">Create Account</button>
+          <button type="submit" class="btn-teal btn w-100 py-2 mt-4" id="submitBtn" data-i18n="reg_btn">Create Account</button>
         </form>
 
         <p class="text-center small text-muted mt-4">
-          Already have an account? <a href="/login.html" class="fw-600" style="color:var(--teal)">Sign In</a>
+          <span data-i18n="have_account">Already have an account?</span>
+          <a href="/login.html" class="fw-600" style="color:var(--teal)" data-i18n="signin_link">Sign In</a>
         </p>
       </div>
     </div>
@@ -202,7 +203,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=12"></script>
+<script src="/js/i18n.js?v=16"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 function switchType(type) {
@@ -219,12 +220,8 @@ function setMinistry(hasLicence) {
   document.getElementById('optUnverified').classList.toggle('selected', !hasLicence);
   document.getElementById('licenceRow').classList.toggle('d-none', !hasLicence);
   document.getElementById('unverifiedNote').classList.toggle('d-none', hasLicence);
-  if (hasLicence) {
-    document.getElementById('licenceNumber').required = true;
-  } else {
-    document.getElementById('licenceNumber').required = false;
-    document.getElementById('licenceNumber').value = '';
-  }
+  document.getElementById('licenceNumber').required = hasLicence;
+  if (!hasLicence) document.getElementById('licenceNumber').value = '';
 }
 
 async function doRegister(e) {
@@ -233,7 +230,7 @@ async function doRegister(e) {
   const err = document.getElementById('errMsg');
   err.classList.add('d-none');
   btn.disabled = true;
-  btn.textContent = 'Creating account…';
+  btn.textContent = I18N.t('reg_loading');
 
   const type = document.getElementById('userType').value;
   const body = {
@@ -245,9 +242,8 @@ async function doRegister(e) {
   };
 
   if (type === 'tourist') {
-    body.nationality        = document.getElementById('nationality').value;
-    body.preferredLanguage  = document.getElementById('preferredLanguage').value;
-
+    body.nationality       = document.getElementById('nationality').value;
+    body.preferredLanguage = document.getElementById('preferredLanguage').value;
   } else if (type === 'guide') {
     body.hasMinistryLicence = document.getElementById('hasMinistryLicence').value === 'true';
     body.licenceNumber      = document.getElementById('licenceNumber').value;
@@ -256,7 +252,6 @@ async function doRegister(e) {
     body.specialisations    = document.getElementById('specialisations').value;
     body.destinations       = document.getElementById('destinations').value;
     body.bio                = document.getElementById('bio').value;
-
   } else if (type === 'company') {
     body.companyName        = document.getElementById('companyName').value;
     body.companyRegNo       = document.getElementById('companyRegNo').value;
@@ -265,9 +260,9 @@ async function doRegister(e) {
     body.companyDestinations= document.getElementById('companyDestinations').value;
     body.companyDescription = document.getElementById('companyDescription').value;
     if (!body.companyName || !body.companyServices || !body.companyDescription) {
-      err.textContent = 'Please fill in all required company fields.';
+      err.textContent = I18N.t('guide_note');
       err.classList.remove('d-none');
-      btn.disabled = false; btn.textContent = 'Create Account';
+      btn.disabled = false; btn.textContent = I18N.t('reg_btn');
       return;
     }
   }
@@ -280,22 +275,18 @@ async function doRegister(e) {
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
-    const dashMap = {
-      tourist: '/tourist-dashboard.html',
-      guide:   '/guide-dashboard.html',
-      company: '/company-dashboard.html',
-      admin:   '/admin.html',
-    };
+    const dashMap = { tourist:'/tourist-dashboard.html', guide:'/guide-dashboard.html', company:'/company-dashboard.html', admin:'/admin.html' };
     window.location.href = dashMap[d.user.userType] || '/';
   } catch(ex) {
     err.textContent = ex.message;
     err.classList.remove('d-none');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Create Account';
+    btn.textContent = I18N.t('reg_btn');
   }
 }
 </script>
 <script src="/js/pwa.js?v=12"></script>
 </body>
 </html>
+

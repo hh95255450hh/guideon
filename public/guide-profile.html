@@ -130,13 +130,13 @@
           <option value="GBP">GBP</option>
         </select>
         <div id="navAuth" class="d-flex gap-2">
-          <a href="/login.html"    class="btn btn-outline-light btn-sm">Log In</a>
-          <a href="/register.html" class="btn-gold btn btn-sm">Sign Up</a>
+          <a href="/login.html"    class="btn btn-outline-light btn-sm" data-i18n="nav_login">Log In</a>
+          <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
         </div>
         <div id="navUser" class="d-none d-flex gap-2 align-items-center">
           <span class="text-white opacity-75 small" id="navName"></span>
-          <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn">Dashboard</a>
-          <button class="btn btn-sm btn-danger" onclick="doLogout()">Sign Out</button>
+          <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn" data-i18n="nav_dashboard">Dashboard</a>
+          <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
         </div>
       </div>
     </div>
@@ -146,12 +146,12 @@
 <!-- Loading / Error states -->
 <div id="loadingState" class="text-center py-5 text-muted">
   <div class="spinner-border text-secondary mb-3" style="width:2rem;height:2rem" role="status"></div>
-  <div>Loading guide profile…</div>
+  <div data-i18n="gp_loading">Loading guide profile…</div>
 </div>
 <div id="errorState" class="d-none text-center py-5">
   <div style="font-size:3rem">⚠️</div>
-  <h5 class="mt-2">Guide not found</h5>
-  <a href="/search.html" class="btn-teal btn mt-3">← Back to Search</a>
+  <h5 class="mt-2" data-i18n="gp_not_found">Guide not found</h5>
+  <a href="/search.html" class="btn-teal btn mt-3" data-i18n="gp_back_search">← Back to Search</a>
 </div>
 
 <!-- Main content -->
@@ -163,9 +163,9 @@
       <div class="container">
         <!-- Breadcrumb -->
         <div class="mb-3" style="font-size:.82rem;opacity:.7">
-          <a href="/" style="color:rgba(255,255,255,.7);text-decoration:none">Home</a>
+          <a href="/" style="color:rgba(255,255,255,.7);text-decoration:none" data-i18n="gp_home">Home</a>
           <span class="mx-2">›</span>
-          <a href="/search.html" style="color:rgba(255,255,255,.7);text-decoration:none">Guides</a>
+          <a href="/search.html" style="color:rgba(255,255,255,.7);text-decoration:none" data-i18n="gp_guides_bc">Guides</a>
           <span class="mx-2">›</span>
           <span id="breadcrumbName" style="color:#fff">—</span>
         </div>
@@ -190,12 +190,12 @@
           <div class="col-md-auto text-md-end">
             <div class="mb-2">
               <span style="font-size:2.2rem;font-weight:800;color:#c9a84c" id="pPrice">—</span>
-              <span style="font-size:.85rem;opacity:.75"> / day</span>
+              <span style="font-size:.85rem;opacity:.75" data-i18n="per_day"> / day</span>
             </div>
             <div class="d-flex gap-2 justify-content-md-end">
-              <span class="action-pill" onclick="toggleWishlist()" id="wishlistBtn">🤍 Save</span>
-              <span class="action-pill" onclick="shareGuide()">🔗 Share</span>
-              <a href="/search.html" class="action-pill" style="text-decoration:none">← All Guides</a>
+              <span class="action-pill" onclick="toggleWishlist()" id="wishlistBtn" data-i18n="gp_btn_save">🤍 Save</span>
+              <span class="action-pill" onclick="shareGuide()" data-i18n="gp_btn_share">🔗 Share</span>
+              <a href="/search.html" class="action-pill" style="text-decoration:none" data-i18n="gp_all_guides">← All Guides</a>
             </div>
           </div>
         </div>
@@ -206,23 +206,23 @@
         <div class="gp-stats-bar">
           <div class="gp-stat">
             <div class="n" id="statRating">—</div>
-            <div class="l">Avg. Rating</div>
+            <div class="l" data-i18n="gp_stat_rating">Avg. Rating</div>
           </div>
           <div class="gp-stat">
             <div class="n" id="statReviews">—</div>
-            <div class="l">Reviews</div>
+            <div class="l" data-i18n="gp_stat_reviews">Reviews</div>
           </div>
           <div class="gp-stat">
             <div class="n" id="statDests">—</div>
-            <div class="l">Destinations</div>
+            <div class="l" data-i18n="gp_stat_dests">Destinations</div>
           </div>
           <div class="gp-stat">
             <div class="n" id="statAvail">—</div>
-            <div class="l">Available Dates</div>
+            <div class="l" data-i18n="gp_stat_avail">Available Dates</div>
           </div>
           <div class="gp-stat d-none d-md-block">
             <div class="n" id="statLangs">—</div>
-            <div class="l">Languages</div>
+            <div class="l" data-i18n="gp_stat_langs">Languages</div>
           </div>
         </div>
       </div>
@@ -241,26 +241,26 @@
 
         <!-- About -->
         <div class="info-card">
-          <h5>👤 About This Guide</h5>
+          <h5>👤 <span data-i18n="gp_about">About This Guide</span></h5>
           <p id="pBio" class="text-muted mb-0" style="line-height:1.8">—</p>
         </div>
 
         <!-- Specialisations -->
         <div class="info-card">
-          <h5>🎯 Specialisations</h5>
+          <h5>🎯 <span data-i18n="specialisations">Specialisations</span></h5>
           <div id="pSpecs"></div>
         </div>
 
         <!-- Destinations -->
         <div class="info-card">
-          <h5>📍 Destinations Covered</h5>
+          <h5>📍 <span data-i18n="gp_dests">Destinations Covered</span></h5>
           <div id="pDestinations"></div>
         </div>
 
         <!-- Availability Calendar -->
         <div class="info-card">
-          <h5>🗓️ Available Dates</h5>
-          <div id="noAvailMsg" class="text-muted small d-none">No upcoming available dates. Check back later.</div>
+          <h5>🗓️ <span data-i18n="gp_avail_dates">Available Dates</span></h5>
+          <div id="noAvailMsg" class="text-muted small d-none" data-i18n="gp_no_avail">No upcoming available dates. Check back later.</div>
           <div id="calendarWrap">
             <div class="cal-header">
               <button class="cal-nav" onclick="calPrev()">‹</button>
@@ -269,8 +269,8 @@
             </div>
             <div class="cal-grid" id="calGrid"></div>
             <div class="d-flex gap-3 mt-3" style="font-size:.78rem;color:#888">
-              <span><span style="display:inline-block;width:12px;height:12px;background:#e8f5f0;border-radius:3px;border:1px solid #0f7b6c;margin-right:4px"></span>Available</span>
-              <span><span style="display:inline-block;width:12px;height:12px;background:#0f7b6c;border-radius:3px;margin-right:4px"></span>Selected</span>
+              <span><span style="display:inline-block;width:12px;height:12px;background:#e8f5f0;border-radius:3px;border:1px solid #0f7b6c;margin-right:4px"></span><span data-i18n="gp_avail_legend">Available</span></span>
+              <span><span style="display:inline-block;width:12px;height:12px;background:#0f7b6c;border-radius:3px;margin-right:4px"></span><span data-i18n="gp_selected_legend">Selected</span></span>
             </div>
           </div>
         </div>
@@ -278,7 +278,7 @@
         <!-- Reviews -->
         <div class="info-card" id="reviewsCard">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">⭐ Tourist Reviews</h5>
+            <h5 class="mb-0">⭐ <span data-i18n="gp_rating_summary">Tourist Reviews</span></h5>
             <span class="small text-muted" id="reviewCountLabel"></span>
           </div>
           <!-- Rating summary bar -->
@@ -300,7 +300,7 @@
           <div class="d-flex justify-content-between align-items-center mb-1">
             <div>
               <div class="bp-price" id="bPrice">—</div>
-              <div class="bp-sub">per person / day</div>
+              <div class="bp-sub" data-i18n="gp_per_person">per person / day</div>
             </div>
             <div style="text-align:right">
               <div style="font-size:.85rem;color:#888" id="bRatingSm"></div>
@@ -310,21 +310,21 @@
 
           <!-- Not logged in / not tourist -->
           <div id="notLoggedMsg" class="alert-teal mb-3 small d-none"></div>
-          <div id="notTouristMsg" class="d-none alert alert-info small mb-3">Only tourist accounts can make bookings.</div>
+          <div id="notTouristMsg" class="d-none alert alert-info small mb-3" data-i18n="gp_tourists_only">Only tourist accounts can make bookings.</div>
 
           <!-- Selected date display -->
           <div class="bp-selected-date" id="selectedDateDisplay">📅 <span id="selectedDateText"></span></div>
 
           <!-- Duration -->
           <div class="mb-3">
-            <label class="form-label fw-600 small">Duration *</label>
+            <label class="form-label fw-600 small" data-i18n="duration">Duration *</label>
             <div class="d-flex gap-2">
               <div class="dur-btn active" id="durFull" onclick="setDuration('full')">
-                <div class="fw-700">Full Day</div>
+                <div class="fw-700" data-i18n="full_day">Full Day</div>
                 <div style="font-size:.75rem;color:#888">100%</div>
               </div>
               <div class="dur-btn" id="durHalf" onclick="setDuration('half')">
-                <div class="fw-700">Half Day</div>
+                <div class="fw-700" data-i18n="gp_half_day">Half Day</div>
                 <div style="font-size:.75rem;color:#888">60%</div>
               </div>
             </div>
@@ -332,55 +332,55 @@
 
           <!-- Destination -->
           <div class="mb-3">
-            <label class="form-label fw-600 small">Destination *</label>
+            <label class="form-label fw-600 small" data-i18n="destination">Destination *</label>
             <select class="form-select" id="bDest">
-              <option value="">— Select destination —</option>
+              <option value="" data-i18n="select_dest">— Select destination —</option>
             </select>
           </div>
 
           <!-- Participants -->
           <div class="mb-3">
-            <label class="form-label fw-600 small">Participants</label>
+            <label class="form-label fw-600 small" data-i18n="participants">Participants</label>
             <div class="d-flex align-items-center gap-2">
               <button class="btn btn-outline-secondary btn-sm" onclick="changePax(-1)">−</button>
               <span class="fw-700 px-3" id="paxDisplay">1</span>
               <button class="btn btn-outline-secondary btn-sm" onclick="changePax(1)">+</button>
-              <span class="small text-muted">(max 10)</span>
+              <span class="small text-muted" data-i18n="gp_max_pax">(max 10)</span>
             </div>
           </div>
 
           <!-- Special Requests -->
           <div class="mb-3">
-            <label class="form-label fw-600 small">Special Requests <span class="text-muted">(optional)</span></label>
-            <textarea class="form-control" id="bSpecial" rows="2" placeholder="Dietary needs, accessibility, language preference…" style="font-size:.85rem"></textarea>
+            <label class="form-label fw-600 small" data-i18n="special_req">Special Requests (optional)</label>
+            <textarea class="form-control" id="bSpecial" rows="2" data-i18n-ph="gp_special_ph" placeholder="Dietary needs, accessibility, language preference…" style="font-size:.85rem"></textarea>
           </div>
 
           <!-- Deposit options -->
           <div class="mb-3">
-            <label class="form-label fw-600 small">Pay Now</label>
+            <label class="form-label fw-600 small" data-i18n="gp_pay_now">Pay Now</label>
             <div class="d-flex gap-2" id="depositRow">
               <div class="dep-opt active" onclick="setDeposit(this,20)">
-                <div class="dep-pct">20%</div><div class="dep-lbl">Deposit</div><div class="dep-amt" id="dep20">—</div>
+                <div class="dep-pct">20%</div><div class="dep-lbl" data-i18n="gp_deposit_lbl">Deposit</div><div class="dep-amt" id="dep20">—</div>
               </div>
               <div class="dep-opt" onclick="setDeposit(this,50)">
-                <div class="dep-pct">50%</div><div class="dep-lbl">Deposit</div><div class="dep-amt" id="dep50">—</div>
+                <div class="dep-pct">50%</div><div class="dep-lbl" data-i18n="gp_deposit_lbl">Deposit</div><div class="dep-amt" id="dep50">—</div>
               </div>
               <div class="dep-opt" onclick="setDeposit(this,100)">
-                <div class="dep-pct">100%</div><div class="dep-lbl">Full Pay</div><div class="dep-amt" id="dep100">—</div>
+                <div class="dep-pct">100%</div><div class="dep-lbl" data-i18n="gp_full_pay">Full Pay</div><div class="dep-amt" id="dep100">—</div>
               </div>
             </div>
-            <div class="small text-muted mt-1">Remaining balance paid on the tour day.</div>
+            <div class="small text-muted mt-1" data-i18n="deposit_note">Remaining balance paid on the tour day.</div>
           </div>
 
           <!-- Price breakdown -->
           <div class="price-breakdown mb-3" id="priceBreakdown" style="display:none">
-            <div class="row"><div class="col">Guide rate</div><div class="col-auto fw-600" id="pbRate">—</div></div>
-            <div class="row"><div class="col">Duration</div><div class="col-auto" id="pbDur">—</div></div>
-            <div class="row total"><div class="col">Pay today</div><div class="col-auto fw-700" id="pbTotal">—</div></div>
+            <div class="row"><div class="col" data-i18n="gp_guide_rate">Guide rate</div><div class="col-auto fw-600" id="pbRate">—</div></div>
+            <div class="row"><div class="col" data-i18n="gp_duration_lbl">Duration</div><div class="col-auto" id="pbDur">—</div></div>
+            <div class="row total"><div class="col" data-i18n="gp_pay_today">Pay today</div><div class="col-auto fw-700" id="pbTotal">—</div></div>
           </div>
 
-          <button class="btn-book-now" id="bBtn" onclick="submitBooking()">Request Booking</button>
-          <div class="small text-muted mt-2 text-center">Guide confirms within 24 hours · Free cancellation</div>
+          <button class="btn-book-now" id="bBtn" onclick="submitBooking()" data-i18n="book_btn">Request Booking</button>
+          <div class="small text-muted mt-2 text-center" data-i18n="gp_confirm_note">Guide confirms within 24 hours · Free cancellation</div>
 
         </div><!-- /booking-panel -->
       </div><!-- /right col -->
@@ -390,7 +390,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=12"></script>
+<script src="/js/i18n.js?v=16"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -466,15 +466,15 @@ function renderAll() {
   const badgesEl = document.getElementById('pBadges');
   let badges = '';
   if (g.isMinistryLicensed) {
-    badges += `<span class="badge-mot-verified">🏛️ Ministry of Tourism Licensed</span>`;
+    badges += `<span class="badge-mot-verified">${I18N.t('mot_licensed_full')}</span>`;
   } else {
-    badges += `<span class="badge-mot-pending">⚠️ Pending MOT Verification</span>`;
+    badges += `<span class="badge-mot-pending">${I18N.t('mot_pending_short')}</span>`;
   }
   if (g.isVerified) {
-    badges += `<span class="badge-platform ms-1">✅ Platform Verified</span>`;
+    badges += `<span class="badge-platform ms-1">${I18N.t('platform_verified')}</span>`;
   }
   if (g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2) {
-    badges += `<span class="badge-super ms-1">⭐ Super Guide</span>`;
+    badges += `<span class="badge-super ms-1">${I18N.t('super_guide')}</span>`;
   }
   badgesEl.innerHTML = badges;
 
@@ -495,13 +495,13 @@ function renderAll() {
   // MOT info box
   const motEl = document.getElementById('motInfoBox');
   if (g.isMinistryLicensed && g.licenceNumber) {
-    motEl.innerHTML = `<div class="mot-info-box licensed mb-4">🏛️ <strong>Ministry of Tourism Licensed</strong> · Licence No: <strong>${g.licenceNumber}</strong><br><span style="font-size:.8rem">This guide holds an official licence from the Omani Ministry of Tourism and has been vetted by our team.</span></div>`;
+    motEl.innerHTML = `<div class="mot-info-box licensed mb-4">🏛️ <strong>${I18N.t('mot_licensed_lbl')}</strong> · ${I18N.t('gp_licence_no')} <strong>${g.licenceNumber}</strong><br><span style="font-size:.8rem">${I18N.t('gp_mot_desc')}</span></div>`;
   } else if (!g.isMinistryLicensed) {
-    motEl.innerHTML = `<div class="mot-info-box pending mb-4">⚠️ <strong>Ministry Verification Pending</strong><br><span style="font-size:.8rem">This guide is currently in the process of obtaining their Ministry of Tourism licence. They can still guide tours on the platform.</span></div>`;
+    motEl.innerHTML = `<div class="mot-info-box pending mb-4">⚠️ <strong>${I18N.t('mot_unlicensed_lbl')}</strong><br><span style="font-size:.8rem">${I18N.t('gp_mot_pending_desc')}</span></div>`;
   }
 
   // Bio
-  document.getElementById('pBio').textContent = g.bio || 'No bio provided yet.';
+  document.getElementById('pBio').textContent = g.bio || I18N.t('gp_no_bio');
 
   // Specialisations
   document.getElementById('pSpecs').innerHTML = (g.specialisations||[]).map(s =>
@@ -660,8 +660,8 @@ function updatePrice() {
   const bd = document.getElementById('priceBreakdown');
   if (SELECTED_DATE) {
     bd.style.display = '';
-    document.getElementById('pbRate').textContent  = conv(GUIDE.pricePerDay) + '/day';
-    document.getElementById('pbDur').textContent   = (DURATION==='half'?'Half Day (×0.6)':'Full Day') + (PAX>1?' × '+PAX+' pax':'');
+    document.getElementById('pbRate').textContent  = conv(GUIDE.pricePerDay) + I18N.t('per_day');
+    document.getElementById('pbDur').textContent   = (DURATION==='half' ? I18N.t('gp_half_day') + ' (×0.6)' : I18N.t('full_day')) + (PAX>1?' × '+PAX+' pax':'');
     document.getElementById('pbTotal').textContent = conv(payNow) + ' (' + DEPOSIT + '%)';
   } else {
     bd.style.display = 'none';
@@ -699,17 +699,17 @@ function renderRatingSummary() {
       <div style="text-align:center">
         <div style="font-size:3rem;font-weight:800;color:#1a1a2e;line-height:1">${Number(g.rating).toFixed(1)}</div>
         <div>${starsHtml(g.rating,'1.1rem')}</div>
-        <div style="font-size:.78rem;color:#888;margin-top:4px">${g.totalReviews} review${g.totalReviews!==1?'s':''}</div>
+        <div style="font-size:.78rem;color:#888;margin-top:4px">${I18N.t('reviews_count', g.totalReviews)}</div>
       </div>
       <div style="flex:1">${bars}</div>
     </div>`;
-  document.getElementById('reviewCountLabel').textContent = `${g.totalReviews} review${g.totalReviews!==1?'s':''}`;
+  document.getElementById('reviewCountLabel').textContent = I18N.t('reviews_count', g.totalReviews);
 }
 
 function renderReviews() {
   const slice = REVIEWS.slice(0, (REVIEW_PAGE+1)*REVIEWS_PER_PAGE);
   if (!slice.length) {
-    document.getElementById('pReviewList').innerHTML='<div class="text-muted small text-center py-3">No reviews yet. Be the first to book this guide!</div>';
+    document.getElementById('pReviewList').innerHTML=`<div class="text-muted small text-center py-3">${I18N.t('gp_no_reviews2')}</div>`;
     return;
   }
   document.getElementById('pReviewList').innerHTML = slice.map(r=>`
@@ -730,7 +730,7 @@ function renderReviews() {
   const loadBtn = document.getElementById('loadMoreBtn');
   if (REVIEWS.length > slice.length) {
     loadBtn.classList.remove('d-none');
-    loadBtn.textContent = `Load More (${REVIEWS.length - slice.length} remaining)`;
+    loadBtn.textContent = I18N.t('gp_load_more', REVIEWS.length - slice.length);
   } else {
     loadBtn.classList.add('d-none');
   }
@@ -745,12 +745,12 @@ function loadMoreReviews() {
 //  Booking submit
 // ═══════════════════════════════════════════════════════════
 async function submitBooking() {
-  if (!SELECTED_DATE) { toast('Please select an available date from the calendar.','error'); return; }
+  if (!SELECTED_DATE) { toast(I18N.t('gp_select_date'),'error'); return; }
   const dest = document.getElementById('bDest').value;
-  if (!dest) { toast('Please select a destination.','error'); return; }
+  if (!dest) { toast(I18N.t('gp_select_dest'),'error'); return; }
 
   const btn = document.getElementById('bBtn');
-  btn.disabled=true; btn.textContent='Sending request…';
+  btn.disabled=true; btn.textContent=I18N.t('gp_sending');
 
   try {
     const r = await fetch('/api/bookings',{
@@ -764,11 +764,11 @@ async function submitBooking() {
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
-    toast('Booking request sent! Redirecting to your dashboard…','success');
+    toast(I18N.t('gp_booking_sent'),'success');
     setTimeout(()=>window.location.href='/tourist-dashboard.html', 2000);
   } catch(e) {
     toast(e.message,'error');
-    btn.disabled=false; btn.textContent='Request Booking';
+    btn.disabled=false; btn.textContent=I18N.t('book_btn');
   }
 }
 
@@ -777,9 +777,12 @@ async function submitBooking() {
 // ═══════════════════════════════════════════════════════════
 function loadWishlist() {
   const list = JSON.parse(localStorage.getItem('gd_wishlist')||'[]');
+  const btn = document.getElementById('wishlistBtn');
   if (list.includes(GUIDE.id)) {
-    document.getElementById('wishlistBtn').innerHTML='❤️ Saved';
-    document.getElementById('wishlistBtn').classList.add('liked');
+    btn.textContent = I18N.t('gp_btn_saved');
+    btn.classList.add('liked');
+  } else {
+    btn.textContent = I18N.t('gp_btn_save');
   }
 }
 function toggleWishlist() {
@@ -788,12 +791,14 @@ function toggleWishlist() {
   const btn  = document.getElementById('wishlistBtn');
   if (idx===-1) {
     list.push(GUIDE.id);
-    btn.innerHTML='❤️ Saved'; btn.classList.add('liked');
-    toast('Guide saved to your wishlist!','success');
+    btn.textContent = I18N.t('gp_btn_saved');
+    btn.classList.add('liked');
+    toast(I18N.t('gp_saved_wish'),'success');
   } else {
     list.splice(idx,1);
-    btn.innerHTML='🤍 Save'; btn.classList.remove('liked');
-    toast('Removed from wishlist.');
+    btn.textContent = I18N.t('gp_btn_save');
+    btn.classList.remove('liked');
+    toast(I18N.t('gp_removed_wish'));
   }
   localStorage.setItem('gd_wishlist', JSON.stringify(list));
 }
@@ -806,7 +811,7 @@ function shareGuide() {
   if (navigator.share) {
     navigator.share({ title: GUIDE.fullName + ' — Guideon', url }).catch(()=>{});
   } else {
-    navigator.clipboard.writeText(url).then(()=>toast('Link copied to clipboard!','success')).catch(()=>{});
+    navigator.clipboard.writeText(url).then(()=>toast(I18N.t('gp_link_copied'),'success')).catch(()=>{});
   }
 }
 
@@ -817,12 +822,12 @@ function setupBookingAccess() {
   const btn = document.getElementById('bBtn');
   if (!SESSION) {
     const nl = document.getElementById('notLoggedMsg');
-    nl.innerHTML=`<a href="/login.html" style="color:#0a5c50;font-weight:700">Sign in</a> to request a booking with this guide.`;
+    nl.innerHTML=`<a href="/login.html" style="color:#0a5c50;font-weight:700">${I18N.t('signin_link')}</a> ${I18N.t('gp_sign_suffix')}`;
     nl.classList.remove('d-none');
-    btn.disabled=true; btn.textContent='Sign in to Book';
+    btn.disabled=true; btn.textContent=I18N.t('gp_signin_btn');
   } else if (SESSION.userType !== 'tourist') {
     document.getElementById('notTouristMsg').classList.remove('d-none');
-    btn.disabled=true; btn.textContent='Tourists Only';
+    btn.disabled=true; btn.textContent=I18N.t('gp_tourists_btn');
   }
 }
 
@@ -864,6 +869,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 init();
 </script>
-<script src="/js/pwa.js?v=12"></script>
+<script src="/js/pwa.js?v=13"></script>
 </body>
 </html>

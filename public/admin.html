@@ -74,8 +74,8 @@
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
         <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
-        <span class="text-white opacity-75 small">🛡️ Admin Panel</span>
-        <button class="btn btn-sm btn-danger" onclick="doLogout()">Sign Out</button>
+        <span class="text-white opacity-75 small" data-i18n="admin_panel">🛡️ Admin Panel</span>
+        <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
       </div>
     </div>
   </div>
@@ -84,13 +84,13 @@
 <!-- Stats Header -->
 <div class="dash-header">
   <div class="container">
-    <h2 class="fw-800 mb-3">Admin Dashboard 🛡️</h2>
+    <h2 class="fw-800 mb-3" data-i18n="admin_dash">Admin Dashboard 🛡️</h2>
     <div class="row g-3">
-      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statGuides">—</div><div class="lbl">Guides</div></div></div>
-      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statCompanies">—</div><div class="lbl">Companies</div></div></div>
-      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statTourists">—</div><div class="lbl">Tourists</div></div></div>
-      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statBookings">—</div><div class="lbl">Bookings</div></div></div>
-      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statRevenue">—</div><div class="lbl">Revenue (OMR)</div></div></div>
+      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statGuides">—</div><div class="lbl" data-i18n="total_guides">Guides</div></div></div>
+      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statCompanies">—</div><div class="lbl" data-i18n="stat_companies">Companies</div></div></div>
+      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statTourists">—</div><div class="lbl" data-i18n="total_tourists">Tourists</div></div></div>
+      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statBookings">—</div><div class="lbl" data-i18n="total_bookings">Bookings</div></div></div>
+      <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statRevenue">—</div><div class="lbl" data-i18n="revenue">Revenue (OMR)</div></div></div>
     </div>
   </div>
 </div>
@@ -115,13 +115,13 @@
 
   <!-- Tab bar -->
   <div class="admin-tabs">
-    <button class="admin-tab active" onclick="showTab('pending',this)">
+    <button class="admin-tab active" onclick="showTab('pending',this)" data-i18n="tab_pending_g">
       ⏳ Pending Approvals <span class="badge bg-danger ms-1" id="pendingBadge" style="font-size:.7rem">0</span>
     </button>
-    <button class="admin-tab" onclick="showTab('guides',this)">🎒 All Guides</button>
-    <button class="admin-tab" onclick="showTab('companies',this)">🏢 Companies</button>
-    <button class="admin-tab" onclick="showTab('tourists',this)">👤 Tourists</button>
-    <button class="admin-tab" onclick="showTab('bookings',this)">📋 Bookings</button>
+    <button class="admin-tab" onclick="showTab('guides',this)" data-i18n="tab_guides">🎒 All Guides</button>
+    <button class="admin-tab" onclick="showTab('companies',this)" data-i18n="tab_companies">🏢 Companies</button>
+    <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">👤 Tourists</button>
+    <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">📋 Bookings</button>
   </div>
 
   <!-- ════════════════ PENDING APPROVALS ════════════════ -->
@@ -142,14 +142,14 @@
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
         <thead><tr>
-          <th>Guide</th>
-          <th>MOT Status</th>
-          <th>Licence #</th>
-          <th>Destinations</th>
-          <th>Rating</th>
-          <th>OMR/Day</th>
-          <th>Account</th>
-          <th>Actions</th>
+          <th data-i18n="col_guide">Guide</th>
+          <th data-i18n="mot_status_col">MOT Status</th>
+          <th data-i18n="col_licence">Licence #</th>
+          <th data-i18n="gp_stat_dests">Destinations</th>
+          <th data-i18n="rating_lbl">Rating</th>
+          <th data-i18n="col_price_day">OMR/Day</th>
+          <th data-i18n="account_col">Account</th>
+          <th data-i18n="actions_col">Actions</th>
         </tr></thead>
         <tbody id="guidesTable"><tr><td colspan="8" class="text-center text-muted py-4">Loading…</td></tr></tbody>
       </table>
@@ -167,14 +167,14 @@
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
         <thead><tr>
-          <th>Company</th>
-          <th>Contact</th>
-          <th>Reg. No.</th>
-          <th>Services</th>
-          <th>Destinations</th>
-          <th>Registered</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th data-i18n="col_company">Company</th>
+          <th data-i18n="contact_person">Contact</th>
+          <th data-i18n="reg_no_col">Reg. No.</th>
+          <th data-i18n="col_services">Services</th>
+          <th data-i18n="gp_stat_dests">Destinations</th>
+          <th data-i18n="registered_col">Registered</th>
+          <th data-i18n="col_status">Status</th>
+          <th data-i18n="actions_col">Actions</th>
         </tr></thead>
         <tbody id="companiesTable"><tr><td colspan="8" class="text-center text-muted py-4">Loading…</td></tr></tbody>
       </table>
@@ -186,12 +186,12 @@
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
         <thead><tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Nationality</th>
-          <th>Registered</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th data-i18n="col_name">Name</th>
+          <th data-i18n="co_email_lbl">Email</th>
+          <th data-i18n="nationality">Nationality</th>
+          <th data-i18n="registered_col">Registered</th>
+          <th data-i18n="col_status">Status</th>
+          <th data-i18n="actions_col">Actions</th>
         </tr></thead>
         <tbody id="touristsTable"><tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr></tbody>
       </table>
@@ -203,14 +203,14 @@
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
         <thead><tr>
-          <th>Tourist</th>
-          <th>Guide</th>
-          <th>Destination</th>
-          <th>Date</th>
-          <th>Duration</th>
-          <th>Amount</th>
-          <th>Status</th>
-          <th>Actions</th>
+          <th data-i18n="col_tourist">Tourist</th>
+          <th data-i18n="col_guide">Guide</th>
+          <th data-i18n="destination">Destination</th>
+          <th data-i18n="col_date">Date</th>
+          <th data-i18n="duration_lbl">Duration</th>
+          <th data-i18n="col_amount">Amount</th>
+          <th data-i18n="col_status">Status</th>
+          <th data-i18n="actions_col">Actions</th>
         </tr></thead>
         <tbody id="bookingsTable"><tr><td colspan="8" class="text-center text-muted py-4">Loading…</td></tr></tbody>
       </table>
@@ -222,7 +222,7 @@
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/js/i18n.js?v=12"></script>
+<script src="/js/i18n.js?v=16"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 // ── Helpers ──────────────────────────────────────────────────
@@ -313,14 +313,14 @@ async function loadPending() {
     const el        = document.getElementById('pendingList');
 
     if (!guides.length && !companies.length) {
-      el.innerHTML = `<div class="empty-state"><div class="icon">✅</div><h5>All caught up!</h5><p class="text-muted">No pending approvals at the moment.</p></div>`;
+      el.innerHTML = `<div class="empty-state"><div class="icon">✅</div><h5>${I18N.t('all_caught_up')}</h5><p class="text-muted">${I18N.t('no_pending_all')}</p></div>`;
       return;
     }
 
     let html = '';
 
     if (guides.length) {
-      html += `<div class="section-divider"><span>🎒 Pending Guides (${guides.length})</span></div>`;
+      html += `<div class="section-divider"><span>🎒 ${I18N.t('pending_guides_sec')} (${guides.length})</span></div>`;
       html += guides.map(g => `
         <div class="pend-card">
           <div class="d-flex align-items-start gap-3">
@@ -329,30 +329,30 @@ async function loadPending() {
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="fw-800">${g.fullName}</span>
                 ${g.isMinistryLicensed
-                  ? `<span class="mot-badge mot-licensed">🏛️ MOT Licensed</span>`
-                  : `<span class="mot-badge mot-unlicensed">⚠️ Not Yet Licensed</span>`}
+                  ? `<span class="mot-badge mot-licensed">${I18N.t('mot_licensed_badge')}</span>`
+                  : `<span class="mot-badge mot-unlicensed">${I18N.t('mot_unlicensed_badge')}</span>`}
               </div>
               <div class="small text-muted mb-2">${g.email}${g.phone ? ' · ' + g.phone : ''}</div>
               <div class="row g-2 small">
-                ${g.isMinistryLicensed && g.licenceNumber ? `<div class="col-auto"><strong>Licence:</strong> <code>${g.licenceNumber}</code></div>` : ''}
-                ${g.languages?.length  ? `<div class="col-auto"><strong>Languages:</strong> ${g.languages.join(', ')}</div>` : ''}
-                ${g.destinations?.length ? `<div class="col-auto"><strong>Destinations:</strong> ${g.destinations.join(', ')}</div>` : ''}
-                ${g.specialisations?.length ? `<div class="col-auto"><strong>Specialisations:</strong> ${g.specialisations.join(', ')}</div>` : ''}
-                ${g.pricePerDay ? `<div class="col-auto"><strong>Price:</strong> OMR ${g.pricePerDay}/day</div>` : ''}
+                ${g.isMinistryLicensed && g.licenceNumber ? `<div class="col-auto"><strong>${I18N.t('gp_licence_no')}</strong> <code>${g.licenceNumber}</code></div>` : ''}
+                ${g.languages?.length  ? `<div class="col-auto"><strong>${I18N.t('langs_spoken')}:</strong> ${g.languages.join(', ')}</div>` : ''}
+                ${g.destinations?.length ? `<div class="col-auto"><strong>${I18N.t('gp_dests')}:</strong> ${g.destinations.join(', ')}</div>` : ''}
+                ${g.specialisations?.length ? `<div class="col-auto"><strong>${I18N.t('specialisations')}:</strong> ${g.specialisations.join(', ')}</div>` : ''}
+                ${g.pricePerDay ? `<div class="col-auto"><strong>${I18N.t('price_day')}:</strong> OMR ${g.pricePerDay}/day</div>` : ''}
               </div>
               ${g.bio ? `<div class="small text-muted mt-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${g.bio}</div>` : ''}
-              ${!g.isMinistryLicensed ? `<div class="mt-2 small" style="color:#b37400">ℹ️ Guide registered without a Ministry licence — can still be approved to use the platform. Profile will show "Pending Ministry Verification" to tourists.</div>` : ''}
+              ${!g.isMinistryLicensed ? `<div class="mt-2 small" style="color:#b37400">ℹ️ ${I18N.t('unlicensed_note')}</div>` : ''}
             </div>
             <div class="d-flex flex-column gap-2 ms-2">
-              <button class="btn-approve" onclick="verifyGuide('${g.id}','${g.fullName}')">✅ Approve</button>
-              <button class="btn-suspend-sm" onclick="suspendUser('${g.id}','${g.fullName}')">⛔ Suspend</button>
+              <button class="btn-approve" onclick="verifyGuide('${g.id}','${g.fullName}')">${I18N.t('approve_btn2')}</button>
+              <button class="btn-suspend-sm" onclick="suspendUser('${g.id}','${g.fullName}')">${I18N.t('suspend_btn')}</button>
             </div>
           </div>
         </div>`).join('');
     }
 
     if (companies.length) {
-      html += `<div class="section-divider"><span>🏢 Pending Companies (${companies.length})</span></div>`;
+      html += `<div class="section-divider"><span>🏢 ${I18N.t('pending_companies_sec')} (${companies.length})</span></div>`;
       html += companies.map(c => `
         <div class="pend-card">
           <div class="d-flex align-items-start gap-3">
@@ -360,20 +360,20 @@ async function loadPending() {
             <div style="flex:1;min-width:0">
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="fw-800">${c.companyName || c.fullName}</span>
-                <span class="mot-badge mot-company">🏢 Tourism Company</span>
+                <span class="mot-badge mot-company">🏢 ${I18N.t('tab_company')}</span>
               </div>
-              <div class="small text-muted mb-2">Contact: ${c.fullName} · ${c.email}${c.phone ? ' · ' + c.phone : ''}</div>
+              <div class="small text-muted mb-2">${I18N.t('contact_person')}: ${c.fullName} · ${c.email}${c.phone ? ' · ' + c.phone : ''}</div>
               <div class="row g-2 small">
-                ${c.companyRegNo ? `<div class="col-auto"><strong>Reg. No.:</strong> <code>${c.companyRegNo}</code></div>` : ''}
+                ${c.companyRegNo ? `<div class="col-auto"><strong>${I18N.t('reg_no_col')}:</strong> <code>${c.companyRegNo}</code></div>` : ''}
                 ${c.companyWebsite ? `<div class="col-auto"><strong>Website:</strong> <a href="${c.companyWebsite}" target="_blank" rel="noopener">${c.companyWebsite}</a></div>` : ''}
-                ${c.companyServices?.length ? `<div class="col-12"><strong>Services:</strong> ${c.companyServices.join(', ')}</div>` : ''}
-                ${c.companyDestinations?.length ? `<div class="col-12"><strong>Destinations:</strong> ${c.companyDestinations.join(', ')}</div>` : ''}
+                ${c.companyServices?.length ? `<div class="col-12"><strong>${I18N.t('col_services')}:</strong> ${c.companyServices.join(', ')}</div>` : ''}
+                ${c.companyDestinations?.length ? `<div class="col-12"><strong>${I18N.t('gp_dests')}:</strong> ${c.companyDestinations.join(', ')}</div>` : ''}
               </div>
               ${c.companyDescription ? `<div class="small text-muted mt-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${c.companyDescription}</div>` : ''}
             </div>
             <div class="d-flex flex-column gap-2 ms-2">
-              <button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">✅ Approve</button>
-              <button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">⛔ Suspend</button>
+              <button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">${I18N.t('approve_btn2')}</button>
+              <button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">${I18N.t('suspend_btn')}</button>
             </div>
           </div>
         </div>`).join('');
@@ -417,24 +417,24 @@ function renderGuides() {
       </td>
       <td>
         ${g.isMinistryLicensed
-          ? `<span class="mot-badge mot-licensed">🏛️ Licensed</span>`
-          : `<span class="mot-badge mot-unlicensed">⚠️ Unlicensed</span>`}
+          ? `<span class="mot-badge mot-licensed">${I18N.t('mot_licensed_badge')}</span>`
+          : `<span class="mot-badge mot-unlicensed">${I18N.t('mot_unlicensed_badge')}</span>`}
       </td>
       <td><code class="small">${g.licenceNumber || '—'}</code></td>
       <td class="small">${(g.destinations||[]).join(', ') || '—'}</td>
       <td class="small">${stars(g.rating)} <span class="text-muted">(${g.totalReviews||0})</span></td>
       <td class="small fw-600">${g.pricePerDay || '—'}</td>
       <td>
-        ${g.isVerified  && !g.isSuspended ? `<span class="chip chip-verified">✅ Verified</span>` : ''}
-        ${g.isSuspended                   ? `<span class="chip chip-suspended">⛔ Suspended</span>` : ''}
-        ${!g.isVerified && !g.isSuspended ? `<span class="chip chip-pending">⏳ Pending</span>` : ''}
+        ${g.isVerified  && !g.isSuspended ? `<span class="chip chip-verified">${I18N.t('status_verified')}</span>` : ''}
+        ${g.isSuspended                   ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : ''}
+        ${!g.isVerified && !g.isSuspended ? `<span class="chip chip-pending">${I18N.t('status_pending2')}</span>` : ''}
       </td>
       <td class="d-flex gap-1 flex-wrap py-2">
-        ${!g.isVerified && !g.isSuspended ? `<button class="btn-approve" onclick="verifyGuide('${g.id}','${g.fullName}')">✅ Approve</button>` : ''}
-        ${!g.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${g.id}','${g.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${g.id}','${g.fullName}')">↩ Reactivate</button>`}
+        ${!g.isVerified && !g.isSuspended ? `<button class="btn-approve" onclick="verifyGuide('${g.id}','${g.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
+        ${!g.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${g.id}','${g.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${g.id}','${g.fullName}')">${I18N.t('reactivate_btn')}</button>`}
       </td>
     </tr>`).join('')
-  : `<tr><td colspan="8" class="text-center text-muted py-4">No guides found.</td></tr>`;
+  : `<tr><td colspan="8" class="text-center text-muted py-4">${I18N.t('no_guides_found')}</td></tr>`;
 }
 
 // ── All Companies ─────────────────────────────────────────────
@@ -476,16 +476,16 @@ function renderCompanies() {
       <td class="small">${(c.companyDestinations||[]).slice(0,3).join(', ') || '—'}</td>
       <td class="small">${fdate(c.createdAt)}</td>
       <td>
-        ${c.isVerified  && !c.isSuspended ? `<span class="chip chip-verified">✅ Approved</span>` : ''}
-        ${c.isSuspended                   ? `<span class="chip chip-suspended">⛔ Suspended</span>` : ''}
-        ${!c.isVerified && !c.isSuspended ? `<span class="chip chip-pending">⏳ Pending</span>` : ''}
+        ${c.isVerified  && !c.isSuspended ? `<span class="chip chip-verified">${I18N.t('status_approved')}</span>` : ''}
+        ${c.isSuspended                   ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : ''}
+        ${!c.isVerified && !c.isSuspended ? `<span class="chip chip-pending">${I18N.t('status_pending2')}</span>` : ''}
       </td>
       <td class="d-flex gap-1 flex-wrap py-2">
-        ${!c.isVerified && !c.isSuspended ? `<button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">✅ Approve</button>` : ''}
-        ${!c.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${c.id}','${c.companyName||c.fullName}')">↩ Reactivate</button>`}
+        ${!c.isVerified && !c.isSuspended ? `<button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
+        ${!c.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${c.id}','${c.companyName||c.fullName}')">${I18N.t('reactivate_btn')}</button>`}
       </td>
     </tr>`).join('')
-  : `<tr><td colspan="8" class="text-center text-muted py-4">No companies found.</td></tr>`;
+  : `<tr><td colspan="8" class="text-center text-muted py-4">${I18N.t('no_companies')}</td></tr>`;
 }
 
 // ── Tourists ──────────────────────────────────────────────────
@@ -499,11 +499,11 @@ async function loadTourists() {
         <td>${t.email}</td>
         <td>${t.nationality||'—'}</td>
         <td class="small">${fdate(t.createdAt)}</td>
-        <td>${t.isSuspended ? `<span class="chip chip-suspended">⛔ Suspended</span>` : `<span class="chip chip-verified">✅ Active</span>`}</td>
+        <td>${t.isSuspended ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : `<span class="chip chip-verified">${I18N.t('status_active')}</span>`}</td>
         <td>
-          ${!t.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${t.fullName}')">⛔ Suspend</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${t.id}','${t.fullName}')">↩ Reactivate</button>`}
+          ${!t.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${t.fullName}')">${I18N.t('suspend_btn')}</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${t.id}','${t.fullName}')">${I18N.t('reactivate_btn')}</button>`}
         </td>
-      </tr>`).join('') || `<tr><td colspan="6" class="text-center text-muted py-4">No tourists found.</td></tr>`;
+      </tr>`).join('') || `<tr><td colspan="6" class="text-center text-muted py-4">${I18N.t('no_tourists_found')}</td></tr>`;
   } catch {}
 }
 
@@ -518,13 +518,13 @@ async function loadAllBookings() {
         <td class="small fw-600">${b.guideName}</td>
         <td class="small">${b.destination}</td>
         <td class="small">${b.tourDate ? new Date(b.tourDate+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—'}</td>
-        <td class="small">${b.duration==='half'?'Half Day':'Full Day'}</td>
+        <td class="small">${b.duration==='half'?I18N.t('half_day_lbl'):I18N.t('full_day_lbl')}</td>
         <td class="fw-700">OMR ${b.totalAmount}</td>
-        <td><span class="chip ${b.status==='confirmed'?'chip-verified':b.status==='completed'?'chip-verified':b.status==='cancelled'?'chip-suspended':'chip-pending'}">${b.status}</span></td>
+        <td><span class="chip ${b.status==='confirmed'?'chip-verified':b.status==='completed'?'chip-verified':b.status==='cancelled'?'chip-suspended':'chip-pending'}">${I18N.t('status_'+b.status)||b.status}</span></td>
         <td>
-          ${b.status==='confirmed'?`<button class="btn-approve" onclick="markComplete('${b.id}')">✓ Complete</button>`:''}
+          ${b.status==='confirmed'?`<button class="btn-approve" onclick="markComplete('${b.id}')">${I18N.t('complete_btn')}</button>`:''}
         </td>
-      </tr>`).join('') || `<tr><td colspan="8" class="text-center text-muted py-4">No bookings found.</td></tr>`;
+      </tr>`).join('') || `<tr><td colspan="8" class="text-center text-muted py-4">${I18N.t('no_bookings_found')}</td></tr>`;
   } catch {}
 }
 
@@ -583,13 +583,21 @@ async function markComplete(id) {
     const r = await fetch(`/api/admin/bookings/${id}/complete`,{method:'PATCH',credentials:'include'});
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
-    toast('Booking marked as completed ✓','success');
+    toast(I18N.t('booking_complete'),'success');
     loadAllBookings();
   } catch(e) { toast(e.message,'error'); }
 }
 
+window.onLangChange = () => {
+  loadPending();
+  if (ACTIVE_TAB === 'guides')     renderGuides();
+  if (ACTIVE_TAB === 'companies')  renderCompanies();
+  if (ACTIVE_TAB === 'tourists')   loadTourists();
+  if (ACTIVE_TAB === 'bookings')   loadAllBookings();
+};
+
 checkAuth();
 </script>
-<script src="/js/pwa.js?v=12"></script>
+<script src="/js/pwa.js?v=13"></script>
 </body>
 </html>

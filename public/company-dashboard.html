@@ -42,7 +42,7 @@
       <div class="navbar-controls ms-auto">
         <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
         <span class="text-white opacity-75 small" id="navName"></span>
-        <button class="btn btn-sm btn-danger" onclick="doLogout()">Sign Out</button>
+        <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
       </div>
     </div>
   </div>
@@ -59,10 +59,10 @@
       </div>
     </div>
     <div class="row g-3">
-      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statServices">—</div><div class="lbl">Services Listed</div></div></div>
-      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statDests">—</div><div class="lbl">Destinations</div></div></div>
-      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statViews">—</div><div class="lbl">Profile Views</div></div></div>
-      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statSince">—</div><div class="lbl">Member Since</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statServices">—</div><div class="lbl" data-i18n="co_services_stat">Services Listed</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statDests">—</div><div class="lbl" data-i18n="co_dests_stat">Destinations</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statViews">—</div><div class="lbl" data-i18n="co_views_stat">Profile Views</div></div></div>
+      <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statSince">—</div><div class="lbl" data-i18n="co_since_stat">Member Since</div></div></div>
     </div>
   </div>
 </div>
@@ -75,54 +75,54 @@
 
       <!-- Pending Review Notice -->
       <div id="pendingNotice" class="alert d-none mb-4" style="background:#fff8e6;border:1px solid #ffe58a;border-radius:12px;padding:16px 20px;">
-        <div style="font-weight:700;color:#7a5a00;margin-bottom:4px;">⏳ Profile Under Review</div>
-        <div style="font-size:.87rem;color:#7a5a00;line-height:1.5;">Your company profile is being reviewed by our team. Once approved, tourists will be able to discover your services. You can still edit your profile in the meantime.</div>
+        <div style="font-weight:700;color:#7a5a00;margin-bottom:4px;">⏳ <span data-i18n="co_pending_title">Profile Under Review</span></div>
+        <div style="font-size:.87rem;color:#7a5a00;line-height:1.5;" data-i18n="co_pending_desc">Your company profile is being reviewed by our team. Once approved, tourists will be able to discover your services. You can still edit your profile in the meantime.</div>
       </div>
 
       <!-- Company Profile Card -->
       <div class="card-section mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="section-title mb-0">🏢 Company Profile</div>
-          <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit()">✏️ Edit</button>
+          <div class="section-title mb-0">🏢 <span data-i18n="co_profile_title">Company Profile</span></div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit()" data-i18n="edit_btn">✏️ Edit</button>
         </div>
 
         <!-- View Mode -->
         <div id="viewMode">
           <div class="row g-3">
             <div class="col-md-6">
-              <div class="small text-muted mb-1">Company Name</div>
+              <div class="small text-muted mb-1" data-i18n="co_comp_name">Company Name</div>
               <div class="fw-700" id="vCompanyName">—</div>
             </div>
             <div class="col-md-6">
-              <div class="small text-muted mb-1">Registration No.</div>
+              <div class="small text-muted mb-1" data-i18n="co_reg_no">Registration No.</div>
               <div class="fw-600" id="vRegNo">—</div>
             </div>
             <div class="col-md-6">
-              <div class="small text-muted mb-1">Contact Person</div>
+              <div class="small text-muted mb-1" data-i18n="co_contact_person">Contact Person</div>
               <div class="fw-600" id="vFullName">—</div>
             </div>
             <div class="col-md-6">
-              <div class="small text-muted mb-1">Phone</div>
+              <div class="small text-muted mb-1" data-i18n="phone_lbl">Phone</div>
               <div class="fw-600" id="vPhone">—</div>
             </div>
             <div class="col-md-6">
-              <div class="small text-muted mb-1">Email</div>
+              <div class="small text-muted mb-1" data-i18n="co_email_lbl">Email</div>
               <div class="fw-600" id="vEmail">—</div>
             </div>
             <div class="col-md-6">
-              <div class="small text-muted mb-1">Website</div>
+              <div class="small text-muted mb-1" data-i18n="co_website">Website</div>
               <div class="fw-600" id="vWebsite">—</div>
             </div>
             <div class="col-12">
-              <div class="small text-muted mb-1">Description</div>
+              <div class="small text-muted mb-1" data-i18n="co_description">Description</div>
               <div style="font-size:.9rem;line-height:1.6;color:#444;" id="vDescription">—</div>
             </div>
             <div class="col-12">
-              <div class="small text-muted mb-2">Services Offered</div>
+              <div class="small text-muted mb-2" data-i18n="co_services">Services Offered</div>
               <div id="vServices"></div>
             </div>
             <div class="col-12">
-              <div class="small text-muted mb-2">Destinations Covered</div>
+              <div class="small text-muted mb-2" data-i18n="co_dests">Destinations Covered</div>
               <div id="vDestinations"></div>
             </div>
           </div>
@@ -133,39 +133,39 @@
           <div id="editErrMsg" class="alert alert-danger d-none small mb-3"></div>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Company Name *</label>
-              <input type="text" class="form-control" id="eCompanyName" placeholder="Muscat Adventures LLC">
+              <label class="form-label fw-600 small" data-i18n="company_name_lbl">Company Name *</label>
+              <input type="text" class="form-control" id="eCompanyName" data-i18n-ph="company_name_ph" placeholder="Muscat Adventures LLC">
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Registration No.</label>
-              <input type="text" class="form-control" id="eRegNo" placeholder="CR-XXXXXX">
+              <label class="form-label fw-600 small" data-i18n="company_reg_lbl">Registration No.</label>
+              <input type="text" class="form-control" id="eRegNo" data-i18n-ph="company_reg_ph" placeholder="CR-XXXXXX">
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Phone</label>
-              <input type="tel" class="form-control" id="ePhone" placeholder="+968 XXXX XXXX">
+              <label class="form-label fw-600 small" data-i18n="phone_lbl">Phone</label>
+              <input type="tel" class="form-control" id="ePhone" data-i18n-ph="phone_ph" placeholder="+968 XXXX XXXX">
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-600 small">Website</label>
-              <input type="url" class="form-control" id="eWebsite" placeholder="https://yourcompany.com">
+              <label class="form-label fw-600 small" data-i18n="website_lbl">Website</label>
+              <input type="url" class="form-control" id="eWebsite" data-i18n-ph="website_ph" placeholder="https://yourcompany.com">
             </div>
             <div class="col-12">
-              <label class="form-label fw-600 small">Services Offered *</label>
-              <input type="text" class="form-control" id="eServices" placeholder="Desert Safaris, Dhow Cruises, City Tours">
-              <div class="form-text">Separate with commas</div>
+              <label class="form-label fw-600 small" data-i18n="company_services_lbl">Services Offered *</label>
+              <input type="text" class="form-control" id="eServices" data-i18n-ph="company_services_ph" placeholder="Desert Safaris, Dhow Cruises, City Tours">
+              <div class="form-text" data-i18n="co_sep_commas">Separate with commas</div>
             </div>
             <div class="col-12">
-              <label class="form-label fw-600 small">Destinations Covered *</label>
-              <input type="text" class="form-control" id="eDestinations" placeholder="Muscat, Wahiba Sands, Musandam">
-              <div class="form-text">Separate with commas</div>
+              <label class="form-label fw-600 small" data-i18n="company_dests_lbl">Destinations Covered *</label>
+              <input type="text" class="form-control" id="eDestinations" data-i18n-ph="company_dests_ph" placeholder="Muscat, Wahiba Sands, Musandam">
+              <div class="form-text" data-i18n="co_sep_commas">Separate with commas</div>
             </div>
             <div class="col-12">
-              <label class="form-label fw-600 small">Company Description *</label>
-              <textarea class="form-control" id="eDescription" rows="4" placeholder="Tell tourists about your company, experience, and what makes you unique..."></textarea>
+              <label class="form-label fw-600 small" data-i18n="company_desc_lbl">Company Description *</label>
+              <textarea class="form-control" id="eDescription" rows="4" data-i18n-ph="company_desc_ph" placeholder="Tell tourists about your company, experience, and what makes you unique..."></textarea>
             </div>
           </div>
           <div class="d-flex gap-2 mt-3">
-            <button class="btn-teal btn px-4" onclick="saveProfile()">💾 Save Changes</button>
-            <button class="btn btn-outline-secondary px-4" onclick="toggleEdit()">Cancel</button>
+            <button class="btn-teal btn px-4" onclick="saveProfile()" data-i18n="co_save_changes">💾 Save Changes</button>
+            <button class="btn btn-outline-secondary px-4" onclick="toggleEdit()" data-i18n="cancel_btn">Cancel</button>
           </div>
         </div>
       </div>
@@ -173,8 +173,8 @@
       <!-- Tour Packages / Services Section -->
       <div class="card-section">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="section-title mb-0">🗺️ Tour Packages & Services</div>
-          <button class="btn btn-sm" style="background:var(--teal);color:#fff;border-radius:8px;" onclick="openAddPackage()">+ Add Package</button>
+          <div class="section-title mb-0">🗺️ <span data-i18n="co_packages_title">Tour Packages & Services</span></div>
+          <button class="btn btn-sm" style="background:var(--teal);color:#fff;border-radius:8px;" onclick="openAddPackage()" data-i18n="co_add_pkg_btn">+ Add Package</button>
         </div>
 
         <div id="packagesContainer">
@@ -192,7 +192,7 @@
 
       <!-- Status Card -->
       <div class="card-section mb-4">
-        <div class="section-title">📊 Account Status</div>
+        <div class="section-title">📊 <span data-i18n="co_acct_status">Account Status</span></div>
         <div class="d-flex align-items-center gap-2 mb-3">
           <div id="bigStatusBadge"></div>
         </div>
@@ -201,21 +201,21 @@
 
       <!-- Tips -->
       <div class="card-section mb-4">
-        <div class="section-title">💡 Tips to Get Noticed</div>
+        <div class="section-title">💡 <span data-i18n="co_tips_title">Tips to Get Noticed</span></div>
         <ul style="padding-left:18px;font-size:.87rem;line-height:2;color:#555;">
-          <li>Add a clear company description</li>
-          <li>List all destinations you cover</li>
-          <li>Add detailed tour packages with prices</li>
-          <li>Include your company website link</li>
-          <li>Keep your contact info up to date</li>
+          <li data-i18n="co_tip1">Add a clear company description</li>
+          <li data-i18n="co_tip2">List all destinations you cover</li>
+          <li data-i18n="co_tip3">Add detailed tour packages with prices</li>
+          <li data-i18n="co_tip4">Include your company website link</li>
+          <li data-i18n="co_tip5">Keep your contact info up to date</li>
         </ul>
       </div>
 
       <!-- Contact Support -->
       <div class="card-section">
-        <div class="section-title">📞 Need Help?</div>
-        <p class="small text-muted mb-3">Contact Guideon support for listing help, verification questions, or platform issues.</p>
-        <a href="mailto:support@guideon.om" class="btn btn-outline-secondary btn-sm w-100">✉️ Contact Support</a>
+        <div class="section-title">📞 <span data-i18n="co_help_title">Need Help?</span></div>
+        <p class="small text-muted mb-3" data-i18n="co_help_desc">Contact Guideon support for listing help, verification questions, or platform issues.</p>
+        <a href="mailto:support@guideon.om" class="btn btn-outline-secondary btn-sm w-100" data-i18n="co_contact_btn">✉️ Contact Support</a>
       </div>
 
     </div>
@@ -234,36 +234,36 @@
         <div id="pkgErrMsg" class="alert alert-danger d-none small mb-3"></div>
         <input type="hidden" id="pkgEditIndex" value="">
         <div class="mb-3">
-          <label class="form-label fw-600 small">Package Name *</label>
-          <input type="text" class="form-control" id="pkgName" placeholder="3-Day Desert Safari">
+          <label class="form-label fw-600 small" data-i18n="pkg_name_lbl">Package Name *</label>
+          <input type="text" class="form-control" id="pkgName" data-i18n-ph="pkg_name_ph" placeholder="3-Day Desert Safari">
         </div>
         <div class="row g-2 mb-3">
           <div class="col-6">
-            <label class="form-label fw-600 small">Price (OMR) *</label>
+            <label class="form-label fw-600 small" data-i18n="pkg_price_lbl">Price (OMR) *</label>
             <input type="number" class="form-control" id="pkgPrice" placeholder="120" min="1">
           </div>
           <div class="col-6">
-            <label class="form-label fw-600 small">Duration</label>
-            <input type="text" class="form-control" id="pkgDuration" placeholder="3 Days / 2 Nights">
+            <label class="form-label fw-600 small" data-i18n="pkg_dur_lbl">Duration</label>
+            <input type="text" class="form-control" id="pkgDuration" data-i18n-ph="pkg_dur_ph" placeholder="3 Days / 2 Nights">
           </div>
         </div>
         <div class="mb-3">
-          <label class="form-label fw-600 small">Destination *</label>
+          <label class="form-label fw-600 small" data-i18n="pkg_dest_lbl">Destination *</label>
           <input type="text" class="form-control" id="pkgDestination" placeholder="Wahiba Sands">
         </div>
         <div class="mb-3">
-          <label class="form-label fw-600 small">What's Included</label>
-          <input type="text" class="form-control" id="pkgIncludes" placeholder="Transport, Camping, Meals">
-          <div class="form-text">Separate with commas</div>
+          <label class="form-label fw-600 small" data-i18n="pkg_includes_lbl">What's Included</label>
+          <input type="text" class="form-control" id="pkgIncludes" data-i18n-ph="pkg_includes_ph" placeholder="Transport, Camping, Meals">
+          <div class="form-text" data-i18n="co_sep_commas">Separate with commas</div>
         </div>
         <div class="mb-3">
-          <label class="form-label fw-600 small">Description</label>
-          <textarea class="form-control" id="pkgDescription" rows="3" placeholder="Describe this package for tourists..."></textarea>
+          <label class="form-label fw-600 small" data-i18n="pkg_desc_lbl">Description</label>
+          <textarea class="form-control" id="pkgDescription" rows="3" data-i18n-ph="pkg_desc_ph" placeholder="Describe this package for tourists..."></textarea>
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn-teal btn px-4" onclick="savePackage()">Save Package</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="cancel_btn">Cancel</button>
+        <button type="button" class="btn-teal btn px-4" onclick="savePackage()" data-i18n="pkg_save_btn">Save Package</button>
       </div>
     </div>
   </div>
@@ -271,7 +271,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=12"></script>
+<script src="/js/i18n.js?v=16"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let COMPANY = null;
@@ -302,14 +302,14 @@ function render() {
   const isSuspended = COMPANY.isSuspended;
   let statusText, statusClass, statusDesc;
   if (isSuspended) {
-    statusText = '⛔ Suspended'; statusClass = 'status-suspended';
-    statusDesc = 'Your account has been suspended. Please contact support.';
+    statusText = I18N.t('co_status_suspend'); statusClass = 'status-suspended';
+    statusDesc = I18N.t('co_suspend_desc');
   } else if (isVerified) {
-    statusText = '✅ Active & Listed'; statusClass = 'status-verified';
-    statusDesc = 'Your company is live and visible to tourists browsing the platform.';
+    statusText = I18N.t('co_status_active'); statusClass = 'status-verified';
+    statusDesc = I18N.t('co_active_desc');
   } else {
-    statusText = '⏳ Pending Review'; statusClass = 'status-pending';
-    statusDesc = 'Your profile is under review. We\'ll notify you by email once it goes live.';
+    statusText = I18N.t('co_status_pending'); statusClass = 'status-pending';
+    statusDesc = I18N.t('co_pending_desc2');
   }
   document.getElementById('companyStatusDisplay').textContent = statusText;
   document.getElementById('bigStatusBadge').innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
@@ -328,24 +328,24 @@ function render() {
 
   // View fields
   document.getElementById('vCompanyName').textContent  = COMPANY.companyName  || '—';
-  document.getElementById('vRegNo').textContent        = COMPANY.companyRegNo || 'Not provided';
+  document.getElementById('vRegNo').textContent        = COMPANY.companyRegNo || I18N.t('co_not_provided');
   document.getElementById('vFullName').textContent     = COMPANY.fullName     || '—';
-  document.getElementById('vPhone').textContent        = COMPANY.phone        || 'Not provided';
+  document.getElementById('vPhone').textContent        = COMPANY.phone        || I18N.t('co_not_provided');
   document.getElementById('vEmail').textContent        = COMPANY.email        || '—';
-  document.getElementById('vDescription').textContent  = COMPANY.companyDescription || 'No description yet.';
+  document.getElementById('vDescription').textContent  = COMPANY.companyDescription || I18N.t('co_no_desc');
 
   const websiteEl = document.getElementById('vWebsite');
   if (COMPANY.companyWebsite) {
     websiteEl.innerHTML = `<a href="${COMPANY.companyWebsite}" target="_blank" rel="noopener" style="color:var(--teal)">${COMPANY.companyWebsite}</a>`;
   } else {
-    websiteEl.textContent = 'Not provided';
+    websiteEl.textContent = I18N.t('co_not_provided');
   }
 
   const svcEl = document.getElementById('vServices');
-  svcEl.innerHTML = svcs.length ? svcs.map(s => `<span class="tag-pill">${s}</span>`).join('') : '<span class="text-muted small">None listed</span>';
+  svcEl.innerHTML = svcs.length ? svcs.map(s => `<span class="tag-pill">${s}</span>`).join('') : `<span class="text-muted small">${I18N.t('co_none_listed')}</span>`;
 
   const dstEl = document.getElementById('vDestinations');
-  dstEl.innerHTML = dsts.length ? dsts.map(d => `<span class="tag-pill">📍 ${d}</span>`).join('') : '<span class="text-muted small">None listed</span>';
+  dstEl.innerHTML = dsts.length ? dsts.map(d => `<span class="tag-pill">📍 ${d}</span>`).join('') : `<span class="text-muted small">${I18N.t('co_none_listed')}</span>`;
 
   renderPackages();
 }
@@ -353,7 +353,7 @@ function render() {
 function renderPackages() {
   const container = document.getElementById('packagesContainer');
   if (!PACKAGES.length) {
-    container.innerHTML = `<div class="text-center py-4 text-muted small" id="noPackages"><div style="font-size:2rem;margin-bottom:8px;">📦</div>No packages added yet. Click "Add Package" to list your first tour.</div>`;
+    container.innerHTML = `<div class="text-center py-4 text-muted small" id="noPackages"><div style="font-size:2rem;margin-bottom:8px;">📦</div>${I18N.t('co_no_packages')}</div>`;
     return;
   }
   container.innerHTML = PACKAGES.map((pkg, i) => `
@@ -363,7 +363,7 @@ function renderPackages() {
           <div class="fw-800 mb-1">${pkg.name}</div>
           <div class="small text-muted mb-2">📍 ${pkg.destination || '—'} ${pkg.duration ? '· ⏱ ' + pkg.duration : ''}</div>
           ${pkg.description ? `<div class="small text-muted mb-2" style="line-height:1.5">${pkg.description}</div>` : ''}
-          ${pkg.includes ? `<div class="small mb-1"><span style="color:#0f7b6c;font-weight:600">✅ Includes:</span> ${pkg.includes}</div>` : ''}
+          ${pkg.includes ? `<div class="small mb-1"><span style="color:#0f7b6c;font-weight:600">${I18N.t('pkg_includes_short')}</span> ${pkg.includes}</div>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0;margin-left:16px">
           <div class="fw-800" style="color:var(--teal);font-size:1.1rem">${pkg.price ? 'OMR ' + parseFloat(pkg.price).toFixed(0) : '—'}</div>
@@ -401,7 +401,7 @@ async function saveProfile() {
   const errEl = document.getElementById('editErrMsg');
   errEl.classList.add('d-none');
   const companyName = document.getElementById('eCompanyName').value.trim();
-  if (!companyName) { errEl.textContent = 'Company name is required.'; errEl.classList.remove('d-none'); return; }
+  if (!companyName) { errEl.textContent = I18N.t('co_name_required'); errEl.classList.remove('d-none'); return; }
 
   const svcRaw  = document.getElementById('eServices').value;
   const dstRaw  = document.getElementById('eDestinations').value;
@@ -426,7 +426,7 @@ async function saveProfile() {
     Object.assign(COMPANY, changes);
     toggleEdit();
     render();
-    showToast('Profile updated successfully!', 'success');
+    showToast(I18N.t('profile_updated'), 'success');
   } catch (ex) {
     errEl.textContent = ex.message;
     errEl.classList.remove('d-none');
@@ -434,7 +434,7 @@ async function saveProfile() {
 }
 
 function openAddPackage() {
-  document.getElementById('pkgModalTitle').textContent = 'Add Tour Package';
+  document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_add_title');
   document.getElementById('pkgEditIndex').value = '';
   ['pkgName','pkgPrice','pkgDuration','pkgDestination','pkgIncludes','pkgDescription'].forEach(id => {
     document.getElementById(id).value = '';
@@ -445,7 +445,7 @@ function openAddPackage() {
 
 function editPackage(i) {
   const pkg = PACKAGES[i];
-  document.getElementById('pkgModalTitle').textContent = 'Edit Tour Package';
+  document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_edit_title');
   document.getElementById('pkgEditIndex').value = i;
   document.getElementById('pkgName').value        = pkg.name        || '';
   document.getElementById('pkgPrice').value       = pkg.price       || '';
@@ -464,7 +464,7 @@ async function savePackage() {
   const price = document.getElementById('pkgPrice').value.trim();
   const dest  = document.getElementById('pkgDestination').value.trim();
   if (!name || !price || !dest) {
-    errEl.textContent = 'Package name, price, and destination are required.';
+    errEl.textContent = I18N.t('co_pkg_required');
     errEl.classList.remove('d-none');
     return;
   }
@@ -496,7 +496,7 @@ async function savePackage() {
     pkgModal.hide();
     renderPackages();
     document.getElementById('statServices').textContent = (COMPANY.companyServices || []).length + PACKAGES.length;
-    showToast(idx !== '' ? 'Package updated!' : 'Package added!', 'success');
+    showToast(I18N.t(idx !== '' ? 'pkg_updated' : 'pkg_added'), 'success');
   } catch (ex) {
     errEl.textContent = ex.message;
     errEl.classList.remove('d-none');
@@ -504,7 +504,7 @@ async function savePackage() {
 }
 
 async function deletePackage(i) {
-  if (!confirm('Remove this package?')) return;
+  if (!confirm(I18N.t('remove_pkg'))) return;
   PACKAGES.splice(i, 1);
   try {
     await fetch('/api/auth/profile', {
@@ -515,8 +515,8 @@ async function deletePackage(i) {
     Object.assign(COMPANY, { packages: PACKAGES });
     renderPackages();
     document.getElementById('statServices').textContent = (COMPANY.companyServices || []).length + PACKAGES.length;
-    showToast('Package removed.', 'success');
-  } catch { showToast('Failed to remove package.', 'danger'); }
+    showToast(I18N.t('pkg_removed'), 'success');
+  } catch { showToast(I18N.t('co_remove_fail'), 'danger'); }
 }
 
 function showToast(msg, type='success') {
@@ -533,8 +533,10 @@ async function doLogout() {
   window.location.href = '/login.html';
 }
 
+window.onLangChange = () => { if (COMPANY) render(); };
+
 init();
 </script>
-<script src="/js/pwa.js?v=12"></script>
+<script src="/js/pwa.js?v=13"></script>
 </body>
 </html>
