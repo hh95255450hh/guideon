@@ -1,32 +1,127 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f7b6c">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Guideon">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="shortcut icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f7b6c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Guideon">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="shortcut icon" href="/favicon.ico">
 <title>Guide Profile — Guideon</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
 <link rel="stylesheet" href="/css/style.css?v=14">
+<style>
+/* ── Hero ─────────────────────────────────────────────────── */
+.gp-hero { background:linear-gradient(140deg,#0f1c3e 0%,#1a2c5b 45%,#0f7b6c 100%); color:#fff; padding:0; }
+.gp-hero-inner { padding:48px 0 0; }
+.gp-avatar-wrap { position:relative; display:inline-block; }
+.gp-avatar { width:120px; height:120px; border-radius:50%; border:4px solid rgba(255,255,255,.35); object-fit:cover; background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:2.6rem; font-weight:800; color:#fff; overflow:hidden; }
+.gp-avatar img { width:100%; height:100%; object-fit:cover; }
+.online-dot { position:absolute; bottom:6px; right:6px; width:16px; height:16px; border-radius:50%; background:#22c55e; border:2.5px solid #fff; }
+
+/* ── Badges ───────────────────────────────────────────────── */
+.badge-mot-verified  { display:inline-flex; align-items:center; gap:5px; background:rgba(34,197,94,.18); border:1px solid rgba(34,197,94,.5); color:#bbf7d0; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; }
+.badge-mot-pending   { display:inline-flex; align-items:center; gap:5px; background:rgba(234,179,8,.15); border:1px solid rgba(234,179,8,.45); color:#fef08a; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; }
+.badge-platform      { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; }
+.badge-super         { display:inline-flex; align-items:center; gap:5px; background:linear-gradient(90deg,#c9a84c,#e8c46d); color:#fff; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; box-shadow:0 2px 8px rgba(201,168,76,.4); }
+
+/* ── Stats bar ────────────────────────────────────────────── */
+.gp-stats-bar { display:flex; gap:0; border-top:1px solid rgba(255,255,255,.15); margin-top:32px; }
+.gp-stat { flex:1; text-align:center; padding:18px 12px; border-right:1px solid rgba(255,255,255,.1); }
+.gp-stat:last-child { border-right:none; }
+.gp-stat .n { font-size:1.5rem; font-weight:800; color:#c9a84c; }
+.gp-stat .l { font-size:.75rem; opacity:.75; margin-top:2px; }
+
+/* ── Cards ────────────────────────────────────────────────── */
+.info-card { background:#fff; border-radius:16px; padding:28px; box-shadow:0 2px 12px rgba(0,0,0,.07); margin-bottom:20px; border:1px solid #eef0f4; }
+.info-card h5 { font-weight:800; font-size:1.05rem; color:#1a1a2e; margin-bottom:16px; }
+
+/* ── Tags ─────────────────────────────────────────────────── */
+.tag { display:inline-block; padding:5px 14px; border-radius:20px; font-size:.8rem; font-weight:600; margin:3px; }
+.tag-teal { background:#e8f5f0; color:#0f7b6c; }
+.tag-gold { background:#fdf8ec; color:#c9a84c; border:1px solid #f0e4bc; }
+.tag-blue { background:#eff6ff; color:#2563eb; }
+.tag-dest { background:#f4f6fb; color:#1a2c5b; border:1px solid #dee2e6; }
+
+/* ── Review card ──────────────────────────────────────────── */
+.review-item { border-bottom:1px solid #f0f0f0; padding:18px 0; }
+.review-item:last-child { border-bottom:none; padding-bottom:0; }
+.review-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#0f7b6c,#1a2c5b); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:700; flex-shrink:0; }
+.star-f { color:#f59e0b; font-size:1rem; }
+.star-e { color:#d1d5db; font-size:1rem; }
+
+/* ── Calendar ─────────────────────────────────────────────── */
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.cal-nav { background:none; border:1px solid #dee2e6; border-radius:8px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:.9rem; transition:.15s; }
+.cal-nav:hover { background:#f0f0f0; }
+.cal-month { font-weight:800; font-size:.95rem; color:#1a1a2e; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-dow { text-align:center; font-size:.68rem; font-weight:700; color:#aaa; padding:3px 0; }
+.cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:.82rem; font-weight:600; cursor:default; color:#bbb; }
+.cal-day.in-month { color:#555; }
+.cal-day.avail { background:#e8f5f0; color:#0f7b6c; cursor:pointer; font-weight:700; transition:.15s; }
+.cal-day.avail:hover { background:#0f7b6c; color:#fff; }
+.cal-day.selected { background:#0f7b6c !important; color:#fff !important; box-shadow:0 2px 8px rgba(15,123,108,.4); }
+.cal-day.today { border:2px solid #c9a84c; }
+.cal-day.past { color:#e0e0e0; }
+
+/* ── Booking panel ────────────────────────────────────────── */
+.booking-panel { background:#fff; border-radius:16px; padding:26px; box-shadow:0 4px 24px rgba(0,0,0,.1); position:sticky; top:80px; border:1px solid #eef0f4; }
+.bp-price { font-size:2rem; font-weight:800; color:#0f7b6c; line-height:1; }
+.bp-sub { font-size:.82rem; color:#888; margin-top:2px; }
+.bp-selected-date { background:#e8f5f0; border-radius:10px; padding:10px 14px; font-size:.88rem; font-weight:700; color:#0a5c50; display:none; margin-bottom:12px; }
+.dur-btn { flex:1; border:2px solid #dee2e6; border-radius:10px; padding:10px; text-align:center; cursor:pointer; transition:.15s; font-size:.85rem; }
+.dur-btn.active { border-color:#0f7b6c; background:#e8f5f0; color:#0f7b6c; font-weight:700; }
+.dep-opt { flex:1; border:2px solid #dee2e6; border-radius:10px; padding:10px 6px; text-align:center; cursor:pointer; transition:.15s; }
+.dep-opt.active { border-color:#c9a84c; background:#fdf8ec; }
+.dep-opt .dep-pct { font-weight:800; font-size:.95rem; color:#c9a84c; }
+.dep-opt .dep-lbl { font-size:.7rem; color:#888; }
+.dep-opt .dep-amt { font-size:.78rem; font-weight:700; color:#333; margin-top:2px; }
+.btn-book-now { background:linear-gradient(135deg,#0a5c50,#0f7b6c); color:#fff; border:none; border-radius:12px; padding:14px; font-size:1rem; font-weight:800; width:100%; transition:.2s; letter-spacing:.3px; }
+.btn-book-now:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(15,123,108,.4); }
+.btn-book-now:disabled { opacity:.6; transform:none; box-shadow:none; cursor:not-allowed; }
+.price-breakdown { background:#f8f9fa; border-radius:10px; padding:14px; font-size:.85rem; }
+.price-breakdown .row { margin-bottom:4px; }
+.price-breakdown .total { border-top:2px solid #dee2e6; padding-top:8px; margin-top:6px; font-weight:800; color:#0f7b6c; font-size:.95rem; }
+
+/* ── MOT info box ─────────────────────────────────────────── */
+.mot-info-box { border-radius:12px; padding:14px 16px; font-size:.83rem; line-height:1.5; margin-bottom:16px; }
+.mot-info-box.licensed { background:#e8f5f0; border-left:3px solid #0f7b6c; color:#0a5c50; }
+.mot-info-box.pending  { background:#fff8e6; border-left:3px solid #f5a623; color:#7a5a00; }
+
+/* ── Share / Wishlist ─────────────────────────────────────── */
+.action-pill { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25); color:#fff; border-radius:20px; padding:6px 14px; font-size:.82rem; font-weight:600; cursor:pointer; transition:.15s; }
+.action-pill:hover { background:rgba(255,255,255,.25); }
+.action-pill.liked { background:rgba(239,68,68,.2); border-color:rgba(239,68,68,.5); }
+
+/* ── Alert boxes ──────────────────────────────────────────── */
+.alert-teal { background:#e8f5f0; border:1px solid #b2d8ce; border-radius:10px; padding:12px 14px; color:#0a5c50; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media(max-width:768px) {
+  .gp-avatar { width:88px; height:88px; font-size:1.8rem; }
+  .gp-stat .n { font-size:1.2rem; }
+  .booking-panel { position:relative; top:auto; }
+}
+</style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
   <div class="container">
     <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
-      <div class="navbar-controls ms-auto">
+      <div class="navbar-controls ms-auto d-flex align-items-center gap-2">
         <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
         <select class="currency-selector" id="currencySelect" onchange="setCurrency(this.value)">
           <option value="OMR">OMR</option>
@@ -35,206 +130,315 @@
           <option value="GBP">GBP</option>
         </select>
         <div id="navAuth" class="d-flex gap-2">
-          <a href="/login.html" class="btn btn-outline-light btn-sm" data-i18n="nav_login">Log In</a>
-          <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
+          <a href="/login.html"    class="btn btn-outline-light btn-sm">Log In</a>
+          <a href="/register.html" class="btn-gold btn btn-sm">Sign Up</a>
         </div>
         <div id="navUser" class="d-none d-flex gap-2 align-items-center">
           <span class="text-white opacity-75 small" id="navName"></span>
-          <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn" data-i18n="nav_dashboard">Dashboard</a>
-          <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
+          <a href="#" class="btn btn-outline-light btn-sm" id="navDashBtn">Dashboard</a>
+          <button class="btn btn-sm btn-danger" onclick="doLogout()">Sign Out</button>
         </div>
       </div>
     </div>
   </div>
 </nav>
 
+<!-- Loading / Error states -->
+<div id="loadingState" class="text-center py-5 text-muted">
+  <div class="spinner-border text-secondary mb-3" style="width:2rem;height:2rem" role="status"></div>
+  <div>Loading guide profile…</div>
+</div>
+<div id="errorState" class="d-none text-center py-5">
+  <div style="font-size:3rem">⚠️</div>
+  <h5 class="mt-2">Guide not found</h5>
+  <a href="/search.html" class="btn-teal btn mt-3">← Back to Search</a>
+</div>
+
+<!-- Main content -->
 <div id="pageContent" class="d-none">
-  <!-- PROFILE HEADER -->
-  <div class="profile-header">
-    <div class="container">
-      <div class="row align-items-center g-4">
-        <div class="col-md-auto text-center">
-          <div class="profile-avatar mx-auto mb-2" id="pAvatar">?</div>
+
+  <!-- ═══ HERO ═══ -->
+  <div class="gp-hero">
+    <div class="gp-hero-inner">
+      <div class="container">
+        <!-- Breadcrumb -->
+        <div class="mb-3" style="font-size:.82rem;opacity:.7">
+          <a href="/" style="color:rgba(255,255,255,.7);text-decoration:none">Home</a>
+          <span class="mx-2">›</span>
+          <a href="/search.html" style="color:rgba(255,255,255,.7);text-decoration:none">Guides</a>
+          <span class="mx-2">›</span>
+          <span id="breadcrumbName" style="color:#fff">—</span>
         </div>
-        <div class="col-md">
-          <h2 class="fw-800 mb-1" id="pName">—</h2>
-          <div id="pVerified" class="mb-2"></div>
-          <div class="rating mb-2" id="pRating"></div>
-          <div class="d-flex flex-wrap gap-2 mb-2" id="pLangs"></div>
-          <div class="text-white opacity-75 small" id="pDests"></div>
+
+        <div class="row align-items-end g-4">
+          <!-- Avatar + name -->
+          <div class="col-md">
+            <div class="d-flex align-items-center gap-4">
+              <div class="gp-avatar-wrap">
+                <div class="gp-avatar" id="pAvatar">?</div>
+                <div class="online-dot" title="Active on Guideon"></div>
+              </div>
+              <div>
+                <h1 class="fw-800 mb-2" id="pName" style="font-size:1.9rem">—</h1>
+                <div class="d-flex flex-wrap gap-2 mb-3" id="pBadges"></div>
+                <div class="d-flex flex-wrap gap-2" id="pLangs"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price + actions -->
+          <div class="col-md-auto text-md-end">
+            <div class="mb-2">
+              <span style="font-size:2.2rem;font-weight:800;color:#c9a84c" id="pPrice">—</span>
+              <span style="font-size:.85rem;opacity:.75"> / day</span>
+            </div>
+            <div class="d-flex gap-2 justify-content-md-end">
+              <span class="action-pill" onclick="toggleWishlist()" id="wishlistBtn">🤍 Save</span>
+              <span class="action-pill" onclick="shareGuide()">🔗 Share</span>
+              <a href="/search.html" class="action-pill" style="text-decoration:none">← All Guides</a>
+            </div>
+          </div>
         </div>
-        <div class="col-md-auto text-center">
-          <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:20px 32px">
-            <div style="font-size:2rem;font-weight:800;color:var(--gold)" id="pPrice">OMR 0</div>
-            <div class="small opacity-75" data-i18n="per_day">/day</div>
-            <div style="font-size:.85rem;opacity:.7;margin-top:4px" id="pReviews">0 reviews</div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="container-fluid px-0 mt-4">
+        <div class="gp-stats-bar">
+          <div class="gp-stat">
+            <div class="n" id="statRating">—</div>
+            <div class="l">Avg. Rating</div>
+          </div>
+          <div class="gp-stat">
+            <div class="n" id="statReviews">—</div>
+            <div class="l">Reviews</div>
+          </div>
+          <div class="gp-stat">
+            <div class="n" id="statDests">—</div>
+            <div class="l">Destinations</div>
+          </div>
+          <div class="gp-stat">
+            <div class="n" id="statAvail">—</div>
+            <div class="l">Available Dates</div>
+          </div>
+          <div class="gp-stat d-none d-md-block">
+            <div class="n" id="statLangs">—</div>
+            <div class="l">Languages</div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <!-- /HERO -->
 
   <div class="container py-4">
     <div class="row g-4">
-      <!-- LEFT: Info -->
+
+      <!-- ═══ LEFT COLUMN ═══ -->
       <div class="col-lg-8">
+
+        <!-- MOT Info Box -->
+        <div id="motInfoBox"></div>
+
+        <!-- About -->
         <div class="info-card">
-          <h5 class="fw-700 mb-3" data-i18n="about">About</h5>
-          <p class="text-muted mb-0" id="pBio" style="line-height:1.7">—</p>
+          <h5>👤 About This Guide</h5>
+          <p id="pBio" class="text-muted mb-0" style="line-height:1.8">—</p>
         </div>
 
+        <!-- Specialisations -->
         <div class="info-card">
-          <h5 class="fw-700 mb-3" data-i18n="specialisations">Specialisations</h5>
-          <div id="pSpecs" class="d-flex flex-wrap gap-2"></div>
+          <h5>🎯 Specialisations</h5>
+          <div id="pSpecs"></div>
         </div>
 
+        <!-- Destinations -->
         <div class="info-card">
-          <h5 class="fw-700 mb-3" data-i18n="reviews_title">Tourist Reviews</h5>
+          <h5>📍 Destinations Covered</h5>
+          <div id="pDestinations"></div>
+        </div>
+
+        <!-- Availability Calendar -->
+        <div class="info-card">
+          <h5>🗓️ Available Dates</h5>
+          <div id="noAvailMsg" class="text-muted small d-none">No upcoming available dates. Check back later.</div>
+          <div id="calendarWrap">
+            <div class="cal-header">
+              <button class="cal-nav" onclick="calPrev()">‹</button>
+              <div class="cal-month" id="calMonthLabel"></div>
+              <button class="cal-nav" onclick="calNext()">›</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="d-flex gap-3 mt-3" style="font-size:.78rem;color:#888">
+              <span><span style="display:inline-block;width:12px;height:12px;background:#e8f5f0;border-radius:3px;border:1px solid #0f7b6c;margin-right:4px"></span>Available</span>
+              <span><span style="display:inline-block;width:12px;height:12px;background:#0f7b6c;border-radius:3px;margin-right:4px"></span>Selected</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="info-card" id="reviewsCard">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">⭐ Tourist Reviews</h5>
+            <span class="small text-muted" id="reviewCountLabel"></span>
+          </div>
+          <!-- Rating summary bar -->
+          <div id="ratingSummary" class="mb-4"></div>
+          <!-- Review list -->
           <div id="pReviewList">
-            <div class="text-muted small" data-i18n="no_reviews">No reviews yet.</div>
+            <div class="text-muted small text-center py-3">No reviews yet.</div>
           </div>
+          <button class="btn btn-outline-secondary btn-sm w-100 mt-3 d-none" id="loadMoreBtn" onclick="loadMoreReviews()">Load More Reviews</button>
         </div>
-      </div>
 
-      <!-- RIGHT: Booking Panel -->
+      </div><!-- /left col -->
+
+      <!-- ═══ RIGHT COLUMN — Booking Panel ═══ -->
       <div class="col-lg-4">
-        <div class="booking-panel" id="bookingPanel">
-          <div class="price-big mb-0" id="bPrice">OMR 0</div>
-          <div class="price-sub mb-3" data-i18n="per_day">per day</div>
+        <div class="booking-panel">
 
-          <div id="notLoggedMsg" class="alert-teal mb-3 small"></div>
-          <div id="notTouristMsg" class="d-none alert alert-info small mb-3" data-i18n="only_tourist">Only tourist accounts can make bookings.</div>
-
-          <div id="bookingForm">
-            <div class="mb-3">
-              <label class="form-label fw-600 small" data-i18n="tour_date">Tour Date *</label>
-              <select class="form-select" id="bDate">
-                <option value="" data-i18n="select_date">— Select an available date —</option>
-              </select>
+          <!-- Price -->
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div>
+              <div class="bp-price" id="bPrice">—</div>
+              <div class="bp-sub">per person / day</div>
             </div>
-            <div class="mb-3">
-              <label class="form-label fw-600 small" data-i18n="duration">Duration *</label>
-              <div class="d-flex gap-2">
-                <label class="flex-1 border rounded-3 p-2 text-center" style="cursor:pointer">
-                  <input type="radio" name="bDuration" value="full" checked class="me-1"><span data-i18n="full_day">Full Day</span>
-                </label>
-                <label class="flex-1 border rounded-3 p-2 text-center" style="cursor:pointer">
-                  <input type="radio" name="bDuration" value="half" class="me-1"><span data-i18n="half_day">Half Day (60%)</span>
-                </label>
-              </div>
+            <div style="text-align:right">
+              <div style="font-size:.85rem;color:#888" id="bRatingSm"></div>
             </div>
-            <div class="mb-3">
-              <label class="form-label fw-600 small" data-i18n="destination">Destination</label>
-              <select class="form-select" id="bDest">
-                <option value="" data-i18n="select_dest">— Select destination —</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-600 small" data-i18n="participants">Participants</label>
-              <input type="number" class="form-control" id="bParticipants" value="1" min="1" max="10">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-600 small" data-i18n="special_req">Special Requests (optional)</label>
-              <textarea class="form-control" id="bSpecial" rows="2" data-i18n-ph="special_placeholder" placeholder="Any preferences or notes for the guide..."></textarea>
-            </div>
-
-            <div class="price-summary" id="bSummary" style="display:none">
-              <div class="row"><div class="col" data-i18n="price_label">Price</div><div class="col-auto fw-600" id="bSumPrice">—</div></div>
-              <div class="row total-row"><div class="col" data-i18n="total_label">Total</div><div class="col-auto" id="bSumTotal">—</div></div>
-            </div>
-
-            <!-- Deposit options (TourHQ feature) -->
-            <div class="mb-3 mt-2">
-              <label class="form-label fw-600 small" data-i18n="deposit_lbl">Payment Option</label>
-              <div class="row g-2" id="depositOptions">
-                <div class="col-4"><div class="deposit-option selected" onclick="selectDeposit(this,'20')"><div class="dep-pct">20%</div><div class="dep-label" data-i18n="deposit_20">Deposit</div><div class="dep-amount" id="dep20">—</div></div></div>
-                <div class="col-4"><div class="deposit-option" onclick="selectDeposit(this,'50')"><div class="dep-pct">50%</div><div class="dep-label" data-i18n="deposit_50">Deposit</div><div class="dep-amount" id="dep50">—</div></div></div>
-                <div class="col-4"><div class="deposit-option" onclick="selectDeposit(this,'100')"><div class="dep-pct">100%</div><div class="dep-label" data-i18n="deposit_full">Full</div><div class="dep-amount" id="dep100">—</div></div></div>
-              </div>
-              <div class="small text-muted mt-1" data-i18n="deposit_note">Remaining balance paid to guide on the day of the tour.</div>
-              <input type="hidden" id="bDeposit" value="20">
-            </div>
-
-            <button class="btn-book btn mt-2" onclick="submitBooking()" id="bBtn" data-i18n="book_btn">Request Booking</button>
-            <div class="small text-muted mt-2 text-center" data-i18n="book_note">The guide will confirm your request within 24 hours.</div>
           </div>
-        </div>
-      </div>
+          <hr class="my-3">
+
+          <!-- Not logged in / not tourist -->
+          <div id="notLoggedMsg" class="alert-teal mb-3 small d-none"></div>
+          <div id="notTouristMsg" class="d-none alert alert-info small mb-3">Only tourist accounts can make bookings.</div>
+
+          <!-- Selected date display -->
+          <div class="bp-selected-date" id="selectedDateDisplay">📅 <span id="selectedDateText"></span></div>
+
+          <!-- Duration -->
+          <div class="mb-3">
+            <label class="form-label fw-600 small">Duration *</label>
+            <div class="d-flex gap-2">
+              <div class="dur-btn active" id="durFull" onclick="setDuration('full')">
+                <div class="fw-700">Full Day</div>
+                <div style="font-size:.75rem;color:#888">100%</div>
+              </div>
+              <div class="dur-btn" id="durHalf" onclick="setDuration('half')">
+                <div class="fw-700">Half Day</div>
+                <div style="font-size:.75rem;color:#888">60%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Destination -->
+          <div class="mb-3">
+            <label class="form-label fw-600 small">Destination *</label>
+            <select class="form-select" id="bDest">
+              <option value="">— Select destination —</option>
+            </select>
+          </div>
+
+          <!-- Participants -->
+          <div class="mb-3">
+            <label class="form-label fw-600 small">Participants</label>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-outline-secondary btn-sm" onclick="changePax(-1)">−</button>
+              <span class="fw-700 px-3" id="paxDisplay">1</span>
+              <button class="btn btn-outline-secondary btn-sm" onclick="changePax(1)">+</button>
+              <span class="small text-muted">(max 10)</span>
+            </div>
+          </div>
+
+          <!-- Special Requests -->
+          <div class="mb-3">
+            <label class="form-label fw-600 small">Special Requests <span class="text-muted">(optional)</span></label>
+            <textarea class="form-control" id="bSpecial" rows="2" placeholder="Dietary needs, accessibility, language preference…" style="font-size:.85rem"></textarea>
+          </div>
+
+          <!-- Deposit options -->
+          <div class="mb-3">
+            <label class="form-label fw-600 small">Pay Now</label>
+            <div class="d-flex gap-2" id="depositRow">
+              <div class="dep-opt active" onclick="setDeposit(this,20)">
+                <div class="dep-pct">20%</div><div class="dep-lbl">Deposit</div><div class="dep-amt" id="dep20">—</div>
+              </div>
+              <div class="dep-opt" onclick="setDeposit(this,50)">
+                <div class="dep-pct">50%</div><div class="dep-lbl">Deposit</div><div class="dep-amt" id="dep50">—</div>
+              </div>
+              <div class="dep-opt" onclick="setDeposit(this,100)">
+                <div class="dep-pct">100%</div><div class="dep-lbl">Full Pay</div><div class="dep-amt" id="dep100">—</div>
+              </div>
+            </div>
+            <div class="small text-muted mt-1">Remaining balance paid on the tour day.</div>
+          </div>
+
+          <!-- Price breakdown -->
+          <div class="price-breakdown mb-3" id="priceBreakdown" style="display:none">
+            <div class="row"><div class="col">Guide rate</div><div class="col-auto fw-600" id="pbRate">—</div></div>
+            <div class="row"><div class="col">Duration</div><div class="col-auto" id="pbDur">—</div></div>
+            <div class="row total"><div class="col">Pay today</div><div class="col-auto fw-700" id="pbTotal">—</div></div>
+          </div>
+
+          <button class="btn-book-now" id="bBtn" onclick="submitBooking()">Request Booking</button>
+          <div class="small text-muted mt-2 text-center">Guide confirms within 24 hours · Free cancellation</div>
+
+        </div><!-- /booking-panel -->
+      </div><!-- /right col -->
     </div>
   </div>
-</div>
-
-<div id="loadingState" class="text-center py-5 text-muted" data-i18n="loading_guides">Loading guide profile...</div>
-<div id="errorState" class="d-none text-center py-5">
-  <div style="font-size:3rem">⚠️</div>
-  <h5 data-i18n="guide_not_found">Guide not found</h5>
-  <a href="/search.html" class="btn-teal btn mt-2" data-i18n="back_search">Back to Search</a>
-</div>
+</div><!-- /pageContent -->
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="/js/i18n.js?v=12"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
-let GUIDE = null;
-let SESSION = null;
+// ═══════════════════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════════════════
+let GUIDE    = null;
+let SESSION  = null;
+let REVIEWS  = [];
+let AVAIL    = [];
+let SELECTED_DATE = '';
+let DURATION = 'full';
+let PAX      = 1;
+let DEPOSIT  = 20;
+let REVIEW_PAGE = 0;
+const REVIEWS_PER_PAGE = 4;
 
-function toast(msg, type = '') {
-  const el = document.createElement('div');
-  el.className = 'toast-msg' + (type ? ' ' + type : '');
-  el.textContent = msg;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
-}
+let calYear, calMonth;
+const today = new Date();
+today.setHours(0,0,0,0);
 
-function stars(r) {
-  let s = '';
-  for (let i = 1; i <= 5; i++) s += `<span class="${i <= Math.round(r) ? 'star-full' : 'star-empty'}">★</span>`;
-  return s;
-}
-
-function initials(n) {
-  return (n || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function formatDate(d) {
-  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
-  return new Date(d + 'T00:00:00').toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-async function doLogout() {
-  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
-  window.location.href = '/';
-}
-
-async function loadGuide() {
+// ═══════════════════════════════════════════════════════════
+//  Init
+// ═══════════════════════════════════════════════════════════
+async function init() {
   const id = new URLSearchParams(location.search).get('id');
   if (!id) { showError(); return; }
 
-  try {
-    const [profileRes, sessionRes] = await Promise.allSettled([
-      fetch(`/api/guides/${id}`, { credentials: 'include' }),
-      fetch('/api/auth/me', { credentials: 'include' }),
-    ]);
+  const [profRes, meRes] = await Promise.allSettled([
+    fetch(`/api/guides/${id}`, { credentials:'include' }),
+    fetch('/api/auth/me',      { credentials:'include' }),
+  ]);
 
-    if (profileRes.status === 'rejected') { showError(); return; }
-    const profileData = await profileRes.value.json();
-    if (!profileData.success) { showError(); return; }
+  if (profRes.status==='rejected' || !profRes.value.ok) { showError(); return; }
+  const pd = await profRes.value.json();
+  if (!pd.success) { showError(); return; }
 
-    GUIDE = profileData.guide;
-    const reviews = profileData.reviews || [];
+  GUIDE   = pd.guide;
+  REVIEWS = pd.reviews || [];
+  AVAIL   = (GUIDE.availability || []).filter(d => d >= fmtDate(today)).sort();
 
-    if (sessionRes.status === 'fulfilled') {
-      const sd = await sessionRes.value.json();
-      if (sd.success) SESSION = sd.user;
-    }
+  if (meRes.status==='fulfilled') {
+    const md = await meRes.value.json();
+    if (md.success) SESSION = md.user;
+  }
 
-    renderProfile(GUIDE, reviews);
-    setupNav();
-    setCurrency(getCurrency());
-    document.getElementById('loadingState').classList.add('d-none');
-    document.getElementById('pageContent').classList.remove('d-none');
-  } catch { showError(); }
+  renderAll();
+  document.getElementById('loadingState').classList.add('d-none');
+  document.getElementById('pageContent').classList.remove('d-none');
 }
 
 function showError() {
@@ -242,190 +446,424 @@ function showError() {
   document.getElementById('errorState').classList.remove('d-none');
 }
 
-function renderProfile(g, reviews) {
+// ═══════════════════════════════════════════════════════════
+//  Render
+// ═══════════════════════════════════════════════════════════
+function renderAll() {
+  const g = GUIDE;
   document.title = g.fullName + ' — Guideon';
-  const av = document.getElementById('pAvatar');
-  if (g.photo) { av.innerHTML = `<img src="${g.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`; }
-  else { av.textContent = initials(g.fullName); }
-  document.getElementById('pName').textContent = g.fullName;
-  document.getElementById('pPrice').textContent = I18N.t('omr_day') + ' ' + g.pricePerDay;
-  document.getElementById('bPrice').textContent = I18N.t('omr_day') + ' ' + g.pricePerDay;
-  document.getElementById('pReviews').textContent = I18N.t('reviews_count', g.totalReviews);
-  document.getElementById('pBio').textContent = g.bio || I18N.t('no_reviews');
-  document.getElementById('pRating').innerHTML = stars(g.rating) + ` <span class="text-white opacity-75 ms-1">${g.rating} (${I18N.t('reviews_count', g.totalReviews)})</span>`;
 
-  const isSuperGuide = g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2;
-  if (g.isVerified) {
-    document.getElementById('pVerified').innerHTML =
-      `<span class="verified-pill">${I18N.t('verified_lbl')} ${g.licenceNumber}</span>` +
-      (isSuperGuide ? ` <span class="super-guide-badge ms-2">${I18N.t('super_guide')}</span>` : '');
+  // Avatar
+  const av = document.getElementById('pAvatar');
+  if (g.photo) { av.innerHTML = `<img src="${g.photo}" alt="${g.fullName}">`; }
+  else { av.textContent = initials(g.fullName); }
+
+  // Name
+  document.getElementById('pName').textContent = g.fullName;
+  document.getElementById('breadcrumbName').textContent = g.fullName;
+
+  // Badges
+  const badgesEl = document.getElementById('pBadges');
+  let badges = '';
+  if (g.isMinistryLicensed) {
+    badges += `<span class="badge-mot-verified">🏛️ Ministry of Tourism Licensed</span>`;
   } else {
-    document.getElementById('pVerified').innerHTML = `<span class="verified-pill pending">${I18N.t('pending_lbl')}</span>`;
+    badges += `<span class="badge-mot-pending">⚠️ Pending MOT Verification</span>`;
+  }
+  if (g.isVerified) {
+    badges += `<span class="badge-platform ms-1">✅ Platform Verified</span>`;
+  }
+  if (g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2) {
+    badges += `<span class="badge-super ms-1">⭐ Super Guide</span>`;
+  }
+  badgesEl.innerHTML = badges;
+
+  // Languages
+  document.getElementById('pLangs').innerHTML = (g.languages||[]).map(l =>
+    `<span class="tag tag-blue">${l}</span>`).join('');
+
+  // Price
+  setCurrency(getCurrency());
+
+  // Stats bar
+  document.getElementById('statRating').textContent  = g.rating ? Number(g.rating).toFixed(1) : '—';
+  document.getElementById('statReviews').textContent  = g.totalReviews || 0;
+  document.getElementById('statDests').textContent    = (g.destinations||[]).length;
+  document.getElementById('statAvail').textContent    = AVAIL.length;
+  document.getElementById('statLangs').textContent    = (g.languages||[]).length;
+
+  // MOT info box
+  const motEl = document.getElementById('motInfoBox');
+  if (g.isMinistryLicensed && g.licenceNumber) {
+    motEl.innerHTML = `<div class="mot-info-box licensed mb-4">🏛️ <strong>Ministry of Tourism Licensed</strong> · Licence No: <strong>${g.licenceNumber}</strong><br><span style="font-size:.8rem">This guide holds an official licence from the Omani Ministry of Tourism and has been vetted by our team.</span></div>`;
+  } else if (!g.isMinistryLicensed) {
+    motEl.innerHTML = `<div class="mot-info-box pending mb-4">⚠️ <strong>Ministry Verification Pending</strong><br><span style="font-size:.8rem">This guide is currently in the process of obtaining their Ministry of Tourism licence. They can still guide tours on the platform.</span></div>`;
   }
 
-  document.getElementById('pLangs').innerHTML = g.languages.map(l => `<span class="lang-badge">${l}</span>`).join('');
-  document.getElementById('pDests').innerHTML = '📍 ' + g.destinations.join(' · ');
-  document.getElementById('pSpecs').innerHTML = g.specialisations.map(s => `<span class="spec-badge">${s}</span>`).join('');
+  // Bio
+  document.getElementById('pBio').textContent = g.bio || 'No bio provided yet.';
 
-  // Availability dates
-  const dateSelect = document.getElementById('bDate');
-  dateSelect.innerHTML = `<option value="">${I18N.t('select_date')}</option>`;
-  g.availability.sort();
-  g.availability.forEach(d => {
-    if (d >= new Date().toISOString().slice(0, 10)) {
-      const opt = document.createElement('option');
-      opt.value = d;
-      opt.textContent = formatDate(d);
-      dateSelect.appendChild(opt);
-    }
-  });
+  // Specialisations
+  document.getElementById('pSpecs').innerHTML = (g.specialisations||[]).map(s =>
+    `<span class="tag tag-gold">${s}</span>`).join('') || '<span class="text-muted small">Not specified.</span>';
 
   // Destinations
-  const destSelect = document.getElementById('bDest');
-  destSelect.innerHTML = `<option value="">${I18N.t('select_dest')}</option>`;
-  g.destinations.forEach(d => {
-    const opt = document.createElement('option');
-    opt.value = d; opt.textContent = d;
-    destSelect.appendChild(opt);
+  document.getElementById('pDestinations').innerHTML = (g.destinations||[]).map(d =>
+    `<span class="tag tag-dest">📍 ${d}</span>`).join('') || '<span class="text-muted small">Not specified.</span>';
+
+  // Booking panel header
+  document.getElementById('bRatingSm').innerHTML = g.rating
+    ? `${'★'.repeat(Math.round(g.rating))} <span style="color:#888">${Number(g.rating).toFixed(1)}</span>`
+    : '';
+
+  // Booking destinations dropdown
+  const dSel = document.getElementById('bDest');
+  (g.destinations||[]).forEach(d => {
+    const o = document.createElement('option');
+    o.value = d; o.textContent = d;
+    dSel.appendChild(o);
   });
 
+  // Calendar
+  calYear  = today.getFullYear();
+  calMonth = today.getMonth();
+  renderCalendar();
+
   // Reviews
-  if (reviews.length) {
-    const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
-    document.getElementById('pReviewList').innerHTML = reviews.slice(0, 5).map(r => `
-      <div class="review-card">
-        <div class="d-flex justify-content-between mb-1">
-          <span class="reviewer">${r.touristName}</span>
-          <span class="rating">${stars(r.rating)}</span>
-        </div>
-        <p class="mb-1 small" style="line-height:1.6">${r.comment}</p>
-        <div class="review-date">${new Date(r.createdAt).toLocaleDateString(locale, {month:'short',day:'numeric',year:'numeric'})}</div>
-      </div>`).join('');
-  } else {
-    document.getElementById('pReviewList').innerHTML = `<div class="text-muted small">${I18N.t('no_reviews')}</div>`;
+  renderRatingSummary();
+  renderReviews();
+
+  // Nav + booking access
+  setupNav();
+  setupBookingAccess();
+  updatePrice();
+  loadWishlist();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Calendar
+// ═══════════════════════════════════════════════════════════
+function fmtDate(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function renderCalendar() {
+  const availSet = new Set(AVAIL);
+  const first = new Date(calYear, calMonth, 1);
+  const last  = new Date(calYear, calMonth+1, 0);
+  const label = first.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('calMonthLabel').textContent = label;
+
+  const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html = DAYS.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+  // Blank cells before first day
+  for (let i=0; i<first.getDay(); i++) html += `<div class="cal-day"></div>`;
+
+  for (let day=1; day<=last.getDate(); day++) {
+    const dt = new Date(calYear, calMonth, day);
+    const ds = fmtDate(dt);
+    const isPast = dt < today;
+    const isAvail = availSet.has(ds);
+    const isSelected = ds === SELECTED_DATE;
+    const isToday = ds === fmtDate(today);
+    let cls = 'cal-day in-month';
+    if (isPast)     cls += ' past';
+    if (isAvail)    cls += ' avail';
+    if (isSelected) cls += ' selected';
+    if (isToday)    cls += ' today';
+    const click = isAvail && !isPast ? `onclick="selectDate('${ds}')"` : '';
+    html += `<div class="${cls}" ${click} title="${isAvail&&!isPast?'Available · Click to select':''}">${day}</div>`;
   }
 
-  document.querySelectorAll('[name=bDuration]').forEach(r => r.addEventListener('change', updatePrice));
-  document.getElementById('bDate').addEventListener('change', updatePrice);
-  updatePrice();
-  setupBookingAccess();
+  document.getElementById('calGrid').innerHTML = html;
+
+  if (!AVAIL.length) {
+    document.getElementById('noAvailMsg').classList.remove('d-none');
+    document.getElementById('calendarWrap').classList.add('d-none');
+  }
 }
 
-/* ── CURRENCY (TourHQ feature) ── */
-const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
-function getCurrency() { return localStorage.getItem('gd_currency') || 'OMR'; }
-function convertPrice(omr) {
-  const cur = getCurrency();
-  return (omr * RATES[cur]).toFixed(2) + ' ' + cur;
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth=11; calYear--; }
+  renderCalendar();
+}
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth=0; calYear++; }
+  renderCalendar();
 }
 
-function selectDeposit(el, pct) {
-  document.querySelectorAll('.deposit-option').forEach(d => d.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('bDeposit').value = pct;
+function selectDate(ds) {
+  SELECTED_DATE = ds;
+  renderCalendar();
+  const disp = document.getElementById('selectedDateDisplay');
+  document.getElementById('selectedDateText').textContent = new Date(ds+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  disp.style.display = 'block';
   updatePrice();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Booking controls
+// ═══════════════════════════════════════════════════════════
+function setDuration(dur) {
+  DURATION = dur;
+  document.getElementById('durFull').classList.toggle('active', dur==='full');
+  document.getElementById('durHalf').classList.toggle('active', dur==='half');
+  updatePrice();
+}
+
+function changePax(delta) {
+  PAX = Math.min(10, Math.max(1, PAX + delta));
+  document.getElementById('paxDisplay').textContent = PAX;
+  updatePrice();
+}
+
+function setDeposit(el, pct) {
+  DEPOSIT = pct;
+  document.querySelectorAll('.dep-opt').forEach(d=>d.classList.remove('active'));
+  el.classList.add('active');
+  updatePrice();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Currency
+// ═══════════════════════════════════════════════════════════
+const RATES = { OMR:1, USD:2.60, EUR:2.40, GBP:2.05 };
+function getCurrency() { return localStorage.getItem('gd_currency')||'OMR'; }
+function conv(omr) {
+  const c = getCurrency();
+  return Number((omr*RATES[c]).toFixed(2)).toLocaleString() + ' ' + c;
+}
+function setCurrency(cur) {
+  localStorage.setItem('gd_currency', cur);
+  const sel = document.getElementById('currencySelect');
+  if (sel) sel.value = cur;
+  if (GUIDE) {
+    document.getElementById('pPrice').textContent = conv(GUIDE.pricePerDay);
+    document.getElementById('bPrice').textContent = conv(GUIDE.pricePerDay);
+    updatePrice();
+  }
 }
 
 function updatePrice() {
   if (!GUIDE) return;
-  const duration = document.querySelector('[name=bDuration]:checked')?.value || 'full';
-  const price = duration === 'half' ? GUIDE.pricePerDay * 0.6 : GUIDE.pricePerDay;
-  const pct = parseInt(document.getElementById('bDeposit').value || '20') / 100;
-  const summary = document.getElementById('bSummary');
-  const date = document.getElementById('bDate').value;
-  const dayLabel = duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
+  const rate   = DURATION==='half' ? GUIDE.pricePerDay*0.6 : GUIDE.pricePerDay;
+  const total  = rate * PAX;
+  const payNow = total * DEPOSIT/100;
 
-  // Update deposit amounts
-  document.getElementById('dep20').textContent = convertPrice(price * 0.20);
-  document.getElementById('dep50').textContent = convertPrice(price * 0.50);
-  document.getElementById('dep100').textContent = convertPrice(price);
+  document.getElementById('dep20').textContent  = conv(total*0.20);
+  document.getElementById('dep50').textContent  = conv(total*0.50);
+  document.getElementById('dep100').textContent = conv(total);
 
-  if (date) {
-    summary.style.display = '';
-    document.getElementById('bSumPrice').textContent = `${convertPrice(price)} (${dayLabel})`;
-    document.getElementById('bSumTotal').textContent = `${convertPrice(price * pct)} (${parseInt(pct * 100)}% ${I18N.t('deposit_lbl')})`;
+  const bd = document.getElementById('priceBreakdown');
+  if (SELECTED_DATE) {
+    bd.style.display = '';
+    document.getElementById('pbRate').textContent  = conv(GUIDE.pricePerDay) + '/day';
+    document.getElementById('pbDur').textContent   = (DURATION==='half'?'Half Day (×0.6)':'Full Day') + (PAX>1?' × '+PAX+' pax':'');
+    document.getElementById('pbTotal').textContent = conv(payNow) + ' (' + DEPOSIT + '%)';
   } else {
-    summary.style.display = 'none';
+    bd.style.display = 'none';
   }
 }
 
-function setupBookingAccess() {
-  const form = document.getElementById('bookingForm');
-  const notLogged = document.getElementById('notLoggedMsg');
-  const notTourist = document.getElementById('notTouristMsg');
+// ═══════════════════════════════════════════════════════════
+//  Reviews
+// ═══════════════════════════════════════════════════════════
+function starsHtml(r, size='1rem') {
+  let h='';
+  for (let i=1;i<=5;i++) h+=`<span class="${i<=Math.round(r)?'star-f':'star-e'}" style="font-size:${size}">★</span>`;
+  return h;
+}
 
-  if (!SESSION) {
-    notLogged.innerHTML = `<a href="/login.html" style="color:var(--teal-dark);font-weight:700">${I18N.t('nav_login')}</a> ${I18N.t('signin_to_book')}`;
-    notLogged.style.display = '';
-    form.querySelectorAll('select,input,textarea,button').forEach(el => el.disabled = true);
-  } else if (SESSION.userType !== 'tourist') {
-    notLogged.style.display = 'none';
-    notTourist.classList.remove('d-none');
-    form.querySelectorAll('select,input,textarea,button').forEach(el => el.disabled = true);
+function renderRatingSummary() {
+  const g = GUIDE;
+  if (!g.rating || !g.totalReviews) { document.getElementById('ratingSummary').innerHTML=''; return; }
+  const buckets=[0,0,0,0,0];
+  REVIEWS.forEach(r=>{ const i=Math.min(Math.round(r.rating)-1,4); if(i>=0)buckets[i]++; });
+  let bars='';
+  for (let s=5;s>=1;s--) {
+    const cnt = buckets[s-1];
+    const pct = g.totalReviews ? Math.round(cnt/g.totalReviews*100) : 0;
+    bars += `<div class="d-flex align-items-center gap-2 mb-1" style="font-size:.82rem">
+      <span style="width:20px;text-align:right;color:#888">${s}★</span>
+      <div style="flex:1;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:#f59e0b;border-radius:4px"></div>
+      </div>
+      <span style="width:28px;color:#888">${cnt}</span>
+    </div>`;
+  }
+  document.getElementById('ratingSummary').innerHTML=`
+    <div class="d-flex align-items-center gap-4">
+      <div style="text-align:center">
+        <div style="font-size:3rem;font-weight:800;color:#1a1a2e;line-height:1">${Number(g.rating).toFixed(1)}</div>
+        <div>${starsHtml(g.rating,'1.1rem')}</div>
+        <div style="font-size:.78rem;color:#888;margin-top:4px">${g.totalReviews} review${g.totalReviews!==1?'s':''}</div>
+      </div>
+      <div style="flex:1">${bars}</div>
+    </div>`;
+  document.getElementById('reviewCountLabel').textContent = `${g.totalReviews} review${g.totalReviews!==1?'s':''}`;
+}
+
+function renderReviews() {
+  const slice = REVIEWS.slice(0, (REVIEW_PAGE+1)*REVIEWS_PER_PAGE);
+  if (!slice.length) {
+    document.getElementById('pReviewList').innerHTML='<div class="text-muted small text-center py-3">No reviews yet. Be the first to book this guide!</div>';
+    return;
+  }
+  document.getElementById('pReviewList').innerHTML = slice.map(r=>`
+    <div class="review-item">
+      <div class="d-flex gap-3 align-items-start">
+        <div class="review-avatar">${initials(r.touristName||'?')}</div>
+        <div style="flex:1">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-700 small">${r.touristName||'Tourist'}</span>
+            <span>${starsHtml(r.rating,'0.9rem')}</span>
+          </div>
+          <p class="mb-1 small" style="line-height:1.7;color:#444">${r.comment||''}</p>
+          <div style="font-size:.75rem;color:#aaa">${new Date(r.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  const loadBtn = document.getElementById('loadMoreBtn');
+  if (REVIEWS.length > slice.length) {
+    loadBtn.classList.remove('d-none');
+    loadBtn.textContent = `Load More (${REVIEWS.length - slice.length} remaining)`;
   } else {
-    notLogged.style.display = 'none';
+    loadBtn.classList.add('d-none');
   }
 }
 
-function setupNav() {
-  if (SESSION) {
-    document.getElementById('navAuth').classList.add('d-none');
-    document.getElementById('navUser').classList.remove('d-none');
-    document.getElementById('navName').textContent = SESSION.fullName.split(' ')[0];
-    const dashMap = { tourist: '/tourist-dashboard.html', guide: '/guide-dashboard.html', admin: '/admin.html' };
-    document.getElementById('navDashBtn').href = dashMap[SESSION.userType] || '/';
-  }
+function loadMoreReviews() {
+  REVIEW_PAGE++;
+  renderReviews();
 }
 
+// ═══════════════════════════════════════════════════════════
+//  Booking submit
+// ═══════════════════════════════════════════════════════════
 async function submitBooking() {
-  const date = document.getElementById('bDate').value;
-  const destination = document.getElementById('bDest').value;
-  const duration = document.querySelector('[name=bDuration]:checked')?.value;
-  const participants = document.getElementById('bParticipants').value;
-  const specialRequests = document.getElementById('bSpecial').value;
-
-  if (!date) { toast(I18N.t('select_date'), 'error'); return; }
-  if (!destination) { toast(I18N.t('select_dest'), 'error'); return; }
+  if (!SELECTED_DATE) { toast('Please select an available date from the calendar.','error'); return; }
+  const dest = document.getElementById('bDest').value;
+  if (!dest) { toast('Please select a destination.','error'); return; }
 
   const btn = document.getElementById('bBtn');
-  btn.disabled = true; btn.textContent = I18N.t('reg_loading');
+  btn.disabled=true; btn.textContent='Sending request…';
 
   try {
-    const r = await fetch('/api/bookings', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guideId: GUIDE.id, tourDate: date, duration, destination, participants, specialRequests }),
+    const r = await fetch('/api/bookings',{
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        guideId:GUIDE.id, tourDate:SELECTED_DATE, duration:DURATION,
+        destination:dest, participants:PAX,
+        specialRequests:document.getElementById('bSpecial').value,
+      }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
-    toast(I18N.t('book_note'), 'success');
-    setTimeout(() => window.location.href = '/tourist-dashboard.html', 2000);
-  } catch (e) {
-    toast(e.message, 'error');
-    btn.disabled = false; btn.textContent = I18N.t('book_btn');
+    toast('Booking request sent! Redirecting to your dashboard…','success');
+    setTimeout(()=>window.location.href='/tourist-dashboard.html', 2000);
+  } catch(e) {
+    toast(e.message,'error');
+    btn.disabled=false; btn.textContent='Request Booking';
   }
 }
 
-function setCurrency(cur) {
-  localStorage.setItem('gd_currency', cur);
-  updatePrice();
-  const omr = GUIDE ? GUIDE.pricePerDay : 0;
-  document.getElementById('pPrice').textContent = convertPrice(omr);
-  document.getElementById('bPrice').textContent = convertPrice(omr);
+// ═══════════════════════════════════════════════════════════
+//  Wishlist
+// ═══════════════════════════════════════════════════════════
+function loadWishlist() {
+  const list = JSON.parse(localStorage.getItem('gd_wishlist')||'[]');
+  if (list.includes(GUIDE.id)) {
+    document.getElementById('wishlistBtn').innerHTML='❤️ Saved';
+    document.getElementById('wishlistBtn').classList.add('liked');
+  }
+}
+function toggleWishlist() {
+  const list = JSON.parse(localStorage.getItem('gd_wishlist')||'[]');
+  const idx  = list.indexOf(GUIDE.id);
+  const btn  = document.getElementById('wishlistBtn');
+  if (idx===-1) {
+    list.push(GUIDE.id);
+    btn.innerHTML='❤️ Saved'; btn.classList.add('liked');
+    toast('Guide saved to your wishlist!','success');
+  } else {
+    list.splice(idx,1);
+    btn.innerHTML='🤍 Save'; btn.classList.remove('liked');
+    toast('Removed from wishlist.');
+  }
+  localStorage.setItem('gd_wishlist', JSON.stringify(list));
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const sel = document.getElementById('currencySelect');
-  if (sel) sel.value = getCurrency();
+// ═══════════════════════════════════════════════════════════
+//  Share
+// ═══════════════════════════════════════════════════════════
+function shareGuide() {
+  const url = window.location.href;
+  if (navigator.share) {
+    navigator.share({ title: GUIDE.fullName + ' — Guideon', url }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>toast('Link copied to clipboard!','success')).catch(()=>{});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Booking access
+// ═══════════════════════════════════════════════════════════
+function setupBookingAccess() {
+  const btn = document.getElementById('bBtn');
+  if (!SESSION) {
+    const nl = document.getElementById('notLoggedMsg');
+    nl.innerHTML=`<a href="/login.html" style="color:#0a5c50;font-weight:700">Sign in</a> to request a booking with this guide.`;
+    nl.classList.remove('d-none');
+    btn.disabled=true; btn.textContent='Sign in to Book';
+  } else if (SESSION.userType !== 'tourist') {
+    document.getElementById('notTouristMsg').classList.remove('d-none');
+    btn.disabled=true; btn.textContent='Tourists Only';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Nav
+// ═══════════════════════════════════════════════════════════
+function setupNav() {
+  if (!SESSION) return;
+  document.getElementById('navAuth').classList.add('d-none');
+  document.getElementById('navUser').classList.remove('d-none');
+  document.getElementById('navName').textContent = SESSION.fullName.split(' ')[0];
+  const dashMap = { tourist:'/tourist-dashboard.html', guide:'/guide-dashboard.html', admin:'/admin.html', company:'/company-dashboard.html' };
+  document.getElementById('navDashBtn').href = dashMap[SESSION.userType]||'/';
+}
+
+async function doLogout() {
+  await fetch('/api/auth/logout',{method:'POST',credentials:'include'}).catch(()=>{});
+  window.location.href='/';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════════════════════
+function initials(n) { return (n||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+function toast(msg, type='') {
+  const el=document.createElement('div');
+  el.className='toast-msg'+(type?' '+type:'');
+  el.textContent=msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+window.onLangChange = () => { if(GUIDE) renderAll(); };
+
+// ── Boot ──
+document.addEventListener('DOMContentLoaded',()=>{
+  const sel=document.getElementById('currencySelect');
+  if (sel) sel.value=getCurrency();
 });
-
-window.onLangChange = () => {
-  if (GUIDE) loadGuide();
-};
-
-loadGuide();
+init();
 </script>
-<style>.flex-1{flex:1}</style>
 <script src="/js/pwa.js?v=12"></script>
 </body>
 </html>
