@@ -537,6 +537,26 @@ const TRANSLATIONS = {
     video_invalid:    'Please enter a valid YouTube URL.',
     photo_change:     'Change Photo',
     photo_upload_tip: 'Click to upload photo',
+
+    /* ── DIRECT MESSAGING (v18) ── */
+    msg_section:      '💬 Messages',
+    msg_no_convos:    'No conversations yet.',
+    msg_no_convos_sub:'Start a conversation by messaging a guide from their profile.',
+    msg_type_ph:      'Type a message...',
+    msg_send:         'Send',
+    msg_back:         '← Back',
+    msg_you:          'You',
+    msg_today:        'Today',
+    msg_yesterday:    'Yesterday',
+    msg_unread:       'unread',
+    msg_loading:      'Loading messages...',
+    msg_send_fail:    'Failed to send message.',
+    msg_empty:        'Say hello! Start the conversation.',
+    msg_guide_btn:    '💬 Message Guide',
+    msg_login_to_msg: 'Sign in to message this guide.',
+    msg_tourists_only:'Only tourist accounts can message guides.',
+    msg_sent_ok:      'Message sent!',
+    msg_reply_ph:     'Write a reply...',
   },
 
   ar: {
@@ -1075,6 +1095,26 @@ const TRANSLATIONS = {
     video_invalid:    'الرجاء إدخال رابط YouTube صحيح.',
     photo_change:     'تغيير الصورة',
     photo_upload_tip: 'انقر لتحميل صورة',
+
+    /* ── DIRECT MESSAGING (v18) ── */
+    msg_section:      '💬 الرسائل',
+    msg_no_convos:    'لا توجد محادثات بعد.',
+    msg_no_convos_sub:'ابدأ محادثة بإرسال رسالة لمرشد من صفحة ملفه.',
+    msg_type_ph:      'اكتب رسالتك...',
+    msg_send:         'إرسال',
+    msg_back:         '← رجوع',
+    msg_you:          'أنت',
+    msg_today:        'اليوم',
+    msg_yesterday:    'أمس',
+    msg_unread:       'غير مقروء',
+    msg_loading:      'جارٍ تحميل الرسائل...',
+    msg_send_fail:    'فشل إرسال الرسالة.',
+    msg_empty:        'قل مرحباً! ابدأ المحادثة.',
+    msg_guide_btn:    '💬 مراسلة المرشد',
+    msg_login_to_msg: 'سجّل دخولك للتواصل مع هذا المرشد.',
+    msg_tourists_only:'التواصل متاح لحسابات السياح فقط.',
+    msg_sent_ok:      'تم إرسال الرسالة!',
+    msg_reply_ph:     'اكتب رداً...',
   }
 };
 

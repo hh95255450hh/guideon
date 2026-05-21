@@ -66,6 +66,32 @@
   <div class="mt-4 text-center">
     <a href="/search.html" class="btn-teal btn" data-i18n="find_guides">🔍 Find More Guides</a>
   </div>
+
+  <!-- ── MESSAGES SECTION ── -->
+  <div class="card shadow-sm mt-5" id="msgSection">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background:var(--teal);color:#fff">
+      <h6 class="mb-0 fw-700" data-i18n="msg_section">💬 Messages</h6>
+      <span class="badge bg-danger" id="msgUnreadBadge" style="display:none"></span>
+    </div>
+    <!-- Conversation list -->
+    <div id="msgConvoView">
+      <div id="msgConvoList" class="list-group list-group-flush">
+        <div class="text-center py-4 text-muted small" data-i18n="msg_loading">Loading messages...</div>
+      </div>
+    </div>
+    <!-- Thread view (hidden until conversation opened) -->
+    <div id="msgThreadView" style="display:none">
+      <div class="p-2 border-bottom d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary" onclick="showConvoList()" data-i18n="msg_back">← Back</button>
+        <strong id="msgThreadName" class="ms-1"></strong>
+      </div>
+      <div id="msgThreadMessages" style="height:320px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f8f9fa"></div>
+      <div class="p-2 border-top d-flex gap-2">
+        <input class="form-control form-control-sm" id="msgInput" data-i18n-ph="msg_type_ph" placeholder="Type a message...">
+        <button class="btn btn-sm btn-teal" onclick="sendMsg()" data-i18n="msg_send">Send</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Review Modal -->
@@ -104,7 +130,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=17"></script>
+<script src="/js/i18n.js?v=18"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let ALL_BOOKINGS = [];
@@ -137,6 +163,7 @@ async function checkAuth() {
     }
     document.getElementById('navName').textContent = d.user.fullName.split(' ')[0];
     loadBookings();
+    loadConvos();
   } catch { window.location.href = '/login.html'; }
 }
 
@@ -263,9 +290,148 @@ async function submitReview() {
   } catch (e) { toast(e.message, 'error'); }
 }
 
-window.onLangChange = () => renderBookings();
+window.onLangChange = () => { renderBookings(); renderConvos(); };
 
 checkAuth();
+
+/* ── MESSAGES ── */
+let CONVOS = [];
+let ACTIVE_OTHER_ID = null;
+let ACTIVE_OTHER_NAME = '';
+let POLL_INTERVAL = null;
+
+async function loadConvos() {
+  try {
+    const r = await fetch('/api/messages/conversations', { credentials: 'include' });
+    const d = await r.json();
+    CONVOS = d.conversations || [];
+    renderConvos();
+    updateUnreadBadge();
+  } catch {}
+}
+
+function renderConvos() {
+  const el = document.getElementById('msgConvoList');
+  if (!CONVOS.length) {
+    el.innerHTML = `<div class="text-center py-4 text-muted small">
+      <div>${I18N.t('msg_no_convos')}</div>
+      <div class="mt-1">${I18N.t('msg_no_convos_sub')}</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = CONVOS.map(c => {
+    const preview = c.lastMessage.content.length > 50 ? c.lastMessage.content.slice(0, 50) + '…' : c.lastMessage.content;
+    const time = formatMsgTime(c.lastMessage.createdAt);
+    const unreadBadge = c.unread > 0 ? `<span class="badge bg-danger ms-1">${c.unread}</span>` : '';
+    return `<button class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3"
+      onclick="openThread('${c.otherId}', ${JSON.stringify(c.otherName).replace(/'/g,"&#39;")})">
+      <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+        style="width:42px;height:42px;background:var(--teal);color:#fff;font-weight:700;font-size:1.1rem">
+        ${c.otherName.charAt(0).toUpperCase()}
+      </div>
+      <div class="flex-grow-1 text-start" style="min-width:0">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-600">${c.otherName}${unreadBadge}</span>
+          <span class="text-muted small">${time}</span>
+        </div>
+        <div class="text-muted small text-truncate">${preview}</div>
+      </div>
+    </button>`;
+  }).join('');
+}
+
+function updateUnreadBadge() {
+  const total = CONVOS.reduce((s, c) => s + c.unread, 0);
+  const badge = document.getElementById('msgUnreadBadge');
+  if (total > 0) { badge.textContent = total; badge.style.display = ''; }
+  else badge.style.display = 'none';
+}
+
+async function openThread(otherId, otherName) {
+  ACTIVE_OTHER_ID = otherId;
+  ACTIVE_OTHER_NAME = otherName;
+  document.getElementById('msgThreadName').textContent = otherName;
+  document.getElementById('msgConvoView').style.display = 'none';
+  document.getElementById('msgThreadView').style.display = '';
+  await loadThread();
+  clearInterval(POLL_INTERVAL);
+  POLL_INTERVAL = setInterval(loadThread, 9000);
+}
+
+function showConvoList() {
+  clearInterval(POLL_INTERVAL);
+  ACTIVE_OTHER_ID = null;
+  document.getElementById('msgThreadView').style.display = 'none';
+  document.getElementById('msgConvoView').style.display = '';
+  loadConvos();
+}
+
+async function loadThread() {
+  if (!ACTIVE_OTHER_ID) return;
+  try {
+    const r = await fetch(`/api/messages/thread/${ACTIVE_OTHER_ID}`, { credentials: 'include' });
+    const d = await r.json();
+    renderThread(d.messages || []);
+    updateUnreadBadge();
+  } catch {}
+}
+
+function renderThread(msgs) {
+  const el = document.getElementById('msgThreadMessages');
+  const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+  if (!msgs.length) {
+    el.innerHTML = `<div class="text-center text-muted small mt-auto pt-4">${I18N.t('msg_empty')}</div>`;
+    return;
+  }
+  // get current user id from session via navName — use fromId comparison
+  el.innerHTML = msgs.map(m => {
+    const isMine = m.fromName === document.getElementById('navName').textContent ||
+                   m.toId === ACTIVE_OTHER_ID;
+    const align = isMine ? 'align-self:flex-end;background:var(--teal);color:#fff' : 'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
+    return `<div style="max-width:75%;padding:8px 12px;border-radius:14px;${align}">
+      <div style="font-size:.93rem">${escHtml(m.content)}</div>
+      <div style="font-size:.72rem;opacity:.65;margin-top:2px;text-align:${isMine?'right':'left'}">${formatMsgTime(m.createdAt)}</div>
+    </div>`;
+  }).join('');
+  if (wasAtBottom) el.scrollTop = el.scrollHeight;
+}
+
+async function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const content = input.value.trim();
+  if (!content || !ACTIVE_OTHER_ID) return;
+  input.value = '';
+  try {
+    const r = await fetch('/api/messages', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toId: ACTIVE_OTHER_ID, content }),
+    });
+    if (!r.ok) throw new Error();
+    await loadThread();
+  } catch { toast(I18N.t('msg_send_fail'), 'error'); }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement?.id === 'msgInput') sendMsg();
+});
+
+function formatMsgTime(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return '<1m';
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
+  if (diff < 86400000) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return I18N.t('msg_yesterday');
+  return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 </script>
 <style>
 .btn-teal { background: var(--teal) !important; color: #fff !important; border-color: var(--teal) !important; }

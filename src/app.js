@@ -17,7 +17,8 @@ const adminRoutes   = require('./routes/admin');
 const tripRoutes    = require('./routes/trips');
 const chatRoutes    = require('./routes/chat');
 const paymentRoutes = require('./routes/payments');
-const uploadRoutes  = require('./routes/upload');
+const uploadRoutes   = require('./routes/upload');
+const messagesRoutes = require('./routes/messages');
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use('/api/trips',    tripRoutes);
 app.use('/api/chat',     chatRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/upload',   uploadRoutes);
+app.use('/api/messages', messagesRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: 'Guideon', timestamp: new Date().toISOString() });
