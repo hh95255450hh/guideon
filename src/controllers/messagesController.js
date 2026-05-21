@@ -9,19 +9,22 @@ const supabase = createClient(
 async function send(req, res) {
   try {
     const { toId, content } = req.body;
-    const from = req.session.user;
+    const fromId = req.session.userId;
     if (!toId || !content || !content.trim()) {
       return res.status(400).json({ success: false, message: 'toId and content are required.' });
     }
 
-    // Get recipient name
-    const { data: toUser } = await supabase.from('users').select('fullName').eq('id', toId).single();
+    // Get sender and recipient names
+    const [{ data: fromUser }, { data: toUser }] = await Promise.all([
+      supabase.from('users').select('fullName,email').eq('id', fromId).single(),
+      supabase.from('users').select('fullName').eq('id', toId).single(),
+    ]);
     if (!toUser) return res.status(404).json({ success: false, message: 'Recipient not found.' });
 
     const { data, error } = await supabase.from('messages').insert({
-      fromId:   from.id,
+      fromId,
       toId,
-      fromName: from.fullName || from.email,
+      fromName: fromUser?.fullName || fromUser?.email || fromId,
       toName:   toUser.fullName,
       content:  content.trim(),
       isRead:   false,
@@ -39,7 +42,7 @@ async function send(req, res) {
 // GET /api/messages/conversations
 async function conversations(req, res) {
   try {
-    const userId = req.session.user.id;
+    const userId = req.session.userId;
 
     // All messages involving current user
     const { data: sent }     = await supabase.from('messages').select('*').eq('fromId', userId).order('createdAt', { ascending: false });
@@ -73,7 +76,7 @@ async function conversations(req, res) {
 // GET /api/messages/thread/:otherId
 async function thread(req, res) {
   try {
-    const userId  = req.session.user.id;
+    const userId  = req.session.userId;
     const otherId = req.params.otherId;
 
     const { data: msgs, error } = await supabase
@@ -102,7 +105,7 @@ async function thread(req, res) {
 // GET /api/messages/unread-count
 async function unreadCount(req, res) {
   try {
-    const userId = req.session.user.id;
+    const userId = req.session.userId;
     const { count, error } = await supabase
       .from('messages')
       .select('*', { count: 'exact', head: true })

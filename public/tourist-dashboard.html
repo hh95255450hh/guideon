@@ -135,6 +135,7 @@
 <script>
 let ALL_BOOKINGS = [];
 let CURRENT_FILTER = 'all';
+let MY_ID = null;
 
 function toast(msg, type = '') {
   const el = document.createElement('div');
@@ -161,6 +162,7 @@ async function checkAuth() {
     if (!d.success || d.user.userType !== 'tourist') {
       window.location.href = '/login.html'; return;
     }
+    MY_ID = d.user.id;
     document.getElementById('navName').textContent = d.user.fullName.split(' ')[0];
     loadBookings();
     loadConvos();
@@ -385,8 +387,7 @@ function renderThread(msgs) {
   }
   // get current user id from session via navName — use fromId comparison
   el.innerHTML = msgs.map(m => {
-    const isMine = m.fromName === document.getElementById('navName').textContent ||
-                   m.toId === ACTIVE_OTHER_ID;
+    const isMine = m.fromId === MY_ID;
     const align = isMine ? 'align-self:flex-end;background:var(--teal);color:#fff' : 'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
     return `<div style="max-width:75%;padding:8px 12px;border-radius:14px;${align}">
       <div style="font-size:.93rem">${escHtml(m.content)}</div>
