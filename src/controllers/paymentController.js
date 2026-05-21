@@ -1,128 +1,91 @@
 const stripe = require('../config/stripe');
-const { query } = require('../config/database');
-const { sendBookingConfirmation, sendBookingCancellation } = require('../services/emailService');
-const notify = require('../services/notificationService');
+const SupabaseDB = require('../models/SupabaseDB');
+const emailService = require('../services/emailService');
 
-// POST /api/payments/create-intent
-const createPaymentIntent = async (req, res, next) => {
+const bookings = new SupabaseDB('bookings');
+const users    = new SupabaseDB('users');
+
+const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+
+// POST /api/payments/create-checkout
+exports.createCheckout = async (req, res) => {
   try {
-    const { booking_id } = req.body;
+    const { bookingId } = req.body;
+    const touristId = req.session.userId;
 
-    const result = await query(
-      `SELECT b.*, t.title AS tour_title, ta.date AS tour_date, u.email, u.name AS user_name
-       FROM bookings b
-       JOIN tours t ON t.id = b.tour_id
-       JOIN tour_availability ta ON ta.id = b.availability_id
-       JOIN users u ON u.id = b.user_id
-       WHERE b.id = $1`,
-      [booking_id]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+    if (!bookingId) {
+      return res.status(400).json({ success: false, message: 'Booking ID required.' });
     }
 
-    const booking = result.rows[0];
-
-    if (booking.user_id !== req.user.id) {
-      return res.status(403).json({ success: false, message: 'Access denied' });
+    const booking = await bookings.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found.' });
     }
-
-    if (booking.payment_status === 'paid') {
-      return res.status(400).json({ success: false, message: 'Booking already paid' });
+    if (booking.touristId !== touristId) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
     }
-
     if (booking.status === 'cancelled') {
-      return res.status(400).json({ success: false, message: 'Cannot pay for a cancelled booking' });
+      return res.status(400).json({ success: false, message: 'Cannot pay for a cancelled booking.' });
+    }
+    if (booking.status === 'confirmed' || booking.status === 'completed') {
+      return res.status(400).json({ success: false, message: 'Booking already paid.' });
     }
 
-    const amountInCents = Math.round(parseFloat(booking.total_price) * 100);
+    const guide   = await users.findById(booking.guideId);
+    const tourist = await users.findById(touristId);
 
-    // Reuse existing intent if one was already created for this booking
-    if (booking.stripe_payment_intent_id) {
-      const existing = await stripe.paymentIntents.retrieve(booking.stripe_payment_intent_id);
-      if (existing.status !== 'canceled') {
-        return res.json({
-          success: true,
-          data: {
-            clientSecret: existing.client_secret,
-            amount: existing.amount,
-            currency: existing.currency,
+    const amountInCents  = Math.round(parseFloat(booking.totalAmount) * 100);
+    const durationLabel  = booking.duration === 'half' ? 'Half Day' : 'Full Day';
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Tour with ${guide ? guide.fullName : 'Guide'} — Guideon`,
+            description: `${booking.destination} • ${booking.tourDate} • ${durationLabel} • ${booking.participants} person(s)`,
           },
-        });
-      }
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amountInCents,
-      currency: 'usd',
-      metadata: {
-        booking_id: booking.id,
-        tour_title: booking.tour_title,
-        user_email: booking.email,
-      },
-      description: `GUIDEON – ${booking.tour_title}`,
-      receipt_email: booking.email,
-    });
-
-    await query(
-      'UPDATE bookings SET stripe_payment_intent_id = $1 WHERE id = $2',
-      [paymentIntent.id, booking_id]
-    );
-
-    res.json({
-      success: true,
-      data: {
-        clientSecret: paymentIntent.client_secret,
-        amount: amountInCents,
-        currency: 'usd',
-        booking: {
-          id: booking.id,
-          tour_title: booking.tour_title,
-          tour_date: booking.tour_date,
-          participants: booking.participants,
-          total_price: booking.total_price,
+          unit_amount: amountInCents,
         },
-      },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${APP_URL}/checkout-success.html?booking_id=${bookingId}`,
+      cancel_url:  `${APP_URL}/checkout.html?booking_id=${bookingId}&cancelled=1`,
+      customer_email: tourist ? tourist.email : undefined,
+      metadata: { booking_id: bookingId, tourist_id: touristId },
     });
+
+    res.json({ success: true, url: session.url });
   } catch (err) {
-    next(err);
+    console.error('[Payment] createCheckout:', err.message);
+    res.status(500).json({ success: false, message: 'Payment initialization failed. Please try again.' });
   }
 };
 
-// GET /api/payments/status/:booking_id
-const getPaymentStatus = async (req, res, next) => {
+// GET /api/payments/status/:bookingId
+exports.getStatus = async (req, res) => {
   try {
-    const result = await query(
-      `SELECT b.id, b.status, b.payment_status, b.stripe_payment_intent_id,
-              b.total_price, t.title AS tour_title
-       FROM bookings b
-       JOIN tours t ON t.id = b.tour_id
-       WHERE b.id = $1`,
-      [req.params.booking_id]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+    const booking = await bookings.findById(req.params.bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found.' });
     }
-
-    const booking = result.rows[0];
-
-    if (booking.user_id !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Access denied' });
+    if (booking.touristId !== req.session.userId && req.session.userType !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
     }
-
-    res.json({ success: true, data: { booking } });
+    res.json({ success: true, booking });
   } catch (err) {
-    next(err);
+    console.error('[Payment] getStatus:', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
-// POST /api/payments/webhook  (called by Stripe — no auth middleware, raw body)
-const stripeWebhook = async (req, res, next) => {
+// POST /api/payments/webhook — raw body from Stripe, registered before express.json()
+exports.webhook = async (req, res) => {
   const sig = req.headers['stripe-signature'];
-
   let event;
+
   try {
     event = stripe.webhooks.constructEvent(
       req.body,
@@ -130,191 +93,74 @@ const stripeWebhook = async (req, res, next) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error('Stripe webhook signature verification failed:', err.message);
+    console.error('[Webhook] Signature error:', err.message);
     return res.status(400).json({ success: false, message: err.message });
   }
 
   try {
-    switch (event.type) {
+    if (event.type === 'checkout.session.completed') {
+      const session   = event.data.object;
+      const bookingId = session.metadata?.booking_id;
 
-      case 'payment_intent.succeeded': {
-        const pi = event.data.object;
+      if (bookingId) {
+        await bookings.update(bookingId, { status: 'confirmed' });
 
-        const result = await query(
-          `UPDATE bookings
-           SET payment_status = 'paid', status = 'confirmed'
-           WHERE stripe_payment_intent_id = $1
-           RETURNING id, participants, total_price, tour_id, user_id, availability_id`,
-          [pi.id]
-        );
+        const booking = await bookings.findById(bookingId);
+        if (booking) {
+          const tourist = await users.findById(booking.touristId);
+          const guide   = await users.findById(booking.guideId);
+          if (tourist && guide) {
+            emailService.sendTouristBookingConfirmed({
+              email: tourist.email, name: tourist.fullName,
+              guideName: guide.fullName,
+              destination: booking.destination,
+              tourDate: booking.tourDate,
+              totalAmount: booking.totalAmount,
+              bookingId,
+            }).catch(() => {});
 
-        if (result.rows.length) {
-          const booking = result.rows[0];
+            emailService.sendGuideBookingConfirmed({
+              email: guide.email, name: guide.fullName,
+              touristName: tourist.fullName,
+              destination: booking.destination,
+              tourDate: booking.tourDate,
+              totalAmount: booking.totalAmount,
+              bookingId,
+            }).catch(() => {});
 
-          // Fetch details needed for confirmation email
-          const details = await query(
-            `SELECT u.email, u.name, t.title AS tour_title, ta.date AS tour_date
-             FROM users u
-             JOIN tours t ON t.id = $2
-             JOIN tour_availability ta ON ta.id = $3
-             WHERE u.id = $1`,
-            [booking.user_id, booking.tour_id, booking.availability_id]
-          );
-
-          if (details.rows.length) {
-            const { email, name, tour_title, tour_date } = details.rows[0];
-            sendBookingConfirmation({
-              email,
-              name,
-              tourTitle: tour_title,
-              date: tour_date,
-              participants: booking.participants,
-              totalPrice: booking.total_price,
-              bookingId: booking.id,
-            }).catch((err) => console.error('Confirmation email failed:', err.message));
-
-            notify.sendBookingConfirmation({
-              userId:      booking.user_id,
-              tourTitle:   tour_title,
-              date:        tour_date,
-              bookingId:   booking.id,
-              participants: booking.participants,
-              totalPrice:  booking.total_price,
-            });
+            // Remove booked date from guide availability
+            const avail = Array.isArray(guide.availability) ? guide.availability : [];
+            await users.update(guide.id, { availability: avail.filter(d => d !== booking.tourDate) });
           }
         }
 
-        console.log(`Payment succeeded: intent ${pi.id}`);
-        break;
+        console.log(`[Webhook] Booking ${bookingId} confirmed via Stripe.`);
       }
-
-      case 'payment_intent.payment_failed': {
-        const pi = event.data.object;
-        const failReason = pi.last_payment_error?.message || 'unknown reason';
-        console.warn(`Payment failed for intent ${pi.id}: ${failReason}`);
-
-        // Notify user their payment failed
-        const failedBooking = await query(
-          `SELECT b.user_id, t.title AS tour_title
-           FROM bookings b JOIN tours t ON t.id = b.tour_id
-           WHERE b.stripe_payment_intent_id = $1`,
-          [pi.id]
-        );
-        if (failedBooking.rows.length) {
-          const { user_id, tour_title } = failedBooking.rows[0];
-          notify.sendPaymentFailed({ userId: user_id, tourTitle: tour_title });
-        }
-        break;
-      }
-
-      case 'charge.refunded': {
-        const charge = event.data.object;
-        if (!charge.payment_intent) break;
-
-        const result = await query(
-          `UPDATE bookings
-           SET payment_status = 'refunded', status = 'cancelled'
-           WHERE stripe_payment_intent_id = $1
-           RETURNING id, tour_id, user_id`,
-          [charge.payment_intent]
-        );
-
-        if (result.rows.length) {
-          const booking = result.rows[0];
-          const details = await query(
-            `SELECT u.email, u.name, t.title AS tour_title
-             FROM users u JOIN tours t ON t.id = $2
-             WHERE u.id = $1`,
-            [booking.user_id, booking.tour_id]
-          );
-
-          if (details.rows.length) {
-            const { email, name, tour_title } = details.rows[0];
-            sendBookingCancellation({
-              email,
-              name,
-              tourTitle: tour_title,
-              bookingId: booking.id,
-            }).catch((err) => console.error('Cancellation email failed:', err.message));
-
-            notify.sendBookingCancellation({
-              userId:    booking.user_id,
-              tourTitle: tour_title,
-              bookingId: booking.id,
-            });
-          }
-        }
-        break;
-      }
-
-      default:
-        console.log(`Unhandled Stripe event: ${event.type}`);
     }
 
     res.json({ received: true });
   } catch (err) {
-    next(err);
+    console.error('[Webhook] Handler error:', err.message);
+    res.status(500).json({ success: false, message: 'Webhook handler failed.' });
   }
 };
 
-// POST /api/payments/refund  (admin only)
-const issueRefund = async (req, res, next) => {
+// POST /api/payments/refund (admin only)
+exports.issueRefund = async (req, res) => {
   try {
-    const { booking_id, reason } = req.body;
+    const { bookingId } = req.body;
+    const booking = await bookings.findById(bookingId);
 
-    const result = await query(
-      `SELECT b.*, u.email, u.name AS user_name, t.title AS tour_title
-       FROM bookings b
-       JOIN users u ON u.id = b.user_id
-       JOIN tours t ON t.id = b.tour_id
-       WHERE b.id = $1`,
-      [booking_id]
-    );
-
-    if (!result.rows.length) {
-      return res.status(404).json({ success: false, message: 'Booking not found' });
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Booking not found.' });
+    }
+    if (booking.status !== 'confirmed') {
+      return res.status(400).json({ success: false, message: 'Only confirmed bookings can be refunded.' });
     }
 
-    const booking = result.rows[0];
-
-    if (booking.payment_status !== 'paid') {
-      return res.status(400).json({ success: false, message: 'Booking has not been paid' });
-    }
-
-    if (!booking.stripe_payment_intent_id) {
-      return res.status(400).json({ success: false, message: 'No Stripe payment found for this booking' });
-    }
-
-    const validReasons = ['duplicate', 'fraudulent', 'requested_by_customer'];
-    const refundReason = validReasons.includes(reason) ? reason : 'requested_by_customer';
-
-    const refund = await stripe.refunds.create({
-      payment_intent: booking.stripe_payment_intent_id,
-      reason: refundReason,
-    });
-
-    await query(
-      `UPDATE bookings SET payment_status = 'refunded', status = 'cancelled' WHERE id = $1`,
-      [booking_id]
-    );
-
-    sendBookingCancellation({
-      email: booking.email,
-      name: booking.user_name,
-      tourTitle: booking.tour_title,
-      bookingId: booking.id,
-    }).catch((err) => console.error('Cancellation email failed:', err.message));
-
-    notify.sendBookingCancellation({
-      userId:    booking.user_id,
-      tourTitle: booking.tour_title,
-      bookingId: booking.id,
-    });
-
-    res.json({ success: true, message: 'Refund issued', data: { refund_id: refund.id } });
+    res.json({ success: true, message: 'Refund request noted. Process via Stripe dashboard.' });
   } catch (err) {
-    next(err);
+    console.error('[Payment] issueRefund:', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
-
-module.exports = { createPaymentIntent, getPaymentStatus, stripeWebhook, issueRefund };

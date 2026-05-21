@@ -1,37 +1,31 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f7b6c">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Guideon">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="shortcut icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f7b6c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Guideon">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 <title>Complete Payment — Guideon</title>
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <link rel="stylesheet" href="/css/style.css?v=14">
 <style>
-  body { background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .pay-card { background: #fff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,.12); width: 100%; max-width: 480px; overflow: hidden; }
-  .pay-header { background: linear-gradient(135deg, var(--teal-dark), var(--teal)); padding: 28px 32px; color: #fff; }
-  .pay-header .logo { font-size: 1.3rem; font-weight: 800; margin-bottom: 16px; }
-  .pay-row { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; opacity: .9; }
-  .pay-row.total { border-top: 1px solid rgba(255,255,255,.3); margin-top: 10px; padding-top: 10px; font-weight: 700; font-size: 1.1rem; opacity: 1; }
-  .pay-body { padding: 28px 32px; }
-  .card-field { border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 14px; font-family: 'Courier New', monospace; letter-spacing: 2px; width: 100%; outline: none; transition: border-color .2s; }
-  .card-field:focus { border-color: var(--teal); }
-  .pay-btn { width: 100%; padding: 14px; background: var(--teal); color: #fff; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .2s; }
-  .pay-btn:hover { background: var(--teal-dark); }
-  .pay-btn:disabled { opacity: .6; cursor: not-allowed; }
-  .success-screen { text-align: center; padding: 48px 32px; display: none; }
-  .success-icon { width: 72px; height: 72px; background: #e8f5ee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2.2rem; }
-  .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; height: 14px; margin-bottom: 10px; }
-  @keyframes shimmer { to { background-position: -200% 0; } }
+  body { background:var(--bg); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .pay-card { background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,.12); width:100%; max-width:460px; overflow:hidden; }
+  .pay-header { background:linear-gradient(135deg,#0a5c50,#0f7b6c); padding:28px 32px; color:#fff; }
+  .pay-row { display:flex; justify-content:space-between; font-size:14px; padding:5px 0; opacity:.9; }
+  .pay-row.total { border-top:1px solid rgba(255,255,255,.3); margin-top:10px; padding-top:12px; font-weight:700; font-size:1.05rem; opacity:1; }
+  .pay-body { padding:28px 32px; }
+  .stripe-btn { width:100%; padding:14px; background:#635bff; color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:background .2s; }
+  .stripe-btn:hover { background:#4f46e5; }
+  .stripe-btn:disabled { opacity:.6; cursor:not-allowed; }
+  .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:6px; height:14px; margin-bottom:10px; }
+  @keyframes shimmer { to { background-position:-200% 0; } }
+  .secure-note { text-align:center; font-size:12px; color:#888; margin-top:12px; }
+  .cancel-note { font-size:12px; color:#e74c3c; background:#fdf2f2; border-radius:8px; padding:10px 14px; margin-bottom:16px; display:none; }
 </style>
 </head>
 <body>
@@ -41,136 +35,99 @@
   <!-- Loading -->
   <div id="loadScreen" style="padding:40px 32px">
     <div class="skeleton" style="width:40%;margin-bottom:20px"></div>
-    <div class="skeleton"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:60%"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton" style="width:80%"></div>
+    <div class="skeleton" style="width:60%"></div>
   </div>
 
-  <!-- Payment form -->
+  <!-- Payment summary -->
   <div id="payScreen" style="display:none">
     <div class="pay-header">
-      <div class="logo"><img src="/logo.png" alt="Guideon" height="52"></div>
-      <h6 class="mb-3">Order Summary</h6>
-      <div class="pay-row"><span id="sGuideName">Guide</span><span></span></div>
+      <div style="margin-bottom:14px"><img src="/logo.png" alt="Guideon" height="44"></div>
+      <h6 class="mb-3" style="opacity:.8;font-size:.85rem;text-transform:uppercase;letter-spacing:1px">Order Summary</h6>
+      <div class="pay-row"><span>Guide</span><span id="sGuide">—</span></div>
+      <div class="pay-row"><span>Destination</span><span id="sDest">—</span></div>
       <div class="pay-row"><span>Date</span><span id="sDate">—</span></div>
       <div class="pay-row"><span>Duration</span><span id="sDuration">—</span></div>
-      <div class="pay-row"><span>Participants</span><span id="sParticipants">—</span></div>
+      <div class="pay-row"><span>Participants</span><span id="sPax">—</span></div>
       <div class="pay-row total"><span>Total</span><span id="sTotal">—</span></div>
     </div>
     <div class="pay-body">
-      <div id="errMsg" class="alert alert-danger d-none mb-3"></div>
-      <form id="payForm" onsubmit="submitPayment(event)">
-        <div class="mb-3">
-          <label class="form-label fw-600 small text-muted">Card Number</label>
-          <input class="card-field" id="cardNum" placeholder="4242 4242 4242 4242" maxlength="19" oninput="fmtCard(this)" required>
-        </div>
-        <div class="row g-2 mb-3">
-          <div class="col-7">
-            <label class="form-label fw-600 small text-muted">Expiry</label>
-            <input class="card-field" id="cardExp" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)" required>
-          </div>
-          <div class="col-5">
-            <label class="form-label fw-600 small text-muted">CVV</label>
-            <input class="card-field" id="cardCvv" placeholder="123" maxlength="3" type="password" required>
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-600 small text-muted">Name on Card</label>
-          <input class="form-control" id="cardName" placeholder="Your Full Name" required>
-        </div>
-        <button type="submit" class="pay-btn" id="payBtn">💳 Pay Now</button>
-        <div class="text-center mt-3 small text-muted">🔒 Demo payment — no real charge will occur</div>
-      </form>
+      <div id="cancelNote" class="cancel-note">⚠️ Your last payment was cancelled. You can try again below.</div>
+      <div id="errMsg" class="alert alert-danger d-none mb-3 small"></div>
+      <button class="stripe-btn" id="payBtn" onclick="goToStripe()">
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#fff"/><path d="M13.5 19.5c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z" fill="#635bff"/><path d="M16 8C11.6 8 8 11.6 8 16s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z" fill="#635bff"/></svg>
+        Pay Securely with Stripe
+      </button>
+      <p class="secure-note">🔒 You will be redirected to Stripe's secure payment page</p>
+      <p class="secure-note mt-1">Test card: <strong>4242 4242 4242 4242</strong> · Any expiry · Any CVV</p>
     </div>
-  </div>
-
-  <!-- Success -->
-  <div class="success-screen" id="successScreen">
-    <div class="success-icon">✅</div>
-    <h3 class="fw-800 mb-2" style="color:var(--teal)">Payment Successful!</h3>
-    <p class="text-muted mb-3">Your tour is confirmed. Enjoy your Oman adventure!</p>
-    <div style="background:#f8f9fa;border-radius:10px;padding:14px;font-size:13px;color:#555;word-break:break-all" id="bookingIdDisplay"></div>
-    <a href="/tourist-dashboard.html" class="btn-teal btn mt-4 px-4">View My Bookings</a>
   </div>
 
 </div>
 
 <script>
-const qs = (p) => new URLSearchParams(window.location.search).get(p);
-
-async function api(method, url, body) {
-  const r = await fetch(url, { method, credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
-  const d = await r.json();
-  if (!r.ok) throw new Error(d.message || 'Error');
-  return d;
-}
-
-let BOOKING = null;
+const qs = p => new URLSearchParams(window.location.search).get(p);
+let BOOKING_ID = null;
 
 (async () => {
-  const bookingId = qs('booking_id');
-  if (!bookingId) {
+  BOOKING_ID = qs('booking_id');
+  if (!BOOKING_ID) {
     document.getElementById('loadScreen').innerHTML = '<p class="text-danger p-4">Missing booking ID. <a href="/tourist-dashboard.html">Go back</a></p>';
     return;
   }
 
-  try {
-    // Load booking info
-    const d = await api('GET', '/api/bookings/mine');
-    BOOKING = (d.bookings || []).find(b => b.id === bookingId);
-    if (!BOOKING) throw new Error('Booking not found');
-    if (BOOKING.status === 'cancelled') throw new Error('This booking is cancelled.');
+  if (qs('cancelled') === '1') {
+    document.getElementById('cancelNote').style.display = 'block';
+  }
 
-    document.getElementById('sGuideName').textContent = BOOKING.guideName || 'Guide';
-    document.getElementById('sDate').textContent = BOOKING.tourDate;
-    document.getElementById('sDuration').textContent = BOOKING.duration === 'half' ? 'Half Day' : 'Full Day';
-    document.getElementById('sParticipants').textContent = BOOKING.participants + ' person(s)';
-    document.getElementById('sTotal').textContent = 'OMR ' + BOOKING.totalAmount;
+  try {
+    const r = await fetch('/api/bookings/mine', { credentials: 'include' });
+    if (!r.ok) { window.location.href = '/login.html'; return; }
+    const d = await r.json();
+    const booking = (d.bookings || []).find(b => b.id === BOOKING_ID);
+    if (!booking) throw new Error('Booking not found.');
+    if (booking.status === 'cancelled') throw new Error('This booking has been cancelled.');
+    if (booking.status === 'confirmed' || booking.status === 'completed') {
+      window.location.href = '/tourist-dashboard.html';
+      return;
+    }
+
+    document.getElementById('sGuide').textContent    = booking.guideName    || '—';
+    document.getElementById('sDest').textContent     = booking.destination  || '—';
+    document.getElementById('sDate').textContent     = booking.tourDate     || '—';
+    document.getElementById('sDuration').textContent = booking.duration === 'half' ? 'Half Day' : 'Full Day';
+    document.getElementById('sPax').textContent      = booking.participants + ' person(s)';
+    document.getElementById('sTotal').textContent    = 'USD $' + parseFloat(booking.totalAmount).toFixed(2);
 
     document.getElementById('loadScreen').style.display = 'none';
-    document.getElementById('payScreen').style.display = 'block';
+    document.getElementById('payScreen').style.display  = 'block';
   } catch (err) {
     document.getElementById('loadScreen').innerHTML = `<p class="text-danger p-4">${err.message} <a href="/tourist-dashboard.html">Go back</a></p>`;
   }
 })();
 
-function fmtCard(el) {
-  let v = el.value.replace(/\D/g,'');
-  el.value = v.replace(/(.{4})/g,'$1 ').trim().slice(0,19);
-}
-function fmtExp(el) {
-  let v = el.value.replace(/\D/g,'');
-  if (v.length >= 2) v = v.slice(0,2) + ' / ' + v.slice(2,4);
-  el.value = v;
-}
-
-async function submitPayment(e) {
-  e.preventDefault();
+async function goToStripe() {
   const btn = document.getElementById('payBtn');
   const err = document.getElementById('errMsg');
   err.classList.add('d-none');
   btn.disabled = true;
-  btn.textContent = '⏳ Processing...';
-
-  // Validate demo card
-  const num = document.getElementById('cardNum').value.replace(/\s/g,'');
-  if (num.length < 16) {
-    err.textContent = 'Please enter a valid 16-digit card number.';
-    err.classList.remove('d-none');
-    btn.disabled = false; btn.textContent = '💳 Pay Now'; return;
-  }
-
-  // Simulate payment delay
-  await new Promise(r => setTimeout(r, 1800));
+  btn.innerHTML = '⏳ Redirecting to Stripe…';
 
   try {
-    // Mark booking as completed (simulated payment success)
-    await api('PATCH', `/api/bookings/${BOOKING.id}`, { status: 'completed' });
-    document.getElementById('payScreen').style.display = 'none';
-    document.getElementById('successScreen').style.display = 'block';
-    document.getElementById('bookingIdDisplay').innerHTML = `Booking ID: <strong>${BOOKING.id}</strong>`;
-  } catch (err2) {
-    err.textContent = err2.message;
+    const r = await fetch('/api/payments/create-checkout', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingId: BOOKING_ID }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    window.location.href = d.url;
+  } catch (ex) {
+    err.textContent = ex.message;
     err.classList.remove('d-none');
-    btn.disabled = false; btn.textContent = '💳 Pay Now';
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#fff"/><path d="M13.5 19.5c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z" fill="#635bff"/><path d="M16 8C11.6 8 8 11.6 8 16s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z" fill="#635bff"/></svg> Pay Securely with Stripe';
   }
 }
 </script>

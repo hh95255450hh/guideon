@@ -16,10 +16,17 @@ const reviewRoutes  = require('./routes/reviews');
 const adminRoutes   = require('./routes/admin');
 const tripRoutes    = require('./routes/trips');
 const chatRoutes    = require('./routes/chat');
+const paymentRoutes = require('./routes/payments');
 
 const app = express();
 
 app.set('trust proxy', 1);
+
+// Stripe webhook needs raw body — register BEFORE express.json()
+app.post('/api/payments/webhook',
+  express.raw({ type: 'application/json' }),
+  require('./controllers/paymentController').webhook
+);
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -74,6 +81,7 @@ app.use('/api/reviews',  reviewRoutes);
 app.use('/api/admin',    adminRoutes);
 app.use('/api/trips',    tripRoutes);
 app.use('/api/chat',     chatRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', app: 'Guideon', timestamp: new Date().toISOString() });
