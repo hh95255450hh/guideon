@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
-const email = require('../services/emailService');
+const emailService = require('../services/emailService');
 
 const users = new SupabaseDB('users');
 
@@ -59,10 +59,10 @@ exports.register = async (req, res) => {
 
     // Send welcome email (fire-and-forget)
     if (userType === 'tourist') {
-      email.sendTouristWelcome({ email: record.email, name: record.fullName }).catch(() => {});
+      emailService.sendTouristWelcome({ email: record.email, name: record.fullName }).catch(() => {});
     } else if (userType === 'guide') {
-      email.sendGuideWelcome({ email: record.email, name: record.fullName }).catch(() => {});
-      email.sendAdminNewGuide({
+      emailService.sendGuideWelcome({ email: record.email, name: record.fullName }).catch(() => {});
+      emailService.sendAdminNewGuide({
         guideName: record.fullName, guideEmail: record.email,
         licenceNumber: record.licenceNumber,
         destinations: record.destinations, languages: record.languages,
