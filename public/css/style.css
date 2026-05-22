@@ -23,8 +23,45 @@ body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); co
 .navbar { background: linear-gradient(135deg, var(--navy-dark), var(--navy) 55%, var(--teal)) !important; box-shadow: 0 2px 20px rgba(15,28,62,0.35); }
 .navbar-brand { font-weight: 800; font-size: 1.4rem; color: #fff !important; letter-spacing: -0.5px; }
 .navbar-brand span { color: var(--gold); }
-.nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; transition: color .15s; }
-.nav-link:hover, .nav-link.active { color: #fff !important; }
+/* Navbar nav-links only (NOT all nav-links on the page) */
+.navbar .nav-link { color: rgba(255,255,255,0.85) !important; font-weight: 500; transition: color .15s; }
+.navbar .nav-link:hover, .navbar .nav-link.active { color: #fff !important; }
+
+/* Bootstrap nav-tabs (used in profile, dashboards) — dark text on light bg */
+.nav-tabs .nav-link {
+  color: var(--text) !important;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: color .15s, background .15s;
+}
+.nav-tabs .nav-link:hover {
+  color: var(--teal) !important;
+  background: rgba(15,123,108,0.06);
+  border-color: transparent;
+}
+.nav-tabs .nav-link.active {
+  color: var(--teal) !important;
+  background: var(--white) !important;
+  border-color: var(--border) var(--border) var(--white);
+}
+body.dark-mode .nav-tabs .nav-link { color: var(--text) !important; }
+body.dark-mode .nav-tabs .nav-link.active {
+  color: #6cd6c5 !important;
+  background: var(--white) !important;
+  border-color: var(--border) var(--border) var(--white);
+}
+
+/* Bootstrap nav-pills — similar handling */
+.nav-pills .nav-link {
+  color: var(--text) !important;
+  font-weight: 600;
+}
+.nav-pills .nav-link.active {
+  color: #fff !important;
+  background: var(--teal);
+}
 .btn-gold { background: var(--gold); color: #fff; border: none; font-weight: 600; border-radius: 8px; padding: 8px 20px; transition: all .15s; }
 .btn-gold:hover { background: #b8923f; color: #fff; transform: translateY(-1px); }
 .btn-teal { background: var(--teal); color: #fff; border: none; font-weight: 600; border-radius: 8px; padding: 8px 20px; transition: all .15s; }
