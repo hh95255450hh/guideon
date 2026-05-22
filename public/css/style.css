@@ -260,13 +260,151 @@ footer .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top
 .navbar-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; white-space: nowrap; flex-wrap: nowrap; }
 .navbar-controls .btn-sm { flex-shrink: 0; }
 
-/* ── DARK MODE ── */
-body.dark-mode { --bg: #0f172a; --white: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --border: #334155; --teal-light: #0f2d28; --gold-light: #2d2412; --shadow: 0 2px 12px rgba(0,0,0,0.4); --shadow-lg: 0 8px 32px rgba(0,0,0,0.5); }
+/* ── DARK MODE — comprehensive contrast fix ── */
+body.dark-mode {
+  --bg: #0f172a;
+  --white: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+  --teal-light: #0f2d28;
+  --gold-light: #2d2412;
+  --shadow: 0 2px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Navbar + Footer */
 body.dark-mode .navbar { background: linear-gradient(135deg,#0a0f1e,#0f1a2e) !important; }
-body.dark-mode .guide-card, body.dark-mode .info-card, body.dark-mode .booking-panel, body.dark-mode .review-card, body.dark-mode .table-card, body.dark-mode .trip-request-card { background: var(--white); color: var(--text); border-color: var(--border); }
-body.dark-mode .form-control, body.dark-mode .form-select { background: #1e293b; color: var(--text); border-color: var(--border); }
-body.dark-mode .table { color: var(--text); }
 body.dark-mode footer { background: #060d1a; }
+
+/* Cards & containers — make ALL surfaces dark */
+body.dark-mode .card,
+body.dark-mode .guide-card,
+body.dark-mode .info-card,
+body.dark-mode .booking-panel,
+body.dark-mode .review-card,
+body.dark-mode .table-card,
+body.dark-mode .trip-request-card,
+body.dark-mode .auth-card,
+body.dark-mode .blog-card,
+body.dark-mode .tour-card,
+body.dark-mode .benefit-card,
+body.dark-mode .online-exp-card,
+body.dark-mode .pend-card,
+body.dark-mode .t-card,
+body.dark-mode .dash-stat,
+body.dark-mode .pkg-card,
+body.dark-mode .msg-card,
+body.dark-mode .qa-card,
+body.dark-mode .stats-card,
+body.dark-mode [class*="-card"] {
+  background: var(--white) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* Card text — ensure no white-on-white */
+body.dark-mode .card-body,
+body.dark-mode .card-text,
+body.dark-mode .card-title {
+  color: var(--text);
+}
+
+/* Headings */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: var(--text);
+}
+
+/* Bootstrap utilities that may invert */
+body.dark-mode .bg-white,
+body.dark-mode .bg-light {
+  background-color: var(--white) !important;
+  color: var(--text) !important;
+}
+body.dark-mode .text-dark,
+body.dark-mode .text-body,
+body.dark-mode .text-black { color: var(--text) !important; }
+body.dark-mode .text-muted { color: var(--muted) !important; }
+
+/* Forms — inputs, selects, textareas */
+body.dark-mode .form-control,
+body.dark-mode .form-select,
+body.dark-mode textarea,
+body.dark-mode input[type="text"],
+body.dark-mode input[type="email"],
+body.dark-mode input[type="password"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="tel"],
+body.dark-mode input[type="search"],
+body.dark-mode input[type="date"],
+body.dark-mode input[type="url"] {
+  background: #1e293b !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+body.dark-mode .form-control::placeholder,
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder { color: var(--muted) !important; }
+body.dark-mode .form-label,
+body.dark-mode label { color: var(--text); }
+
+/* Tables */
+body.dark-mode .table,
+body.dark-mode table { color: var(--text); }
+body.dark-mode .table thead th,
+body.dark-mode .table th { background: #15233e !important; color: var(--text) !important; border-color: var(--border) !important; }
+body.dark-mode .table tbody td,
+body.dark-mode .table td { background: var(--white); color: var(--text); border-color: var(--border); }
+body.dark-mode .table-hover tbody tr:hover td { background: #2a3a55 !important; }
+body.dark-mode .table-striped > tbody > tr:nth-of-type(odd) > * { background: #1a2540 !important; color: var(--text) !important; }
+
+/* Modals & dropdowns */
+body.dark-mode .modal-content,
+body.dark-mode .dropdown-menu,
+body.dark-mode .popover {
+  background: var(--white);
+  color: var(--text);
+  border-color: var(--border);
+}
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer { border-color: var(--border); }
+body.dark-mode .dropdown-item { color: var(--text); }
+body.dark-mode .dropdown-item:hover { background: #2a3a55; color: var(--text); }
+
+/* Alerts */
+body.dark-mode .alert { background: var(--white); color: var(--text); border-color: var(--border); }
+
+/* List groups */
+body.dark-mode .list-group-item { background: var(--white); color: var(--text); border-color: var(--border); }
+
+/* Links */
+body.dark-mode a:not(.btn):not(.nav-link):not(.navbar-brand) { color: #6cd6c5; }
+body.dark-mode a:not(.btn):not(.nav-link):not(.navbar-brand):hover { color: #8fe6d6; }
+
+/* Theme button */
+.theme-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 8px; padding: 5px 10px; font-size: 0.82rem; cursor: pointer; }
+
+/* ── LIGHT MODE contrast fixes — make sure no text-on-same-color ── */
+/* Body default text color */
+body { color: var(--text); }
+/* Fix any "white on white" by ensuring main containers have dark text by default */
+.card, .auth-card, .info-card, .guide-card, .review-card, .booking-panel,
+.benefit-card, .tour-card, .blog-card, .trip-request-card, .pend-card,
+.t-card, .pkg-card, .msg-card, .qa-card {
+  color: var(--text);
+}
+/* Cards inside dashboards that use bg-white explicitly */
+.bg-white { color: var(--text); }
+/* Buttons & badges that need light text on dark bg */
+.btn-teal, .btn-gold, .btn-primary, .btn-danger, .btn-success, .btn-dark { color: #fff !important; }
+.btn-teal:hover, .btn-gold:hover, .btn-primary:hover, .btn-danger:hover, .btn-success:hover { color: #fff !important; }
 .theme-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 8px; padding: 5px 10px; font-size: 0.82rem; cursor: pointer; }
 
 /* ── BENEFITS SECTION (TourHQ) ── */
