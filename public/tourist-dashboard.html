@@ -136,6 +136,11 @@
 let ALL_BOOKINGS = [];
 let CURRENT_FILTER = 'all';
 let MY_ID = null;
+window.PAYMENTS_ENABLED = false;
+fetch('/api/payments/feature-status', { credentials: 'include' })
+  .then(r => r.json())
+  .then(d => { window.PAYMENTS_ENABLED = !!d.enabled; })
+  .catch(() => {});
 
 function toast(msg, type = '') {
   const el = document.createElement('div');
@@ -234,7 +239,7 @@ function renderBookings() {
         <div class="fw-700 fs-5" style="color:var(--teal)">${I18N.t('omr_day')} ${b.totalAmount}</div>
         <div class="d-flex gap-2">
           <a href="/guide-profile.html?id=${b.guideId}" class="btn btn-sm btn-outline-secondary">${I18N.t('view_guide')}</a>
-          ${b.status === 'confirmed' ? `<a href="/checkout.html?booking_id=${b.id}" class="btn btn-sm btn-gold">💳 Pay Now</a>` : ''}
+          ${(b.status === 'confirmed' && window.PAYMENTS_ENABLED) ? `<a href="/checkout.html?booking_id=${b.id}" class="btn btn-sm btn-gold">💳 Pay Now</a>` : ''}
           ${canReview ? `<button class="btn btn-sm btn-teal" onclick="openReview('${b.id}')">${I18N.t('write_review')}</button>` : ''}
           ${canCancel ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${b.id}')">${I18N.t('cancel_bk')}</button>` : ''}
         </div>

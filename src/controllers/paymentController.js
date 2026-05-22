@@ -7,8 +7,24 @@ const users    = new SupabaseDB('users');
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
+// Feature flag — payments disabled by default for free launch.
+// Set PAYMENTS_ENABLED=true in Railway when ready to accept real payments.
+const PAYMENTS_ENABLED = process.env.PAYMENTS_ENABLED === 'true';
+
+// GET /api/payments/status — frontend uses this to know if payments are on
+exports.getFeatureStatus = (req, res) => {
+  res.json({ success: true, enabled: PAYMENTS_ENABLED });
+};
+
 // POST /api/payments/create-checkout
 exports.createCheckout = async (req, res) => {
+  if (!PAYMENTS_ENABLED) {
+    return res.status(503).json({
+      success: false,
+      code: 'PAYMENTS_DISABLED',
+      message: 'Payments are temporarily disabled. Your booking is free during our launch period.',
+    });
+  }
   try {
     const { bookingId } = req.body;
     const touristId = req.session.userId;

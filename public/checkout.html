@@ -40,6 +40,27 @@
     <div class="skeleton" style="width:60%"></div>
   </div>
 
+  <!-- Free launch screen (when PAYMENTS_ENABLED=false) -->
+  <div id="freeScreen" style="display:none; padding:48px 32px; text-align:center">
+    <div style="font-size:64px; margin-bottom:16px">🎉</div>
+    <h3 style="color:var(--teal); font-weight:800; margin-bottom:12px">Free During Launch!</h3>
+    <p style="color:#555; line-height:1.7; margin-bottom:24px">
+      As a thank you for being among our first users, all bookings during the launch period are <strong>free</strong>.
+      Your booking is confirmed — just enjoy your tour with the guide!
+    </p>
+    <div style="background:#e8f5f2; border-radius:12px; padding:16px 20px; margin-bottom:24px; text-align:left">
+      <div style="font-weight:600; color:#0f5c50; margin-bottom:6px">✓ What happens next?</div>
+      <div style="font-size:14px; color:#0a4a40; line-height:1.6">
+        • Contact your guide via the messaging feature<br>
+        • Confirm meeting time and place<br>
+        • Enjoy your tour — payment will be requested in the future
+      </div>
+    </div>
+    <a href="/tourist-dashboard.html" class="btn btn-teal btn-lg w-100" style="padding:14px">
+      Go to My Bookings
+    </a>
+  </div>
+
   <!-- Payment summary -->
   <div id="payScreen" style="display:none">
     <div class="pay-header">
@@ -76,6 +97,17 @@ let BOOKING_ID = null;
     document.getElementById('loadScreen').innerHTML = '<p class="text-danger p-4">Missing booking ID. <a href="/tourist-dashboard.html">Go back</a></p>';
     return;
   }
+
+  // Check if payments are enabled — if not, show "Free during launch" screen
+  try {
+    const fr = await fetch('/api/payments/feature-status', { credentials: 'include' });
+    const fd = await fr.json();
+    if (!fd.enabled) {
+      document.getElementById('loadScreen').style.display = 'none';
+      document.getElementById('freeScreen').style.display = 'block';
+      return;
+    }
+  } catch {}
 
   if (qs('cancelled') === '1') {
     document.getElementById('cancelNote').style.display = 'block';
