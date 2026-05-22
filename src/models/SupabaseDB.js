@@ -30,8 +30,11 @@ class SupabaseDB {
   }
 
   async findByField(field, value) {
-    const { data, error } = await supabase
-      .from(this.table).select('*').eq(field, value).maybeSingle();
+    // Email lookups are case-insensitive (some seed data may be mixed-case)
+    const useIlike = field === 'email' && typeof value === 'string';
+    let query = supabase.from(this.table).select('*');
+    query = useIlike ? query.ilike(field, value) : query.eq(field, value);
+    const { data, error } = await query.maybeSingle();
     if (error) { console.error(`[DB:${this.table}] findByField(${field}):`, error.message); return null; }
     return data;
   }
