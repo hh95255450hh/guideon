@@ -44,7 +44,7 @@
 
 ## 📧 إعدادات الإيميل (Resend)
 
-**الحالة:** بانتظار التحقق من domain guideon.om
+**الحالة:** بانتظار التحقق من domain guideon.guide
 
 ### سجلات DNS المطلوبة في Hostinger
 
@@ -83,7 +83,7 @@
 | EMAIL_FROM | Guideon <onboarding@resend.dev> |
 | ADMIN_EMAIL | Hh95255450hh@hotmail.com |
 
-> بعد التحقق من guideon.om في Resend، غيّر EMAIL_FROM إلى: `Guideon <noreply@guideon.om>`
+> بعد التحقق من guideon.guide في Resend، غيّر EMAIL_FROM إلى: `Guideon <noreply@guideon.guide>`
 
 ---
 
@@ -288,4 +288,4 @@ git push origin main
 - **الوصف:** منصة حجز مرشدين سياحيين معتمدين في سلطنة عُمان
 - **GitHub:** hh95255450hh
 - **الإيميل:** Hh95255450hh@hotmail.com
-- **Domain:** guideon.om
+- **Domain:** guideon.guide

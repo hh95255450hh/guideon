@@ -7,7 +7,7 @@
     siteName: 'Guideon',
     title: 'Guideon — Certified Local Guides in Oman',
     description: 'Find and book Ministry-licensed local guides across Oman. Muscat, Salalah, Nizwa, Musandam, Wahiba Sands and more.',
-    image: 'https://guideon.om/logo.png',
+    image: 'https://guideon.guide/logo.png',
     url: location.href,
     type: 'website',
     locale: 'en_US',
@@ -67,8 +67,8 @@
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Guideon',
-      url: 'https://guideon.om',
-      logo: 'https://guideon.om/logo.png',
+      url: 'https://guideon.guide',
+      logo: 'https://guideon.guide/logo.png',
       description: 'Tourism marketplace connecting tourists with certified local guides in Oman.',
       address: {
         '@type': 'PostalAddress',
@@ -85,7 +85,7 @@
       '@type': 'Person',
       name: guide.fullName,
       jobTitle: 'Tourist Guide',
-      image: guide.photo || 'https://guideon.om/logo.png',
+      image: guide.photo || 'https://guideon.guide/logo.png',
       description: guide.bio || `Certified local guide in Oman specializing in ${(guide.destinations || []).join(', ')}.`,
       knowsLanguage: guide.languages || [],
       aggregateRating: guide.rating > 0 ? {

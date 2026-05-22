@@ -47,7 +47,7 @@ function layout(body) {
         <td style="background:#f8faf9;border-top:1px solid #e8efed;padding:20px 40px;text-align:center;">
           <p style="margin:0;font-size:12px;color:#aaa;line-height:1.7;">
             Guideon — Find Your Certified Local Guide in Oman<br>
-            <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;">guideon.om</a>
+            <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;">guideon.guide</a>
             &nbsp;·&nbsp;
             © ${new Date().getFullYear()} Guideon. All rights reserved.
           </p>
