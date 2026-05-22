@@ -76,23 +76,28 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 let sessionStore;
-if (process.env.DATABASE_URL) {
-  const sessionPool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-    max: 5,
-  });
-  sessionPool.on('error', (err) => console.error('[SessionPool] error:', err.message));
-  sessionStore = new pgSession({
-    pool: sessionPool,
-    tableName: 'user_sessions',
-    createTableIfMissing: true,
-    pruneSessionInterval: 60 * 60,
-  });
-  console.log('[Session] Using Postgres session store.');
-} else {
+try {
+  if (process.env.DATABASE_URL) {
+    const sessionPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      max: 5,
+      connectionTimeoutMillis: 5000,
+    });
+    sessionPool.on('error', (err) => console.error('[SessionPool] error:', err.message));
+    sessionStore = new pgSession({
+      pool: sessionPool,
+      tableName: 'user_sessions',
+      createTableIfMissing: true,
+      pruneSessionInterval: 60 * 60,
+    });
+    console.log('[Session] Using Postgres session store.');
+  } else {
+    throw new Error('DATABASE_URL not set');
+  }
+} catch (e) {
+  console.warn(`[Session] Falling back to in-memory store (${e.message}). NOT recommended for production.`);
   sessionStore = new MemoryStore({ checkPeriod: 86400000 });
-  console.warn('[Session] DATABASE_URL missing — using in-memory store (NOT for production).');
 }
 
 app.use(session({
