@@ -432,6 +432,9 @@ async function send(to, subject, html) {
 //  PUBLIC API
 // ══════════════════════════════════════════════════════════════════════════════
 module.exports = {
+  // Low-level — for ad-hoc emails (Q&A, newsletter welcome, etc.)
+  send: (to, subject, html) => send(to, subject, html),
+
   // Tourist
   sendTouristWelcome: (data) =>
     send(data.email, 'Welcome to Guideon! 🌿', touristWelcome(data)),

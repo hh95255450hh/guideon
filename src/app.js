@@ -67,7 +67,8 @@ app.use(cors({
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
     if (allowedOrigins.includes(origin)) return cb(null, true);
-    return cb(new Error(`CORS blocked: ${origin}`));
+    // Don't throw — that becomes a 500. Just disable CORS headers; the browser will block it.
+    return cb(null, false);
   },
   credentials: true,
 }));

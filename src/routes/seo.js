@@ -25,15 +25,14 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/register.html',     changefreq: 'monthly',priority: 0.6 },
     ];
 
-    const verifiedGuides = await users.findAll(u =>
-      u.userType === 'guide' && u.isVerified && !u.isSuspended
-    );
-    const verifiedCompanies = await users.findAll(u =>
-      u.userType === 'company' && u.isVerified && !u.isSuspended
-    );
+    const allGuides    = await users.findAllByField('userType', 'guide');
+    const allCompanies = await users.findAllByField('userType', 'company');
+    const verifiedGuides    = allGuides.filter(u => u.isVerified && !u.isSuspended);
+    const verifiedCompanies = allCompanies.filter(u => u.isVerified && !u.isSuspended);
+
     let tourPackages = [];
     try {
-      tourPackages = await packages.findAll(p => p.isPublished);
+      tourPackages = await packages.findAllByField('isPublished', true);
     } catch { /* table may not exist yet */ }
 
     const urls = [
