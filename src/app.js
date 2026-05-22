@@ -2,7 +2,9 @@
 
 const express = require('express');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const MemoryStore = require('memorystore')(session);
+const { Pool } = require('pg');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -21,6 +23,8 @@ const uploadRoutes   = require('./routes/upload');
 const messagesRoutes = require('./routes/messages');
 
 const app = express();
+const sentry = require('./config/sentry');
+sentry.init(app);
 
 app.set('trust proxy', 1);
 
@@ -47,20 +51,57 @@ app.use(helmet({
   },
 }));
 
+const { logger, httpLogger } = require('./config/logger');
 app.use(compression());
-app.use(morgan('dev'));
-app.use(cors({ origin: true, credentials: true }));
+if (process.env.NODE_ENV === 'production') {
+  app.use(httpLogger);
+} else {
+  app.use(morgan('dev'));
+}
+
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://guideon.om,https://www.guideon.om,https://guideon-production.up.railway.app')
+  .split(',').map(s => s.trim()).filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+let sessionStore;
+if (process.env.DATABASE_URL) {
+  const sessionPool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+    max: 5,
+  });
+  sessionPool.on('error', (err) => console.error('[SessionPool] error:', err.message));
+  sessionStore = new pgSession({
+    pool: sessionPool,
+    tableName: 'user_sessions',
+    createTableIfMissing: true,
+    pruneSessionInterval: 60 * 60,
+  });
+  console.log('[Session] Using Postgres session store.');
+} else {
+  sessionStore = new MemoryStore({ checkPeriod: 86400000 });
+  console.warn('[Session] DATABASE_URL missing — using in-memory store (NOT for production).');
+}
+
 app.use(session({
-  store: new MemoryStore({ checkPeriod: 86400000 }),
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || 'Guideon-secret-2025',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   },
 }));
@@ -77,6 +118,14 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+const { apiLimiter, chatLimiter } = require('./middleware/rateLimit');
+const csrfProtect = require('./middleware/csrf');
+const { loadUser } = require('./middleware/auth');
+app.use('/api/', apiLimiter);
+app.use('/api/', csrfProtect);
+app.use('/api/', loadUser);
+app.use('/api/chat', chatLimiter);
+
 app.use('/api/auth',     authRoutes);
 app.use('/api/guides',   guideRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -88,13 +137,12 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/upload',   uploadRoutes);
 app.use('/api/messages', messagesRoutes);
 
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', app: 'Guideon', timestamp: new Date().toISOString() });
-});
+app.use('/health', require('./routes/health'));
 
 app.get(['/search', '/guide-profile', '/login', '/register',
          '/tourist-dashboard', '/guide-dashboard', '/company-dashboard', '/admin', '/plan-trip',
-         '/wishlist', '/profile', '/checkout', '/checkout-success', '/offline'], (req, res, next) => {
+         '/wishlist', '/profile', '/checkout', '/checkout-success', '/offline',
+         '/forgot-password', '/reset-password'], (req, res, next) => {
   res.sendFile(path.join(__dirname, '..', 'public', req.path.replace('/', '') + '.html'), err => {
     if (err) next();
   });
@@ -107,9 +155,28 @@ app.get('*', (req, res) => {
   res.status(404).sendFile(path.join(__dirname, '..', 'public', '404.html'));
 });
 
+// Global error handler — must be LAST
+app.use((err, req, res, next) => {
+  logger.error({ err, path: req.path, method: req.method }, 'unhandled error');
+  sentry.captureException(err, { path: req.path, method: req.method, userId: req.session?.userId });
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production' ? 'Server error.' : err.message,
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Guideon running on port ${PORT}`);
+  logger.info(`Guideon running on port ${PORT}`);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error({ reason }, 'unhandledRejection');
+});
+process.on('uncaughtException', (err) => {
+  logger.fatal({ err }, 'uncaughtException');
+  setTimeout(() => process.exit(1), 1000);
 });
 
 module.exports = app;

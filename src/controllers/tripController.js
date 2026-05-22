@@ -43,7 +43,7 @@ exports.createRequest = async (req, res) => {
 exports.myRequests = async (req, res) => {
   try {
     const touristId = req.session.userId;
-    const list = await tripRequests.findAll(t => t.touristId === touristId);
+    const list = await tripRequests.findAllByField('touristId', touristId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json({ success: true, requests: list });
   } catch (err) {

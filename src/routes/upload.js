@@ -1,28 +1,15 @@
 const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
-const fs      = require('fs');
-const { v4: uuidv4 } = require('uuid');
 const { requireLogin } = require('../middleware/auth');
 const SupabaseDB = require('../models/SupabaseDB');
+const { uploadBuffer, deleteByUrl } = require('../services/storageService');
 
 const router = express.Router();
 const users  = new SupabaseDB('users');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(process.cwd(), 'public', 'uploads', 'media');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, uuidv4() + ext);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     const ok = ['.jpg', '.jpeg', '.png', '.webp'].includes(
       path.extname(file.originalname).toLowerCase()
@@ -36,11 +23,19 @@ const upload = multer({
 router.post('/photo', requireLogin, upload.single('photo'), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
   try {
-    const url = '/uploads/media/' + req.file.filename;
+    const user = await users.findById(req.session.userId);
+    if (user?.photo) deleteByUrl(user.photo).catch(() => {});
+
+    const { url } = await uploadBuffer({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      folder: `avatars/${req.session.userId}`,
+      contentType: req.file.mimetype,
+    });
     await users.update(req.session.userId, { photo: url });
     res.json({ success: true, photo: url });
   } catch (e) {
-    console.error(e);
+    console.error('[upload:photo]', e.message);
     res.status(500).json({ success: false, message: 'Upload failed.' });
   }
 });
@@ -54,12 +49,17 @@ router.post('/gallery', requireLogin, upload.single('photo'), async (req, res) =
     if (gallery.length >= 8) {
       return res.status(400).json({ success: false, message: 'Maximum 8 gallery photos.' });
     }
-    const url = '/uploads/media/' + req.file.filename;
+    const { url } = await uploadBuffer({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      folder: `gallery/${req.session.userId}`,
+      contentType: req.file.mimetype,
+    });
     gallery.push(url);
     await users.update(req.session.userId, { galleryPhotos: gallery });
     res.json({ success: true, url, gallery });
   } catch (e) {
-    console.error(e);
+    console.error('[upload:gallery]', e.message);
     res.status(500).json({ success: false, message: 'Upload failed.' });
   }
 });
@@ -70,9 +70,11 @@ router.delete('/gallery', requireLogin, async (req, res) => {
     const { url } = req.body;
     const user    = await users.findById(req.session.userId);
     const gallery = (user.galleryPhotos || []).filter(u => u !== url);
+    deleteByUrl(url).catch(() => {});
     await users.update(req.session.userId, { galleryPhotos: gallery });
     res.json({ success: true, gallery });
   } catch (e) {
+    console.error('[upload:gallery-delete]', e.message);
     res.status(500).json({ success: false, message: 'Remove failed.' });
   }
 });

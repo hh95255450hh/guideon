@@ -1,9 +1,14 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('../services/emailService');
 
 const users = new SupabaseDB('users');
+
+function randomToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
 
 exports.register = async (req, res) => {
   try {
@@ -24,7 +29,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Company name is required.' });
     }
 
-    const existing = await users.findOne(u => u.email.toLowerCase() === email.toLowerCase());
+    const existing = await users.findByField('email', email.toLowerCase());
     if (existing) {
       return res.status(409).json({ success: false, message: 'Email already registered. Please log in.' });
     }
@@ -33,10 +38,16 @@ exports.register = async (req, res) => {
     const prefix = userType === 'guide' ? 'guide' : userType === 'company' ? 'company' : userType === 'admin' ? 'admin' : 'tourist';
     const id = prefix + '-' + uuidv4().slice(0, 8);
 
+    const verifyToken = randomToken();
+    const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
     const base = {
       id, fullName, email: email.toLowerCase(), password: hashed,
       phone: phone || '', userType,
       createdAt: new Date().toISOString(), isSuspended: false,
+      emailVerified: false,
+      emailVerifyToken: verifyToken,
+      emailVerifyExpires: verifyExpires,
     };
 
     let record;
@@ -76,6 +87,13 @@ exports.register = async (req, res) => {
     req.session.userId = record.id;
     req.session.userType = record.userType;
 
+    // Send email verification link
+    emailService.sendEmailVerification({
+      email: record.email,
+      name: record.fullName,
+      token: verifyToken,
+    }).catch(() => {});
+
     // Send welcome email (fire-and-forget)
     if (userType === 'tourist') {
       emailService.sendTouristWelcome({ email: record.email, name: record.fullName }).catch(() => {});
@@ -108,7 +126,7 @@ exports.login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and password are required.' });
     }
 
-    const user = await users.findOne(u => u.email.toLowerCase() === email.toLowerCase());
+    const user = await users.findByField('email', email.toLowerCase());
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
@@ -190,16 +208,27 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+const { uploadBuffer, deleteByUrl } = require('../services/storageService');
+
 exports.uploadPhoto = async (req, res) => {
   try {
     if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
-    const photoUrl = '/uploads/avatars/' + req.file.filename;
-    await users.update(req.session.userId, { photo: photoUrl });
-    res.json({ success: true, photo: photoUrl });
+
+    const user = await users.findById(req.session.userId);
+    if (user?.photo) deleteByUrl(user.photo).catch(() => {});
+
+    const { url } = await uploadBuffer({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      folder: `avatars/${req.session.userId}`,
+      contentType: req.file.mimetype,
+    });
+    await users.update(req.session.userId, { photo: url });
+    res.json({ success: true, photo: url });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+    res.status(500).json({ success: false, message: 'Upload failed. Please try again.' });
   }
 };
 
@@ -221,6 +250,135 @@ exports.saveFcmToken = async (req, res) => {
     if (!token) return res.status(400).json({ success: false, message: 'Token required.' });
     await users.update(req.session.userId, { fcm_token: token });
     res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+  }
+};
+
+// POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required.' });
+
+    const user = await users.findByField('email', email.toLowerCase());
+    // Always return success to avoid email enumeration
+    if (!user) {
+      return res.json({ success: true, message: 'If that email is registered, you will receive a reset link shortly.' });
+    }
+
+    const token = randomToken();
+    const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    await users.update(user.id, {
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    });
+
+    emailService.sendPasswordReset({
+      email: user.email,
+      name: user.fullName,
+      token,
+    }).catch(() => {});
+
+    res.json({ success: true, message: 'If that email is registered, you will receive a reset link shortly.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+  }
+};
+
+// POST /api/auth/reset-password
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword || newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Token and new password (min 8 chars) are required.' });
+    }
+
+    const user = await users.findByField('resetPasswordToken', token);
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset link. Please request a new one.' });
+    }
+    if (!user.resetPasswordExpires || new Date(user.resetPasswordExpires) < new Date()) {
+      return res.status(400).json({ success: false, message: 'Reset link has expired. Please request a new one.' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await users.update(user.id, {
+      password: hashed,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
+
+    res.json({ success: true, message: 'Password reset successfully. You can now log in with your new password.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+  }
+};
+
+// GET /api/auth/verify-email/:token
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = await users.findByField('emailVerifyToken', token);
+
+    if (!user) {
+      return res.status(400).send('<h2>Invalid verification link</h2><p>This link is invalid or has already been used.</p>');
+    }
+    if (user.emailVerifyExpires && new Date(user.emailVerifyExpires) < new Date()) {
+      return res.status(400).send('<h2>Verification link expired</h2><p>Please request a new verification email.</p>');
+    }
+
+    await users.update(user.id, {
+      emailVerified: true,
+      emailVerifyToken: null,
+      emailVerifyExpires: null,
+    });
+
+    res.send(`
+      <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Email Verified</title></head>
+      <body style="font-family:sans-serif;text-align:center;padding:60px 20px;background:#f0f4f3">
+        <h1 style="color:#0f7b6c">✓ Email Verified!</h1>
+        <p>Your email has been verified. You can now use all features of Guideon.</p>
+        <a href="/login.html" style="display:inline-block;margin-top:20px;background:#0f7b6c;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none">Continue to Login</a>
+      </body></html>
+    `);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('<h2>Server error</h2><p>Please try again later.</p>');
+  }
+};
+
+// POST /api/auth/resend-verification
+exports.resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required.' });
+
+    const user = await users.findByField('email', email.toLowerCase());
+    if (!user) {
+      return res.json({ success: true, message: 'If that email is registered, a verification link has been sent.' });
+    }
+    if (user.emailVerified) {
+      return res.json({ success: true, message: 'Email is already verified.' });
+    }
+
+    const token = randomToken();
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    await users.update(user.id, {
+      emailVerifyToken: token,
+      emailVerifyExpires: expires,
+    });
+
+    emailService.sendEmailVerification({
+      email: user.email,
+      name: user.fullName,
+      token,
+    }).catch(() => {});
+
+    res.json({ success: true, message: 'Verification email sent.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });

@@ -46,7 +46,7 @@ exports.getGuide = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Guide not found.' });
     }
     const { password, ...safe } = guide;
-    const guideReviews = await reviews.findAll(r => r.guideId === guide.id);
+    const guideReviews = await reviews.findAllByField('guideId', guide.id);
     guideReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json({ success: true, guide: safe, reviews: guideReviews });
   } catch (err) {

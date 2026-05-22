@@ -98,6 +98,73 @@
 
 ---
 
+## ✅ آخر التحديثات — 2026-05-22 (إنتاج: المراحل 1-4 الكاملة)
+
+ترقية المشروع من "يعمل" إلى **Production-Ready حقيقي**. 4 مراحل، 19 مهمة، حزم جديدة، اختبارات، CI، توثيق كامل.
+
+### المرحلة 1 — الأساسيات الحرجة
+
+| التحديث | التفاصيل |
+|---|---|
+| **حذف الكود الميت** | حذف 14 ملف + scripts قديمة + Tempcookie + dashboard.html + public/app.js + schema.sql القديم |
+| **CORS whitelist** | تضييق origins عبر متغير CORS_ORIGINS بدل origin:true |
+| **Rate Limiting** | login (5/15min), register (3/h), password reset (3/h), api (100/min), chat (20/min) |
+| **SupabaseDB efficient queries** | findByField, findAllByField, count — SQL مباشر بدل readAll() + filter |
+| **Postgres Session Store** | connect-pg-simple — الجلسات تستمر عبر redeploys |
+| **Supabase Storage** | كل الصور تُرفع إلى Supabase Storage بدل filesystem |
+
+### المرحلة 2 — تجربة المستخدم الأساسية
+
+| التحديث | التفاصيل |
+|---|---|
+| **Password Reset Flow** | forgot-password.html + reset-password.html + إيميل احترافي + token expires بساعة |
+| **Email Verification** | إيميل تأكيد عند التسجيل + verify-email/:token + resend-verification |
+| **Booking Race Condition** | unique index على (guideId, tourDate) WHERE status IN active → معالجة 409 |
+| **CSRF Protection** | Origin/Referer check + SameSite=strict في الإنتاج |
+
+### المرحلة 3 — الجاهزية التشغيلية
+
+| التحديث | التفاصيل |
+|---|---|
+| **Structured Logging** | pino مع redaction للأسرار + httpLogger بمدة الطلب |
+| **Health endpoints** | /health/live, /health/ready (DB ping), /health/metrics (memory) |
+| **Sentry integration** | اختياري عبر SENTRY_DSN — يتفعّل تلقائياً |
+| **Tests** | 12 اختبار يعمل عبر node:test (npm test) |
+| **Database indexes** | migration 003 — indexes لـ users/bookings/reviews/messages/trip_requests |
+| **API Documentation** | README.md جديد كامل بالـ endpoints والـ env vars |
+| **Validator standardization** | express-validator على endpoints المصادقة الحساسة |
+
+### المرحلة 4 — تحسينات الجودة
+
+| التحديث | التفاصيل |
+|---|---|
+| **req.user middleware** | loadUser middleware يلصق المستخدم على req.user تلقائياً |
+| **CI/CD (GitHub Actions)** | .github/workflows/ci.yml — syntax + tests على Node 18 و 20 |
+| **Global error handler** | يلتقط الأخطاء، يسجّلها في pino+Sentry، يرد JSON آمن |
+| **uncaught handlers** | unhandledRejection + uncaughtException — لا يقع السيرفر صامتاً |
+
+### الحزم الجديدة المُضافة
+- @sentry/node, pino, pino-pretty
+- (حُذف: connect-flash, docx, jsonwebtoken — كانوا غير مستخدمين)
+
+### Migrations المُضافة (يجب تطبيقها في Supabase)
+1. `database/migrations/002_booking_unique_constraint.sql`
+2. `database/migrations/003_performance_indexes.sql`
+
+### متطلبات .env الجديدة (اختيارية لكن مُوصى بها)
+- `SENTRY_DSN` — مجاني من sentry.io (5K errors/شهر)
+- `CORS_ORIGINS` — قائمة origins مفصولة بفواصل
+- `SUPABASE_STORAGE_BUCKET` — اسم الـ bucket (افتراضي: media)
+- `LOG_LEVEL` — info/debug/warn/error
+
+### ⚠️ خطوات يدوية بعد النشر
+1. **في Supabase Dashboard:** أنشئ Storage bucket باسم `media` واجعله Public
+2. **في Supabase SQL Editor:** شغّل migration 002 و 003
+3. **في Railway env vars:** أضف `CORS_ORIGINS` و `SENTRY_DSN` (اختياري)
+4. **استبدل Stripe keys الـ placeholder** بمفاتيح حقيقية لتفعيل الدفع
+
+---
+
 ## ✅ آخر التحديثات — 2026-05-22 (إصلاح أخطاء حرجة)
 
 | التغيير | التفاصيل |

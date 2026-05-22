@@ -332,6 +332,48 @@ function companyWelcome({ name, companyName }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+//  AUTH EMAILS (verification & password reset)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function emailVerification({ name, token }) {
+  const link = `${APP_URL}/api/auth/verify-email/${token}`;
+  return layout(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Confirm Your Email ✉️</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
+      Hi <strong>${name}</strong>, welcome to Guideon! Please confirm your email address to activate your account.
+    </p>
+    ${btn('Verify Email', link)}
+    <p style="margin:16px 0 0;font-size:12px;color:#888;text-align:center;line-height:1.6;">
+      Or copy this link into your browser:<br>
+      <span style="font-family:monospace;font-size:11px;color:#0f7b6c;word-break:break-all;">${link}</span>
+    </p>
+    <p style="margin:16px 0 0;font-size:12px;color:#aaa;text-align:center;">
+      This link expires in 24 hours. If you didn't sign up for Guideon, ignore this email.
+    </p>
+  `);
+}
+
+function passwordReset({ name, token }) {
+  const link = `${APP_URL}/reset-password.html?token=${token}`;
+  return layout(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Reset Your Password 🔐</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
+      Hi <strong>${name}</strong>, we received a request to reset your password. Click the button below to choose a new password.
+    </p>
+    ${btn('Reset Password', link, '#cc0000')}
+    <p style="margin:16px 0 0;font-size:12px;color:#888;text-align:center;line-height:1.6;">
+      Or copy this link into your browser:<br>
+      <span style="font-family:monospace;font-size:11px;color:#0f7b6c;word-break:break-all;">${link}</span>
+    </p>
+    <div style="background:#fffbea;border:1px solid #ffe58a;border-radius:8px;padding:16px 20px;margin-top:24px;">
+      <p style="margin:0;font-size:13px;color:#7a6300;line-height:1.6;">
+        ⏰ This link expires in <strong>1 hour</strong>. If you didn't request this, ignore this email — your password won't change.
+      </p>
+    </div>
+  `);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 //  ADMIN EMAILS
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -431,6 +473,13 @@ module.exports = {
 
   sendCompanyVerified: (data) =>
     send(data.email, `${data.companyName} is Now Live on Guideon! 🎉`, companyVerified(data)),
+
+  // Auth
+  sendEmailVerification: (data) =>
+    send(data.email, 'Confirm Your Guideon Email ✉️', emailVerification(data)),
+
+  sendPasswordReset: (data) =>
+    send(data.email, 'Reset Your Guideon Password 🔐', passwordReset(data)),
 
   // Admin
   sendAdminNewGuide: (data) =>

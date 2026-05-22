@@ -42,7 +42,18 @@ exports.createBooking = async (req, res) => {
       createdAt: new Date().toISOString(),
     };
 
-    await bookings.insert(booking);
+    try {
+      await bookings.insert(booking);
+    } catch (insertErr) {
+      // Unique violation = race condition: another tourist booked the same date first
+      if (insertErr.message && (insertErr.message.includes('duplicate key') || insertErr.message.includes('uniq_active_booking'))) {
+        return res.status(409).json({
+          success: false,
+          message: 'This date was just booked by someone else. Please choose another date.',
+        });
+      }
+      throw insertErr;
+    }
 
     // Emails: tourist (request sent) + guide (new booking)
     const tourist = await users.findById(touristId);
@@ -68,7 +79,7 @@ exports.createBooking = async (req, res) => {
 exports.myBookings = async (req, res) => {
   try {
     const touristId = req.session.userId;
-    const list = await bookings.findAll(b => b.touristId === touristId);
+    const list = await bookings.findAllByField('touristId', touristId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const enriched = await Promise.all(list.map(async b => {
@@ -85,7 +96,7 @@ exports.myBookings = async (req, res) => {
 exports.guideBookings = async (req, res) => {
   try {
     const guideId = req.session.userId;
-    const list = await bookings.findAll(b => b.guideId === guideId);
+    const list = await bookings.findAllByField('guideId', guideId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const enriched = await Promise.all(list.map(async b => {

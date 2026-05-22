@@ -17,7 +17,7 @@ exports.submitReview = async (req, res) => {
     if (booking.status !== 'completed') return res.status(400).json({ success: false, message: 'You can only review completed tours.' });
     if (new Date(booking.tourDate) > new Date()) return res.status(400).json({ success: false, message: 'Tour has not taken place yet.' });
 
-    const existing = await reviews.findOne(r => r.bookingId === bookingId);
+    const existing = await reviews.findByField('bookingId', bookingId);
     if (existing) return res.status(409).json({ success: false, message: 'You have already reviewed this booking.' });
 
     const tourist = await users.findById(touristId);
@@ -32,7 +32,7 @@ exports.submitReview = async (req, res) => {
     };
     await reviews.insert(review);
 
-    const guideReviews = await reviews.findAll(r => r.guideId === booking.guideId);
+    const guideReviews = await reviews.findAllByField('guideId', booking.guideId);
     const avg = guideReviews.reduce((s, r) => s + r.rating, 0) / guideReviews.length;
     const guide = await users.findById(booking.guideId);
     await users.update(booking.guideId, {
@@ -60,7 +60,7 @@ exports.submitReview = async (req, res) => {
 exports.guideReviews = async (req, res) => {
   try {
     const { guideId } = req.params;
-    const list = await reviews.findAll(r => r.guideId === guideId);
+    const list = await reviews.findAllByField('guideId', guideId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json({ success: true, reviews: list });
   } catch (err) {
