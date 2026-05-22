@@ -21,4 +21,15 @@ router.get('/admins', admin.allAdmins);
 router.post('/create-admin', admin.createAdmin);
 router.delete('/users/:id', admin.deleteUser);
 
+// New admin powers
+router.get('/stats/extended', admin.extendedStats);
+router.patch('/users/:id', admin.editUser);
+router.post('/users/:id/reset-password', admin.adminResetPassword);
+router.post('/bookings/:id/cancel', admin.adminCancelBooking);
+router.post('/broadcast', admin.broadcastEmail);
+router.delete('/reviews/:id', admin.deleteReview);
+router.delete('/messages/:id', admin.deleteMessage);
+router.get('/audit-log', admin.getAuditLog);
+router.get('/export/:resource', admin.exportCSV);
+
 module.exports = router;

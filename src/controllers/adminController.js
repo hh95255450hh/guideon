@@ -2,10 +2,104 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
+const audit = require('../services/auditService');
 
 const users    = new SupabaseDB('users');
 const bookings = new SupabaseDB('bookings');
 const reviews  = new SupabaseDB('reviews', 'reviewId');
+const messages    = new SupabaseDB('messages');
+const auditLog    = new SupabaseDB('admin_audit_log');
+
+// CSV helper: convert array of objects to CSV
+function toCSV(rows, columns) {
+  if (!rows?.length) return '';
+  const cols = columns || Object.keys(rows[0]);
+  const escape = (v) => {
+    if (v == null) return '';
+    const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  return [cols.join(','), ...rows.map(r => cols.map(c => escape(r[c])).join(','))].join('\n');
+}
+
+// GET /api/admin/stats/extended — richer analytics
+exports.extendedStats = async (req, res) => {
+  try {
+    const [allUsers, allBookings, allReviews] = await Promise.all([
+      users.readAll(),
+      bookings.readAll(),
+      reviews.readAll(),
+    ]);
+
+    // Bookings per guide (top 10)
+    const guideBookings = {};
+    for (const b of allBookings) {
+      if (b.status === 'cancelled') continue;
+      guideBookings[b.guideId] = (guideBookings[b.guideId] || 0) + 1;
+    }
+    const guideIdToName = Object.fromEntries(allUsers.filter(u => u.userType === 'guide').map(g => [g.id, g.fullName]));
+    const topGuides = Object.entries(guideBookings)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([id, count]) => ({ id, name: guideIdToName[id] || 'Unknown', bookings: count }));
+
+    // Bookings per destination (top 10)
+    const destCount = {};
+    for (const b of allBookings) {
+      if (!b.destination) continue;
+      destCount[b.destination] = (destCount[b.destination] || 0) + 1;
+    }
+    const topDestinations = Object.entries(destCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([destination, count]) => ({ destination, count }));
+
+    // Revenue by month (last 12 months)
+    const now = new Date();
+    const monthly = {};
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthly[key] = 0;
+    }
+    for (const b of allBookings) {
+      if (b.status === 'cancelled' || !b.createdAt) continue;
+      const d = new Date(b.createdAt);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (key in monthly) monthly[key] += (b.totalAmount || 0);
+    }
+    const revenueByMonth = Object.entries(monthly).reverse().map(([month, revenue]) => ({ month, revenue: Math.round(revenue * 100) / 100 }));
+
+    // Bookings status timeline (last 30 days)
+    const last30 = new Date(); last30.setDate(last30.getDate() - 30);
+    const recentBookings = allBookings.filter(b => b.createdAt && new Date(b.createdAt) >= last30);
+
+    // Average rating
+    const avgRating = allReviews.length
+      ? Math.round((allReviews.reduce((s, r) => s + (r.rating || 0), 0) / allReviews.length) * 100) / 100
+      : 0;
+
+    // New users last 7 days
+    const last7 = new Date(); last7.setDate(last7.getDate() - 7);
+    const newUsersWeek = allUsers.filter(u => u.createdAt && new Date(u.createdAt) >= last7).length;
+
+    res.json({
+      success: true,
+      data: {
+        topGuides,
+        topDestinations,
+        revenueByMonth,
+        recentBookingsCount: recentBookings.length,
+        avgRating,
+        totalReviews: allReviews.length,
+        newUsersWeek,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
 
 exports.stats = async (req, res) => {
   try {
@@ -97,6 +191,7 @@ exports.verifyGuide = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Guide not found.' });
     }
     await users.update(id, { isVerified: true });
+    audit.logAction(req, { action: 'verifyGuide', targetType: 'user', targetId: id, details: { name: guide.fullName } });
     email.sendGuideVerified({ email: guide.email, name: guide.fullName }).catch(() => {});
     res.json({ success: true, message: `${guide.fullName} has been verified and is now visible in search results.` });
   } catch (err) {
@@ -112,6 +207,7 @@ exports.verifyCompany = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Company not found.' });
     }
     await users.update(id, { isVerified: true });
+    audit.logAction(req, { action: 'verifyCompany', targetType: 'user', targetId: id, details: { name: company.companyName } });
     email.sendCompanyVerified({ email: company.email, name: company.fullName, companyName: company.companyName }).catch(() => {});
     res.json({ success: true, message: `${company.companyName} has been approved and is now listed on the platform.` });
   } catch (err) {
@@ -125,6 +221,7 @@ exports.suspendUser = async (req, res) => {
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
     await users.update(id, { isSuspended: true, isVerified: false });
+    audit.logAction(req, { action: 'suspendUser', targetType: 'user', targetId: id, details: { name: user.fullName, reason: req.body?.reason } });
     res.json({ success: true, message: `${user.fullName}'s account has been suspended.` });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -137,6 +234,7 @@ exports.unsuspendUser = async (req, res) => {
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
     await users.update(id, { isSuspended: false });
+    audit.logAction(req, { action: 'unsuspendUser', targetType: 'user', targetId: id, details: { name: user.fullName } });
     res.json({ success: true, message: `${user.fullName}'s account has been reactivated.` });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -198,6 +296,7 @@ exports.createAdmin = async (req, res) => {
     };
 
     await users.insert(record);
+    audit.logAction(req, { action: 'createAdmin', targetType: 'user', targetId: record.id, details: { name: fullName, email: adminEmail } });
     const { password: _, ...safe } = record;
     res.status(201).json({ success: true, message: `Admin account created for ${fullName}.`, user: safe });
   } catch (err) {
@@ -216,6 +315,7 @@ exports.deleteUser = async (req, res) => {
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
     await users.delete(id);
+    audit.logAction(req, { action: 'deleteUser', targetType: 'user', targetId: id, details: { name: user.fullName, email: user.email } });
     res.json({ success: true, message: `${user.fullName} has been permanently deleted.` });
   } catch (err) {
     console.error(err);
@@ -239,8 +339,270 @@ exports.markBookingComplete = async (req, res) => {
     const b = await bookings.findById(id);
     if (!b) return res.status(404).json({ success: false, message: 'Booking not found.' });
     await bookings.update(id, { status: 'completed' });
+    audit.logAction(req, { action: 'markBookingComplete', targetType: 'booking', targetId: id });
     res.json({ success: true, message: 'Booking marked as completed.' });
   } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// ════════════════════════════════════════════════════════════════════
+//  NEW ADMIN POWERS
+// ════════════════════════════════════════════════════════════════════
+
+// PATCH /api/admin/users/:id — edit any user's profile fields
+exports.editUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await users.findById(id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    // Allowlist of editable fields (never expose password/tokens via this endpoint)
+    const allowed = ['fullName', 'email', 'phone', 'nationality', 'preferredLanguage',
+      'pricePerDay', 'bio', 'languages', 'specialisations', 'destinations', 'isVerified',
+      'isMinistryLicensed', 'licenceNumber', 'companyName', 'companyRegNo',
+      'companyServices', 'companyDestinations', 'companyDescription', 'photo'];
+
+    const changes = {};
+    const before = {};
+    for (const field of allowed) {
+      if (req.body[field] !== undefined) {
+        before[field] = user[field];
+        changes[field] = req.body[field];
+      }
+    }
+    if (req.body.email) changes.email = req.body.email.toLowerCase();
+    if (req.body.pricePerDay !== undefined) changes.pricePerDay = parseFloat(req.body.pricePerDay) || 0;
+
+    if (Object.keys(changes).length === 0) {
+      return res.status(400).json({ success: false, message: 'No changes provided.' });
+    }
+
+    const updated = await users.update(id, changes);
+    audit.logAction(req, {
+      action: 'editUser', targetType: 'user', targetId: id,
+      details: { before, after: changes },
+    });
+    const { password, resetPasswordToken, emailVerifyToken, ...safe } = updated;
+    res.json({ success: true, message: 'User updated.', user: safe });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/admin/users/:id/reset-password — admin resets a user's password
+exports.adminResetPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
+    }
+    const user = await users.findById(id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await users.update(id, { password: hashed });
+    audit.logAction(req, { action: 'adminResetPassword', targetType: 'user', targetId: id, details: { name: user.fullName } });
+    res.json({ success: true, message: `Password reset for ${user.fullName}.` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/admin/bookings/:id/cancel — admin override cancellation
+exports.adminCancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    if (!reason || reason.trim().length < 3) {
+      return res.status(400).json({ success: false, message: 'Cancellation reason required (min 3 chars).' });
+    }
+
+    const booking = await bookings.findById(id);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
+    if (booking.status === 'cancelled') return res.status(400).json({ success: false, message: 'Already cancelled.' });
+
+    await bookings.update(id, {
+      status: 'cancelled',
+      cancellationReason: reason,
+      cancelledBy: req.session.userId,
+      cancelledAt: new Date().toISOString(),
+    });
+
+    // Restore date to guide availability
+    const guide = await users.findById(booking.guideId);
+    if (guide) {
+      const avail = Array.isArray(guide.availability) ? guide.availability : [];
+      if (!avail.includes(booking.tourDate)) {
+        await users.update(booking.guideId, { availability: [...avail, booking.tourDate] });
+      }
+    }
+
+    // Notify both parties
+    const tourist = await users.findById(booking.touristId);
+    const emailData = {
+      destination: booking.destination, tourDate: booking.tourDate,
+      totalAmount: booking.totalAmount, bookingId: id,
+    };
+    if (tourist) email.sendTouristBookingCancelled({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
+    if (guide)   email.sendGuideBookingCancelled({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
+
+    audit.logAction(req, { action: 'adminCancelBooking', targetType: 'booking', targetId: id, details: { reason } });
+    res.json({ success: true, message: 'Booking cancelled.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/admin/broadcast — send email to all users in a group
+exports.broadcastEmail = async (req, res) => {
+  try {
+    const { audience, subject, message } = req.body;
+    const validAudiences = ['all', 'tourist', 'guide', 'company'];
+    if (!validAudiences.includes(audience)) {
+      return res.status(400).json({ success: false, message: 'Invalid audience.' });
+    }
+    if (!subject || !message || subject.trim().length < 3 || message.trim().length < 10) {
+      return res.status(400).json({ success: false, message: 'Subject and message required.' });
+    }
+
+    let recipients;
+    if (audience === 'all') {
+      const all = await users.readAll();
+      recipients = all.filter(u => u.userType !== 'admin' && !u.isSuspended);
+    } else {
+      recipients = await users.findAllByField('userType', audience);
+      recipients = recipients.filter(u => !u.isSuspended);
+    }
+
+    // Send in chunks of 20 to respect rate limits
+    const safeSubject = subject.trim();
+    const safeMessage = message.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, ''); // strip script tags
+    const html = `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px 20px">
+        <div style="background:white;padding:40px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.08)">
+          <h2 style="color:#0f7b6c;margin:0 0 20px">${safeSubject}</h2>
+          <div style="font-size:15px;line-height:1.7;color:#333;white-space:pre-wrap">${safeMessage}</div>
+          <hr style="margin:32px 0;border:none;border-top:1px solid #eee">
+          <p style="font-size:12px;color:#999;text-align:center;margin:0">Sent from Guideon admin · You can reply to this email.</p>
+        </div>
+      </div>`;
+
+    let sent = 0, failed = 0;
+    for (const u of recipients) {
+      try {
+        await email.send(u.email, safeSubject, html);
+        sent++;
+      } catch { failed++; }
+    }
+
+    audit.logAction(req, {
+      action: 'broadcastEmail', targetType: 'audience', targetId: audience,
+      details: { subject: safeSubject, recipients: recipients.length, sent, failed },
+    });
+    res.json({ success: true, message: `Sent to ${sent} recipients (${failed} failed).`, sent, failed, total: recipients.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// DELETE /api/admin/reviews/:id — remove inappropriate review
+exports.deleteReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await reviews.findById(id);
+    if (!review) return res.status(404).json({ success: false, message: 'Review not found.' });
+
+    await reviews.delete(id);
+
+    // Recalculate guide's rating
+    const guideReviews = await reviews.findAllByField('guideId', review.guideId);
+    const avg = guideReviews.length ? guideReviews.reduce((s, r) => s + r.rating, 0) / guideReviews.length : 0;
+    await users.update(review.guideId, {
+      rating: Math.round(avg * 10) / 10,
+      totalReviews: guideReviews.length,
+    });
+
+    audit.logAction(req, { action: 'deleteReview', targetType: 'review', targetId: id, details: { reason: req.body?.reason } });
+    res.json({ success: true, message: 'Review deleted.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// DELETE /api/admin/messages/:id — remove inappropriate message
+exports.deleteMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    try {
+      await messages.delete(id);
+    } catch (e) { return res.status(404).json({ success: false, message: 'Message not found or already deleted.' }); }
+    audit.logAction(req, { action: 'deleteMessage', targetType: 'message', targetId: id, details: { reason: req.body?.reason } });
+    res.json({ success: true, message: 'Message deleted.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/admin/audit-log?limit=100&action=verifyGuide
+exports.getAuditLog = async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+    const all = await auditLog.readAll();
+    let filtered = all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    if (req.query.action) filtered = filtered.filter(a => a.action === req.query.action);
+    if (req.query.adminId) filtered = filtered.filter(a => a.adminId === req.query.adminId);
+    res.json({ success: true, entries: filtered.slice(0, limit), total: filtered.length });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/admin/export/:resource — CSV export
+exports.exportCSV = async (req, res) => {
+  try {
+    const { resource } = req.params;
+    let rows, filename, columns;
+
+    switch (resource) {
+      case 'users':
+        rows = await users.readAll();
+        rows = rows.map(({ password, resetPasswordToken, emailVerifyToken, ...r }) => r);
+        columns = ['id', 'fullName', 'email', 'phone', 'userType', 'nationality', 'isVerified', 'isSuspended', 'emailVerified', 'createdAt'];
+        filename = 'guideon-users.csv';
+        break;
+      case 'bookings':
+        rows = await bookings.readAll();
+        columns = ['id', 'touristId', 'guideId', 'destination', 'tourDate', 'duration', 'participants', 'totalAmount', 'status', 'isPaid', 'createdAt'];
+        filename = 'guideon-bookings.csv';
+        break;
+      case 'reviews':
+        rows = await reviews.readAll();
+        columns = ['reviewId', 'guideId', 'touristId', 'rating', 'comment', 'createdAt'];
+        filename = 'guideon-reviews.csv';
+        break;
+      case 'audit-log':
+        rows = await auditLog.readAll();
+        rows.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        columns = ['id', 'adminId', 'adminName', 'action', 'targetType', 'targetId', 'ip', 'createdAt'];
+        filename = 'guideon-audit-log.csv';
+        break;
+      default:
+        return res.status(400).json({ success: false, message: 'Unknown resource. Use: users, bookings, reviews, audit-log' });
+    }
+
+    audit.logAction(req, { action: 'exportCSV', targetType: 'resource', targetId: resource });
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send('﻿' + toCSV(rows, columns)); // BOM for Excel UTF-8 support
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

@@ -15,7 +15,7 @@
 <title>Admin Dashboard — Guideon</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=22">
+<link rel="stylesheet" href="/css/style.css?v=23">
 <style>
 /* ── Tab strip ─────────────────────────────────────────────── */
 .admin-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:24px; }
@@ -123,6 +123,10 @@
     <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">👤 Tourists</button>
     <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">📋 Bookings</button>
     <button class="admin-tab" onclick="showTab('admins',this)">👑 Admins</button>
+    <button class="admin-tab" onclick="showTab('broadcast',this)">📢 Broadcast</button>
+    <button class="admin-tab" onclick="showTab('analytics',this)">📈 Analytics</button>
+    <button class="admin-tab" onclick="showTab('audit',this)">🔍 Audit Log</button>
+    <button class="admin-tab" onclick="showTab('export',this)">📥 Export</button>
   </div>
 
   <!-- ════════════════ PENDING APPROVALS ════════════════ -->
@@ -271,7 +275,7 @@ function doLogout() {
 
 // ── Tab switch ───────────────────────────────────────────────
 let ACTIVE_TAB = 'pending';
-const TABS = ['pending','guides','companies','tourists','bookings','admins'];
+const TABS = ['pending','guides','companies','tourists','bookings','admins','broadcast','analytics','audit','export'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
@@ -282,7 +286,97 @@ function showTab(name, btn) {
   else if (name==='tourists')  loadTourists();
   else if (name==='bookings')  loadAllBookings();
   else if (name==='admins')    loadAdmins();
+  else if (name==='analytics') loadAnalytics();
+  else if (name==='audit')     loadAudit();
 }
+
+// ── Analytics ────────────────────────────────────────────────
+let _chartRevenue = null;
+async function loadAnalytics() {
+  try {
+    const r = await fetch('/api/admin/stats/extended', { credentials: 'include' });
+    const { data } = await r.json();
+    document.getElementById('topGuidesList').innerHTML = data.topGuides.length
+      ? data.topGuides.map((g, i) => `<div class="d-flex justify-content-between py-1 border-bottom"><span>${i+1}. ${g.name}</span><strong>${g.bookings}</strong></div>`).join('')
+      : '<div class="text-muted">No bookings yet.</div>';
+    document.getElementById('topDestsList').innerHTML = data.topDestinations.length
+      ? data.topDestinations.map((d, i) => `<div class="d-flex justify-content-between py-1 border-bottom"><span>${i+1}. ${d.destination}</span><strong>${d.count}</strong></div>`).join('')
+      : '<div class="text-muted">No data yet.</div>';
+    document.getElementById('anAvgRating').textContent    = data.avgRating || '—';
+    document.getElementById('anTotalReviews').textContent = data.totalReviews;
+    document.getElementById('anNewUsers').textContent     = data.newUsersWeek;
+
+    if (_chartRevenue) _chartRevenue.destroy();
+    const ctx = document.getElementById('chartRevenue').getContext('2d');
+    _chartRevenue = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.revenueByMonth.map(m => m.month),
+        datasets: [{ label: 'Revenue (OMR)', data: data.revenueByMonth.map(m => m.revenue), backgroundColor: '#0f7b6c' }],
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } },
+    });
+  } catch (e) { toast('Failed to load analytics', 'danger'); }
+}
+
+// ── Audit Log ────────────────────────────────────────────────
+async function loadAudit() {
+  const tbody = document.getElementById('auditTable');
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr>';
+  try {
+    const filter = (document.getElementById('auditFilter').value || '').trim();
+    const url = '/api/admin/audit-log?limit=200' + (filter ? '&action=' + encodeURIComponent(filter) : '');
+    const r = await fetch(url, { credentials: 'include' });
+    const { entries } = await r.json();
+    if (!entries?.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No entries.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = entries.map(e => `
+      <tr>
+        <td class="small text-nowrap">${new Date(e.createdAt).toLocaleString()}</td>
+        <td>${e.adminName || e.adminId}</td>
+        <td><code class="small">${e.action}</code></td>
+        <td class="small">${e.targetType || ''} ${e.targetId ? '<br><code style="font-size:.7rem">'+e.targetId+'</code>' : ''}</td>
+        <td class="small" style="max-width:300px"><pre style="font-size:.7rem;margin:0;white-space:pre-wrap">${JSON.stringify(e.details, null, 1)}</pre></td>
+        <td class="small text-muted">${e.ip || ''}</td>
+      </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">'+e.message+'</td></tr>';
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const f = document.getElementById('auditFilter');
+  if (f) f.addEventListener('input', () => { clearTimeout(window._aft); window._aft = setTimeout(loadAudit, 400); });
+});
+
+// ── Broadcast ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('broadcastForm');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const result = document.getElementById('bcResult');
+    if (!confirm('Send this email to all selected recipients?')) return;
+    result.innerHTML = '<div class="text-muted mt-2">Sending…</div>';
+    try {
+      const r = await fetch('/api/admin/broadcast', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audience: document.getElementById('bcAudience').value,
+          subject:  document.getElementById('bcSubject').value,
+          message:  document.getElementById('bcMessage').value,
+        }),
+      });
+      const j = await r.json();
+      result.innerHTML = `<div class="alert alert-${j.success ? 'success' : 'danger'} mt-2">${j.message}</div>`;
+      if (j.success) form.reset();
+    } catch {
+      result.innerHTML = '<div class="alert alert-danger mt-2">Network error.</div>';
+    }
+  });
+});
 
 // ?? Admins management ????????????????????????????????????????????
 async function loadAdmins() {
