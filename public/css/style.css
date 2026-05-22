@@ -70,7 +70,8 @@ body.dark-mode .nav-tabs .nav-link.active {
 .btn-outline-teal:hover { background: var(--teal); color: #fff; }
 
 /* ── HERO ── */
-.hero { background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 45%, var(--teal) 100%); color: #fff; padding: 80px 0 60px; position: relative; overflow: hidden; }
+.hero { background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 45%, var(--teal) 100%); color: #fff; padding: 80px 0 110px; position: relative; overflow: hidden; }
+@media (max-width: 768px) { .hero { padding: 60px 0 90px; } }
 .hero::before { content: ''; position: absolute; top: -120px; right: -120px; width: 520px; height: 520px; background: rgba(255,255,255,0.05); border-radius: 50%; border: 1px solid rgba(255,255,255,0.08); pointer-events: none; }
 .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 380px; height: 380px; background: rgba(201,168,76,0.08); border-radius: 50%; pointer-events: none; }
 .hero h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.2; }
