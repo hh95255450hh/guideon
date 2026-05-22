@@ -10,6 +10,23 @@ function randomToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+/**
+ * Validates password strength.
+ * Returns null if valid, or error message string if invalid.
+ */
+function validatePasswordStrength(password) {
+  if (!password || typeof password !== 'string') return 'Password is required.';
+  if (password.length < 8) return 'Password must be at least 8 characters.';
+  if (password.length > 128) return 'Password is too long (max 128 chars).';
+  if (!/[a-z]/.test(password)) return 'Password must include at least one lowercase letter.';
+  if (!/[A-Z]/.test(password)) return 'Password must include at least one uppercase letter.';
+  if (!/[0-9]/.test(password)) return 'Password must include at least one digit.';
+  // Reject common weak passwords
+  const weak = ['password', '12345678', 'qwerty', 'admin123', 'password1', 'guideon', '11111111'];
+  if (weak.includes(password.toLowerCase())) return 'Password is too common. Choose a stronger one.';
+  return null;
+}
+
 exports.register = async (req, res) => {
   try {
     const { fullName, email, password, userType, phone, nationality, preferredLanguage,
@@ -22,8 +39,9 @@ exports.register = async (req, res) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ success: false, message: 'Invalid email address.' });
     }
-    if (password.length < 8) {
-      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
+    const pwdError = validatePasswordStrength(password);
+    if (pwdError) {
+      return res.status(400).json({ success: false, message: pwdError });
     }
     if (userType === 'company' && !companyName) {
       return res.status(400).json({ success: false, message: 'Company name is required.' });
@@ -139,6 +157,10 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
+    // Regenerate session ID on login to prevent session fixation attacks
+    await new Promise((resolve, reject) => {
+      req.session.regenerate(err => err ? reject(err) : resolve());
+    });
     req.session.userId = user.id;
     req.session.userType = user.userType;
 
@@ -192,8 +214,12 @@ exports.changePassword = async (req, res) => {
   try {
     if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword || newPassword.length < 8) {
-      return res.status(400).json({ success: false, message: 'Invalid password data.' });
+    if (!currentPassword) {
+      return res.status(400).json({ success: false, message: 'Current password required.' });
+    }
+    const pwdError = validatePasswordStrength(newPassword);
+    if (pwdError) {
+      return res.status(400).json({ success: false, message: pwdError });
     }
     const user = await users.findById(req.session.userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
@@ -292,8 +318,12 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
-    if (!token || !newPassword || newPassword.length < 8) {
-      return res.status(400).json({ success: false, message: 'Token and new password (min 8 chars) are required.' });
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Reset token required.' });
+    }
+    const pwdError = validatePasswordStrength(newPassword);
+    if (pwdError) {
+      return res.status(400).json({ success: false, message: pwdError });
     }
 
     const user = await users.findByField('resetPasswordToken', token);

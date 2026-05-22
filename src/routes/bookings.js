@@ -1,13 +1,13 @@
 const router = require('express').Router();
 const booking = require('../controllers/bookingController');
-const { requireLogin, requireTourist, requireGuide, requireAdmin } = require('../middleware/auth');
+const { requireLogin, requireTourist, requireGuide, requireAdmin, requireVerifiedEmail } = require('../middleware/auth');
 const SupabaseDB = require('../models/SupabaseDB');
 const { generateVoucher } = require('../services/voucherService');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
 
-router.post('/', requireTourist, booking.createBooking);
+router.post('/', requireTourist, requireVerifiedEmail, booking.createBooking);
 router.get('/mine', requireTourist, booking.myBookings);
 router.get('/guide', requireGuide, booking.guideBookings);
 router.get('/all', requireAdmin, booking.allBookings);
