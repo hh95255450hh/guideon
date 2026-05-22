@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="shortcut icon" href="/favicon.ico">
-<title>Guideon â€” Register</title>
+<title>Guideon — Register</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
 <link rel="stylesheet" href="/css/style.css?v=14">
@@ -38,7 +38,7 @@
 <nav class="navbar navbar-dark">
   <div class="container d-flex justify-content-between align-items-center">
     <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
-    <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">ًںŒگ ط¹ط±ط¨ظٹ</button>
+    <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
   </div>
 </nav>
 
@@ -54,9 +54,9 @@
 
         <!-- TYPE TABS -->
         <div class="d-flex mb-4 border rounded-3 overflow-hidden">
-          <button class="flex-1 tab-btn active" id="tabTourist"  onclick="switchType('tourist')" data-i18n="tab_tourist">ًں‘¤ Tourist</button>
-          <button class="flex-1 tab-btn"        id="tabGuide"    onclick="switchType('guide')"   data-i18n="tab_guide">ًںژ’ Guide</button>
-          <button class="flex-1 tab-btn"        id="tabCompany"  onclick="switchType('company')" data-i18n="tab_company">ًںڈ¢ Company</button>
+          <button class="flex-1 tab-btn active" id="tabTourist"  onclick="switchType('tourist')" data-i18n="tab_tourist">👤 Tourist</button>
+          <button class="flex-1 tab-btn"        id="tabGuide"    onclick="switchType('guide')"   data-i18n="tab_guide">🎒 Guide</button>
+          <button class="flex-1 tab-btn"        id="tabCompany"  onclick="switchType('company')" data-i18n="tab_company">🏢 Company</button>
         </div>
 
         <div id="errMsg" class="alert alert-danger d-none small"></div>
@@ -64,7 +64,7 @@
         <form id="regForm" onsubmit="doRegister(event)">
           <input type="hidden" id="userType" value="tourist">
 
-          <!-- â”€â”€â”€ COMMON FIELDS â”€â”€â”€ -->
+          <!-- ─── COMMON FIELDS ─── -->
           <div class="row g-3 mb-3">
             <div class="col-md-6">
               <label class="form-label fw-600 small" data-i18n="full_name">Full Name *</label>
@@ -84,7 +84,7 @@
             </div>
           </div>
 
-          <!-- â•گâ•گâ•گ TOURIST â•گâ•گâ•گ -->
+          <!-- ═══ TOURIST ═══ -->
           <div id="touristFields">
             <div class="row g-3">
               <div class="col-md-6">
@@ -100,7 +100,7 @@
             </div>
           </div>
 
-          <!-- â•گâ•گâ•گ GUIDE â•گâ•گâ•گ -->
+          <!-- ═══ GUIDE ═══ -->
           <div id="guideFields" class="d-none">
             <div class="row g-3">
 
@@ -109,12 +109,12 @@
                 <label class="form-label fw-600 small mb-2" data-i18n="mot_status_lbl">Ministry of Tourism Verification Status *</label>
                 <div class="ministry-toggle">
                   <div class="ministry-opt selected" id="optVerified" onclick="setMinistry(true)">
-                    <div class="opt-icon">ًںڈ›ï¸ڈ</div>
+                    <div class="opt-icon">🏛️</div>
                     <div class="opt-label" data-i18n="mot_licensed_lbl">Ministry Licensed</div>
                     <div class="opt-sub" data-i18n="mot_licensed_sub">I have an official MOT licence</div>
                   </div>
                   <div class="ministry-opt" id="optUnverified" onclick="setMinistry(false)">
-                    <div class="opt-icon">ًںژ’</div>
+                    <div class="opt-icon">🎒</div>
                     <div class="opt-label" data-i18n="mot_unlicensed_lbl">Not Yet Licensed</div>
                     <div class="opt-sub" data-i18n="mot_unlicensed_sub">Applying or in progress</div>
                   </div>
@@ -126,12 +126,12 @@
               <div class="col-12" id="licenceRow">
                 <label class="form-label fw-600 small" data-i18n="licence_lbl">Ministry Licence Number *</label>
                 <input type="text" class="form-control" id="licenceNumber" data-i18n-ph="licence_ph" placeholder="MOT-YYYY-XXXX">
-                <div class="info-box teal mt-2" data-i18n="mot_verified_note">âœ… Your profile will be marked as Ministry Verified and appear in search results after admin review.</div>
+                <div class="info-box teal mt-2" data-i18n="mot_verified_note">✅ Your profile will be marked as Ministry Verified and appear in search results after admin review.</div>
               </div>
 
               <!-- Unverified note -->
               <div class="col-12 d-none" id="unverifiedNote">
-                <div class="info-box amber" data-i18n="mot_pending_note">âڑ ï¸ڈ You can still register and use the platform. Your profile will be listed as "Pending Ministry Verification". Tourists will see this status.</div>
+                <div class="info-box amber" data-i18n="mot_pending_note">⚠️ You can still register and use the platform. Your profile will be listed as "Pending Ministry Verification". Tourists will see this status.</div>
               </div>
 
               <!-- Guide fields -->
@@ -158,9 +158,9 @@
             </div>
           </div>
 
-          <!-- â•گâ•گâ•گ COMPANY â•گâ•گâ•گ -->
+          <!-- ═══ COMPANY ═══ -->
           <div id="companyFields" class="d-none">
-            <div class="info-box blue mb-3" data-i18n="company_info_note">ًںڈ¢ Register your tourism company to list your packages, tours, and services on Guideon.</div>
+            <div class="info-box blue mb-3" data-i18n="company_info_note">🏢 Register your tourism company to list your packages, tours, and services on Guideon.</div>
             <div class="row g-3">
               <div class="col-12">
                 <label class="form-label fw-600 small" data-i18n="company_name_lbl">Company Name *</label>
