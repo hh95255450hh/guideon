@@ -122,6 +122,7 @@
     <button class="admin-tab" onclick="showTab('companies',this)" data-i18n="tab_companies">ًںڈ¢ Companies</button>
     <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">ًں‘¤ Tourists</button>
     <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">ًں“‹ Bookings</button>
+    <button class="admin-tab" onclick="showTab('admins',this)">👑 Admins</button>
   </div>
 
   <!-- â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ PENDING APPROVALS â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ -->
@@ -198,6 +199,33 @@
     </div>
   </div>
 
+  <!-- ═════════════════════════ ADMINS ═════════════════════════ -->
+  <div id="tab-admins" class="d-none">
+    <div class="t-card mb-3 p-4">
+      <h5 class="fw-700 mb-3">➕ Create New Admin</h5>
+      <form id="newAdminForm" class="row g-2">
+        <div class="col-md-3"><input class="form-control" id="naName" placeholder="Full name" required></div>
+        <div class="col-md-3"><input class="form-control" id="naEmail" type="email" placeholder="Email" required></div>
+        <div class="col-md-3"><input class="form-control" id="naPassword" type="password" placeholder="Password (8+ chars)" minlength="8" required></div>
+        <div class="col-md-2"><input class="form-control" id="naPhone" placeholder="Phone (optional)"></div>
+        <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">Add</button></div>
+      </form>
+      <div id="naMsg" class="mt-2 small"></div>
+    </div>
+    <div class="t-card">
+      <table class="table table-hover align-middle mb-0">
+        <thead><tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr></thead>
+        <tbody id="adminsTable"><tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ BOOKINGS â•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گâ•گ -->
   <div id="tab-bookings" class="d-none">
     <div class="t-card">
@@ -243,7 +271,7 @@ function doLogout() {
 
 // â”€â”€ Tab switch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let ACTIVE_TAB = 'pending';
-const TABS = ['pending','guides','companies','tourists','bookings'];
+const TABS = ['pending','guides','companies','tourists','bookings','admins'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
@@ -253,7 +281,80 @@ function showTab(name, btn) {
   else if (name==='companies') loadCompanies();
   else if (name==='tourists')  loadTourists();
   else if (name==='bookings')  loadAllBookings();
+  else if (name==='admins')    loadAdmins();
 }
+
+// ── Admins management ────────────────────────────────────────────
+async function loadAdmins() {
+  const tbody = document.getElementById('adminsTable');
+  tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Loading…</td></tr>';
+  try {
+    const r = await fetch('/api/admin/admins', { credentials: 'include' });
+    const j = await r.json();
+    if (!j.success) throw new Error(j.message);
+    const me = window.CURRENT_USER_ID;
+    tbody.innerHTML = j.admins.map(a => `
+      <tr>
+        <td><strong>${a.fullName}</strong></td>
+        <td>${a.email}</td>
+        <td>${a.phone || '—'}</td>
+        <td>${new Date(a.createdAt).toLocaleDateString()}</td>
+        <td>
+          ${a.id === me ? '<span class="badge bg-secondary">You</span>' :
+            `<button class="btn btn-sm btn-outline-danger" onclick="deleteAdmin('${a.id}','${a.fullName.replace(/'/g,'\\\'')}')">Delete</button>`}
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" class="text-center text-muted py-4">No admins.</td></tr>';
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${e.message}</td></tr>`;
+  }
+}
+
+async function deleteAdmin(id, name) {
+  if (!confirm(`Delete admin "${name}"? This cannot be undone.`)) return;
+  try {
+    const r = await fetch('/api/admin/users/' + id, { method: 'DELETE', credentials: 'include' });
+    const j = await r.json();
+    toast(j.message, j.success ? 'success' : 'danger');
+    if (j.success) loadAdmins();
+  } catch (e) {
+    toast('Network error', 'danger');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('newAdminForm');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('naMsg');
+    msg.textContent = 'Creating…';
+    msg.className = 'mt-2 small text-muted';
+    try {
+      const r = await fetch('/api/admin/create-admin', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: document.getElementById('naName').value,
+          email:    document.getElementById('naEmail').value,
+          password: document.getElementById('naPassword').value,
+          phone:    document.getElementById('naPhone').value,
+        }),
+      });
+      const j = await r.json();
+      msg.textContent = j.message;
+      msg.className = 'mt-2 small text-' + (j.success ? 'success' : 'danger');
+      if (j.success) {
+        form.reset();
+        loadAdmins();
+      }
+    } catch (err) {
+      msg.textContent = 'Network error';
+      msg.className = 'mt-2 small text-danger';
+    }
+  });
+});
 
 // â”€â”€ Auth + Boot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function checkAuth() {
@@ -261,6 +362,7 @@ async function checkAuth() {
     const r = await fetch('/api/auth/me',{credentials:'include'});
     const d = await r.json();
     if (!d.success || d.user.userType !== 'admin') { window.location.href='/login.html'; return; }
+    window.CURRENT_USER_ID = d.user.id;
     loadStats();
     loadPending();
   } catch { window.location.href='/login.html'; }

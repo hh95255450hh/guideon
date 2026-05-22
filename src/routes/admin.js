@@ -17,4 +17,8 @@ router.patch('/users/:id/suspend', admin.suspendUser);
 router.patch('/users/:id/unsuspend', admin.unsuspendUser);
 router.patch('/bookings/:id/complete', admin.markBookingComplete);
 
+router.get('/admins', admin.allAdmins);
+router.post('/create-admin', admin.createAdmin);
+router.delete('/users/:id', admin.deleteUser);
+
 module.exports = router;
