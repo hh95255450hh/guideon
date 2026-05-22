@@ -98,6 +98,37 @@
 
 ---
 
+## ✅ آخر التحديثات — 2026-05-22 (ميزات مستوحاة من GetYourGuide/Viator/Airbnb)
+
+8 ميزات جديدة تسد الفجوات مع المنافسين العالميين (GetYourGuide, Viator, Airbnb Experiences, Withlocals, ToursByLocals).
+
+| الميزة | التفاصيل |
+|---|---|
+| **F1: SEO Suite** | sitemap.xml ديناميكي مع cache · robots.txt · OG/Twitter meta tags · JSON-LD structured data (Organization + Person + TouristTrip) عبر `/js/seo.js` |
+| **F2: Tour Packages** | جدول tour_packages كامل · controller + 7 endpoints (list/get/create/update/delete/mine/feature) · صفحة `tour-package.html` تفاعلية مع itinerary وسعر متعدد المستويات (adults/children) |
+| **F3: PDF Voucher** | pdfkit مع تصميم احترافي · `GET /api/bookings/:id/voucher` · يتضمن بيانات الحجز + معلومات الاتصال + شروط الإلغاء |
+| **F4: Reviews with Photos** | حتى 3 صور لكل مراجعة (Supabase Storage) · helpfulCount field · `POST /api/reviews/upload-photo` |
+| **F5: Q&A on guide profile** | جدول guide_questions · ask/answer/byGuide/forMe endpoints · إيميل تنبيه للمرشد · عرض عام للأسئلة المُجاب عنها |
+| **F6: Wishlist Sharing** | جدول shared_wishlists · `POST /api/wishlist/share` ينتج رابط مشاركة · صفحة `shared-wishlist.html` |
+| **F7: Newsletter** | جدول newsletter_subscribers · subscribe/unsubscribe endpoints · welcome email · popup widget يظهر بعد 8s مع dismiss للأبد عبر localStorage |
+| **F8: Multi-tier Pricing** | price_adult + price_child + max_group_size في tour packages · حساب فوري للمجموع · cancellation_policy (flexible/moderate/strict) |
+
+### ملفات جديدة
+- **Routes:** `seo.js`, `packages.js`, `qa.js`, `extras.js`
+- **Controllers:** `packageController.js`, `qaController.js`, `wishlistController.js`, `newsletterController.js`
+- **Services:** `voucherService.js`
+- **Frontend:** `tour-package.html`, `shared-wishlist.html`, `js/seo.js`, `js/newsletter.js`, `robots.txt`
+- **Migrations:** `004_tour_packages.sql`, `005_reviews_with_photos.sql`
+
+### حزم جديدة
+- `pdfkit` لتوليد PDF vouchers
+
+### Migrations يدوية مطلوبة في Supabase
+1. `004_tour_packages.sql` — جدول tour_packages + package_availability + إضافة packageId/adultCount/childCount إلى bookings
+2. `005_reviews_with_photos.sql` — photos array في reviews + جدول guide_questions + newsletter_subscribers + shared_wishlists
+
+---
+
 ## ✅ آخر التحديثات — 2026-05-22 (إنتاج: المراحل 1-4 الكاملة)
 
 ترقية المشروع من "يعمل" إلى **Production-Ready حقيقي**. 4 مراحل، 19 مهمة، حزم جديدة، اختبارات، CI، توثيق كامل.

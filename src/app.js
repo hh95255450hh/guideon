@@ -21,6 +21,7 @@ const chatRoutes    = require('./routes/chat');
 const paymentRoutes = require('./routes/payments');
 const uploadRoutes   = require('./routes/upload');
 const messagesRoutes = require('./routes/messages');
+const packageRoutes  = require('./routes/packages');
 
 const app = express();
 const sentry = require('./config/sentry');
@@ -136,13 +137,18 @@ app.use('/api/chat',     chatRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/upload',   uploadRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/packages', packageRoutes);
+app.use('/api/qa', require('./routes/qa'));
+app.use('/api', require('./routes/extras'));
 
 app.use('/health', require('./routes/health'));
+app.use('/', require('./routes/seo'));
 
 app.get(['/search', '/guide-profile', '/login', '/register',
          '/tourist-dashboard', '/guide-dashboard', '/company-dashboard', '/admin', '/plan-trip',
          '/wishlist', '/profile', '/checkout', '/checkout-success', '/offline',
-         '/forgot-password', '/reset-password'], (req, res, next) => {
+         '/forgot-password', '/reset-password',
+         '/tour-package', '/shared-wishlist'], (req, res, next) => {
   res.sendFile(path.join(__dirname, '..', 'public', req.path.replace('/', '') + '.html'), err => {
     if (err) next();
   });

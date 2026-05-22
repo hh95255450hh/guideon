@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /tourist-dashboard
+Disallow: /guide-dashboard
+Disallow: /company-dashboard
+Disallow: /profile
+Disallow: /checkout
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /uploads/
+
+Sitemap: https://guideon.om/sitemap.xml

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shared Wishlist — Guideon</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/style.css?v=14">
+</head>
+<body>
+<nav class="navbar navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+  </div>
+</nav>
+<div class="container py-4">
+  <h1 id="wlTitle">Loading wishlist...</h1>
+  <p class="text-muted" id="wlSubtitle"></p>
+  <div class="row g-4" id="guideGrid"></div>
+</div>
+<script src="/js/seo.js"></script>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+async function load() {
+  if (!id) return;
+  const r = await fetch('/api/wishlist/' + id);
+  const j = await r.json();
+  if (!j.success) { document.querySelector('.container').innerHTML = '<h3>Wishlist not found</h3>'; return; }
+  const wl = j.wishlist;
+  document.title = wl.title + ' — Guideon';
+  seoSet({ title: wl.title, description: `${wl.guides.length} guides shared by ${wl.ownerName}.` });
+  document.getElementById('wlTitle').textContent = wl.title;
+  document.getElementById('wlSubtitle').textContent = `Shared by ${wl.ownerName} · ${wl.guides.length} guide(s)`;
+  document.getElementById('guideGrid').innerHTML = wl.guides.map(g => `
+    <div class="col-md-6 col-lg-4">
+      <a href="/guide-profile.html?id=${g.id}" class="text-decoration-none text-dark">
+      <div class="card h-100 shadow-sm">
+        <img src="${g.photo || '/img/muscat.jpg'}" class="card-img-top" style="height:200px;object-fit:cover" alt="${g.fullName}">
+        <div class="card-body">
+          <h5>${g.fullName}</h5>
+          <p class="text-muted small mb-2">${(g.destinations || []).join(' · ') || 'Oman'}</p>
+          <div class="d-flex justify-content-between">
+            <span class="text-warning">★ ${g.rating || '—'}</span>
+            <strong>${g.pricePerDay || 0} OMR/day</strong>
+          </div>
+        </div>
+      </div></a>
+    </div>
+  `).join('');
+}
+load();
+</script>
+</body></html>

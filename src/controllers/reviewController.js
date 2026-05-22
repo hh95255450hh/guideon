@@ -8,7 +8,7 @@ const users    = new SupabaseDB('users');
 
 exports.submitReview = async (req, res) => {
   try {
-    const { bookingId, rating, comment } = req.body;
+    const { bookingId, rating, comment, photos } = req.body;
     const touristId = req.session.userId;
 
     const booking = await bookings.findById(bookingId);
@@ -21,12 +21,16 @@ exports.submitReview = async (req, res) => {
     if (existing) return res.status(409).json({ success: false, message: 'You have already reviewed this booking.' });
 
     const tourist = await users.findById(touristId);
+    const photoList = Array.isArray(photos) ? photos.slice(0, 3) : [];
+
     const review = {
       reviewId: 'rv-' + uuidv4().slice(0, 8),
       bookingId, touristId,
       guideId: booking.guideId,
       rating: parseInt(rating),
       comment: comment || '',
+      photos: photoList,
+      helpfulCount: 0,
       touristName: tourist ? tourist.fullName : 'Anonymous',
       createdAt: new Date().toISOString(),
     };

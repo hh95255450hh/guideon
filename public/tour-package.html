@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tour Package — Guideon</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/style.css?v=14">
+<style>
+  .pkg-hero { height: 420px; background: #1a1a1a; background-size: cover; background-position: center; }
+  .pkg-meta { display:flex; gap:24px; flex-wrap:wrap; padding:20px 0; color:#666 }
+  .pkg-meta div { display:flex; align-items:center; gap:6px }
+  .itinerary-day { border-left:3px solid #0f7b6c; padding:12px 18px; margin-bottom:12px; background:#f8faf9; border-radius:0 8px 8px 0 }
+  .includes-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px }
+  .includes-grid li { list-style:none; padding:8px 0; }
+  .price-card { position:sticky; top:80px; }
+  .badge-cancel-flex { background:#e8f5f2; color:#0f7b6c }
+  .badge-cancel-mod  { background:#fff8e6; color:#b37400 }
+  .badge-cancel-strict { background:#ffeded; color:#cc0000 }
+</style>
+</head>
+<body>
+<nav class="navbar navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+  </div>
+</nav>
+
+<div id="pkgHero" class="pkg-hero"></div>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <h1 id="pkgTitle">Loading...</h1>
+      <div class="pkg-meta" id="pkgMeta"></div>
+
+      <h4>About this tour</h4>
+      <p id="pkgDescription"></p>
+
+      <h4 class="mt-4">What's included</h4>
+      <ul id="pkgIncludes" class="includes-grid"></ul>
+
+      <h4 class="mt-4">Not included</h4>
+      <ul id="pkgExcludes" class="includes-grid"></ul>
+
+      <h4 class="mt-4">Itinerary</h4>
+      <div id="pkgItinerary"></div>
+
+      <h4 class="mt-4">Meeting point</h4>
+      <p id="pkgMeeting"></p>
+
+      <h4 class="mt-4">Cancellation policy</h4>
+      <span id="pkgCancel" class="badge"></span>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm price-card">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-baseline">
+            <div>
+              <div class="text-muted small">From</div>
+              <div class="h3 mb-0" id="pkgPrice"></div>
+            </div>
+            <div class="text-end">
+              <div class="text-warning" id="pkgRating">★ —</div>
+              <div class="small text-muted" id="pkgReviews">0 reviews</div>
+            </div>
+          </div>
+          <hr>
+          <label class="form-label small">Adults</label>
+          <input type="number" id="adultCount" class="form-control mb-2" value="2" min="1">
+          <label class="form-label small">Children</label>
+          <input type="number" id="childCount" class="form-control mb-3" value="0" min="0">
+          <label class="form-label small">Date</label>
+          <input type="date" id="bookDate" class="form-control mb-3">
+          <div class="d-flex justify-content-between mb-2 small">
+            <span>Subtotal</span><span id="pkgSubtotal">0 OMR</span>
+          </div>
+          <button class="btn btn-primary w-100 btn-lg" id="bookBtn">Request to Book</button>
+          <button class="btn btn-outline-secondary w-100 mt-2" id="wishBtn">❤ Save to Wishlist</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/seo.js"></script>
+<script src="/js/i18n.js"></script>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+const fmt = n => parseFloat(n || 0).toFixed(2);
+
+async function load() {
+  if (!id) return;
+  const r = await fetch('/api/packages/' + id, { credentials: 'include' });
+  const j = await r.json();
+  if (!j.success) { document.querySelector('.container').innerHTML = '<h3>Package not found</h3>'; return; }
+  const p = j.package;
+  document.title = p.title + ' — Guideon';
+  seoSet({
+    title: p.title + ' — Guideon',
+    description: (p.description || '').slice(0, 160),
+    image: p.cover_image || (p.images || [])[0] || '/logo.png',
+    type: 'product',
+  });
+  seoStructuredData({
+    '@context': 'https://schema.org',
+    '@type': 'TouristTrip',
+    name: p.title,
+    description: p.description,
+    image: p.cover_image,
+    itinerary: { '@type': 'ItemList', numberOfItems: p.duration_days },
+    offers: { '@type': 'Offer', price: p.price_adult, priceCurrency: p.currency || 'OMR' },
+  });
+
+  document.getElementById('pkgHero').style.backgroundImage = `url(${p.cover_image || (p.images || [])[0] || '/img/muscat.jpg'})`;
+  document.getElementById('pkgTitle').textContent = p.title;
+  document.getElementById('pkgDescription').textContent = p.description;
+  document.getElementById('pkgMeta').innerHTML = `
+    <div>📍 ${p.destination || 'Oman'}</div>
+    <div>⏱ ${p.duration_days} day${p.duration_days>1?'s':''}</div>
+    <div>👥 up to ${p.max_group_size}</div>
+    <div>🎯 ${p.difficulty}</div>
+    <div>🏷️ ${p.category}</div>
+  `;
+  document.getElementById('pkgIncludes').innerHTML = (p.includes || []).map(x => `<li>✓ ${x}</li>`).join('') || '<li class="text-muted">—</li>';
+  document.getElementById('pkgExcludes').innerHTML = (p.excludes || []).map(x => `<li>✗ ${x}</li>`).join('') || '<li class="text-muted">—</li>';
+  document.getElementById('pkgItinerary').innerHTML = (p.itinerary || []).map((d, i) => `
+    <div class="itinerary-day">
+      <strong>Day ${i+1}${d.title ? ' — ' + d.title : ''}</strong>
+      <div class="small text-muted mt-1">${d.description || ''}</div>
+    </div>
+  `).join('') || '<p class="text-muted">Itinerary will be provided upon booking.</p>';
+  document.getElementById('pkgMeeting').textContent = p.meeting_point || '—';
+  const policy = p.cancellation_policy || 'flexible';
+  const cancelEl = document.getElementById('pkgCancel');
+  cancelEl.textContent = policy.toUpperCase();
+  cancelEl.className = 'badge badge-cancel-' + (policy === 'flexible' ? 'flex' : policy === 'moderate' ? 'mod' : 'strict');
+
+  document.getElementById('pkgPrice').textContent = fmt(p.price_adult) + ' ' + (p.currency || 'OMR');
+  document.getElementById('pkgRating').textContent = '★ ' + (p.rating || '—');
+  document.getElementById('pkgReviews').textContent = (p.totalReviews || 0) + ' reviews';
+
+  function recalc() {
+    const a = parseInt(document.getElementById('adultCount').value) || 0;
+    const c = parseInt(document.getElementById('childCount').value) || 0;
+    const sub = a * (p.price_adult || 0) + c * (p.price_child || 0);
+    document.getElementById('pkgSubtotal').textContent = fmt(sub) + ' ' + (p.currency || 'OMR');
+  }
+  ['adultCount', 'childCount'].forEach(id => document.getElementById(id).addEventListener('input', recalc));
+  recalc();
+
+  document.getElementById('bookBtn').addEventListener('click', () => {
+    alert('Package booking coming soon. Use the contact form or call us.');
+  });
+}
+load();
+</script>
+</body></html>
