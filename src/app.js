@@ -75,9 +75,13 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Session store
+// Note: Supabase Postgres direct (port 5432) is IPv6-only and unreachable from Railway.
+// Set USE_PG_SESSIONS=true ONLY if DATABASE_URL points to the Supabase Pooler (port 6543).
 let sessionStore;
+const usePgSessions = process.env.USE_PG_SESSIONS === 'true' && !!process.env.DATABASE_URL;
 try {
-  if (process.env.DATABASE_URL) {
+  if (usePgSessions) {
     const sessionPool = new Pool({
       connectionString: process.env.DATABASE_URL,
       ssl: { rejectUnauthorized: false },
@@ -93,10 +97,10 @@ try {
     });
     console.log('[Session] Using Postgres session store.');
   } else {
-    throw new Error('DATABASE_URL not set');
+    throw new Error('Using in-memory store (set USE_PG_SESSIONS=true to enable Postgres)');
   }
 } catch (e) {
-  console.warn(`[Session] Falling back to in-memory store (${e.message}). NOT recommended for production.`);
+  console.warn(`[Session] ${e.message}.`);
   sessionStore = new MemoryStore({ checkPeriod: 86400000 });
 }
 
