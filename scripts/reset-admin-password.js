@@ -26,6 +26,7 @@ const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
     .update({
       password: hash,
       isSuspended: false,
+      updatedAt: new Date().toISOString(),
     })
     .ilike('email', ADMIN_EMAIL)
     .select('id, email, userType, isSuspended');
