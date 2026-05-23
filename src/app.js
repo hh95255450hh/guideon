@@ -127,7 +127,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+  dotfiles: 'allow', // serve /.well-known/assetlinks.json for TWA / Play Store
+}));
 
 const { apiLimiter, chatLimiter } = require('./middleware/rateLimit');
 const csrfProtect = require('./middleware/csrf');
