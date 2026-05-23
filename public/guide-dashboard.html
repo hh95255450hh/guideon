@@ -120,6 +120,26 @@
         </div>
       </div>
 
+      <!-- ════════════════════════ ANALYTICS & ACHIEVEMENTS ════════════════════════ -->
+      <div class="info-card mb-4">
+        <h5 class="fw-700 mb-3">📊 Your Analytics</h5>
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff"><div class="num" id="anViews">—</div><div class="lbl">Total Views</div></div></div>
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff"><div class="num" id="anConv">—%</div><div class="lbl">Conversion</div></div></div>
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff"><div class="num" id="anPending">—</div><div class="lbl">Pending OMR</div></div></div>
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#fa709a,#fee140);color:#fff"><div class="num" id="anPaid">—</div><div class="lbl">Earned OMR</div></div></div>
+        </div>
+        <h6 class="fw-700 mb-2">🏆 Achievements</h6>
+        <div id="achievementsList" class="d-flex flex-wrap gap-2 mb-4">Loading…</div>
+        <h6 class="fw-700 mb-2">📈 Per-Tour Performance</h6>
+        <div class="table-responsive">
+          <table class="table table-sm mb-0">
+            <thead><tr><th>Tour</th><th class="text-end">Views</th><th class="text-end">Bookings</th><th class="text-end">Conversion</th></tr></thead>
+            <tbody id="perTourTable"><tr><td colspan="4" class="text-center text-muted py-3">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- ════════════════════════ MY TOURS ════════════════════════ -->
       <div class="info-card mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -363,6 +383,8 @@ async function checkAuth() {
     renderGuideHeader();
     buildCalendar();
     loadBookings();
+    loadAnalytics();
+    if (typeof loadMyTours === 'function') loadMyTours();
     loadTripRequests();
     renderGallery();
     if (GUIDE.videoUrl) document.getElementById('videoUrlInput').value = GUIDE.videoUrl;
@@ -666,6 +688,33 @@ async function saveTour() {
     }
   } catch { toast('Network error', 'error'); }
   finally { btn.disabled = false; btn.textContent = I18N.t('save_tour') || 'Save Tour'; }
+}
+
+async function loadAnalytics() {
+  try {
+    const r = await fetch('/api/guide/analytics', { credentials: 'include' });
+    const j = await r.json();
+    if (!j.success) return;
+    const d = j.data;
+    if (document.getElementById('anViews'))   document.getElementById('anViews').textContent   = d.totalViews;
+    if (document.getElementById('anConv'))    document.getElementById('anConv').textContent    = (d.overallConversion || 0) + '%';
+    if (document.getElementById('anPending')) document.getElementById('anPending').textContent = d.pendingEarnings.toFixed(0);
+    if (document.getElementById('anPaid'))    document.getElementById('anPaid').textContent    = d.totalEarned.toFixed(0);
+    const aEl = document.getElementById('achievementsList');
+    if (aEl) aEl.innerHTML = (d.achievements || []).map(a => `
+      <div title="${a.description}" style="${a.earned ? 'background:linear-gradient(135deg,#fff8dc,#ffd700);border:2px solid #ffd700' : 'background:#f5f5f5;border:2px solid #e0e0e0;opacity:.5'};padding:10px 14px;border-radius:12px;min-width:120px;text-align:center;cursor:help">
+        <div style="font-size:1.6rem">${a.icon}</div>
+        <div class="small fw-700" style="${a.earned ? 'color:#8b6f00' : 'color:#999'}">${a.label}</div>
+      </div>`).join('');
+    const tEl = document.getElementById('perTourTable');
+    if (tEl) tEl.innerHTML = d.perTour.length ? d.perTour.map(t => `
+      <tr>
+        <td><strong>${t.title}</strong><br><small class="text-muted">${t.destination || '—'} ${t.isPublished ? '' : '<span class="badge bg-secondary" style="font-size:.6rem">DRAFT</span>'}</small></td>
+        <td class="text-end">${t.views}</td>
+        <td class="text-end fw-700">${t.bookings}</td>
+        <td class="text-end"><span class="badge ${t.conversion > 5 ? 'bg-success' : t.conversion > 0 ? 'bg-warning text-dark' : 'bg-light text-dark'}">${t.conversion}%</span></td>
+      </tr>`).join('') : '<tr><td colspan="4" class="text-center text-muted py-3">No tours yet.</td></tr>';
+  } catch (e) { /* ignore */ }
 }
 
 async function loadBookings() {
