@@ -148,6 +148,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/upload',   uploadRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/packages', packageRoutes);
+app.use('/api',          require('./routes/guideAnalytics'));
 app.use('/api/qa', require('./routes/qa'));
 app.use('/api', require('./routes/extras'));
 

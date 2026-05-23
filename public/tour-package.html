@@ -6,7 +6,7 @@
 <title>Tour Package — Guideon</title>
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
-<link rel="stylesheet" href="/css/style.css?v=30">
+<link rel="stylesheet" href="/css/style.css?v=31">
 <style>
   .pkg-hero { height: 380px; background: linear-gradient(135deg, var(--navy-dark), var(--teal)); background-size: cover; background-position: center; position: relative; }
   .pkg-hero::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6)); }
@@ -343,6 +343,8 @@ async function bookTour() {
 }
 
 loadPackage();
+// Record page view (fire-and-forget)
+if (PKG_ID) fetch('/api/views/' + PKG_ID, { method: 'POST', credentials: 'include' }).catch(() => {});
 </script>
 </body>
 </html>
