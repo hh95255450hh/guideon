@@ -15,7 +15,7 @@
 <title>Guide Dashboard — Guideon</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=27">
+<link rel="stylesheet" href="/css/style.css?v=28">
 </head>
 <body>
 
@@ -120,6 +120,126 @@
         </div>
       </div>
 
+      <!-- ════════════════════════ MY TOURS ════════════════════════ -->
+      <div class="info-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-700 mb-0" data-i18n="my_tours_title">🗺️ My Tours</h5>
+          <button class="btn btn-sm btn-teal" onclick="openTourModal()" data-i18n="add_tour_btn">➕ Add New Tour</button>
+        </div>
+        <p class="small text-muted mb-3" data-i18n="my_tours_desc">Create individual tours with their own price, duration, and destination. Add special offers anytime.</p>
+        <div id="myToursList">
+          <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
+        </div>
+      </div>
+
+      <!-- TOUR MODAL -->
+      <div class="modal fade" id="tourModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header" style="background:var(--teal);color:#fff">
+              <h5 class="modal-title" id="tourModalTitle" data-i18n="tour_modal_add">Add New Tour</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <form id="tourForm" class="row g-3">
+                <input type="hidden" id="tourId">
+
+                <div class="col-md-8">
+                  <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
+                  <input class="form-control" id="tourTitle" data-i18n-ph="tour_title_ph" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-600" data-i18n="tour_category">Category</label>
+                  <select class="form-select" id="tourCategory">
+                    <option value="Cultural">🏰 Cultural</option>
+                    <option value="Mountain">🏔️ Mountain</option>
+                    <option value="Desert">🐪 Desert</option>
+                    <option value="Marine">🐬 Marine</option>
+                    <option value="Wildlife">🐢 Wildlife</option>
+                    <option value="Historical">🕌 Historical</option>
+                    <option value="Adventure">⚡ Adventure</option>
+                    <option value="Food">🍽️ Food</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-600" data-i18n="tour_destination">Destination *</label>
+                  <input class="form-control" id="tourDestination" data-i18n-ph="tour_dest_ph" placeholder="e.g. Nizwa, Jebel Akhdar, Wadi Shab" required>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-600" data-i18n="tour_duration">Duration (days) *</label>
+                  <input type="number" class="form-control" id="tourDuration" value="1" min="1" max="14" required>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-600" data-i18n="tour_difficulty">Difficulty</label>
+                  <select class="form-select" id="tourDifficulty">
+                    <option value="easy" data-i18n="diff_easy">Easy</option>
+                    <option value="moderate" selected data-i18n="diff_moderate">Moderate</option>
+                    <option value="hard" data-i18n="diff_hard">Hard</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label small fw-600" data-i18n="tour_price_adult">Price per Adult (OMR) *</label>
+                  <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" required placeholder="40">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-600" data-i18n="tour_price_child">Price per Child (OMR)</label>
+                  <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" placeholder="20">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-600" data-i18n="tour_max_group">Max Group Size *</label>
+                  <input type="number" class="form-control" id="tourMaxGroup" value="10" min="1" max="50" required>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label small fw-600" data-i18n="tour_description">Description *</label>
+                  <textarea class="form-control" id="tourDescription" rows="3" data-i18n-ph="tour_desc_ph" placeholder="Describe what makes this tour special..." required></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label small fw-600" data-i18n="tour_meeting">Meeting Point</label>
+                  <input class="form-control" id="tourMeeting" data-i18n-ph="tour_meeting_ph" placeholder="e.g. Nizwa Fort entrance, 7:00 AM">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-600" data-i18n="tour_includes">What's Included (comma-separated)</label>
+                  <input class="form-control" id="tourIncludes" placeholder="Transport, Lunch, Water, Guide fees">
+                </div>
+
+                <!-- OFFERS SECTION -->
+                <div class="col-12 mt-3"><hr></div>
+                <div class="col-12">
+                  <h6 class="fw-700" data-i18n="offer_section">🎁 Special Offer (Optional)</h6>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-600" data-i18n="discount_percent">Discount %</label>
+                  <input type="number" class="form-control" id="tourDiscount" min="0" max="90" placeholder="0">
+                </div>
+                <div class="col-md-5">
+                  <label class="form-label small fw-600" data-i18n="offer_label">Offer Label</label>
+                  <input class="form-control" id="tourOfferLabel" data-i18n-ph="offer_label_ph" placeholder="e.g. Summer Special, Early Bird">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-600" data-i18n="offer_until">Offer Valid Until</label>
+                  <input type="date" class="form-control" id="tourOfferUntil">
+                </div>
+
+                <div class="col-12">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="tourPublished" checked>
+                    <label class="form-check-label" for="tourPublished" data-i18n="publish_tour">Publish — visible to tourists in search</label>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="cancel_btn">Cancel</button>
+              <button class="btn btn-teal" onclick="saveTour()" id="saveTourBtn" data-i18n="save_tour">Save Tour</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Gallery & Video -->
       <div class="info-card mb-4">
         <h5 class="fw-700 mb-3" data-i18n="gallery_title">📸 Photo Gallery</h5>
@@ -158,7 +278,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=21"></script>
+<script src="/js/i18n.js?v=22"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -292,6 +412,130 @@ async function saveVideo() {
     if (d.success) { GUIDE.videoUrl = url; toast(I18N.t('video_saved'), 'success'); }
     else toast(d.message || I18N.t('video_invalid'), 'error');
   } catch { toast('Save failed.', 'error'); }
+}
+
+// ════════════════════════ TOURS MANAGEMENT ════════════════════════
+let MY_TOURS = [];
+
+async function loadMyTours() {
+  const el = document.getElementById('myToursList');
+  if (!el) return;
+  try {
+    const r = await fetch('/api/packages/mine', { credentials: 'include' });
+    const d = await r.json();
+    MY_TOURS = d.packages || d.data?.packages || [];
+    if (!MY_TOURS.length) {
+      el.innerHTML = `<div class="text-center py-4 text-muted"><div style="font-size:2.5rem">🗺️</div><p class="mb-0">${I18N.t('no_tours_yet') || 'No tours yet. Click "Add New Tour" to create your first.'}</p></div>`;
+      return;
+    }
+    el.innerHTML = MY_TOURS.map(t => {
+      const hasOffer = (t.discountPercent || 0) > 0;
+      const finalPrice = hasOffer ? (t.price_adult * (1 - t.discountPercent/100)).toFixed(2) : null;
+      return `
+      <div class="border rounded p-3 mb-2" style="background:#fafbfc">
+        <div class="d-flex justify-content-between align-items-start gap-2">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <strong>${t.title}</strong>
+              ${t.isPublished ? '<span class="badge bg-success" style="font-size:.65rem">PUBLISHED</span>' : '<span class="badge bg-secondary" style="font-size:.65rem">DRAFT</span>'}
+              ${hasOffer ? `<span class="badge bg-warning text-dark" style="font-size:.65rem">🎁 ${t.discountPercent}% OFF ${t.offerLabel ? '— '+t.offerLabel : ''}</span>` : ''}
+            </div>
+            <div class="small text-muted">📍 ${t.destination || '—'} · ⏱ ${t.duration_days} day(s) · 👥 max ${t.max_group_size}</div>
+            <div class="small mt-1">
+              ${hasOffer
+                ? `<span style="text-decoration:line-through;color:#999">${t.price_adult} OMR</span> <strong class="text-teal">${finalPrice} OMR</strong>/adult`
+                : `<strong class="text-teal">${t.price_adult} OMR</strong>/adult`}
+              ${t.price_child ? ` · ${t.price_child} OMR/child` : ''}
+            </div>
+          </div>
+          <div class="d-flex flex-column gap-1">
+            <button class="btn btn-sm btn-outline-secondary" onclick="editTour('${t.id}')">✏️ ${I18N.t('edit_btn') || 'Edit'}</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteTour('${t.id}','${(t.title||'').replace(/'/g,"\\'")}')">🗑️ ${I18N.t('delete_btn') || 'Delete'}</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="text-center text-muted py-3">Failed to load tours.</div>';
+  }
+}
+
+function openTourModal(tour) {
+  document.getElementById('tourId').value          = tour?.id || '';
+  document.getElementById('tourTitle').value       = tour?.title || '';
+  document.getElementById('tourCategory').value    = tour?.category || 'Cultural';
+  document.getElementById('tourDestination').value = tour?.destination || '';
+  document.getElementById('tourDuration').value    = tour?.duration_days || 1;
+  document.getElementById('tourDifficulty').value  = tour?.difficulty || 'moderate';
+  document.getElementById('tourPriceAdult').value  = tour?.price_adult || '';
+  document.getElementById('tourPriceChild').value  = tour?.price_child || '';
+  document.getElementById('tourMaxGroup').value    = tour?.max_group_size || 10;
+  document.getElementById('tourDescription').value = tour?.description || '';
+  document.getElementById('tourMeeting').value     = tour?.meeting_point || '';
+  document.getElementById('tourIncludes').value    = Array.isArray(tour?.includes) ? tour.includes.join(', ') : '';
+  document.getElementById('tourDiscount').value    = tour?.discountPercent || '';
+  document.getElementById('tourOfferLabel').value  = tour?.offerLabel || '';
+  document.getElementById('tourOfferUntil').value  = tour?.offerUntil ? tour.offerUntil.slice(0,10) : '';
+  document.getElementById('tourPublished').checked = tour ? !!tour.isPublished : true;
+  document.getElementById('tourModalTitle').textContent = tour ? (I18N.t('tour_modal_edit') || 'Edit Tour') : (I18N.t('tour_modal_add') || 'Add New Tour');
+  new bootstrap.Modal(document.getElementById('tourModal')).show();
+}
+
+function editTour(id) {
+  const t = MY_TOURS.find(x => x.id === id);
+  if (t) openTourModal(t);
+}
+
+async function deleteTour(id, name) {
+  if (!confirm(`Delete tour "${name}"? This cannot be undone.`)) return;
+  try {
+    const r = await fetch('/api/packages/' + id, { method: 'DELETE', credentials: 'include' });
+    const d = await r.json();
+    toast(d.message || (d.success ? 'Deleted' : 'Failed'), d.success ? 'success' : 'error');
+    if (d.success) loadMyTours();
+  } catch { toast('Network error', 'error'); }
+}
+
+async function saveTour() {
+  const btn = document.getElementById('saveTourBtn');
+  const id  = document.getElementById('tourId').value;
+  const body = {
+    title:          document.getElementById('tourTitle').value.trim(),
+    category:       document.getElementById('tourCategory').value,
+    destination:    document.getElementById('tourDestination').value.trim(),
+    duration_days:  parseInt(document.getElementById('tourDuration').value),
+    difficulty:     document.getElementById('tourDifficulty').value,
+    price_adult:    parseFloat(document.getElementById('tourPriceAdult').value),
+    price_child:    parseFloat(document.getElementById('tourPriceChild').value) || 0,
+    max_group_size: parseInt(document.getElementById('tourMaxGroup').value),
+    description:    document.getElementById('tourDescription').value.trim(),
+    meeting_point:  document.getElementById('tourMeeting').value.trim(),
+    includes:       document.getElementById('tourIncludes').value.split(',').map(s => s.trim()).filter(Boolean),
+    discountPercent:parseInt(document.getElementById('tourDiscount').value) || 0,
+    offerLabel:     document.getElementById('tourOfferLabel').value.trim(),
+    offerUntil:     document.getElementById('tourOfferUntil').value || null,
+    isPublished:    document.getElementById('tourPublished').checked,
+  };
+  if (!body.title || !body.destination || !body.price_adult || !body.description) {
+    toast('Please fill all required fields', 'error'); return;
+  }
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    const r = await fetch(id ? '/api/packages/' + id : '/api/packages', {
+      method: id ? 'PUT' : 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (d.success) {
+      toast(I18N.t('saved_ok') || 'Saved!', 'success');
+      bootstrap.Modal.getInstance(document.getElementById('tourModal')).hide();
+      loadMyTours();
+    } else {
+      toast(d.message || 'Failed', 'error');
+    }
+  } catch { toast('Network error', 'error'); }
+  finally { btn.disabled = false; btn.textContent = I18N.t('save_tour') || 'Save Tour'; }
 }
 
 async function loadBookings() {

@@ -15,7 +15,7 @@
 <title>Guideon — Register</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=27">
+<link rel="stylesheet" href="/css/style.css?v=28">
 <style>
 .tab-btn { background:#f8f9fa; color:var(--muted); border:none; padding:10px 6px; font-weight:600; font-size:.9rem; transition:.2s; }
 .tab-btn.active { background:var(--teal); color:#fff; }
@@ -135,11 +135,10 @@
               </div>
 
               <!-- Guide fields -->
-              <div class="col-md-6">
-                <label class="form-label fw-600 small" data-i18n="price_day">Price Per Day (OMR) *</label>
-                <input type="number" class="form-control" id="pricePerDay" placeholder="45" min="1">
+              <div class="col-12">
+                <div class="info-box blue mb-2" data-i18n="guide_tours_note">💡 After registration, you'll create individual tours with their own prices, durations and destinations from your dashboard. No daily rate required!</div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label fw-600 small" data-i18n="langs_spoken">Languages Spoken *</label>
                 <input type="text" class="form-control" id="languages" data-i18n-ph="langs_ph" placeholder="Arabic, English, French">
               </div>
@@ -199,7 +198,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=21"></script>
+<script src="/js/i18n.js?v=22"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 function switchType(type) {
@@ -243,7 +242,7 @@ async function doRegister(e) {
   } else if (type === 'guide') {
     body.hasMinistryLicence = document.getElementById('hasMinistryLicence').value === 'true';
     body.licenceNumber      = document.getElementById('licenceNumber').value;
-    body.pricePerDay        = document.getElementById('pricePerDay').value;
+    body.pricePerDay        = 0; // Deprecated — guides set per-tour prices instead
     body.languages          = document.getElementById('languages').value;
     body.specialisations    = document.getElementById('specialisations').value;
     body.destinations       = document.getElementById('destinations').value;
