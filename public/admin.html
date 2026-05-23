@@ -15,7 +15,7 @@
 <title>Admin Dashboard — Guideon</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=24">
+<link rel="stylesheet" href="/css/style.css?v=25">
 <style>
 /* ── Tab strip ─────────────────────────────────────────────── */
 .admin-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:24px; }
@@ -123,6 +123,7 @@
     <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">👤 Tourists</button>
     <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">📋 Bookings</button>
     <button class="admin-tab" onclick="showTab('admins',this)">👑 Admins</button>
+    <button class="admin-tab" onclick="showTab('staff',this)">👔 Staff</button>
     <button class="admin-tab" onclick="showTab('broadcast',this)">📢 Broadcast</button>
     <button class="admin-tab" onclick="showTab('analytics',this)">📈 Analytics</button>
     <button class="admin-tab" onclick="showTab('audit',this)">🔍 Audit Log</button>
@@ -275,7 +276,7 @@ function doLogout() {
 
 // ── Tab switch ───────────────────────────────────────────────
 let ACTIVE_TAB = 'pending';
-const TABS = ['pending','guides','companies','tourists','bookings','admins','broadcast','analytics','audit','export'];
+const TABS = ['pending','guides','companies','tourists','bookings','admins','staff','broadcast','analytics','audit','export'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
@@ -288,7 +289,101 @@ function showTab(name, btn) {
   else if (name==='admins')    loadAdmins();
   else if (name==='analytics') loadAnalytics();
   else if (name==='audit')     loadAudit();
+  else if (name==='staff')     loadStaff();
 }
+
+// ── Staff Management ──────────────────────────────────────────
+let STAFF_ROLES = {};
+async function loadStaff() {
+  const tbody = document.getElementById('staffTable');
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr>';
+  try {
+    // Load roles reference once
+    if (Object.keys(STAFF_ROLES).length === 0) {
+      const rr = await fetch('/api/admin/staff/roles', { credentials: 'include' });
+      const rd = await rr.json();
+      rd.roles.forEach(r => { STAFF_ROLES[r.key] = r; });
+      document.getElementById('rolesGuide').innerHTML = rd.roles.map(r =>
+        `<div class="mb-1"><strong>${r.label}:</strong> <span class="text-muted">${r.description}</span> <span class="badge bg-light text-dark ms-1" style="font-size:.65rem">${r.permissions.length} perms</span></div>`
+      ).join('');
+    }
+
+    const r = await fetch('/api/admin/staff', { credentials: 'include' });
+    const j = await r.json();
+    if (!j.success) throw new Error(j.message);
+
+    tbody.innerHTML = j.staff.length ? j.staff.map(s => `
+      <tr>
+        <td><strong>${s.fullName}</strong></td>
+        <td class="small">${s.email}</td>
+        <td><span class="badge bg-secondary">${STAFF_ROLES[s.staffRole]?.label || s.staffRole || 'custom'}</span></td>
+        <td><span class="badge bg-info text-dark">${(s.permissions || []).length} permissions</span></td>
+        <td>${s.isSuspended ? '<span class="chip chip-suspended">Suspended</span>' : '<span class="chip chip-verified">Active</span>'}</td>
+        <td class="small text-muted">${new Date(s.createdAt).toLocaleDateString()}</td>
+        <td>
+          ${s.isSuspended
+            ? `<button class="btn btn-sm btn-outline-success" onclick="toggleStaffSuspend('${s.id}',false)">Activate</button>`
+            : `<button class="btn btn-sm btn-outline-warning" onclick="toggleStaffSuspend('${s.id}',true)">Suspend</button>`}
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteStaff('${s.id}','${s.fullName.replace(/'/g,'\\\'')}')">Delete</button>
+        </td>
+      </tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted py-4">No staff yet. Add one above.</td></tr>';
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">'+e.message+'</td></tr>';
+  }
+}
+
+async function toggleStaffSuspend(id, suspend) {
+  const action = suspend ? 'suspend' : 'activate';
+  if (!confirm(`Are you sure you want to ${action} this staff member?`)) return;
+  try {
+    const r = await fetch('/api/admin/staff/' + id, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isSuspended: suspend }),
+    });
+    const j = await r.json();
+    toast(j.message, j.success ? 'success' : 'danger');
+    if (j.success) loadStaff();
+  } catch { toast('Network error', 'danger'); }
+}
+
+async function deleteStaff(id, name) {
+  if (!confirm(`Permanently delete staff "${name}"? This cannot be undone.`)) return;
+  try {
+    const r = await fetch('/api/admin/staff/' + id, { method: 'DELETE', credentials: 'include' });
+    const j = await r.json();
+    toast(j.message, j.success ? 'success' : 'danger');
+    if (j.success) loadStaff();
+  } catch { toast('Network error', 'danger'); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('newStaffForm');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('stMsg');
+    msg.innerHTML = '<div class="text-muted mt-2">Creating…</div>';
+    try {
+      const r = await fetch('/api/admin/staff', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: document.getElementById('stName').value,
+          email:    document.getElementById('stEmail').value,
+          phone:    document.getElementById('stPhone').value,
+          password: document.getElementById('stPassword').value,
+          role:     document.getElementById('stRole').value,
+        }),
+      });
+      const j = await r.json();
+      msg.innerHTML = `<div class="alert alert-${j.success ? 'success' : 'danger'} mt-2 small">${j.message}</div>`;
+      if (j.success) { form.reset(); loadStaff(); }
+    } catch (err) {
+      msg.innerHTML = '<div class="alert alert-danger mt-2 small">Network error</div>';
+    }
+  });
+});
 
 // ── Analytics ────────────────────────────────────────────────
 let _chartRevenue = null;

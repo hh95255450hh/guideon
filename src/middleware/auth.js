@@ -47,8 +47,21 @@ exports.requireAdmin = (req, res, next) => {
   if (!req.session.userId) {
     return res.status(401).json({ success: false, message: 'Please log in to continue.' });
   }
+  // Both admin (super) and staff have access to /admin routes;
+  // per-action permissions are enforced via requirePermission middleware.
+  if (req.session.userType !== 'admin' && req.session.userType !== 'staff') {
+    return res.status(403).json({ success: false, message: 'Admin or staff access required.' });
+  }
+  next();
+};
+
+// Strict: only super admin (userType=admin) — used for managing staff
+exports.requireSuperAdmin = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Please log in to continue.' });
+  }
   if (req.session.userType !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Admin access required.' });
+    return res.status(403).json({ success: false, message: 'Super admin access required.' });
   }
   next();
 };

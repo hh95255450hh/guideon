@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
 const audit = require('../services/auditService');
+const { ROLES, PERMISSIONS, getEffectivePermissions } = require('../config/permissions');
 
 const users    = new SupabaseDB('users');
 const bookings = new SupabaseDB('bookings');
@@ -605,4 +606,175 @@ exports.exportCSV = async (req, res) => {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
+};
+
+// ════════════════════════════════════════════════════════════════════
+//  STAFF MANAGEMENT (super admin only)
+// ════════════════════════════════════════════════════════════════════
+
+// GET /api/admin/staff — list all staff members
+exports.allStaff = async (req, res) => {
+  try {
+    const staff = await users.findAllByField('userType', 'staff');
+    const safe = staff.map(({ password, resetPasswordToken, emailVerifyToken, ...s }) => s);
+    res.json({ success: true, staff: safe });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/admin/staff/roles — list available role templates
+exports.staffRoles = (req, res) => {
+  const roles = Object.entries(ROLES).map(([key, r]) => ({
+    key,
+    label: r.label,
+    description: r.description,
+    permissions: r.permissions,
+  }));
+  const allPerms = Object.entries(PERMISSIONS).map(([key, value]) => ({ key, value }));
+  res.json({ success: true, roles, permissions: allPerms });
+};
+
+// POST /api/admin/staff — create a new staff member
+exports.createStaff = async (req, res) => {
+  try {
+    const { fullName, email: staffEmail, password, phone, role, customPermissions } = req.body;
+
+    if (!fullName || !staffEmail || !password) {
+      return res.status(400).json({ success: false, message: 'Name, email and password are required.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters.' });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(staffEmail)) {
+      return res.status(400).json({ success: false, message: 'Invalid email address.' });
+    }
+
+    // Resolve permissions: role template OR custom list
+    let permissions;
+    if (role && ROLES[role]) {
+      permissions = ROLES[role].permissions;
+    } else if (Array.isArray(customPermissions)) {
+      permissions = customPermissions.filter(p => Object.values(PERMISSIONS).includes(p));
+    } else {
+      return res.status(400).json({ success: false, message: 'Either role or customPermissions required.' });
+    }
+
+    const existing = await users.findByField('email', staffEmail.toLowerCase());
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'Email already registered.' });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    const record = {
+      id: 'staff-' + uuidv4().slice(0, 8),
+      fullName,
+      email: staffEmail.toLowerCase(),
+      password: hashed,
+      phone: phone || '',
+      userType: 'staff',
+      staffRole: role || 'custom',
+      permissions,
+      isVerified: true,
+      isSuspended: false,
+      emailVerified: true,
+      createdBy: req.session.userId,
+      createdAt: new Date().toISOString(),
+    };
+
+    await users.insert(record);
+    audit.logAction(req, {
+      action: 'createStaff', targetType: 'user', targetId: record.id,
+      details: { name: fullName, email: staffEmail, role: role || 'custom', permissions },
+    });
+
+    // Welcome email with credentials
+    email.send(staffEmail, '🎉 Welcome to Guideon Team',
+      `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:40px">
+        <div style="background:white;border-radius:12px;padding:40px;box-shadow:0 4px 16px rgba(0,0,0,0.08)">
+          <h2 style="color:#0f7b6c">Welcome to the Guideon Team, ${fullName}! 👋</h2>
+          <p>You've been added as <strong>${ROLES[role]?.label || 'Staff'}</strong>.</p>
+          <div style="background:#e8f5f2;padding:16px;border-radius:8px;margin:20px 0">
+            <strong>Your login credentials:</strong><br>
+            Email: <code>${staffEmail}</code><br>
+            Password: <code>${password}</code><br>
+            <em style="font-size:.85em;color:#666">Please change your password after first login.</em>
+          </div>
+          <p>Sign in here: <a href="${process.env.APP_URL || 'https://guideon.guide'}/login.html">${process.env.APP_URL || 'https://guideon.guide'}/login.html</a></p>
+        </div>
+      </div>`
+    ).catch(() => {});
+
+    const { password: _, ...safe } = record;
+    res.status(201).json({ success: true, message: `Staff account created for ${fullName}.`, staff: safe });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// PATCH /api/admin/staff/:id — update staff role / permissions
+exports.updateStaff = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fullName, phone, role, customPermissions, isSuspended } = req.body;
+
+    const staff = await users.findById(id);
+    if (!staff || staff.userType !== 'staff') {
+      return res.status(404).json({ success: false, message: 'Staff member not found.' });
+    }
+
+    const changes = {};
+    if (fullName !== undefined) changes.fullName = fullName;
+    if (phone !== undefined)    changes.phone = phone;
+    if (isSuspended !== undefined) changes.isSuspended = !!isSuspended;
+    if (role && ROLES[role]) {
+      changes.staffRole = role;
+      changes.permissions = ROLES[role].permissions;
+    } else if (Array.isArray(customPermissions)) {
+      changes.staffRole = 'custom';
+      changes.permissions = customPermissions.filter(p => Object.values(PERMISSIONS).includes(p));
+    }
+
+    if (Object.keys(changes).length === 0) {
+      return res.status(400).json({ success: false, message: 'No changes provided.' });
+    }
+
+    const updated = await users.update(id, changes);
+    audit.logAction(req, { action: 'updateStaff', targetType: 'user', targetId: id, details: changes });
+    const { password, ...safe } = updated;
+    res.json({ success: true, message: 'Staff member updated.', staff: safe });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// DELETE /api/admin/staff/:id — remove a staff account
+exports.deleteStaff = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const staff = await users.findById(id);
+    if (!staff || staff.userType !== 'staff') {
+      return res.status(404).json({ success: false, message: 'Staff member not found.' });
+    }
+    await users.delete(id);
+    audit.logAction(req, { action: 'deleteStaff', targetType: 'user', targetId: id, details: { name: staff.fullName, email: staff.email } });
+    res.json({ success: true, message: `${staff.fullName} has been removed from staff.` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/admin/me/permissions — current user's effective permissions
+exports.myPermissions = (req, res) => {
+  if (!req.user) return res.status(401).json({ success: false });
+  const perms = getEffectivePermissions(req.user);
+  res.json({
+    success: true,
+    userType: req.user.userType,
+    staffRole: req.user.staffRole || null,
+    permissions: perms,
+    isSuperAdmin: req.user.userType === 'admin',
+  });
 };
