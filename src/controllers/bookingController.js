@@ -4,13 +4,17 @@ const email = require('../services/emailService');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
+const packages = new SupabaseDB('tour_packages');
 
 exports.createBooking = async (req, res) => {
   try {
-    const { guideId, tourDate, duration, destination, participants, specialRequests } = req.body;
+    const {
+      guideId, tourDate, duration, destination, participants, specialRequests,
+      packageId, adultCount, childCount, variantName, variantPrice, addons, totalAmount: clientTotal,
+    } = req.body;
     const touristId = req.session.userId;
 
-    if (!guideId || !tourDate || !duration || !destination) {
+    if (!guideId || !tourDate || !destination) {
       return res.status(400).json({ success: false, message: 'Missing required booking fields.' });
     }
 
@@ -22,24 +26,62 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Guide is not verified.' });
     }
 
-    const availability = Array.isArray(guide.availability) ? guide.availability : [];
-    if (!availability.includes(tourDate)) {
-      return res.status(400).json({ success: false, message: 'Guide is not available on the selected date.' });
+    // ── PACKAGE-BASED booking (new model) ──
+    let packageData = null;
+    let totalAmount;
+
+    if (packageId) {
+      packageData = await packages.findById(packageId);
+      if (!packageData) return res.status(404).json({ success: false, message: 'Package not found.' });
+      if (!packageData.isPublished) return res.status(400).json({ success: false, message: 'Package is not available for booking.' });
+
+      // Check date is in package.availableDates (if defined)
+      const pkgDates = Array.isArray(packageData.availableDates) ? packageData.availableDates : [];
+      if (pkgDates.length && !pkgDates.includes(tourDate)) {
+        return res.status(400).json({ success: false, message: 'Selected date is not available for this tour.' });
+      }
+
+      // Compute server-side total (trust server, not client)
+      const adults   = Math.max(1, parseInt(adultCount) || 1);
+      const children = Math.max(0, parseInt(childCount) || 0);
+      const pAdult   = parseFloat(variantPrice) || packageData.price_adult || 0;
+      const pChild   = packageData.price_child || 0;
+      const addonsTotal = Array.isArray(addons) ? addons.reduce((s, a) => s + (parseFloat(a.price) || 0), 0) : 0;
+      const subtotal = pAdult * adults + pChild * children + addonsTotal;
+      const discount = packageData.discountPercent || 0;
+      totalAmount = subtotal * (1 - discount / 100);
+    } else {
+      // ── LEGACY day-rate booking (pricePerDay) ──
+      if (!duration) return res.status(400).json({ success: false, message: 'Duration is required for non-package bookings.' });
+      const availability = Array.isArray(guide.availability) ? guide.availability : [];
+      if (!availability.includes(tourDate)) {
+        return res.status(400).json({ success: false, message: 'Guide is not available on the selected date.' });
+      }
+      const pricePerDay = parseFloat(guide.pricePerDay) || 0;
+      totalAmount = duration === 'half' ? pricePerDay * 0.6 : pricePerDay;
     }
 
-    const pricePerDay = parseFloat(guide.pricePerDay) || 0;
-    const totalAmount = duration === 'half' ? pricePerDay * 0.6 : pricePerDay;
-    const participantCount = parseInt(participants) || 1;
+    const participantCount = packageId
+      ? ((parseInt(adultCount) || 1) + (parseInt(childCount) || 0))
+      : (parseInt(participants) || 1);
 
     const booking = {
       id: 'bk-' + uuidv4().slice(0, 8),
       touristId, guideId,
-      tourDate, duration, destination,
+      tourDate, destination,
+      duration: duration || (packageData?.duration_days === 1 ? 'full' : 'multi'),
       participants: participantCount,
       totalAmount: Math.round(totalAmount * 100) / 100,
       status: 'pending',
       specialRequests: specialRequests || '',
       createdAt: new Date().toISOString(),
+      ...(packageId && {
+        packageId,
+        adultCount: parseInt(adultCount) || 1,
+        childCount: parseInt(childCount) || 0,
+        variantName: variantName || null,
+        addons: Array.isArray(addons) ? addons : [],
+      }),
     };
 
     try {

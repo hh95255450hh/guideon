@@ -6,155 +6,343 @@
 <title>Tour Package — Guideon</title>
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
-<link rel="stylesheet" href="/css/style.css?v=29">
+<link rel="stylesheet" href="/css/style.css?v=30">
 <style>
-  .pkg-hero { height: 420px; background: #1a1a1a; background-size: cover; background-position: center; }
-  .pkg-meta { display:flex; gap:24px; flex-wrap:wrap; padding:20px 0; color:#666 }
-  .pkg-meta div { display:flex; align-items:center; gap:6px }
-  .itinerary-day { border-left:3px solid #0f7b6c; padding:12px 18px; margin-bottom:12px; background:#f8faf9; border-radius:0 8px 8px 0 }
-  .includes-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px }
-  .includes-grid li { list-style:none; padding:8px 0; }
-  .price-card { position:sticky; top:80px; }
-  .badge-cancel-flex { background:#e8f5f2; color:#0f7b6c }
-  .badge-cancel-mod  { background:#fff8e6; color:#b37400 }
-  .badge-cancel-strict { background:#ffeded; color:#cc0000 }
+  .pkg-hero { height: 380px; background: linear-gradient(135deg, var(--navy-dark), var(--teal)); background-size: cover; background-position: center; position: relative; }
+  .pkg-hero::after { content:''; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6)); }
+  .pkg-hero-content { position:relative; z-index:1; color:#fff; height:100%; display:flex; flex-direction:column; justify-content:flex-end; padding:30px 0; }
+  .variant-card { position:relative; border:2px solid var(--border); border-radius:14px; padding:18px 20px; margin-bottom:12px; cursor:pointer; transition:all .2s; background:#fff; }
+  .variant-card:hover { border-color: var(--teal); box-shadow: 0 4px 12px rgba(15,123,108,0.15); }
+  .variant-card.selected { border-color: var(--teal); background: #f0faf8; }
+  .variant-card.selected::before { content:'✓'; position:absolute; right:20px; top:18px; color:var(--teal); font-weight:800; font-size:1.4rem; }
+  .variant-name { font-weight: 800; font-size: 1.05rem; color: var(--text); }
+  .variant-price { font-weight: 800; font-size: 1.2rem; color: var(--teal); }
+  .addon-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border:1px solid var(--border); border-radius:10px; margin-bottom:8px; background:#fff; cursor:pointer; }
+  .addon-row input { width: 18px; height: 18px; cursor: pointer; }
+  .itinerary-day { border-left:3px solid var(--teal); padding:12px 18px; margin-bottom:12px; background:#f8faf9; border-radius:0 8px 8px 0; }
+  .price-card { position:sticky; top:80px; background:#fff; border:1px solid var(--border); border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(0,0,0,0.06); }
+  .price-line { display:flex; justify-content:space-between; padding:6px 0; font-size:.92rem }
+  .price-total { border-top:2px solid #eee; margin-top:12px; padding-top:14px; font-size:1.15rem; font-weight:800 }
+  .date-btn { min-width:90px; padding:8px 14px; border-radius:10px; border:1.5px solid var(--border); background:#fff; cursor:pointer; font-size:.85rem; font-weight:600; transition:.15s }
+  .date-btn:hover { border-color: var(--teal); }
+  .date-btn.selected { background: var(--teal); color:#fff; border-color: var(--teal); }
+  .badge-cat { background:rgba(255,255,255,0.2); color:#fff; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700 }
+  .offer-banner { background:linear-gradient(135deg,#ffd700,#ffa500); color:#fff; padding:6px 14px; border-radius:8px; font-weight:700; display:inline-block; margin-bottom:10px; font-size:.9rem }
 </style>
 </head>
 <body>
+
 <nav class="navbar navbar-dark sticky-top">
   <div class="container">
-    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="48"></a>
+    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()">🌐 عربي</button>
   </div>
 </nav>
 
-<div id="pkgHero" class="pkg-hero"></div>
+<div class="pkg-hero" id="pkgHero">
+  <div class="container pkg-hero-content">
+    <div class="offer-banner d-none" id="offerBanner"></div>
+    <div class="d-flex gap-2 mb-2">
+      <span class="badge-cat" id="pkgCategory">—</span>
+      <span class="badge bg-light text-dark" id="pkgDifficulty">—</span>
+    </div>
+    <h1 class="fw-800 mb-2" id="pkgTitle">Loading...</h1>
+    <div class="d-flex gap-3 flex-wrap small opacity-90">
+      <span>📍 <span id="pkgDestination">—</span></span>
+      <span>⏱ <span id="pkgDuration">—</span> day(s)</span>
+      <span>👥 max <span id="pkgMaxGroup">—</span></span>
+      <span>⭐ <span id="pkgRating">—</span></span>
+    </div>
+  </div>
+</div>
 
 <div class="container py-4">
   <div class="row g-4">
     <div class="col-lg-8">
-      <h1 id="pkgTitle">Loading...</h1>
-      <div class="pkg-meta" id="pkgMeta"></div>
-
-      <h4>About this tour</h4>
-      <p id="pkgDescription"></p>
-
-      <h4 class="mt-4">What's included</h4>
-      <ul id="pkgIncludes" class="includes-grid"></ul>
-
-      <h4 class="mt-4">Not included</h4>
-      <ul id="pkgExcludes" class="includes-grid"></ul>
-
-      <h4 class="mt-4">Itinerary</h4>
-      <div id="pkgItinerary"></div>
-
-      <h4 class="mt-4">Meeting point</h4>
-      <p id="pkgMeeting"></p>
-
-      <h4 class="mt-4">Cancellation policy</h4>
-      <span id="pkgCancel" class="badge"></span>
+      <div class="mb-4"><h4 class="fw-700" data-i18n="about_tour">About this tour</h4><p id="pkgDescription" class="text-muted" style="white-space:pre-wrap"></p></div>
+      <div class="mb-4 d-none" id="highlightsSection"><h5 class="fw-700" data-i18n="highlights">✨ Highlights</h5><ul id="pkgHighlights" class="text-muted"></ul></div>
+      <div class="mb-4 d-none" id="includesSection"><h5 class="fw-700" data-i18n="included">✓ What's Included</h5><ul id="pkgIncludes" class="text-muted"></ul></div>
+      <div class="mb-4 d-none" id="meetingSection"><h5 class="fw-700" data-i18n="meeting_point">📍 Meeting Point</h5><p id="pkgMeeting" class="text-muted"></p></div>
+      <div class="mb-4 d-none" id="itinerarySection"><h5 class="fw-700" data-i18n="day_itinerary">🗺️ Day-by-day Itinerary</h5><div id="pkgItinerary"></div></div>
+      <div class="mb-4 d-none" id="variantsSection">
+        <h5 class="fw-700" data-i18n="choose_package">💼 Choose Your Package</h5>
+        <p class="small text-muted" data-i18n="choose_package_desc">Select the tier that matches your budget and preferences.</p>
+        <div id="pkgVariants"></div>
+      </div>
+      <div class="mb-4 d-none" id="addonsSection">
+        <h5 class="fw-700" data-i18n="optional_addons">🎁 Optional Add-ons</h5>
+        <p class="small text-muted" data-i18n="addons_desc">Enhance your experience with these extras.</p>
+        <div id="pkgAddons"></div>
+      </div>
+      <div class="mb-4 small text-muted"><span id="cancelPolicy">Flexible cancellation — 48h free.</span></div>
     </div>
 
     <div class="col-lg-4">
-      <div class="card shadow-sm price-card">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-baseline">
-            <div>
-              <div class="text-muted small">From</div>
-              <div class="h3 mb-0" id="pkgPrice"></div>
-            </div>
-            <div class="text-end">
-              <div class="text-warning" id="pkgRating">★ —</div>
-              <div class="small text-muted" id="pkgReviews">0 reviews</div>
-            </div>
-          </div>
-          <hr>
-          <label class="form-label small">Adults</label>
-          <input type="number" id="adultCount" class="form-control mb-2" value="2" min="1">
-          <label class="form-label small">Children</label>
-          <input type="number" id="childCount" class="form-control mb-3" value="0" min="0">
-          <label class="form-label small">Date</label>
-          <input type="date" id="bookDate" class="form-control mb-3">
-          <div class="d-flex justify-content-between mb-2 small">
-            <span>Subtotal</span><span id="pkgSubtotal">0 OMR</span>
-          </div>
-          <button class="btn btn-primary w-100 btn-lg" id="bookBtn">Request to Book</button>
-          <button class="btn btn-outline-secondary w-100 mt-2" id="wishBtn">❤ Save to Wishlist</button>
+      <div class="price-card">
+        <div class="text-center mb-3">
+          <div class="text-muted small" data-i18n="starting_from">Starting from</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--teal)" id="basePrice">— OMR</div>
+          <div class="small text-muted" data-i18n="per_adult">per adult</div>
         </div>
+        <hr>
+        <div class="mb-3">
+          <label class="form-label small fw-700" data-i18n="select_date">📅 Select Date</label>
+          <div id="datesContainer" class="d-flex gap-2 flex-wrap" style="max-height:140px;overflow-y:auto">
+            <div class="small text-muted">Loading dates...</div>
+          </div>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small fw-700" data-i18n="adults">👨 Adults</label>
+            <input type="number" class="form-control form-control-sm" id="adultCount" value="1" min="1" max="20" onchange="recalcPrice()">
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-700" data-i18n="children">🧒 Children</label>
+            <input type="number" class="form-control form-control-sm" id="childCount" value="0" min="0" max="20" onchange="recalcPrice()">
+          </div>
+        </div>
+        <div class="mb-3 small" id="priceBreakdown" style="background:#f8f9fa;padding:12px;border-radius:8px">
+          <div class="text-muted" data-i18n="pick_pkg_first">Pick a package above to see price breakdown.</div>
+        </div>
+        <button class="btn btn-teal w-100 fw-700 py-2" id="bookBtn" onclick="bookTour()" disabled data-i18n="book_now">📅 Book Now</button>
+        <p class="small text-muted text-center mt-2 mb-0" id="bookHint" data-i18n="select_date_hint">Select a date and package to book.</p>
       </div>
     </div>
   </div>
 </div>
 
-<script src="/js/seo.js"></script>
-<script src="/js/i18n.js"></script>
+<div id="toast-container"></div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=23"></script>
+<script src="/js/chatbot.js?v=13"></script>
 <script>
-const id = new URLSearchParams(location.search).get('id');
-const fmt = n => parseFloat(n || 0).toFixed(2);
+const qs = p => new URLSearchParams(window.location.search).get(p);
+const PKG_ID = qs('id');
 
-async function load() {
-  if (!id) return;
-  const r = await fetch('/api/packages/' + id, { credentials: 'include' });
-  const j = await r.json();
-  if (!j.success) { document.querySelector('.container').innerHTML = '<h3>Package not found</h3>'; return; }
-  const p = j.package;
-  document.title = p.title + ' — Guideon';
-  seoSet({
-    title: p.title + ' — Guideon',
-    description: (p.description || '').slice(0, 160),
-    image: p.cover_image || (p.images || [])[0] || '/logo.png',
-    type: 'product',
-  });
-  seoStructuredData({
-    '@context': 'https://schema.org',
-    '@type': 'TouristTrip',
-    name: p.title,
-    description: p.description,
-    image: p.cover_image,
-    itinerary: { '@type': 'ItemList', numberOfItems: p.duration_days },
-    offers: { '@type': 'Offer', price: p.price_adult, priceCurrency: p.currency || 'OMR' },
-  });
+let PACKAGE = null;
+let SELECTED_VARIANT = null;
+let SELECTED_DATE    = null;
+let SELECTED_ADDONS  = new Set();
 
-  document.getElementById('pkgHero').style.backgroundImage = `url(${p.cover_image || (p.images || [])[0] || '/img/muscat.jpg'})`;
-  document.getElementById('pkgTitle').textContent = p.title;
-  document.getElementById('pkgDescription').textContent = p.description;
-  document.getElementById('pkgMeta').innerHTML = `
-    <div>📍 ${p.destination || 'Oman'}</div>
-    <div>⏱ ${p.duration_days} day${p.duration_days>1?'s':''}</div>
-    <div>👥 up to ${p.max_group_size}</div>
-    <div>🎯 ${p.difficulty}</div>
-    <div>🏷️ ${p.category}</div>
-  `;
-  document.getElementById('pkgIncludes').innerHTML = (p.includes || []).map(x => `<li>✓ ${x}</li>`).join('') || '<li class="text-muted">—</li>';
-  document.getElementById('pkgExcludes').innerHTML = (p.excludes || []).map(x => `<li>✗ ${x}</li>`).join('') || '<li class="text-muted">—</li>';
-  document.getElementById('pkgItinerary').innerHTML = (p.itinerary || []).map((d, i) => `
-    <div class="itinerary-day">
-      <strong>Day ${i+1}${d.title ? ' — ' + d.title : ''}</strong>
-      <div class="small text-muted mt-1">${d.description || ''}</div>
-    </div>
-  `).join('') || '<p class="text-muted">Itinerary will be provided upon booking.</p>';
-  document.getElementById('pkgMeeting').textContent = p.meeting_point || '—';
-  const policy = p.cancellation_policy || 'flexible';
-  const cancelEl = document.getElementById('pkgCancel');
-  cancelEl.textContent = policy.toUpperCase();
-  cancelEl.className = 'badge badge-cancel-' + (policy === 'flexible' ? 'flex' : policy === 'moderate' ? 'mod' : 'strict');
-
-  document.getElementById('pkgPrice').textContent = fmt(p.price_adult) + ' ' + (p.currency || 'OMR');
-  document.getElementById('pkgRating').textContent = '★ ' + (p.rating || '—');
-  document.getElementById('pkgReviews').textContent = (p.totalReviews || 0) + ' reviews';
-
-  function recalc() {
-    const a = parseInt(document.getElementById('adultCount').value) || 0;
-    const c = parseInt(document.getElementById('childCount').value) || 0;
-    const sub = a * (p.price_adult || 0) + c * (p.price_child || 0);
-    document.getElementById('pkgSubtotal').textContent = fmt(sub) + ' ' + (p.currency || 'OMR');
-  }
-  ['adultCount', 'childCount'].forEach(id => document.getElementById(id).addEventListener('input', recalc));
-  recalc();
-
-  document.getElementById('bookBtn').addEventListener('click', () => {
-    alert('Package booking coming soon. Use the contact form or call us.');
-  });
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
 }
-load();
+
+async function loadPackage() {
+  if (!PKG_ID) { document.body.innerHTML = '<div class="container py-5 text-center"><h3>Tour not found</h3><a href="/" class="btn btn-teal mt-3">Home</a></div>'; return; }
+  try {
+    const r = await fetch('/api/packages/' + PKG_ID);
+    const d = await r.json();
+    if (!d.success || !d.package) throw new Error('Not found');
+    PACKAGE = d.package;
+    renderPackage();
+  } catch (e) {
+    document.body.innerHTML = '<div class="container py-5 text-center"><h3>Tour not found</h3><a href="/search.html" class="btn btn-teal mt-3">Browse tours</a></div>';
+  }
+}
+
+function renderPackage() {
+  const p = PACKAGE;
+  document.title = p.title + ' — Guideon';
+  document.getElementById('pkgTitle').textContent       = p.title;
+  document.getElementById('pkgCategory').textContent    = p.category || 'Tour';
+  document.getElementById('pkgDifficulty').textContent  = (p.difficulty || 'moderate').charAt(0).toUpperCase() + (p.difficulty || 'moderate').slice(1);
+  document.getElementById('pkgDestination').textContent = p.destination || '—';
+  document.getElementById('pkgDuration').textContent    = p.duration_days || 1;
+  document.getElementById('pkgMaxGroup').textContent    = p.max_group_size || 10;
+  document.getElementById('pkgRating').textContent      = p.rating ? (p.rating + ' ★ (' + p.totalReviews + ' reviews)') : 'New';
+
+  if (p.cover_image) document.getElementById('pkgHero').style.backgroundImage = `linear-gradient(135deg,rgba(15,28,62,0.6),rgba(15,123,108,0.6)),url('${p.cover_image}')`;
+
+  if (p.discountPercent > 0) {
+    const banner = document.getElementById('offerBanner');
+    banner.textContent = `🎁 ${p.discountPercent}% OFF${p.offerLabel ? ' — ' + p.offerLabel : ''}`;
+    banner.classList.remove('d-none');
+  }
+
+  document.getElementById('pkgDescription').textContent = p.description || '';
+
+  if (Array.isArray(p.highlights) && p.highlights.length) {
+    document.getElementById('highlightsSection').classList.remove('d-none');
+    document.getElementById('pkgHighlights').innerHTML = p.highlights.map(h => `<li>${h}</li>`).join('');
+  }
+  if (Array.isArray(p.includes) && p.includes.length) {
+    document.getElementById('includesSection').classList.remove('d-none');
+    document.getElementById('pkgIncludes').innerHTML = p.includes.map(i => `<li>✓ ${i}</li>`).join('');
+  }
+  if (p.meeting_point) {
+    document.getElementById('meetingSection').classList.remove('d-none');
+    document.getElementById('pkgMeeting').textContent = p.meeting_point;
+  }
+  if (Array.isArray(p.itinerary) && p.itinerary.length) {
+    document.getElementById('itinerarySection').classList.remove('d-none');
+    document.getElementById('pkgItinerary').innerHTML = p.itinerary.map((d, i) => `
+      <div class="itinerary-day">
+        <strong>Day ${i+1}${d.title ? ' — ' + d.title : ''}</strong>
+        <div class="text-muted small mt-1">${d.description || ''}</div>
+      </div>`).join('');
+  }
+
+  const variants = (Array.isArray(p.variants) && p.variants.length) ? p.variants
+    : [{ id:'base', name:'Standard Package', description:'Base tour package', priceAdult:p.price_adult, priceChild:p.price_child }];
+
+  document.getElementById('variantsSection').classList.remove('d-none');
+  document.getElementById('pkgVariants').innerHTML = variants.map((v, i) => `
+    <div class="variant-card" onclick="selectVariant(${i})" data-idx="${i}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="flex-grow-1" style="padding-right:40px">
+          <div class="variant-name">${v.name || 'Package'}</div>
+          ${v.description ? `<div class="small text-muted mt-1">${v.description}</div>` : ''}
+        </div>
+        <div class="text-end" style="min-width:120px">
+          <div class="variant-price">${(v.priceAdult || 0).toFixed(2)} OMR</div>
+          <div class="small text-muted">per adult${v.priceChild ? ` · ${v.priceChild} child` : ''}</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  PACKAGE._variants = variants;
+  selectVariant(0);
+
+  if (Array.isArray(p.addons) && p.addons.length) {
+    document.getElementById('addonsSection').classList.remove('d-none');
+    document.getElementById('pkgAddons').innerHTML = p.addons.map((a, i) => `
+      <label class="addon-row" for="addon-${i}">
+        <input type="checkbox" id="addon-${i}" onchange="toggleAddon(${i},this.checked)">
+        <div class="flex-grow-1">
+          <strong>${a.name}</strong>
+          ${a.description ? `<div class="small text-muted">${a.description}</div>` : ''}
+        </div>
+        <div class="text-end fw-700" style="color:var(--teal)">+${(a.price || 0).toFixed(2)} OMR</div>
+      </label>`).join('');
+  }
+
+  const dates = Array.isArray(p.availableDates) ? p.availableDates : [];
+  const datesEl = document.getElementById('datesContainer');
+  if (dates.length) {
+    const future = dates.filter(d => d >= new Date().toISOString().slice(0,10)).sort();
+    datesEl.innerHTML = future.length ? future.map(d => `
+      <button class="date-btn" onclick="selectDate('${d}',this)">${formatDate(d)}</button>
+    `).join('') : '<div class="small text-muted">No upcoming dates available.</div>';
+  } else {
+    datesEl.innerHTML = '<div class="small text-muted">Contact the guide for available dates.</div>';
+  }
+
+  document.getElementById('basePrice').textContent = (Math.min(...variants.map(v => v.priceAdult || Infinity))).toFixed(2) + ' OMR';
+
+  const cp = p.cancellation_policy || 'flexible';
+  document.getElementById('cancelPolicy').textContent =
+    cp === 'flexible' ? 'Flexible — full refund 48h before' :
+    cp === 'moderate' ? 'Moderate — full refund 5 days before' :
+    'Strict — non-refundable';
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function selectVariant(idx) {
+  SELECTED_VARIANT = idx;
+  document.querySelectorAll('.variant-card').forEach((c, i) => c.classList.toggle('selected', i === idx));
+  recalcPrice();
+}
+
+function selectDate(date, btn) {
+  SELECTED_DATE = date;
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  recalcPrice();
+}
+
+function toggleAddon(idx, on) {
+  if (on) SELECTED_ADDONS.add(idx); else SELECTED_ADDONS.delete(idx);
+  recalcPrice();
+}
+
+function recalcPrice() {
+  if (SELECTED_VARIANT === null || !PACKAGE) return;
+  const v = PACKAGE._variants[SELECTED_VARIANT];
+  const adults   = parseInt(document.getElementById('adultCount').value) || 0;
+  const children = parseInt(document.getElementById('childCount').value) || 0;
+
+  const subtotal = (v.priceAdult || 0) * adults + (v.priceChild || 0) * children;
+
+  let addonsTotal = 0;
+  const addonLines = [];
+  SELECTED_ADDONS.forEach(i => {
+    const a = PACKAGE.addons[i];
+    if (a) { addonsTotal += (a.price || 0); addonLines.push({ name: a.name, price: a.price }); }
+  });
+
+  const discount = PACKAGE.discountPercent || 0;
+  const beforeDiscount = subtotal + addonsTotal;
+  const discountAmount = beforeDiscount * (discount / 100);
+  const total = beforeDiscount - discountAmount;
+
+  let html = `<div class="price-line"><span>${v.name} × ${adults} adult${adults>1?'s':''}${children?' + '+children+' child':''}</span><span>${subtotal.toFixed(2)} OMR</span></div>`;
+  addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${a.name}</span><span>${a.price.toFixed(2)} OMR</span></div>`; });
+  if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 Discount (${discount}%)</span><span>−${discountAmount.toFixed(2)} OMR</span></div>`;
+  html += `<div class="price-line price-total"><span>Total</span><span style="color:var(--teal)">${total.toFixed(2)} OMR</span></div>`;
+  document.getElementById('priceBreakdown').innerHTML = html;
+
+  const ready = SELECTED_DATE && adults > 0;
+  const btn = document.getElementById('bookBtn');
+  btn.disabled = !ready;
+  document.getElementById('bookHint').textContent = ready
+    ? 'Your booking will be sent to the guide for confirmation.'
+    : 'Select a date to enable booking.';
+}
+
+async function bookTour() {
+  if (SELECTED_VARIANT === null || !SELECTED_DATE) return;
+  const v = PACKAGE._variants[SELECTED_VARIANT];
+  const adults   = parseInt(document.getElementById('adultCount').value) || 1;
+  const children = parseInt(document.getElementById('childCount').value) || 0;
+  const addons   = Array.from(SELECTED_ADDONS).map(i => PACKAGE.addons[i]);
+
+  let total = (v.priceAdult || 0) * adults + (v.priceChild || 0) * children + addons.reduce((s, a) => s + (a.price || 0), 0);
+  if (PACKAGE.discountPercent > 0) total = total * (1 - PACKAGE.discountPercent / 100);
+
+  const body = {
+    guideId:       PACKAGE.providerId,
+    packageId:     PACKAGE.id,
+    tourDate:      SELECTED_DATE,
+    duration:      PACKAGE.duration_days === 1 ? 'full' : 'multi',
+    destination:   PACKAGE.destination,
+    participants:  adults + children,
+    adultCount:    adults,
+    childCount:    children,
+    variantName:   v.name,
+    variantPrice:  v.priceAdult,
+    addons:        addons.map(a => ({ name: a.name, price: a.price })),
+    totalAmount:   parseFloat(total.toFixed(2)),
+    specialRequests: '',
+  };
+
+  const btn = document.getElementById('bookBtn');
+  btn.disabled = true; btn.textContent = 'Booking...';
+  try {
+    const r = await fetch('/api/bookings', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (r.status === 401) { window.location.href = '/login.html?return=' + encodeURIComponent(window.location.href); return; }
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    toast('🎉 Booking request sent!', 'success');
+    setTimeout(() => window.location.href = '/tourist-dashboard.html', 1500);
+  } catch (e) {
+    toast(e.message || 'Failed to book', 'error');
+    btn.disabled = false; btn.textContent = '📅 Book Now';
+  }
+}
+
+loadPackage();
 </script>
-</body></html>
+</body>
+</html>
