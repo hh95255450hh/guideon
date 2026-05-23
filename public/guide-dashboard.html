@@ -195,11 +195,31 @@
                     <label class="form-label small fw-600" data-i18n="tour_destination">Destination *</label>
                     <input class="form-control" id="tourDestination" data-i18n-ph="tour_dest_ph" placeholder="e.g. Nizwa, Jebel Akhdar" required>
                   </div>
-                  <div class="col-md-3">
-                    <label class="form-label small fw-600" data-i18n="tour_duration">Duration (days) *</label>
-                    <input type="number" class="form-control" id="tourDuration" value="1" min="1" max="14" required>
+                  <div class="col-12">
+                    <label class="form-label small fw-600" data-i18n="tour_duration_lbl">Tour Duration *</label>
+                    <div class="row g-2">
+                      <div class="col-4">
+                        <div class="input-group input-group-sm">
+                          <input type="number" class="form-control" id="tourDuration" value="0" min="0" max="14" required>
+                          <span class="input-group-text" data-i18n="days_lbl">days</span>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="input-group input-group-sm">
+                          <input type="number" class="form-control" id="tourDurationHours" value="4" min="0" max="23">
+                          <span class="input-group-text" data-i18n="hours_lbl">hours</span>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="input-group input-group-sm">
+                          <input type="number" class="form-control" id="tourDurationMinutes" value="0" min="0" max="59" step="5">
+                          <span class="input-group-text" data-i18n="minutes_lbl">min</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-text small" data-i18n="tour_duration_hint">Example: 0 days · 4 hours · 30 minutes — for a half-day tour. For an overnight safari use 1 day · 0 hours.</div>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-6">
                     <label class="form-label small fw-600" data-i18n="tour_difficulty">Difficulty</label>
                     <select class="form-select" id="tourDifficulty">
                       <option value="easy">Easy</option><option value="moderate" selected>Moderate</option><option value="hard">Hard</option>
@@ -343,7 +363,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=31"></script>
+<script src="/js/i18n.js?v=32"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -484,6 +504,21 @@ async function saveVideo() {
 // ════════════════════════ TOURS MANAGEMENT ════════════════════════
 let MY_TOURS = [];
 
+// Format a tour duration into a human-readable string like "1d 4h 30m" / "4h" / "30m"
+function fmtDuration(t) {
+  const d = parseInt(t?.duration_days)    || 0;
+  const h = parseInt(t?.duration_hours)   || 0;
+  const m = parseInt(t?.duration_minutes) || 0;
+  const parts = [];
+  const dLbl = (window.I18N && I18N.t('day_short'))    || 'd';
+  const hLbl = (window.I18N && I18N.t('hour_short'))   || 'h';
+  const mLbl = (window.I18N && I18N.t('minute_short')) || 'm';
+  if (d > 0) parts.push(d + dLbl);
+  if (h > 0) parts.push(h + hLbl);
+  if (m > 0) parts.push(m + mLbl);
+  return parts.length ? parts.join(' ') : ((window.I18N && I18N.t('not_set')) || '—');
+}
+
 async function loadMyTours() {
   const el = document.getElementById('myToursList');
   if (!el) return;
@@ -507,7 +542,7 @@ async function loadMyTours() {
               ${t.isPublished ? '<span class="badge bg-success" style="font-size:.65rem">PUBLISHED</span>' : '<span class="badge bg-secondary" style="font-size:.65rem">DRAFT</span>'}
               ${hasOffer ? `<span class="badge bg-warning text-dark" style="font-size:.65rem">🎁 ${t.discountPercent}% OFF ${t.offerLabel ? '— '+t.offerLabel : ''}</span>` : ''}
             </div>
-            <div class="small text-muted">📍 ${t.destination || '—'} · ⏱ ${t.duration_days} day(s) · 👥 max ${t.max_group_size}</div>
+            <div class="small text-muted">📍 ${t.destination || '—'} · ⏱ ${fmtDuration(t)} · 👥 max ${t.max_group_size}</div>
             <div class="small mt-1">
               ${hasOffer
                 ? `<span style="text-decoration:line-through;color:#999">${t.price_adult} OMR</span> <strong class="text-teal">${finalPrice} OMR</strong> ${I18N.t('per_2_people') || 'for 2 people'}`
@@ -609,7 +644,9 @@ function openTourModal(tour) {
   document.getElementById('tourTitle').value       = tour?.title || '';
   document.getElementById('tourCategory').value    = tour?.category || 'Cultural';
   document.getElementById('tourDestination').value = tour?.destination || '';
-  document.getElementById('tourDuration').value    = tour?.duration_days || 1;
+  document.getElementById('tourDuration').value         = tour?.duration_days != null ? tour.duration_days : 0;
+  document.getElementById('tourDurationHours').value    = tour?.duration_hours != null ? tour.duration_hours : (tour?.duration_days ? 0 : 4);
+  document.getElementById('tourDurationMinutes').value  = tour?.duration_minutes || 0;
   document.getElementById('tourDifficulty').value  = tour?.difficulty || 'moderate';
   document.getElementById('tourPriceAdult').value  = tour?.price_adult || '';
   document.getElementById('tourPriceChild').value  = tour?.price_child || '';
@@ -655,7 +692,9 @@ async function saveTour() {
     title:          document.getElementById('tourTitle').value.trim(),
     category:       document.getElementById('tourCategory').value,
     destination:    document.getElementById('tourDestination').value.trim(),
-    duration_days:  parseInt(document.getElementById('tourDuration').value),
+    duration_days:    parseInt(document.getElementById('tourDuration').value) || 0,
+    duration_hours:   parseInt(document.getElementById('tourDurationHours').value) || 0,
+    duration_minutes: parseInt(document.getElementById('tourDurationMinutes').value) || 0,
     difficulty:     document.getElementById('tourDifficulty').value,
     price_adult:    parseFloat(document.getElementById('tourPriceAdult').value),
     price_child:    parseFloat(document.getElementById('tourPriceChild').value) || 0,

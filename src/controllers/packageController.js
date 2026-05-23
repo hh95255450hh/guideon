@@ -62,7 +62,8 @@ exports.create = async (req, res) => {
 
     const {
       title, description, destination, region, category, difficulty,
-      duration_days, max_group_size, price_adult, price_child, currency,
+      duration_days, duration_hours, duration_minutes,
+      max_group_size, price_adult, price_child, currency,
       includes, excludes, itinerary, meeting_point, languages, images,
       cover_image, cancellation_policy,
       isPublished, discountPercent, offerLabel, offerUntil,
@@ -82,7 +83,9 @@ exports.create = async (req, res) => {
       region: region || '',
       category: category || 'cultural',
       difficulty: difficulty || 'moderate',
-      duration_days: parseInt(duration_days) || 1,
+      duration_days:    Math.max(0, parseInt(duration_days) || 0),
+      duration_hours:   Math.min(23, Math.max(0, parseInt(duration_hours) || 0)),
+      duration_minutes: Math.min(59, Math.max(0, parseInt(duration_minutes) || 0)),
       max_group_size: parseInt(max_group_size) || 10,
       price_adult: parseFloat(price_adult),
       price_child: parseFloat(price_child) || 0,
@@ -127,7 +130,8 @@ exports.update = async (req, res) => {
     }
 
     const allowed = ['title', 'description', 'destination', 'region', 'category', 'difficulty',
-      'duration_days', 'max_group_size', 'price_adult', 'price_child', 'currency',
+      'duration_days', 'duration_hours', 'duration_minutes',
+      'max_group_size', 'price_adult', 'price_child', 'currency',
       'includes', 'excludes', 'itinerary', 'meeting_point', 'languages', 'images',
       'cover_image', 'cancellation_policy', 'isPublished',
       'discountPercent', 'offerLabel', 'offerUntil',

@@ -433,7 +433,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=31"></script>
+<script src="/js/i18n.js?v=32"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script src="/js/seo.js"></script>
 <script>
@@ -539,8 +539,15 @@ async function loadGuideTours() {
     list.innerHTML = tours.map(t => {
       const img = pickImg(t);
       const price = t.price_adult || t.priceAdult || t.price || 0;
-      const days = t.duration_days || t.durationDays;
-      const dur = days ? `${days} ${I18N.t('days') || 'days'}` : (t.duration || '');
+      const d = parseInt(t.duration_days)    || 0;
+      const h = parseInt(t.duration_hours)   || 0;
+      const mn = parseInt(t.duration_minutes) || 0;
+      const dLbl = I18N.t('day_short')||'d', hLbl = I18N.t('hour_short')||'h', mLbl = I18N.t('minute_short')||'m';
+      const parts = [];
+      if (d>0) parts.push(d+dLbl);
+      if (h>0) parts.push(h+hLbl);
+      if (mn>0) parts.push(mn+mLbl);
+      const dur = parts.length ? parts.join(' ') : (t.duration || '');
       const dest = t.destination || t.location || '';
       const disc = t.discountPercent || t.discount_percent;
       const offer = disc ? `<span class="badge bg-danger position-absolute top-0 start-0 m-2">-${disc}%</span>` : '';

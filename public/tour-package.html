@@ -49,7 +49,7 @@
     <h1 class="fw-800 mb-2" id="pkgTitle">Loading...</h1>
     <div class="d-flex gap-3 flex-wrap small opacity-90">
       <span>📍 <span id="pkgDestination">—</span></span>
-      <span>⏱ <span id="pkgDuration">—</span> day(s)</span>
+      <span>⏱ <span id="pkgDuration">—</span></span>
       <span>👥 max <span id="pkgMaxGroup">—</span></span>
       <span>⭐ <span id="pkgRating">—</span></span>
     </div>
@@ -110,7 +110,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=31"></script>
+<script src="/js/i18n.js?v=32"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 const qs = p => new URLSearchParams(window.location.search).get(p);
@@ -120,6 +120,21 @@ let PACKAGE = null;
 let SELECTED_VARIANT = null;
 let SELECTED_DATE    = null;
 let SELECTED_ADDONS  = new Set();
+
+// Format tour duration → "1d 4h 30m" / "4h" / "30m"
+function fmtDuration(t) {
+  const d = parseInt(t?.duration_days)    || 0;
+  const h = parseInt(t?.duration_hours)   || 0;
+  const m = parseInt(t?.duration_minutes) || 0;
+  const parts = [];
+  const dLbl = (window.I18N && I18N.t('day_short'))    || 'd';
+  const hLbl = (window.I18N && I18N.t('hour_short'))   || 'h';
+  const mLbl = (window.I18N && I18N.t('minute_short')) || 'm';
+  if (d > 0) parts.push(d + dLbl);
+  if (h > 0) parts.push(h + hLbl);
+  if (m > 0) parts.push(m + mLbl);
+  return parts.length ? parts.join(' ') : '—';
+}
 
 function toast(msg, type='') {
   const el = document.createElement('div');
@@ -149,7 +164,7 @@ function renderPackage() {
   document.getElementById('pkgCategory').textContent    = p.category || 'Tour';
   document.getElementById('pkgDifficulty').textContent  = (p.difficulty || 'moderate').charAt(0).toUpperCase() + (p.difficulty || 'moderate').slice(1);
   document.getElementById('pkgDestination').textContent = p.destination || '—';
-  document.getElementById('pkgDuration').textContent    = p.duration_days || 1;
+  document.getElementById('pkgDuration').textContent    = fmtDuration(p);
   document.getElementById('pkgMaxGroup').textContent    = p.max_group_size || 10;
   document.getElementById('pkgRating').textContent      = p.rating ? (p.rating + ' ★ (' + p.totalReviews + ' reviews)') : 'New';
 
@@ -324,7 +339,7 @@ async function bookTour() {
     guideId:       PACKAGE.providerId,
     packageId:     PACKAGE.id,
     tourDate:      SELECTED_DATE,
-    duration:      PACKAGE.duration_days === 1 ? 'full' : 'multi',
+    duration:      (parseInt(PACKAGE.duration_days)||0) >= 1 ? 'multi' : 'full',
     destination:   PACKAGE.destination,
     participants:  people,
     adultCount:    people,        // kept for back-compat with booking model

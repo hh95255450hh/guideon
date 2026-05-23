@@ -438,6 +438,16 @@ const TRANSLATIONS = {
     people:                 'people',
     booking_will_be_sent:   'Your booking will be sent to the guide for confirmation.',
     select_date_to_book:    'Select a date to enable booking.',
+    // Tour duration in days+hours+minutes
+    tour_duration_lbl:      'Tour Duration *',
+    tour_duration_hint:     'Example: 0 days · 4 hours · 30 minutes — for a half-day tour. For an overnight safari use 1 day · 0 hours.',
+    days_lbl:               'days',
+    hours_lbl:              'hours',
+    minutes_lbl:            'min',
+    day_short:              'd',
+    hour_short:             'h',
+    minute_short:           'm',
+    not_set:                '—',
     // My tours
     my_tours_title:   '🗺️ My Tours',
     my_tours_desc:    'Create individual tours with their own price, duration, and destination. Add special offers anytime.',
@@ -1295,6 +1305,16 @@ const TRANSLATIONS = {
     people:                 'أشخاص',
     booking_will_be_sent:   'سيُرسَل حجزك للمرشد لتأكيده.',
     select_date_to_book:    'اختر التاريخ لتفعيل الحجز.',
+    // مدة الرحلة بالأيام والساعات والدقائق
+    tour_duration_lbl:      'مدة الرحلة *',
+    tour_duration_hint:     'مثال: 0 أيام · 4 ساعات · 30 دقيقة — لرحلة نصف يوم. لرحلة صحراوية مع مبيت استخدم 1 يوم · 0 ساعات.',
+    days_lbl:               'أيام',
+    hours_lbl:              'ساعات',
+    minutes_lbl:            'دقيقة',
+    day_short:              'ي',
+    hour_short:             'س',
+    minute_short:           'د',
+    not_set:                '—',
     // My tours
     my_tours_title:   '🗺️ رحلاتي',
     my_tours_desc:    'أنشئ رحلات منفصلة بسعر ومدة ووجهة لكل واحدة. أضف عروضاً متى شئت.',
