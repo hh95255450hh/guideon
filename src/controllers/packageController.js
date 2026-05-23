@@ -7,10 +7,11 @@ const users    = new SupabaseDB('users');
 // GET /api/packages — public list with filters
 exports.list = async (req, res) => {
   try {
-    const { destination, category, difficulty, minPrice, maxPrice, minDays, maxDays, sortBy } = req.query;
+    const { destination, category, difficulty, minPrice, maxPrice, minDays, maxDays, sortBy, providerId } = req.query;
 
     let pkgs = await packages.findAllByField('isPublished', true);
 
+    if (providerId)   pkgs = pkgs.filter(p => p.providerId === providerId);
     if (destination)  pkgs = pkgs.filter(p => (p.destination || '').toLowerCase().includes(destination.toLowerCase()));
     if (category)     pkgs = pkgs.filter(p => p.category === category);
     if (difficulty)   pkgs = pkgs.filter(p => p.difficulty === difficulty);

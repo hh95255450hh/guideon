@@ -363,6 +363,15 @@ const TRANSLATIONS = {
     col_bookings:     'Bookings',
     col_conversion:   'Conversion',
     no_tours_yet:     'No tours yet. Click "Add New Tour" to create your first.',
+    // Guide profile tours
+    guide_tours_title:'🗺️ Tours by this Guide',
+    guide_tours_desc: 'Choose from these curated tours — each with its own pricing, dates and inclusions.',
+    from:             'From',
+    days:             'days',
+    packages:         'packages',
+    error_loading:    'Failed to load tours',
+    view_tours_btn:   '🗺️ View Tours Below',
+    available:        'available',
     // My tours
     my_tours_title:   '🗺️ My Tours',
     my_tours_desc:    'Create individual tours with their own price, duration, and destination. Add special offers anytime.',
@@ -1145,6 +1154,15 @@ const TRANSLATIONS = {
     col_bookings:     'الحجوزات',
     col_conversion:   'التحويل',
     no_tours_yet:     'لا توجد رحلات بعد. اضغط "إضافة رحلة جديدة" لإنشاء أول رحلة.',
+    // Guide profile tours
+    guide_tours_title:'🗺️ رحلات هذا المرشد',
+    guide_tours_desc: 'اختر من بين هذه الرحلات المختارة — لكل رحلة سعرها وتواريخها وما تشمله.',
+    from:             'يبدأ من',
+    days:             'أيام',
+    packages:         'باقات',
+    error_loading:    'تعذّر تحميل الرحلات',
+    view_tours_btn:   '🗺️ عرض الرحلات أدناه',
+    available:        'متاحة',
     // My tours
     my_tours_title:   '🗺️ رحلاتي',
     my_tours_desc:    'أنشئ رحلات منفصلة بسعر ومدة ووجهة لكل واحدة. أضف عروضاً متى شئت.',

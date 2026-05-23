@@ -417,12 +417,23 @@
         </div><!-- /booking-panel -->
       </div><!-- /right col -->
     </div>
+
+    <!-- ════════════════════════ GUIDE'S TOURS ════════════════════════ -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <h3 class="fw-800 mb-1" data-i18n="guide_tours_title">🗺️ Tours by this Guide</h3>
+        <p class="text-muted" data-i18n="guide_tours_desc">Choose from these curated tours — each with its own pricing, dates and inclusions.</p>
+        <div id="guideToursList" class="row g-3 mt-2">
+          <div class="col-12 text-center text-muted py-4" data-i18n="loading">Loading...</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div><!-- /pageContent -->
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=27"></script>
+<script src="/js/i18n.js?v=28"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script src="/js/seo.js"></script>
 <script>
@@ -472,6 +483,96 @@ async function init() {
   renderAll();
   document.getElementById('loadingState').classList.add('d-none');
   document.getElementById('pageContent').classList.remove('d-none');
+
+  loadGuideTours();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Load Guide's Tour Packages
+// ═══════════════════════════════════════════════════════════
+async function loadGuideTours() {
+  const list = document.getElementById('guideToursList');
+  if (!list || !GUIDE) return;
+  try {
+    const res = await fetch(`/api/packages?providerId=${encodeURIComponent(GUIDE.id)}`, { credentials:'include' });
+    const data = await res.json();
+    const tours = (data.packages || data.data || []).filter(p => p.status !== 'draft' && p.status !== 'archived');
+
+    if (!tours.length) {
+      list.innerHTML = `<div class="col-12 text-center text-muted py-4">${I18N.t('no_tours_yet') || 'No tours yet'}</div>`;
+      return;
+    }
+
+    // If the guide has published tour packages, hide the legacy daily-rate booking panel
+    const bp = document.querySelector('.booking-panel');
+    if (bp) {
+      const cheapest = tours.reduce((min, t) => {
+        const p = t.price_adult || t.priceAdult || t.price || Infinity;
+        return p < min ? p : min;
+      }, Infinity);
+      bp.innerHTML = `
+        <div class="text-center">
+          <div class="text-muted small mb-1">${I18N.t('from') || 'From'}</div>
+          <div class="fw-800 mb-2" style="color:var(--teal);font-size:2rem;">OMR ${isFinite(cheapest) ? cheapest : '—'}</div>
+          <div class="text-muted small mb-3">${tours.length} ${I18N.t('packages') || 'packages'} ${I18N.t('available') || 'available'}</div>
+          <button class="btn btn-success w-100 fw-700" onclick="document.getElementById('guideToursList').scrollIntoView({behavior:'smooth'})">
+            ${I18N.t('view_tours_btn') || '🗺️ View Tours Below'}
+          </button>
+          <div class="small text-muted mt-2">${I18N.t('gp_confirm_note') || 'Guide confirms within 24 hours · Free cancellation'}</div>
+        </div>`;
+    }
+
+    const pickImg = (t) => {
+      if (t.cover_image) return t.cover_image;
+      if (t.coverImage) return t.coverImage;
+      if (t.image) return t.image;
+      if (t.images && t.images[0]) return t.images[0];
+      const d = (t.destination || t.region || '').toLowerCase();
+      if (d.includes('musandam')) return '/img/musandam.jpg';
+      if (d.includes('salalah') || d.includes('dhofar')) return '/img/salalah.jpg';
+      if (d.includes('nizwa')) return '/img/nizwa.jpg';
+      if (d.includes('wahiba') || d.includes('desert') || d.includes('sand')) return '/img/desert.jpg';
+      if (d.includes('wadi')) return '/img/wadi.jpg';
+      return '/img/muscat.jpg';
+    };
+
+    list.innerHTML = tours.map(t => {
+      const img = pickImg(t);
+      const price = t.price_adult || t.priceAdult || t.price || 0;
+      const days = t.duration_days || t.durationDays;
+      const dur = days ? `${days} ${I18N.t('days') || 'days'}` : (t.duration || '');
+      const dest = t.destination || t.location || '';
+      const disc = t.discountPercent || t.discount_percent;
+      const offer = disc ? `<span class="badge bg-danger position-absolute top-0 start-0 m-2">-${disc}%</span>` : '';
+      const variants = (t.variants || []).length;
+      return `
+        <div class="col-md-6 col-lg-4">
+          <a href="/tour-package.html?id=${t.id}" class="text-decoration-none text-dark">
+            <div class="card h-100 shadow-sm border-0 position-relative" style="border-radius:14px;overflow:hidden;transition:.2s;">
+              <div style="height:180px;background:url('${img}') center/cover;"></div>
+              ${offer}
+              <div class="card-body">
+                <h5 class="fw-800 mb-1">${escapeHtml(t.title || '')}</h5>
+                <div class="text-muted small mb-2">${escapeHtml(dest)} ${dur ? '· ' + escapeHtml(dur) : ''}</div>
+                <div class="d-flex justify-content-between align-items-end">
+                  <div>
+                    <div class="text-muted small">${I18N.t('from') || 'From'}</div>
+                    <div class="fw-800" style="color:var(--teal);font-size:1.15rem;">OMR ${price}</div>
+                  </div>
+                  ${variants ? `<div class="badge bg-light text-dark">${variants} ${I18N.t('packages') || 'packages'}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div class="col-12 text-center text-muted py-4">${I18N.t('error_loading') || 'Failed to load tours'}</div>`;
+  }
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 function showError() {
