@@ -159,7 +159,7 @@ app.get(['/search', '/guide-profile', '/login', '/register',
          '/tourist-dashboard', '/guide-dashboard', '/company-dashboard', '/admin', '/plan-trip',
          '/wishlist', '/profile', '/checkout', '/checkout-success', '/offline',
          '/forgot-password', '/reset-password',
-         '/tour-package', '/shared-wishlist'], (req, res, next) => {
+         '/tour-package', '/shared-wishlist', '/qr'], (req, res, next) => {
   res.sendFile(path.join(__dirname, '..', 'public', req.path.replace('/', '') + '.html'), err => {
     if (err) next();
   });
