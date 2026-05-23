@@ -13,7 +13,15 @@ exports.list = async (req, res) => {
 
     if (providerId)   pkgs = pkgs.filter(p => p.providerId === providerId);
     if (destination)  pkgs = pkgs.filter(p => (p.destination || '').toLowerCase().includes(destination.toLowerCase()));
-    if (category)     pkgs = pkgs.filter(p => p.category === category);
+    if (category) {
+      // Match either the legacy single category field OR any item in the new categories array
+      const cat = category.toLowerCase();
+      pkgs = pkgs.filter(p => {
+        if (p.category && p.category.toLowerCase() === cat) return true;
+        if (Array.isArray(p.categories) && p.categories.some(c => (c || '').toLowerCase() === cat)) return true;
+        return false;
+      });
+    }
     if (difficulty)   pkgs = pkgs.filter(p => p.difficulty === difficulty);
     if (minPrice)     pkgs = pkgs.filter(p => p.price_adult >= parseFloat(minPrice));
     if (maxPrice)     pkgs = pkgs.filter(p => p.price_adult <= parseFloat(maxPrice));
@@ -61,7 +69,7 @@ exports.create = async (req, res) => {
     }
 
     const {
-      title, description, destination, region, category, difficulty,
+      title, description, destination, region, category, categories, difficulty,
       duration_days, duration_hours, duration_minutes,
       max_group_size, price_adult, price_child, currency,
       includes, excludes, itinerary, meeting_point, languages, images,
@@ -81,7 +89,10 @@ exports.create = async (req, res) => {
       title, description,
       destination: destination || '',
       region: region || '',
-      category: category || 'cultural',
+      category: category || (Array.isArray(categories) && categories[0]) || 'Cultural',
+      categories: Array.isArray(categories) && categories.length
+        ? categories
+        : (category ? [category] : []),
       difficulty: difficulty || 'moderate',
       duration_days:    Math.max(0, parseInt(duration_days) || 0),
       duration_hours:   Math.min(23, Math.max(0, parseInt(duration_hours) || 0)),
@@ -129,7 +140,7 @@ exports.update = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
-    const allowed = ['title', 'description', 'destination', 'region', 'category', 'difficulty',
+    const allowed = ['title', 'description', 'destination', 'region', 'category', 'categories', 'difficulty',
       'duration_days', 'duration_hours', 'duration_minutes',
       'max_group_size', 'price_adult', 'price_child', 'currency',
       'includes', 'excludes', 'itinerary', 'meeting_point', 'languages', 'images',

@@ -1,7 +1,8 @@
 const SupabaseDB = require('../models/SupabaseDB');
 
-const users   = new SupabaseDB('users');
-const reviews = new SupabaseDB('reviews', 'reviewId');
+const users    = new SupabaseDB('users');
+const reviews  = new SupabaseDB('reviews', 'reviewId');
+const packages = new SupabaseDB('tour_packages');
 
 exports.searchGuides = async (req, res) => {
   try {
@@ -19,7 +20,25 @@ exports.searchGuides = async (req, res) => {
       guides = guides.filter(g => (g.availability || []).includes(date));
     }
     if (specialisation) {
-      guides = guides.filter(g => (g.specialisations || []).some(s => s.toLowerCase().includes(specialisation.toLowerCase())));
+      const spec = specialisation.toLowerCase();
+      // Match guides whose specialisations list contains the term...
+      let matched = guides.filter(g => (g.specialisations || []).some(s => s.toLowerCase().includes(spec)));
+      // ...OR who have at least one published tour package in that category
+      try {
+        let tours = [];
+        try { tours = await packages.findAllByField('isPublished', true); } catch {}
+        const guidesWithCat = new Set(tours
+          .filter(t => {
+            if (t.category && t.category.toLowerCase().includes(spec)) return true;
+            if (Array.isArray(t.categories) && t.categories.some(c => (c || '').toLowerCase().includes(spec))) return true;
+            return false;
+          })
+          .map(t => t.providerId));
+        const byTours = guides.filter(g => guidesWithCat.has(g.id));
+        const ids = new Set(matched.map(g => g.id));
+        for (const g of byTours) if (!ids.has(g.id)) matched.push(g);
+      } catch (e) { /* if packages table missing, fall back to specialisations only */ }
+      guides = matched;
     }
     if (minRating) guides = guides.filter(g => g.rating >= parseFloat(minRating));
     if (minPrice)  guides = guides.filter(g => g.pricePerDay >= parseFloat(minPrice));

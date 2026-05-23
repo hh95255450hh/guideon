@@ -178,18 +178,21 @@
                     <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
                     <input class="form-control" id="tourTitle" data-i18n-ph="tour_title_ph" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
                   </div>
-                  <div class="col-md-4">
-                    <label class="form-label small fw-600" data-i18n="tour_category">Category</label>
-                    <select class="form-select" id="tourCategory">
-                      <option value="Cultural" data-i18n="cat_cultural">🏰 Cultural</option>
-                      <option value="Mountain" data-i18n="cat_mountain">🏔️ Mountain</option>
-                      <option value="Desert" data-i18n="cat_desert">🐪 Desert</option>
-                      <option value="Marine" data-i18n="cat_marine">🐬 Marine</option>
-                      <option value="Wildlife" data-i18n="cat_wildlife">🐢 Wildlife</option>
-                      <option value="Historical" data-i18n="cat_historical">🕌 Historical</option>
-                      <option value="Adventure" data-i18n="cat_adventure">⚡ Adventure</option>
-                      <option value="Food" data-i18n="cat_food">🍽️ Food</option>
-                    </select>
+                  <div class="col-12">
+                    <label class="form-label small fw-600" data-i18n="tour_categories_lbl">Categories (pick one or more) *</label>
+                    <div id="tourCategoryChips" class="d-flex flex-wrap gap-2" data-multi-cat>
+                      <label class="cat-chip"><input type="checkbox" value="Cultural"   hidden><span>🏰 <span data-i18n="cat_cultural">Cultural</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Mountain"   hidden><span>🏔️ <span data-i18n="cat_mountain">Mountain</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Desert"     hidden><span>🐪 <span data-i18n="cat_desert">Desert</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Marine"     hidden><span>🐬 <span data-i18n="cat_marine">Marine</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Wildlife"   hidden><span>🐢 <span data-i18n="cat_wildlife">Wildlife</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Historical" hidden><span>🕌 <span data-i18n="cat_historical">Historical</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Adventure"  hidden><span>⚡ <span data-i18n="cat_adventure">Adventure</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Food"       hidden><span>🍽️ <span data-i18n="cat_food">Food</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Wadi"       hidden><span>💦 <span data-i18n="cat_wadi">Wadi</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Beach"      hidden><span>🏖️ <span data-i18n="cat_beach">Beach</span></span></label>
+                    </div>
+                    <div class="form-text small" data-i18n="tour_categories_hint">A tour can belong to several categories — e.g. Desert + Adventure + Wildlife.</div>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label small fw-600" data-i18n="tour_destination">Destination *</label>
@@ -363,7 +366,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=32"></script>
+<script src="/js/i18n.js?v=33"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -406,6 +409,15 @@ async function checkAuth() {
     loadBookings();
     loadAnalytics();
     if (typeof loadMyTours === 'function') loadMyTours();
+    // Wire up category chips (multi-select)
+    document.querySelectorAll('#tourCategoryChips .cat-chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        const cb = chip.querySelector('input');
+        cb.checked = !cb.checked;
+        chip.classList.toggle('active', cb.checked);
+      });
+    });
     loadTripRequests();
     renderGallery();
     if (GUIDE.videoUrl) document.getElementById('videoUrlInput').value = GUIDE.videoUrl;
@@ -642,7 +654,15 @@ function removeItineraryDay(i) { TOUR_ITINERARY.splice(i,1); renderItinerary(); 
 function openTourModal(tour) {
   document.getElementById('tourId').value          = tour?.id || '';
   document.getElementById('tourTitle').value       = tour?.title || '';
-  document.getElementById('tourCategory').value    = tour?.category || 'Cultural';
+  // Categories: support both legacy single string and new array
+  const tourCats = Array.isArray(tour?.categories) && tour.categories.length
+    ? tour.categories
+    : (tour?.category ? [tour.category] : []);
+  document.querySelectorAll('#tourCategoryChips .cat-chip').forEach(chip => {
+    const cb = chip.querySelector('input');
+    cb.checked = tourCats.includes(cb.value);
+    chip.classList.toggle('active', cb.checked);
+  });
   document.getElementById('tourDestination').value = tour?.destination || '';
   document.getElementById('tourDuration').value         = tour?.duration_days != null ? tour.duration_days : 0;
   document.getElementById('tourDurationHours').value    = tour?.duration_hours != null ? tour.duration_hours : (tour?.duration_days ? 0 : 4);
@@ -690,7 +710,8 @@ async function saveTour() {
   const id  = document.getElementById('tourId').value;
   const body = {
     title:          document.getElementById('tourTitle').value.trim(),
-    category:       document.getElementById('tourCategory').value,
+    categories:     Array.from(document.querySelectorAll('#tourCategoryChips input:checked')).map(i => i.value),
+    category:       (document.querySelector('#tourCategoryChips input:checked') || {}).value || 'Cultural', // legacy single field for back-compat
     destination:    document.getElementById('tourDestination').value.trim(),
     duration_days:    parseInt(document.getElementById('tourDuration').value) || 0,
     duration_hours:   parseInt(document.getElementById('tourDurationHours').value) || 0,
@@ -1093,7 +1114,13 @@ function guideEscHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
-<style>.btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }</style>
+<style>
+.btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }
+.cat-chip { cursor:pointer; user-select:none; display:inline-flex; align-items:center; padding:7px 14px; border:1.5px solid #dee2e6; border-radius:22px; background:#fff; transition:.15s; font-size:.85rem; font-weight:600; color:#333; margin:0; }
+.cat-chip:hover { border-color:var(--teal); background:#f0faf8; }
+.cat-chip.active { background:var(--teal); color:#fff; border-color:var(--teal); box-shadow:0 2px 6px rgba(15,123,108,.25); }
+.cat-chip input { position:absolute; opacity:0; pointer-events:none; }
+</style>
 <script src="/js/pwa.js?v=14"></script>
 <script src="/js/common-widgets.js?v=1"></script>
 </body>

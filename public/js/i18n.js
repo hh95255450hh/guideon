@@ -448,6 +448,10 @@ const TRANSLATIONS = {
     hour_short:             'h',
     minute_short:           'm',
     not_set:                '—',
+    tour_categories_lbl:    'Categories (pick one or more) *',
+    tour_categories_hint:   'A tour can belong to several categories — e.g. Desert + Adventure + Wildlife.',
+    cat_wadi:               'Wadi',
+    cat_beach:              'Beach',
     // My tours
     my_tours_title:   '🗺️ My Tours',
     my_tours_desc:    'Create individual tours with their own price, duration, and destination. Add special offers anytime.',
@@ -1315,6 +1319,10 @@ const TRANSLATIONS = {
     hour_short:             'س',
     minute_short:           'د',
     not_set:                '—',
+    tour_categories_lbl:    'الفئات (اختر فئة أو أكثر) *',
+    tour_categories_hint:   'يمكن للرحلة أن تنتمي لعدة فئات — مثل صحراء + مغامرة + حياة برية.',
+    cat_wadi:               'وادي',
+    cat_beach:              'شاطئ',
     // My tours
     my_tours_title:   '🗺️ رحلاتي',
     my_tours_desc:    'أنشئ رحلات منفصلة بسعر ومدة ووجهة لكل واحدة. أضف عروضاً متى شئت.',
