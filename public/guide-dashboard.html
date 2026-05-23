@@ -15,7 +15,7 @@
 <title>Guide Dashboard — Guideon</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=26">
+<link rel="stylesheet" href="/css/style.css?v=27">
 </head>
 <body>
 
@@ -67,6 +67,11 @@
         <div id="pendingList">
           <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
         </div>
+      </div>
+
+      <div class="mb-4">
+        <h5 class="fw-700 mb-3" data-i18n="in_progress_section">🟢 Trips In Progress</h5>
+        <div id="inProgressList"></div>
       </div>
 
       <div class="mb-4">
@@ -153,7 +158,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=20"></script>
+<script src="/js/i18n.js?v=21"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -296,9 +301,10 @@ async function loadBookings() {
     ALL_BOOKINGS = d.bookings || [];
 
     const today = new Date().toISOString().slice(0, 10);
-    const pending   = ALL_BOOKINGS.filter(b => b.status === 'pending');
-    const confirmed = ALL_BOOKINGS.filter(b => b.status === 'confirmed' && b.tourDate >= today);
-    const past      = ALL_BOOKINGS.filter(b => b.status === 'completed' || (b.status === 'confirmed' && b.tourDate < today) || b.status === 'cancelled');
+    const pending    = ALL_BOOKINGS.filter(b => b.status === 'pending');
+    const inProgress = ALL_BOOKINGS.filter(b => b.status === 'in_progress');
+    const confirmed  = ALL_BOOKINGS.filter(b => b.status === 'confirmed' && b.tourDate >= today);
+    const past       = ALL_BOOKINGS.filter(b => b.status === 'completed' || (b.status === 'confirmed' && b.tourDate < today) || b.status === 'cancelled');
 
     document.getElementById('statTotal').textContent = ALL_BOOKINGS.length;
     document.getElementById('statPending').textContent = pending.length;
@@ -307,6 +313,7 @@ async function loadBookings() {
     document.getElementById('statRating').textContent = GUIDE.rating ? GUIDE.rating + ' ★' : I18N.t('na_lbl');
 
     renderPending(pending);
+    renderInProgress(inProgress);
     renderConfirmed(confirmed);
     renderPast(past);
   } catch { toast('Error loading bookings.', 'error'); }
@@ -346,13 +353,31 @@ function renderPending(list) {
   `)).join('');
 }
 
+function renderInProgress(list) {
+  const el = document.getElementById('inProgressList');
+  if (!el) return;
+  if (!list.length) { el.innerHTML = ''; return; }
+  el.innerHTML = list.map(b => bookingCard(b, `
+    <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','completed')">${I18N.t('end_trip_btn') || '🏁 End Trip'}</button>
+  `)).join('');
+}
+
 function renderConfirmed(list) {
   const el = document.getElementById('confirmedList');
   if (!list.length) {
     el.innerHTML = `<div class="text-muted small text-center py-2">${I18N.t('no_confirmed')}</div>`;
     return;
   }
-  el.innerHTML = list.map(b => bookingCard(b)).join('');
+  // Can guide START this trip? (must be within 1 day of tourDate)
+  const now = Date.now();
+  el.innerHTML = list.map(b => {
+    const tripDate = new Date(b.tourDate).getTime();
+    const dayBefore = tripDate - 24*60*60*1000;
+    const canStart = now >= dayBefore;
+    return bookingCard(b, canStart
+      ? `<button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','in_progress')">${I18N.t('start_trip_btn') || '🚀 Start Trip'}</button>`
+      : '');
+  }).join('');
 }
 
 function renderPast(list) {
@@ -365,7 +390,12 @@ function renderPast(list) {
 }
 
 async function updateStatus(id, status) {
-  const msg = status === 'confirmed' ? I18N.t('accept_confirm') : I18N.t('reject_confirm');
+  const msgKey =
+    status === 'confirmed'   ? 'accept_confirm' :
+    status === 'cancelled'   ? 'reject_confirm' :
+    status === 'in_progress' ? 'start_trip_confirm' :
+    status === 'completed'   ? 'end_trip_confirm' : 'accept_confirm';
+  const msg = I18N.t(msgKey);
   if (!confirm(msg)) return;
   try {
     const r = await fetch(`/api/bookings/${id}/status`, {

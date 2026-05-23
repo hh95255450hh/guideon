@@ -132,16 +132,40 @@ exports.updateStatus = async (req, res) => {
     }
 
     const allowedTransitions = {
-      guide:   ['confirmed', 'cancelled'],
+      guide:   ['confirmed', 'cancelled', 'in_progress', 'completed'],
       tourist: ['cancelled'],
-      admin:   ['confirmed', 'cancelled', 'completed'],
+      admin:   ['confirmed', 'cancelled', 'in_progress', 'completed'],
     };
 
     if (!allowedTransitions[userType]?.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid status transition.' });
     }
 
-    const updated = await bookings.update(id, { status });
+    // Guide can only START trip from 'confirmed' status, and only on/after tour date
+    if (status === 'in_progress' && userType === 'guide') {
+      if (booking.status !== 'confirmed') {
+        return res.status(400).json({ success: false, message: 'Trip can only be started from a confirmed booking.' });
+      }
+      // Allow starting 1 day before scheduled date (for evening tours, etc.)
+      const tripDate = new Date(booking.tourDate);
+      const earliestStart = new Date(tripDate); earliestStart.setDate(earliestStart.getDate() - 1);
+      if (new Date() < earliestStart) {
+        return res.status(400).json({ success: false, message: 'Cannot start trip more than 1 day before the scheduled date.' });
+      }
+    }
+
+    // Guide can only COMPLETE trip from 'in_progress' status
+    if (status === 'completed' && userType === 'guide') {
+      if (booking.status !== 'in_progress') {
+        return res.status(400).json({ success: false, message: 'Only trips that have started can be completed.' });
+      }
+    }
+
+    const updateData = { status };
+    if (status === 'in_progress') updateData.startedAt = new Date().toISOString();
+    if (status === 'completed')   updateData.completedAt = new Date().toISOString();
+
+    const updated = await bookings.update(id, updateData);
 
     // Send emails based on new status
     const tourist = await users.findById(booking.touristId);
@@ -174,6 +198,13 @@ exports.updateStatus = async (req, res) => {
           await users.update(booking.guideId, { availability: [...avail, booking.tourDate] });
         }
       }
+    } else if (status === 'in_progress') {
+      // Notify tourist that the trip has started
+      if (tourist) email.sendTouristTripStarted({
+        email: tourist.email, name: tourist.fullName,
+        guideName: guide?.fullName, guidePhone: guide?.phone,
+        destination: booking.destination, bookingId: id,
+      }).catch(() => {});
     } else if (status === 'completed') {
       if (tourist) email.sendTouristReviewReminder({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, destination: booking.destination, bookingId: id }).catch(() => {});
     }

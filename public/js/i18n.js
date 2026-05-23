@@ -423,11 +423,17 @@ const TRANSLATIONS = {
     guest_plural:     'guests',
 
     /* ── STATUS ── */
-    status_pending:   'Pending',
-    status_confirmed: 'Confirmed',
-    status_completed: 'Completed',
-    status_cancelled: 'Cancelled',
-    na_lbl:           'N/A',
+    status_pending:     'Pending',
+    status_confirmed:   'Confirmed',
+    status_in_progress: 'In Progress',
+    status_completed:   'Completed',
+    status_cancelled:   'Cancelled',
+    start_trip_btn:     '🚀 Start Trip',
+    end_trip_btn:       '🏁 End Trip',
+    start_trip_confirm: 'Start this trip now? The tourist will be notified.',
+    end_trip_confirm:   'End this trip? The tourist will get a review invitation.',
+    in_progress_section:'🟢 Trips In Progress',
+    na_lbl:             'N/A',
     omr_day:          'OMR',
 
     /* ── MINISTRY / MOT ── */
@@ -1075,11 +1081,17 @@ const TRANSLATIONS = {
     guest_plural:     'ضيوف',
 
     /* ── STATUS ── */
-    status_pending:   'معلّق',
-    status_confirmed: 'مؤكد',
-    status_completed: 'مكتمل',
-    status_cancelled: 'ملغى',
-    na_lbl:           'غير متاح',
+    status_pending:     'معلّق',
+    status_confirmed:   'مؤكد',
+    status_in_progress: 'جارية',
+    status_completed:   'مكتمل',
+    status_cancelled:   'ملغى',
+    start_trip_btn:     '🚀 بدء الرحلة',
+    end_trip_btn:       '🏁 إنهاء الرحلة',
+    start_trip_confirm: 'بدء الرحلة الآن؟ سيتم إشعار السائح.',
+    end_trip_confirm:   'إنهاء الرحلة؟ سيُدعى السائح لكتابة مراجعة.',
+    in_progress_section:'🟢 الرحلات الجارية',
+    na_lbl:             'غير متاح',
     omr_day:          'ريال',
 
     /* ── MINISTRY / MOT ── */

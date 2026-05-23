@@ -167,6 +167,29 @@ function touristBookingCancelled({ name, guideName, destination, bookingId }) {
   `);
 }
 
+function touristTripStarted({ name, guideName, guidePhone, destination, bookingId }) {
+  return layout(`
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Your Trip Has Started! 🚀</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
+      Hi <strong>${name}</strong>, your tour with <strong>${guideName}</strong> in <strong>${destination}</strong>
+      has officially started. Enjoy every moment of your Omani adventure!
+    </p>
+    ${badge('🟢 TRIP IN PROGRESS', '#0f7b6c', '#e8f5f2')}
+    ${table(
+      row('Guide',       guideName),
+      row('Destination', destination),
+      row('Guide phone', guidePhone || 'See your booking details'),
+      row('Booking ID',  `<span style="font-family:monospace;font-size:12px;">${bookingId}</span>`),
+    )}
+    <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
+      <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
+        💡 <strong>Tip:</strong> Take lots of photos! You'll be able to share them with your review when the trip ends.
+      </p>
+    </div>
+    ${btn('Open My Bookings', `${APP_URL}/tourist-dashboard.html`)}
+  `);
+}
+
 function touristReviewReminder({ name, guideName, destination, bookingId }) {
   return layout(`
     <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">How was your tour? ⭐</h1>
@@ -447,6 +470,9 @@ module.exports = {
 
   sendTouristBookingCancelled: (data) =>
     send(data.email, `Booking Cancelled — ${data.destination}`, touristBookingCancelled(data)),
+
+  sendTouristTripStarted: (data) =>
+    send(data.email, `Your trip with ${data.guideName} has started! 🚀`, touristTripStarted(data)),
 
   sendTouristReviewReminder: (data) =>
     send(data.email, `How was your tour with ${data.guideName}? ⭐`, touristReviewReminder(data)),

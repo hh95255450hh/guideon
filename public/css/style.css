@@ -153,8 +153,11 @@ body.dark-mode .nav-tabs .nav-link.active {
 .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
 .status-pending { background: #fef9c3; color: #854d0e; }
 .status-confirmed { background: #dcfce7; color: #166534; }
+.status-in_progress { background: #d1fae5; color: #065f46; animation: pulse 2s infinite; }
 .status-completed { background: #ede9fe; color: #4c1d95; }
 .status-cancelled { background: #fee2e2; color: #991b1b; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+.booking-card.in_progress { border-left-color: #10b981; background: #f0fdf4; }
 
 /* ── ADMIN ── */
 .admin-stat-card { background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border-top: 4px solid var(--teal); }
