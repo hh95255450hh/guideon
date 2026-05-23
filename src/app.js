@@ -138,6 +138,7 @@ app.use('/api/', loadUser);
 app.use('/api/chat', chatLimiter);
 
 app.use('/api/auth',     authRoutes);
+app.use('/api/2fa',      require('./routes/twoFactor'));
 app.use('/api/guides',   guideRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews',  reviewRoutes);
@@ -159,7 +160,7 @@ app.get(['/search', '/guide-profile', '/login', '/register',
          '/tourist-dashboard', '/guide-dashboard', '/company-dashboard', '/admin', '/plan-trip',
          '/wishlist', '/profile', '/checkout', '/checkout-success', '/offline',
          '/forgot-password', '/reset-password',
-         '/tour-package', '/shared-wishlist', '/qr'], (req, res, next) => {
+         '/tour-package', '/shared-wishlist', '/qr', '/two-factor'], (req, res, next) => {
   res.sendFile(path.join(__dirname, '..', 'public', req.path.replace('/', '') + '.html'), err => {
     if (err) next();
   });

@@ -157,6 +157,19 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
+    // If 2FA is enabled, don't create the session yet — require TOTP code first.
+    if (user.twoFactorEnabled) {
+      await new Promise((resolve, reject) => {
+        req.session.regenerate(err => err ? reject(err) : resolve());
+      });
+      req.session.pending2faUserId = user.id;
+      return res.json({
+        success: true,
+        requires2FA: true,
+        message: 'Enter your authenticator code.',
+      });
+    }
+
     // Regenerate session ID on login to prevent session fixation attacks
     await new Promise((resolve, reject) => {
       req.session.regenerate(err => err ? reject(err) : resolve());
@@ -166,6 +179,8 @@ exports.login = async (req, res) => {
 
     const safe = { ...user };
     delete safe.password;
+    delete safe.twoFactorSecret;
+    delete safe.twoFactorBackupCodes;
     res.json({ success: true, message: 'Login successful.', user: safe });
   } catch (err) {
     console.error(err);
