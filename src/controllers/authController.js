@@ -109,7 +109,22 @@ exports.register = async (req, res) => {
       record = base;
     }
 
-    await users.insert(record);
+    try {
+      await users.insert(record);
+    } catch (insertErr) {
+      // Defensive: if a column the schema doesn't have yet was added (e.g. isMinistryLicensed
+      // before migration 012 has been run), drop it and retry so signup isn't blocked.
+      const msg = String(insertErr?.message || '');
+      const m = msg.match(/Could not find the '([^']+)' column/);
+      if (m) {
+        const col = m[1];
+        console.warn('[register] Stripping missing column "' + col + '" and retrying');
+        delete record[col];
+        await users.insert(record);
+      } else {
+        throw insertErr;
+      }
+    }
     req.session.userId = record.id;
     req.session.userType = record.userType;
 
@@ -140,8 +155,16 @@ exports.register = async (req, res) => {
     delete safe.password;
     res.status(201).json({ success: true, message: 'Account created successfully.', user: safe });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+    console.error('[register] FAILED:', err?.message || err, err?.code || '');
+    // Surface specific actionable errors to the user; keep generic 500 for unknown failures.
+    const msg = String(err?.message || '').toLowerCase();
+    if (msg.includes('duplicate') || msg.includes('unique')) {
+      return res.status(409).json({ success: false, message: 'Email already registered. Please log in.' });
+    }
+    if (msg.includes('column')) {
+      return res.status(500).json({ success: false, message: 'Database schema mismatch — please contact support. (Admin: run migration 012)' });
+    }
+    res.status(500).json({ success: false, message: 'Server error. Please try again or contact support via WhatsApp.' });
   }
 };
 

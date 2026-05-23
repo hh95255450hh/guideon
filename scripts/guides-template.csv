@@ -1,0 +1,4 @@
+fullName,email,phone,licenceNumber,isMinistryLicensed,languages,specialisations,destinations,bio
+خالد الراوحي,khalid.rawahi@example.com,+96891111111,MOT-2024-0001,true,"Arabic, English","Marine, Wildlife","Musandam, Ras al-Jinz, Sur","مرشد سياحي معتمد متخصص في الرحلات البحرية ومشاهدة الحياة البرية"
+محمد البلوشي,mohammed.balushi@example.com,+96892222222,MOT-2024-0002,true,"Arabic, English, French","Historical, Cultural","Muscat, Nizwa, Bahla","خبير في التراث العُماني والمواقع التاريخية"
+فاطمة الحارثي,fatima.harthi@example.com,+96893333333,MOT-2024-0003,true,"Arabic, English","Cultural, Nature","Salalah, Dhofar","مرشدة متخصصة في صلالة وموسم الخريف"
