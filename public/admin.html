@@ -15,7 +15,7 @@
 <title>Admin Dashboard — Guideon</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=25">
+<link rel="stylesheet" href="/css/style.css?v=26">
 <style>
 /* ── Tab strip ─────────────────────────────────────────────── */
 .admin-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:24px; }
@@ -122,12 +122,12 @@
     <button class="admin-tab" onclick="showTab('companies',this)" data-i18n="tab_companies">🏢 Companies</button>
     <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">👤 Tourists</button>
     <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">📋 Bookings</button>
-    <button class="admin-tab" onclick="showTab('admins',this)">👑 Admins</button>
-    <button class="admin-tab" onclick="showTab('staff',this)">👔 Staff</button>
-    <button class="admin-tab" onclick="showTab('broadcast',this)">📢 Broadcast</button>
-    <button class="admin-tab" onclick="showTab('analytics',this)">📈 Analytics</button>
-    <button class="admin-tab" onclick="showTab('audit',this)">🔍 Audit Log</button>
-    <button class="admin-tab" onclick="showTab('export',this)">📥 Export</button>
+    <button class="admin-tab" onclick="showTab('admins',this)" data-i18n="tab_admins">👑 Admins</button>
+    <button class="admin-tab" onclick="showTab('staff',this)" data-i18n="tab_staff">👔 Staff</button>
+    <button class="admin-tab" onclick="showTab('broadcast',this)" data-i18n="tab_broadcast">📢 Broadcast</button>
+    <button class="admin-tab" onclick="showTab('analytics',this)" data-i18n="tab_analytics">📈 Analytics</button>
+    <button class="admin-tab" onclick="showTab('audit',this)" data-i18n="tab_audit">🔍 Audit Log</button>
+    <button class="admin-tab" onclick="showTab('export',this)" data-i18n="tab_export">📥 Export</button>
   </div>
 
   <!-- ════════════════ PENDING APPROVALS ════════════════ -->
@@ -253,41 +253,47 @@
   <!-- ═════════════════════════ STAFF ═════════════════════════ -->
   <div id="tab-staff" class="d-none">
     <div class="t-card mb-3 p-4">
-      <h5 class="fw-700 mb-1">👔 Add New Staff Member</h5>
-      <p class="text-muted small mb-3">Create accounts for team members with specific permissions. They sign in like normal users at <code>/login.html</code>.</p>
+      <h5 class="fw-700 mb-1" data-i18n="staff_add_title">👔 Add New Staff Member</h5>
+      <p class="text-muted small mb-3" data-i18n="staff_add_desc">Create accounts for team members with specific permissions.</p>
       <form id="newStaffForm" class="row g-2">
-        <div class="col-md-3"><input class="form-control" id="stName" placeholder="Full name" required></div>
-        <div class="col-md-3"><input class="form-control" id="stEmail" type="email" placeholder="Email" required></div>
-        <div class="col-md-2"><input class="form-control" id="stPhone" placeholder="Phone (optional)"></div>
-        <div class="col-md-2"><input class="form-control" id="stPassword" type="text" placeholder="Password (8+ chars)" minlength="8" required></div>
+        <div class="col-md-3"><input class="form-control" id="stName" data-i18n-ph="staff_name_ph" placeholder="Full name" required></div>
+        <div class="col-md-3"><input class="form-control" id="stEmail" type="email" data-i18n-ph="staff_email_ph" placeholder="Email" required></div>
+        <div class="col-md-2"><input class="form-control" id="stPhone" data-i18n-ph="staff_phone_ph" placeholder="Phone (optional)"></div>
+        <div class="col-md-2"><input class="form-control" id="stPassword" type="text" data-i18n-ph="staff_pwd_ph" placeholder="Password (8+ chars)" minlength="8" required></div>
         <div class="col-md-2">
           <select class="form-select" id="stRole" required>
-            <option value="">Select role...</option>
-            <option value="support">🎧 Customer Support</option>
-            <option value="moderator">🛡️ Content Moderator</option>
-            <option value="verifier">✅ Guide Verifier</option>
-            <option value="marketing">📣 Marketing</option>
-            <option value="finance">💰 Finance</option>
-            <option value="manager">👨‍💼 Operations Manager</option>
+            <option value="" data-i18n="staff_select_role">Select role...</option>
+            <option value="support" data-i18n="role_support">🎧 Customer Support</option>
+            <option value="moderator" data-i18n="role_moderator">🛡️ Content Moderator</option>
+            <option value="verifier" data-i18n="role_verifier">✅ Guide Verifier</option>
+            <option value="marketing" data-i18n="role_marketing">📣 Marketing</option>
+            <option value="finance" data-i18n="role_finance">💰 Finance</option>
+            <option value="manager" data-i18n="role_manager">👨‍💼 Operations Manager</option>
           </select>
         </div>
         <div class="col-12 mt-2">
-          <button class="btn btn-primary" type="submit">➕ Add Staff Member</button>
-          <small class="text-muted ms-2">An email with login credentials will be sent automatically.</small>
+          <button class="btn btn-primary" type="submit" data-i18n="staff_add_btn">➕ Add Staff Member</button>
+          <small class="text-muted ms-2" data-i18n="staff_email_note">An email with login credentials will be sent automatically.</small>
         </div>
         <div id="stMsg" class="col-12 small"></div>
       </form>
     </div>
     <div class="t-card p-3 mb-3" style="background:#fffbea;border-color:#ffe58a">
-      <strong>💡 Role Permissions Reference:</strong>
-      <div class="small mt-2" id="rolesGuide">Loading roles…</div>
+      <strong data-i18n="roles_ref">💡 Role Permissions Reference:</strong>
+      <div class="small mt-2" id="rolesGuide" data-i18n="loading">Loading roles…</div>
     </div>
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
         <thead><tr>
-          <th>Name</th><th>Email</th><th>Role</th><th>Permissions</th><th>Status</th><th>Created</th><th>Actions</th>
+          <th data-i18n="col_name">Name</th>
+          <th data-i18n="co_email_lbl">Email</th>
+          <th data-i18n="col_role">Role</th>
+          <th data-i18n="col_perms">Permissions</th>
+          <th data-i18n="col_status">Status</th>
+          <th data-i18n="col_created">Created</th>
+          <th data-i18n="actions_col">Actions</th>
         </tr></thead>
-        <tbody id="staffTable"><tr><td colspan="7" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+        <tbody id="staffTable"><tr><td colspan="7" class="text-center text-muted py-4" data-i18n="loading">Loading…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -295,29 +301,29 @@
   <!-- ═════════════════════════ BROADCAST ═════════════════════════ -->
   <div id="tab-broadcast" class="d-none">
     <div class="t-card p-4">
-      <h5 class="fw-700 mb-1">📢 Send Broadcast Email</h5>
-      <p class="text-muted small mb-3">Reach all users or a specific group at once.</p>
+      <h5 class="fw-700 mb-1" data-i18n="bc_title">📢 Send Broadcast Email</h5>
+      <p class="text-muted small mb-3" data-i18n="bc_desc">Reach all users or a specific group at once.</p>
       <form id="broadcastForm" class="row g-3">
         <div class="col-md-4">
-          <label class="form-label small fw-600">Audience</label>
+          <label class="form-label small fw-600" data-i18n="bc_audience">Audience</label>
           <select class="form-select" id="bcAudience" required>
-            <option value="all">📢 All users (non-admin)</option>
-            <option value="tourist">👤 All tourists</option>
-            <option value="guide">🎒 All guides</option>
-            <option value="company">🏢 All companies</option>
+            <option value="all" data-i18n="bc_all">📢 All users (non-admin)</option>
+            <option value="tourist" data-i18n="bc_tourists">👤 All tourists</option>
+            <option value="guide" data-i18n="bc_guides">🎒 All guides</option>
+            <option value="company" data-i18n="bc_companies">🏢 All companies</option>
           </select>
         </div>
         <div class="col-md-8">
-          <label class="form-label small fw-600">Subject</label>
+          <label class="form-label small fw-600" data-i18n="bc_subject">Subject</label>
           <input class="form-control" id="bcSubject" maxlength="120" required>
         </div>
         <div class="col-12">
-          <label class="form-label small fw-600">Message</label>
+          <label class="form-label small fw-600" data-i18n="bc_message">Message</label>
           <textarea class="form-control" id="bcMessage" rows="8" required></textarea>
         </div>
         <div class="col-12">
-          <button class="btn btn-primary" type="submit">Send Broadcast</button>
-          <button class="btn btn-outline-secondary ms-2" type="button" onclick="document.getElementById('broadcastForm').reset()">Clear</button>
+          <button class="btn btn-primary" type="submit" data-i18n="bc_send">Send Broadcast</button>
+          <button class="btn btn-outline-secondary ms-2" type="button" onclick="document.getElementById('broadcastForm').reset()" data-i18n="bc_clear">Clear</button>
         </div>
         <div id="bcResult" class="col-12 small"></div>
       </form>
@@ -327,29 +333,36 @@
   <!-- ═════════════════════════ ANALYTICS ═════════════════════════ -->
   <div id="tab-analytics" class="d-none">
     <div class="row g-3">
-      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3">🏆 Top 10 Guides</h6><div id="topGuidesList" class="small">Loading…</div></div></div>
-      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3">📍 Top 10 Destinations</h6><div id="topDestsList" class="small">Loading…</div></div></div>
-      <div class="col-12"><div class="t-card p-4"><h6 class="fw-700 mb-3">💰 Revenue by Month (last 12)</h6><canvas id="chartRevenue" height="80"></canvas></div></div>
-      <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small">Avg Rating</div><div class="fs-3 fw-700" id="anAvgRating">—</div></div></div>
-      <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small">Total Reviews</div><div class="fs-3 fw-700" id="anTotalReviews">—</div></div></div>
-      <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small">New Users (7d)</div><div class="fs-3 fw-700" id="anNewUsers">—</div></div></div>
+      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3" data-i18n="top_guides">🏆 Top 10 Guides</h6><div id="topGuidesList" class="small" data-i18n="loading">Loading…</div></div></div>
+      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3" data-i18n="top_dests">📍 Top 10 Destinations</h6><div id="topDestsList" class="small" data-i18n="loading">Loading…</div></div></div>
+      <div class="col-12"><div class="t-card p-4"><h6 class="fw-700 mb-3" data-i18n="rev_by_month">💰 Revenue by Month (last 12)</h6><canvas id="chartRevenue" height="80"></canvas></div></div>
+      <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small" data-i18n="avg_rating">Avg Rating</div><div class="fs-3 fw-700" id="anAvgRating">—</div></div></div>
+      <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small" data-i18n="total_reviews">Total Reviews</div><div class="fs-3 fw-700" id="anTotalReviews">—</div></div></div>
+      <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small" data-i18n="new_users_7d">New Users (7d)</div><div class="fs-3 fw-700" id="anNewUsers">—</div></div></div>
     </div>
   </div>
 
   <!-- ═════════════════════════ AUDIT LOG ═════════════════════════ -->
   <div id="tab-audit" class="d-none">
     <div class="t-card p-4 mb-3">
-      <h6 class="fw-700 mb-2">🔍 Admin Audit Log</h6>
-      <p class="text-muted small mb-3">Every admin action is recorded here.</p>
+      <h6 class="fw-700 mb-2" data-i18n="audit_title">🔍 Admin Audit Log</h6>
+      <p class="text-muted small mb-3" data-i18n="audit_desc">Every admin action is recorded here.</p>
       <div class="d-flex gap-2 mb-3 flex-wrap">
-        <input id="auditFilter" class="form-control form-control-sm" placeholder="Filter by action" style="max-width:260px">
-        <button class="btn btn-sm btn-outline-secondary" onclick="loadAudit()">Refresh</button>
+        <input id="auditFilter" class="form-control form-control-sm" data-i18n-ph="audit_filter_ph" placeholder="Filter by action" style="max-width:260px">
+        <button class="btn btn-sm btn-outline-secondary" onclick="loadAudit()" data-i18n="refresh_btn">Refresh</button>
       </div>
     </div>
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
-        <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Details</th><th>IP</th></tr></thead>
-        <tbody id="auditTable"><tr><td colspan="6" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+        <thead><tr>
+          <th data-i18n="col_time">Time</th>
+          <th data-i18n="col_admin">Admin</th>
+          <th data-i18n="col_action">Action</th>
+          <th data-i18n="col_target">Target</th>
+          <th data-i18n="col_details">Details</th>
+          <th data-i18n="col_ip">IP</th>
+        </tr></thead>
+        <tbody id="auditTable"><tr><td colspan="6" class="text-center text-muted py-4" data-i18n="loading">Loading…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -357,13 +370,13 @@
   <!-- ═════════════════════════ EXPORT ═════════════════════════ -->
   <div id="tab-export" class="d-none">
     <div class="t-card p-4">
-      <h5 class="fw-700 mb-1">📥 Export Data (CSV)</h5>
-      <p class="text-muted small mb-4">Download data for backup or analysis.</p>
+      <h5 class="fw-700 mb-1" data-i18n="export_title">📥 Export Data (CSV)</h5>
+      <p class="text-muted small mb-4" data-i18n="export_desc">Download data for backup or analysis.</p>
       <div class="row g-3">
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/users" download>👥 Users</a></div>
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/bookings" download>📋 Bookings</a></div>
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/reviews" download>⭐ Reviews</a></div>
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/audit-log" download>🔍 Audit Log</a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/users" download data-i18n="exp_users">👥 Users</a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/bookings" download data-i18n="exp_bookings">📋 Bookings</a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/reviews" download data-i18n="exp_reviews">⭐ Reviews</a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/audit-log" download data-i18n="exp_audit">🔍 Audit Log</a></div>
       </div>
     </div>
   </div>
@@ -373,7 +386,7 @@
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/js/i18n.js?v=19"></script>
+<script src="/js/i18n.js?v=20"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 // ── Helpers ──────────────────────────────────────────────────
