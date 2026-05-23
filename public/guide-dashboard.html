@@ -176,24 +176,24 @@
                 <div id="tt-basics" class="tour-tab row g-3">
                   <div class="col-md-8">
                     <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
-                    <input class="form-control" id="tourTitle" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
+                    <input class="form-control" id="tourTitle" data-i18n-ph="tour_title_ph" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
                   </div>
                   <div class="col-md-4">
                     <label class="form-label small fw-600" data-i18n="tour_category">Category</label>
                     <select class="form-select" id="tourCategory">
-                      <option value="Cultural">🏰 Cultural</option>
-                      <option value="Mountain">🏔️ Mountain</option>
-                      <option value="Desert">🐪 Desert</option>
-                      <option value="Marine">🐬 Marine</option>
-                      <option value="Wildlife">🐢 Wildlife</option>
-                      <option value="Historical">🕌 Historical</option>
-                      <option value="Adventure">⚡ Adventure</option>
-                      <option value="Food">🍽️ Food</option>
+                      <option value="Cultural" data-i18n="cat_cultural">🏰 Cultural</option>
+                      <option value="Mountain" data-i18n="cat_mountain">🏔️ Mountain</option>
+                      <option value="Desert" data-i18n="cat_desert">🐪 Desert</option>
+                      <option value="Marine" data-i18n="cat_marine">🐬 Marine</option>
+                      <option value="Wildlife" data-i18n="cat_wildlife">🐢 Wildlife</option>
+                      <option value="Historical" data-i18n="cat_historical">🕌 Historical</option>
+                      <option value="Adventure" data-i18n="cat_adventure">⚡ Adventure</option>
+                      <option value="Food" data-i18n="cat_food">🍽️ Food</option>
                     </select>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label small fw-600" data-i18n="tour_destination">Destination *</label>
-                    <input class="form-control" id="tourDestination" placeholder="e.g. Nizwa, Jebel Akhdar" required>
+                    <input class="form-control" id="tourDestination" data-i18n-ph="tour_dest_ph" placeholder="e.g. Nizwa, Jebel Akhdar" required>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-600" data-i18n="tour_duration">Duration (days) *</label>
@@ -219,19 +219,19 @@
                   </div>
                   <div class="col-12">
                     <label class="form-label small fw-600" data-i18n="tour_description">Description *</label>
-                    <textarea class="form-control" id="tourDescription" rows="3" placeholder="Describe what makes this tour special..." required></textarea>
+                    <textarea class="form-control" id="tourDescription" rows="3" data-i18n-ph="tour_desc_ph" placeholder="Describe what makes this tour special..." required></textarea>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label small fw-600" data-i18n="tour_meeting">Meeting Point</label>
-                    <input class="form-control" id="tourMeeting" placeholder="e.g. Nizwa Fort entrance, 7:00 AM">
+                    <input class="form-control" id="tourMeeting" data-i18n-ph="tour_meeting_ph" placeholder="e.g. Nizwa Fort entrance, 7:00 AM">
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label small fw-600">What's Included (comma-separated)</label>
-                    <input class="form-control" id="tourIncludes" placeholder="Transport, Lunch, Water, Guide fees">
+                    <label class="form-label small fw-600" data-i18n="tour_includes">What's Included (comma-separated)</label>
+                    <input class="form-control" id="tourIncludes" data-i18n-ph="tour_includes_ph" placeholder="Transport, Lunch, Water, Guide fees">
                   </div>
                   <div class="col-12">
-                    <label class="form-label small fw-600">Key Highlights (one per line)</label>
-                    <textarea class="form-control" id="tourHighlights" rows="3" placeholder="Sunset over the mountains&#10;Traditional Omani lunch&#10;Small group max 8"></textarea>
+                    <label class="form-label small fw-600" data-i18n="tour_highlights">Key Highlights (one per line)</label>
+                    <textarea class="form-control" id="tourHighlights" rows="3" data-i18n-ph="tour_highlights_ph" placeholder="Sunset over the mountains&#10;Traditional Omani lunch&#10;Small group max 8"></textarea>
                   </div>
                 </div>
 
@@ -342,7 +342,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=25"></script>
+<script src="/js/i18n.js?v=26"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -624,7 +624,7 @@ function openTourModal(tour) {
   renderVariants(); renderAddons(); renderAvailableDates(); renderItinerary();
   document.querySelectorAll('#tourModal .nav-tabs .nav-link').forEach((b,i) => b.classList.toggle('active', i===0));
   document.querySelectorAll('.tour-tab').forEach((t,i) => t.style.display = i===0 ? '' : 'none');
-  document.getElementById('tourModalTitle').textContent = tour ? 'Edit Tour' : 'Add New Tour';
+  document.getElementById('tourModalTitle').textContent = tour ? (I18N.t('tour_modal_edit') || 'Edit Tour') : (I18N.t('tour_modal_add') || 'Add New Tour');
   new bootstrap.Modal(document.getElementById('tourModal')).show();
 }
 
