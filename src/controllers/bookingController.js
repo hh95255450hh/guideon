@@ -41,13 +41,19 @@ exports.createBooking = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Selected date is not available for this tour.' });
       }
 
-      // Compute server-side total (trust server, not client)
-      const adults   = Math.max(1, parseInt(adultCount) || 1);
-      const children = Math.max(0, parseInt(childCount) || 0);
-      const pAdult   = parseFloat(variantPrice) || packageData.price_adult || 0;
-      const pChild   = packageData.price_child || 0;
+      // New pricing model (server-authoritative):
+      //   price_adult = base price for first 2 people (included)
+      //   price_child = price per extra person beyond 2
+      let people = Math.max(2, parseInt(participants) || parseInt(adultCount) || 2);
+      const maxGroup = parseInt(packageData.max_group_size) || 50;
+      if (people > maxGroup) {
+        return res.status(400).json({ success: false, message: `This tour accepts at most ${maxGroup} people.` });
+      }
+      const basePrice  = parseFloat(variantPrice) || packageData.price_adult || 0;
+      const perExtra   = packageData.price_child || 0;
+      const extras     = Math.max(0, people - 2);
       const addonsTotal = Array.isArray(addons) ? addons.reduce((s, a) => s + (parseFloat(a.price) || 0), 0) : 0;
-      const subtotal = pAdult * adults + pChild * children + addonsTotal;
+      const subtotal = basePrice + (perExtra * extras) + addonsTotal;
       const discount = packageData.discountPercent || 0;
       totalAmount = subtotal * (1 - discount / 100);
     } else {
@@ -62,8 +68,8 @@ exports.createBooking = async (req, res) => {
     }
 
     const participantCount = packageId
-      ? ((parseInt(adultCount) || 1) + (parseInt(childCount) || 0))
-      : (parseInt(participants) || 1);
+      ? Math.max(2, parseInt(participants) || parseInt(adultCount) || 2)
+      : Math.max(1, parseInt(participants) || 1);
 
     const booking = {
       id: 'bk-' + uuidv4().slice(0, 8),

@@ -82,7 +82,7 @@
         <div class="text-center mb-3">
           <div class="text-muted small" data-i18n="starting_from">Starting from</div>
           <div style="font-size:2rem;font-weight:800;color:var(--teal)" id="basePrice">— OMR</div>
-          <div class="small text-muted" data-i18n="per_adult">per adult</div>
+          <div class="small text-muted" data-i18n="for_2_people">for 2 people</div>
         </div>
         <hr>
         <div class="mb-3">
@@ -91,15 +91,12 @@
             <div class="small text-muted">Loading dates...</div>
           </div>
         </div>
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label small fw-700" data-i18n="adults">👨 Adults</label>
-            <input type="number" class="form-control form-control-sm" id="adultCount" value="1" min="1" max="20" onchange="recalcPrice()">
-          </div>
-          <div class="col-6">
-            <label class="form-label small fw-700" data-i18n="children">🧒 Children</label>
-            <input type="number" class="form-control form-control-sm" id="childCount" value="0" min="0" max="20" onchange="recalcPrice()">
-          </div>
+        <div class="mb-3">
+          <label class="form-label small fw-700" data-i18n="num_travelers">👥 Number of Travelers</label>
+          <input type="number" class="form-control" id="adultCount" value="2" min="2" max="50" onchange="recalcPrice()">
+          <div class="form-text small" data-i18n="travelers_hint">Tour starts at 2 people. Each extra person is charged separately.</div>
+          <!-- legacy hidden field kept for backward compat in JS -->
+          <input type="hidden" id="childCount" value="0">
         </div>
         <div class="mb-3 small" id="priceBreakdown" style="background:#f8f9fa;padding:12px;border-radius:8px">
           <div class="text-muted" data-i18n="pick_pkg_first">Pick a package above to see price breakdown.</div>
@@ -113,7 +110,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=30"></script>
+<script src="/js/i18n.js?v=31"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 const qs = p => new URLSearchParams(window.location.search).get(p);
@@ -198,9 +195,9 @@ function renderPackage() {
           <div class="variant-name">${v.name || 'Package'}</div>
           ${v.description ? `<div class="small text-muted mt-1">${v.description}</div>` : ''}
         </div>
-        <div class="text-end" style="min-width:120px">
+        <div class="text-end" style="min-width:130px">
           <div class="variant-price">${(v.priceAdult || 0).toFixed(2)} OMR</div>
-          <div class="small text-muted">per adult${v.priceChild ? ` · ${v.priceChild} child` : ''}</div>
+          <div class="small text-muted">${(window.I18N && I18N.t('for_2_people')) || 'for 2 people'}${v.priceChild ? ` · +${v.priceChild} ${(window.I18N && I18N.t('per_extra')) || 'per extra'}` : ''}</div>
         </div>
       </div>
     </div>`).join('');
@@ -263,13 +260,20 @@ function toggleAddon(idx, on) {
   recalcPrice();
 }
 
+// New pricing model:
+//   priceAdult = base price for first 2 travelers (included)
+//   priceChild = price per extra traveler beyond 2
 function recalcPrice() {
   if (SELECTED_VARIANT === null || !PACKAGE) return;
   const v = PACKAGE._variants[SELECTED_VARIANT];
-  const adults   = parseInt(document.getElementById('adultCount').value) || 0;
-  const children = parseInt(document.getElementById('childCount').value) || 0;
+  let people = parseInt(document.getElementById('adultCount').value) || 2;
+  if (people < 2) people = 2;
+  document.getElementById('adultCount').value = people;
 
-  const subtotal = (v.priceAdult || 0) * adults + (v.priceChild || 0) * children;
+  const base       = v.priceAdult || 0;
+  const perExtra   = v.priceChild || 0;
+  const extras     = Math.max(0, people - 2);
+  const subtotal   = base + (perExtra * extras);
 
   let addonsTotal = 0;
   const addonLines = [];
@@ -283,28 +287,37 @@ function recalcPrice() {
   const discountAmount = beforeDiscount * (discount / 100);
   const total = beforeDiscount - discountAmount;
 
-  let html = `<div class="price-line"><span>${v.name} × ${adults} adult${adults>1?'s':''}${children?' + '+children+' child':''}</span><span>${subtotal.toFixed(2)} OMR</span></div>`;
+  const baseLbl  = (window.I18N && I18N.t('base_for_2'))   || 'base (2 people)';
+  const extraLbl = (window.I18N && I18N.t('extra_persons'))|| 'extra persons';
+
+  let html = `<div class="price-line"><span>${v.name} — ${baseLbl}</span><span>${base.toFixed(2)} OMR</span></div>`;
+  if (extras > 0) {
+    html += `<div class="price-line"><span>+ ${extras} ${extraLbl} × ${perExtra.toFixed(2)}</span><span>${(perExtra*extras).toFixed(2)} OMR</span></div>`;
+  }
   addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${a.name}</span><span>${a.price.toFixed(2)} OMR</span></div>`; });
   if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 Discount (${discount}%)</span><span>−${discountAmount.toFixed(2)} OMR</span></div>`;
-  html += `<div class="price-line price-total"><span>Total</span><span style="color:var(--teal)">${total.toFixed(2)} OMR</span></div>`;
+  html += `<div class="price-line price-total"><span>Total (${people} ${(window.I18N && I18N.t('people')) || 'people'})</span><span style="color:var(--teal)">${total.toFixed(2)} OMR</span></div>`;
   document.getElementById('priceBreakdown').innerHTML = html;
 
-  const ready = SELECTED_DATE && adults > 0;
+  const ready = SELECTED_DATE && people >= 2;
   const btn = document.getElementById('bookBtn');
   btn.disabled = !ready;
   document.getElementById('bookHint').textContent = ready
-    ? 'Your booking will be sent to the guide for confirmation.'
-    : 'Select a date to enable booking.';
+    ? ((window.I18N && I18N.t('booking_will_be_sent')) || 'Your booking will be sent to the guide for confirmation.')
+    : ((window.I18N && I18N.t('select_date_to_book')) || 'Select a date to enable booking.');
 }
 
 async function bookTour() {
   if (SELECTED_VARIANT === null || !SELECTED_DATE) return;
   const v = PACKAGE._variants[SELECTED_VARIANT];
-  const adults   = parseInt(document.getElementById('adultCount').value) || 1;
-  const children = parseInt(document.getElementById('childCount').value) || 0;
-  const addons   = Array.from(SELECTED_ADDONS).map(i => PACKAGE.addons[i]);
+  let people = parseInt(document.getElementById('adultCount').value) || 2;
+  if (people < 2) people = 2;
+  const addons = Array.from(SELECTED_ADDONS).map(i => PACKAGE.addons[i]);
 
-  let total = (v.priceAdult || 0) * adults + (v.priceChild || 0) * children + addons.reduce((s, a) => s + (a.price || 0), 0);
+  const base     = v.priceAdult || 0;
+  const perExtra = v.priceChild || 0;
+  const extras   = Math.max(0, people - 2);
+  let total = base + (perExtra * extras) + addons.reduce((s, a) => s + (a.price || 0), 0);
   if (PACKAGE.discountPercent > 0) total = total * (1 - PACKAGE.discountPercent / 100);
 
   const body = {
@@ -313,11 +326,11 @@ async function bookTour() {
     tourDate:      SELECTED_DATE,
     duration:      PACKAGE.duration_days === 1 ? 'full' : 'multi',
     destination:   PACKAGE.destination,
-    participants:  adults + children,
-    adultCount:    adults,
-    childCount:    children,
+    participants:  people,
+    adultCount:    people,        // kept for back-compat with booking model
+    childCount:    0,
     variantName:   v.name,
-    variantPrice:  v.priceAdult,
+    variantPrice:  base,
     addons:        addons.map(a => ({ name: a.name, price: a.price })),
     totalAmount:   parseFloat(total.toFixed(2)),
     specialRequests: '',

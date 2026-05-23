@@ -206,16 +206,19 @@
                     </select>
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label small fw-600" data-i18n="tour_price_adult">Base Adult Price (OMR) *</label>
-                    <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" required placeholder="40">
+                    <label class="form-label small fw-600" data-i18n="tour_base_price">Tour Starting Price (for 2 people) (OMR) *</label>
+                    <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" required placeholder="80">
+                    <div class="form-text small" data-i18n="tour_base_price_hint">This price covers 2 people. No extra charge for the second person.</div>
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label small fw-600" data-i18n="tour_price_child">Child Price (OMR)</label>
-                    <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" placeholder="20">
+                    <label class="form-label small fw-600" data-i18n="tour_extra_person">Price per Extra Person (OMR) *</label>
+                    <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" required placeholder="30">
+                    <div class="form-text small" data-i18n="tour_extra_person_hint">Added for each person beyond 2.</div>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label small fw-600" data-i18n="tour_max_group">Max Group Size *</label>
-                    <input type="number" class="form-control" id="tourMaxGroup" value="10" min="1" max="50" required>
+                    <input type="number" class="form-control" id="tourMaxGroup" value="10" min="2" max="50" required>
+                    <div class="form-text small" data-i18n="tour_max_group_hint">Tour starts at 2 people minimum.</div>
                   </div>
                   <div class="col-12">
                     <label class="form-label small fw-600" data-i18n="tour_description">Description *</label>
@@ -340,7 +343,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=30"></script>
+<script src="/js/i18n.js?v=31"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -507,9 +510,9 @@ async function loadMyTours() {
             <div class="small text-muted">📍 ${t.destination || '—'} · ⏱ ${t.duration_days} day(s) · 👥 max ${t.max_group_size}</div>
             <div class="small mt-1">
               ${hasOffer
-                ? `<span style="text-decoration:line-through;color:#999">${t.price_adult} OMR</span> <strong class="text-teal">${finalPrice} OMR</strong>/adult`
-                : `<strong class="text-teal">${t.price_adult} OMR</strong>/adult`}
-              ${t.price_child ? ` · ${t.price_child} OMR/child` : ''}
+                ? `<span style="text-decoration:line-through;color:#999">${t.price_adult} OMR</span> <strong class="text-teal">${finalPrice} OMR</strong> ${I18N.t('per_2_people') || 'for 2 people'}`
+                : `<strong class="text-teal">${t.price_adult} OMR</strong> ${I18N.t('per_2_people') || 'for 2 people'}`}
+              ${t.price_child ? ` · +${t.price_child} OMR/${I18N.t('extra_person') || 'extra person'}` : ''}
             </div>
           </div>
           <div class="d-flex flex-column gap-1">
@@ -545,8 +548,8 @@ function renderVariants() {
       <div class="row g-2">
         <div class="col-md-3"><input class="form-control form-control-sm" placeholder="${T('var_name_ph','Name (Standard/Premium/VIP)')}" value="${v.name||''}" onchange="TOUR_VARIANTS[${i}].name=this.value"></div>
         <div class="col-md-5"><input class="form-control form-control-sm" placeholder="${T('var_desc_ph',"What's included")}" value="${v.description||''}" onchange="TOUR_VARIANTS[${i}].description=this.value"></div>
-        <div class="col-md-2"><input type="number" class="form-control form-control-sm" placeholder="${T('var_adult_ph','Adult OMR')}" value="${v.priceAdult||''}" onchange="TOUR_VARIANTS[${i}].priceAdult=parseFloat(this.value)||0"></div>
-        <div class="col-md-1"><input type="number" class="form-control form-control-sm" placeholder="${T('var_child_ph','Child')}" value="${v.priceChild||''}" onchange="TOUR_VARIANTS[${i}].priceChild=parseFloat(this.value)||0"></div>
+        <div class="col-md-2"><input type="number" class="form-control form-control-sm" placeholder="${T('var_base_ph','Base 2-pax OMR')}" value="${v.priceAdult||''}" onchange="TOUR_VARIANTS[${i}].priceAdult=parseFloat(this.value)||0"></div>
+        <div class="col-md-1"><input type="number" class="form-control form-control-sm" placeholder="${T('var_extra_ph','+Person')}" value="${v.priceChild||''}" onchange="TOUR_VARIANTS[${i}].priceChild=parseFloat(this.value)||0"></div>
         <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeVariant(${i})">✕</button></div>
       </div>
     </div>`).join('') : `<div class="text-muted small">${T('no_variants','No variants yet. Tourists will see only the base price.')}</div>`;
