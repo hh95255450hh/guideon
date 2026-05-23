@@ -126,8 +126,28 @@ exports.create = async (req, res) => {
     const inserted = await packages.insert(pkg);
     res.status(201).json({ success: true, message: 'Package created. Publish it when ready.', package: inserted });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('[packageController.create] FAILED:', err?.message || err, err?.code || '');
+    const msg = String(err?.message || '');
+
+    // Map specific Postgres errors to actionable messages.
+    if (/duration_days_check/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Please set the duration (at least one of days / hours / minutes must be > 0). If the form looks correct, ask admin to run migration 015.' });
+    }
+    if (/duration_nonzero/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Please set the duration — a tour must have at least 1 minute, hour, or day.' });
+    }
+    if (/duration_hours_range/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Hours must be between 0 and 23.' });
+    }
+    if (/duration_minutes_range/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Minutes must be between 0 and 59.' });
+    }
+    if (/column .* of relation .* does not exist|Could not find the .* column/i.test(msg)) {
+      const colMatch = msg.match(/column "([^"]+)"|the '([^']+)' column/);
+      const col = colMatch ? (colMatch[1] || colMatch[2]) : 'unknown';
+      return res.status(500).json({ success: false, message: `Database schema is missing the "${col}" column. Admin: run the latest migration.` });
+    }
+    res.status(500).json({ success: false, message: 'Could not save the tour. Please try again — if it keeps failing, contact support via WhatsApp.' });
   }
 };
 
@@ -155,8 +175,18 @@ exports.update = async (req, res) => {
     const updated = await packages.update(req.params.id, changes);
     res.json({ success: true, package: updated });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('[packageController.update] FAILED:', err?.message || err);
+    const msg = String(err?.message || '');
+    if (/duration_days_check|duration_nonzero/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Please set the duration (at least one of days / hours / minutes must be > 0).' });
+    }
+    if (/duration_hours_range/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Hours must be between 0 and 23.' });
+    }
+    if (/duration_minutes_range/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Minutes must be between 0 and 59.' });
+    }
+    res.status(500).json({ success: false, message: 'Could not save the tour. Please try again.' });
   }
 };
 
