@@ -36,7 +36,17 @@ router.post('/photo', requireLogin, upload.single('photo'), async (req, res) => 
     res.json({ success: true, photo: url });
   } catch (e) {
     console.error('[upload:photo]', e.message);
-    res.status(500).json({ success: false, message: 'Upload failed.' });
+    const msg = String(e.message || '');
+    if (/row-level security|RLS|policy/i.test(msg)) {
+      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016. (Server: ' + msg + ')' });
+    }
+    if (/Bucket not found|does not exist/i.test(msg)) {
+      return res.status(500).json({ success: false, message: 'Storage bucket missing — admin must run migration 016.' });
+    }
+    if (/exceeded|too large/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'File is too large. Maximum 10 MB.' });
+    }
+    res.status(500).json({ success: false, message: 'Upload failed: ' + msg });
   }
 });
 
