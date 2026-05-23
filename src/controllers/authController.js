@@ -18,11 +18,19 @@ function validatePasswordStrength(password) {
   if (!password || typeof password !== 'string') return 'Password is required.';
   if (password.length < 8) return 'Password must be at least 8 characters.';
   if (password.length > 128) return 'Password is too long (max 128 chars).';
-  if (!/[a-z]/.test(password)) return 'Password must include at least one lowercase letter.';
-  if (!/[A-Z]/.test(password)) return 'Password must include at least one uppercase letter.';
-  if (!/[0-9]/.test(password)) return 'Password must include at least one digit.';
+  // Require any TWO of: lowercase, uppercase, digit, symbol.
+  // Less frustrating than mandating all four, but still rules out trivially weak passwords.
+  const classes = [
+    /[a-z]/.test(password),
+    /[A-Z]/.test(password),
+    /[0-9]/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ].filter(Boolean).length;
+  if (classes < 2) {
+    return 'Password must include at least two of: lowercase, uppercase, number, symbol.';
+  }
   // Reject common weak passwords
-  const weak = ['password', '12345678', 'qwerty', 'admin123', 'password1', 'guideon', '11111111'];
+  const weak = ['password', '12345678', 'qwerty', 'admin123', 'password1', 'guideon', '11111111', '00000000', 'abcdefgh'];
   if (weak.includes(password.toLowerCase())) return 'Password is too common. Choose a stronger one.';
   return null;
 }

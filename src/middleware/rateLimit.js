@@ -2,24 +2,27 @@ const rateLimit = require('express-rate-limit');
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20,
   message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
 });
 
+// During launch we want as little friction as possible. Many users share IPs
+// (hotel WiFi, mobile carrier NAT, corporate networks) so 3/hr blocks legit signups.
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 3,
-  message: { success: false, message: 'Too many accounts created. Please try again in an hour.' },
+  max: 20,
+  message: { success: false, message: 'Too many accounts created from this network. Please try again in an hour or contact support.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true,
 });
 
 const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 3,
+  max: 10,
   message: { success: false, message: 'Too many password reset requests. Please try again in an hour.' },
   standardHeaders: true,
   legacyHeaders: false,
