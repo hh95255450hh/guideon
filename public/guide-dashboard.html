@@ -340,7 +340,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=27"></script>
+<script src="/js/i18n.js?v=29"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -394,7 +394,7 @@ function renderGuideHeader() {
   document.getElementById('navName').textContent = GUIDE.fullName.split(' ')[0];
   const av = document.getElementById('guideAvatar');
   if (GUIDE.photo) {
-    av.innerHTML = `<img src="${GUIDE.photo}" style="width:100%;height:100%;object-fit:cover">`;
+    av.innerHTML = `<img loading="lazy" decoding="async" src="${GUIDE.photo}" style="width:100%;height:100%;object-fit:cover">`;
   } else {
     av.textContent = initials(GUIDE.fullName);
   }
@@ -415,7 +415,7 @@ async function uploadPhoto(input) {
     if (d.success) {
       GUIDE.photo = d.photo;
       const av = document.getElementById('guideAvatar');
-      av.innerHTML = `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover">`;
+      av.innerHTML = `<img loading="lazy" decoding="async" src="${d.photo}" style="width:100%;height:100%;object-fit:cover">`;
       toast(I18N.t('photo_change') + ' ✓', 'success');
     } else { toast(d.message, 'error'); }
   } catch { toast('Upload failed.', 'error'); }
@@ -431,7 +431,7 @@ function renderGallery() {
   }
   grid.innerHTML = photos.map(url => `
     <div style="position:relative">
-      <img src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')">
+      <img loading="lazy" decoding="async" src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')">
       <button onclick="removeGallery('${url}')" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
 }
@@ -1053,6 +1053,7 @@ function guideEscHtml(s) {
 </script>
 <style>.btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }</style>
 <script src="/js/pwa.js?v=14"></script>
+<script src="/js/common-widgets.js?v=1"></script>
 </body>
 </html>
 

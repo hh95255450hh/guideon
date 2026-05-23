@@ -150,7 +150,7 @@
 </div>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=27"></script>
+<script src="/js/i18n.js?v=29"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let currentUser = null;
@@ -192,7 +192,7 @@ async function loadProfile() {
     // Avatar
     const av = document.getElementById('avatarCircle');
     if (u.photo) {
-      av.innerHTML = `<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      av.innerHTML = `<img loading="lazy" decoding="async" src="${u.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     } else {
       av.textContent = initials(u.fullName);
     }
@@ -278,7 +278,7 @@ async function uploadPhoto(input) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
     const av = document.getElementById('avatarCircle');
-    av.innerHTML = `<img src="${d.photo}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    av.innerHTML = `<img loading="lazy" decoding="async" src="${d.photo}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     status.textContent = '✅ Photo updated!';
     setTimeout(() => { status.textContent = ''; }, 3000);
   } catch (err) { status.textContent = '❌ ' + err.message; }
@@ -287,6 +287,7 @@ async function uploadPhoto(input) {
 loadProfile();
 </script>
 <script src="/js/pwa.js?v=12"></script>
+<script src="/js/common-widgets.js?v=1"></script>
 </body>
 </html>
 

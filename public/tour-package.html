@@ -113,7 +113,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=27"></script>
+<script src="/js/i18n.js?v=29"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 const qs = p => new URLSearchParams(window.location.search).get(p);
@@ -346,5 +346,6 @@ loadPackage();
 // Record page view (fire-and-forget)
 if (PKG_ID) fetch('/api/views/' + PKG_ID, { method: 'POST', credentials: 'include' }).catch(() => {});
 </script>
+<script src="/js/common-widgets.js?v=1"></script>
 </body>
 </html>

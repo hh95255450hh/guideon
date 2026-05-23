@@ -21,8 +21,13 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/',                  changefreq: 'daily',  priority: 1.0 },
       { loc: '/search.html',       changefreq: 'daily',  priority: 0.9 },
       { loc: '/plan-trip.html',    changefreq: 'weekly', priority: 0.8 },
+      { loc: '/how-it-works.html', changefreq: 'monthly',priority: 0.7 },
+      { loc: '/faq.html',          changefreq: 'monthly',priority: 0.7 },
+      { loc: '/terms.html',        changefreq: 'yearly', priority: 0.3 },
+      { loc: '/privacy.html',      changefreq: 'yearly', priority: 0.3 },
       { loc: '/login.html',        changefreq: 'monthly',priority: 0.5 },
       { loc: '/register.html',     changefreq: 'monthly',priority: 0.6 },
+      { loc: '/qr.html',           changefreq: 'monthly',priority: 0.4 },
     ];
 
     const allGuides    = await users.findAllByField('userType', 'guide');

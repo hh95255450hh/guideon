@@ -60,7 +60,7 @@
     <div class="text-center mb-3">
       <h4 class="fw-800" data-i18n="tfa_scan_title">📱 Scan This QR Code</h4>
       <p class="text-muted small" data-i18n="tfa_scan_sub">Open your authenticator app and scan the code below.</p>
-      <div class="qr-box"><img id="qrImg" src="" alt="QR"></div>
+      <div class="qr-box"><img loading="lazy" decoding="async" id="qrImg" src="" alt="QR"></div>
       <p class="text-muted small" data-i18n="tfa_manual_lbl">Or enter this secret manually:</p>
       <div class="secret-code" id="secretCode">—</div>
     </div>
@@ -214,5 +214,6 @@ function downloadBackupCodes() {
 
 loadStatus();
 </script>
+<script src="/js/common-widgets.js?v=1"></script>
 </body>
 </html>

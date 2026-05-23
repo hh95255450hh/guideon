@@ -400,6 +400,14 @@ const TRANSLATIONS = {
     tfa_disable_btn:  'Disable 2FA',
     current_password_ph: 'Current password',
     cancel:           'Cancel',
+    // Footer / Legal
+    footer_legal:     'Legal',
+    footer_terms:     'Terms',
+    footer_privacy:   'Privacy',
+    footer_faq:       'FAQ',
+    footer_howitworks:'How it works',
+    nav_howitworks:   'How it works',
+    nav_help:         'Help',
     // My tours
     my_tours_title:   '🗺️ My Tours',
     my_tours_desc:    'Create individual tours with their own price, duration, and destination. Add special offers anytime.',
@@ -1219,6 +1227,14 @@ const TRANSLATIONS = {
     tfa_disable_btn:  'إيقاف المصادقة الثنائية',
     current_password_ph: 'كلمة المرور الحالية',
     cancel:           'إلغاء',
+    // Footer / Legal
+    footer_legal:     'القانوني',
+    footer_terms:     'الشروط',
+    footer_privacy:   'الخصوصية',
+    footer_faq:       'الأسئلة',
+    footer_howitworks:'كيف يعمل',
+    nav_howitworks:   'كيف يعمل',
+    nav_help:         'مساعدة',
     // My tours
     my_tours_title:   '🗺️ رحلاتي',
     my_tours_desc:    'أنشئ رحلات منفصلة بسعر ومدة ووجهة لكل واحدة. أضف عروضاً متى شئت.',

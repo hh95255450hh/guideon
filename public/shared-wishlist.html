@@ -36,7 +36,7 @@ async function load() {
     <div class="col-md-6 col-lg-4">
       <a href="/guide-profile.html?id=${g.id}" class="text-decoration-none text-dark">
       <div class="card h-100 shadow-sm">
-        <img src="${g.photo || '/img/muscat.jpg'}" class="card-img-top" style="height:200px;object-fit:cover" alt="${g.fullName}">
+        <img loading="lazy" decoding="async" src="${g.photo || '/img/muscat.jpg'}" class="card-img-top" style="height:200px;object-fit:cover" alt="${g.fullName}">
         <div class="card-body">
           <h5>${g.fullName}</h5>
           <p class="text-muted small mb-2">${(g.destinations || []).join(' · ') || 'Oman'}</p>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Frequently Asked Questions — Guideon</title>
+<meta name="description" content="Answers to common questions about booking a tour, becoming a guide, payments, cancellations and more on Guideon.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=33">
+<style>
+  .faq-wrap { max-width: 880px; margin: 0 auto; padding: 40px 20px 80px; }
+  .faq-wrap h1 { font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 30px; color: var(--navy-dark); }
+  .faq-search { background:#fff; border:2px solid #e5e7eb; border-radius:14px; padding: 4px; margin-bottom: 28px; display:flex; align-items:center; gap:8px; }
+  .faq-search input { border:none; outline:none; flex:1; padding: 10px 12px; font-size: .95rem; background: transparent; }
+  .faq-section { margin-bottom: 28px; }
+  .faq-section h3 { font-weight: 800; color: var(--teal); font-size: 1.1rem; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
+  .faq-item { background:#fff; border:1px solid #e5e7eb; border-radius:12px; margin-bottom: 10px; overflow: hidden; transition: .2s; }
+  .faq-item.open { border-color: var(--teal); box-shadow: 0 4px 14px rgba(15,123,108,.08); }
+  .faq-q { padding: 16px 20px; cursor: pointer; font-weight: 700; color: var(--navy-dark); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .faq-q .arrow { transition: transform .25s; flex-shrink: 0; color: var(--teal); }
+  .faq-item.open .faq-q .arrow { transform: rotate(180deg); }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height .35s ease; padding: 0 20px; }
+  .faq-item.open .faq-a { max-height: 600px; padding: 0 20px 18px; }
+  .faq-a p { color: #444; line-height: 1.7; margin-bottom: 8px; }
+  .faq-a a { color: var(--teal); font-weight: 600; }
+  .faq-a strong { color: var(--navy-dark); }
+  .no-results { text-align:center; padding: 30px; color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="44"></a>
+    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()">🌐 عربي</button>
+  </div>
+</nav>
+
+<div class="faq-wrap">
+  <h1 data-i18n="faq_title">❓ Frequently Asked Questions</h1>
+
+  <div class="faq-search">
+    <span style="font-size:1.2rem;padding-left:8px">🔍</span>
+    <input type="text" id="faqSearch" data-i18n-ph="faq_search_ph" placeholder="Search questions...">
+  </div>
+
+  <!-- ─── FOR TOURISTS ──────────────────────────────────────────────── -->
+  <div class="faq-section" data-cat="tourists">
+    <h3 data-i18n="faq_tourists">🌍 For Tourists</h3>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q1">How do I book a tour?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_t_a1">Browse guides via the search page, select a tour package, choose a date and number of people, then click "Book Now." The guide confirms within 24 hours and you receive an email with a PDF voucher.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q2">Are all guides licensed?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_t_a2">Yes — Guideon only approves guides who hold a valid licence from Oman's Ministry of Heritage and Tourism. Each guide profile shows a "Ministry Licensed" badge once verified.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q3">What languages do guides speak?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_t_a3">Most guides speak both Arabic and English. Many also speak French, German, Spanish, Italian, or Russian. Filter by language in the search page.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q4">Can I cancel my booking?</span><span class="arrow">▼</span></div>
+      <div class="faq-a">
+        <p data-i18n="faq_t_a4_1"><strong>Free cancellation</strong> up to 48 hours before the tour — full refund.</p>
+        <p data-i18n="faq_t_a4_2"><strong>Within 48 hours</strong> — 50% non-refundable.</p>
+        <p data-i18n="faq_t_a4_3"><strong>Within 24 hours / no-show</strong> — no refund.</p>
+        <p data-i18n="faq_t_a4_4"><strong>Bad weather or government restrictions</strong> — full refund regardless.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q5">What if the guide doesn't show up?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_t_a5">Contact us immediately via WhatsApp +968 9525 5450 or email. You receive a full refund plus a 10% Guideon credit for rebooking.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q6">Can I message the guide before booking?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_t_a6">Yes. After signing in, every guide profile has a "Message" button. Ask about availability, pricing, or any special requests before confirming.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q7">Is it safe to travel with a stranger?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_t_a7">Every Guideon guide is licensed, verified, and reviewed by previous tourists. You can read all reviews on a guide's profile. For solo travelers we also recommend choosing guides with 10+ reviews and a 4.5+ rating.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_t_q8">What should I wear or bring?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_t_a8">Modest clothing covering shoulders and knees is appreciated, especially at mosques. For desert/wadi tours bring sun protection and water shoes. Each tour page lists specific recommendations.</p></div>
+    </div>
+
+  </div>
+
+  <!-- ─── FOR GUIDES ────────────────────────────────────────────────── -->
+  <div class="faq-section" data-cat="guides">
+    <h3 data-i18n="faq_guides">👤 For Guides</h3>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_g_q1">How do I join as a guide?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_g_a1">Register at <a href="/register.html?type=guide">guideon.guide/register</a>, complete your profile, upload your MoHT licence, and submit for verification. Approval usually within 48 hours.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_g_q2">Is there a fee to join?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_g_a2"><strong>Free during the launch period.</strong> After launch we plan a small service fee (10-15%) on completed bookings only — never a monthly fee.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_g_q3">How are tours priced?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_g_a3">You set your own prices. You can create multiple package variants (Standard / Premium / VIP) plus add-ons like hotel pickup or photography. Add discounts for early-bird offers.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_g_q4">When do I get paid?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_g_a4">During the free launch, tourists pay you directly (cash or bank transfer). Once payments are enabled in Guideon, payouts will be transferred 2-3 days after the tour is marked complete.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_g_q5">How does the calendar work?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_g_a5">Set your available dates in your dashboard. Each tour can have specific dates too. The calendar auto-blocks accepted bookings so you won't be double-booked.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_g_q6">Can I cancel a confirmed booking?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_g_a6">Yes, but try to give 48+ hours notice. Frequent guide-initiated cancellations may affect your visibility ranking. In emergencies, contact Guideon support and we'll help relocate the tourist to another guide.</p></div>
+    </div>
+
+  </div>
+
+  <!-- ─── ACCOUNT & SECURITY ────────────────────────────────────────── -->
+  <div class="faq-section" data-cat="account">
+    <h3 data-i18n="faq_account">🔐 Account & Security</h3>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_a_q1">I forgot my password.</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_a_a1">Click "Forgot password" on the login page. We send a reset link to your registered email (link is valid for 1 hour).</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_a_q2">How do I enable Two-Factor Authentication?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_a_a2">Sign in, then visit <a href="/two-factor.html">guideon.guide/two-factor</a>. Scan the QR with Google Authenticator (or any TOTP app) and save your backup codes. Strongly recommended for guides and admins.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_a_q3">How do I delete my account?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_a_a3">Email <a href="mailto:Hh95255450hh@hotmail.com">Hh95255450hh@hotmail.com</a> from your registered address. We confirm and delete within 30 days. Note: bookings and tax records are retained for 7 years per Omani law.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_a_q4">Is my data safe?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_a_a4">Yes. Passwords are encrypted (bcrypt), all traffic uses HTTPS, optional 2FA available, regular security audits. Read our full <a href="/privacy.html">Privacy Policy</a>.</p></div>
+    </div>
+
+  </div>
+
+  <!-- ─── PAYMENTS ──────────────────────────────────────────────────── -->
+  <div class="faq-section" data-cat="payments">
+    <h3 data-i18n="faq_payments">💳 Payments</h3>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_p_q1">What payment methods do you accept?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_p_a1"><strong>Currently free</strong> — during the launch period you arrange payment directly with your guide (cash, bank transfer, or another method of mutual choice). Online card payments (Visa, Mastercard, Apple Pay) will be added soon via Stripe.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_p_q2">Which currencies can I use?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_p_a2">All prices are in Omani Rial (OMR) — the only currency for payment. The site can display equivalent USD / EUR / GBP for reference using approximate rates.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faq_p_q3">Do you charge a service fee?</span><span class="arrow">▼</span></div>
+      <div class="faq-a"><p data-i18n="faq_p_a3">No fees during the launch period. After launch a small service fee (planned 10-15%) will apply to bookings made through the Platform. We'll always notify you in advance.</p></div>
+    </div>
+
+  </div>
+
+  <div class="no-results d-none" id="noResults">No matching questions found. <a href="https://wa.me/96895255450">Ask us on WhatsApp →</a></div>
+
+  <!-- Contact CTA -->
+  <div class="text-center mt-5 p-4" style="background:#f4f7fa;border-radius:16px">
+    <h5 class="fw-800 mb-2" data-i18n="faq_more_q">Still have questions?</h5>
+    <p class="text-muted mb-3" data-i18n="faq_more_q_sub">Our team replies within a few hours.</p>
+    <a href="https://wa.me/96895255450" target="_blank" class="btn btn-success me-2">💬 WhatsApp</a>
+    <a href="mailto:Hh95255450hh@hotmail.com" class="btn btn-outline-secondary">📧 Email Us</a>
+  </div>
+</div>
+
+<footer class="text-center py-4 small text-muted">
+  <p class="mb-1">© 2026 Guideon · <a href="/terms.html" class="text-muted">Terms</a> · <a href="/privacy.html" class="text-muted">Privacy</a> · <a href="/how-it-works.html" class="text-muted">How it works</a></p>
+</footer>
+
+<script src="/js/i18n.js?v=29"></script>
+<script src="/js/common-widgets.js?v=1"></script>
+<script>
+function toggleFaq(el) {
+  el.parentElement.classList.toggle('open');
+}
+
+// Live search
+const search = document.getElementById('faqSearch');
+const noResults = document.getElementById('noResults');
+search.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+  let visibleCount = 0;
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const text = item.textContent.toLowerCase();
+    const match = !q || text.includes(q);
+    item.style.display = match ? '' : 'none';
+    if (match) visibleCount++;
+  });
+  document.querySelectorAll('.faq-section').forEach(sec => {
+    const anyVisible = [...sec.querySelectorAll('.faq-item')].some(i => i.style.display !== 'none');
+    sec.style.display = anyVisible ? '' : 'none';
+  });
+  noResults.classList.toggle('d-none', visibleCount > 0);
+});
+
+// FAQ Schema.org for rich snippets in Google
+const faqs = [];
+document.querySelectorAll('.faq-item').forEach(item => {
+  const q = item.querySelector('.faq-q span').textContent.trim();
+  const a = [...item.querySelectorAll('.faq-a p')].map(p => p.textContent.trim()).join(' ');
+  if (q && a) faqs.push({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } });
+});
+const ld = document.createElement('script');
+ld.type = 'application/ld+json';
+ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs });
+document.head.appendChild(ld);
+</script>
+</body>
+</html>

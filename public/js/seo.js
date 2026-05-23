@@ -88,11 +88,79 @@
       image: guide.photo || 'https://guideon.guide/logo.png',
       description: guide.bio || `Certified local guide in Oman specializing in ${(guide.destinations || []).join(', ')}.`,
       knowsLanguage: guide.languages || [],
+      areaServed: guide.destinations || [],
       aggregateRating: guide.rating > 0 ? {
         '@type': 'AggregateRating',
         ratingValue: guide.rating,
         reviewCount: guide.totalReviews,
+        bestRating: 5,
+        worstRating: 1,
       } : undefined,
+      worksFor: {
+        '@type': 'Organization',
+        name: 'Guideon',
+        url: 'https://guideon.guide',
+      },
+    });
+  }
+
+  // Product schema for a tour package — boosts rich snippets in Google
+  function seoTour(tour) {
+    const provider = tour.provider || {};
+    seoStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: tour.title,
+      description: tour.description || '',
+      image: tour.cover_image || tour.coverImage || tour.image || (tour.images && tour.images[0]) || 'https://guideon.guide/logo.png',
+      brand: { '@type': 'Brand', name: 'Guideon' },
+      offers: {
+        '@type': 'Offer',
+        url: location.href,
+        priceCurrency: tour.currency || 'OMR',
+        price: tour.price_adult || tour.priceAdult || 0,
+        availability: 'https://schema.org/InStock',
+        validFrom: tour.createdAt,
+        seller: provider.fullName ? {
+          '@type': 'Person',
+          name: provider.fullName,
+        } : undefined,
+      },
+      aggregateRating: tour.rating > 0 ? {
+        '@type': 'AggregateRating',
+        ratingValue: tour.rating,
+        reviewCount: tour.totalReviews || 1,
+        bestRating: 5,
+      } : undefined,
+    });
+  }
+
+  // BreadcrumbList helper
+  function seoBreadcrumb(items) {
+    seoStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: items.map((item, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: item.name,
+        item: item.url,
+      })),
+    });
+  }
+
+  // Website with SearchAction (sitelinks search box in Google)
+  function seoWebsite() {
+    seoStructuredData({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Guideon',
+      url: 'https://guideon.guide',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://guideon.guide/search.html?q={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
     });
   }
 
@@ -100,4 +168,7 @@
   global.seoStructuredData = seoStructuredData;
   global.seoOrganization   = seoOrganization;
   global.seoGuide          = seoGuide;
+  global.seoTour           = seoTour;
+  global.seoBreadcrumb     = seoBreadcrumb;
+  global.seoWebsite        = seoWebsite;
 })(window);

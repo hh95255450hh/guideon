@@ -288,7 +288,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=27"></script>
+<script src="/js/i18n.js?v=29"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let COMPANY = null;
@@ -374,7 +374,7 @@ function render() {
   // Company logo/photo
   const logoEl = document.getElementById('companyLogo');
   if (COMPANY.photo) {
-    logoEl.innerHTML = `<img src="${COMPANY.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+    logoEl.innerHTML = `<img loading="lazy" decoding="async" src="${COMPANY.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
   } else {
     logoEl.textContent = '🏢';
   }
@@ -570,7 +570,7 @@ function renderGallery() {
   }
   el.innerHTML = photos.map(url => `
     <div style="position:relative">
-      <img src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')">
+      <img loading="lazy" decoding="async" src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')">
       <button onclick="removeGallery('${url}')" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
 }
@@ -586,7 +586,7 @@ async function uploadCompanyPhoto(input) {
     if (d.success) {
       COMPANY.photo = d.photo;
       const logoEl = document.getElementById('companyLogo');
-      logoEl.innerHTML = `<img src="${d.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+      logoEl.innerHTML = `<img loading="lazy" decoding="async" src="${d.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
       showToast(I18N.t('photo_change') + ' ✓', 'success');
     } else { showToast(d.message, 'danger'); }
   } catch { showToast('Upload failed.', 'danger'); }
@@ -640,5 +640,6 @@ window.onLangChange = () => { if (COMPANY) render(); };
 init();
 </script>
 <script src="/js/pwa.js?v=14"></script>
+<script src="/js/common-widgets.js?v=1"></script>
 </body>
 </html>
