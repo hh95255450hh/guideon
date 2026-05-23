@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const { notify } = require('../services/notificationService');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -32,6 +33,17 @@ async function send(req, res) {
     }).select().single();
 
     if (error) throw error;
+
+    // Notify the recipient (in-app, no email — too noisy for chat)
+    notify({
+      userId: toId,
+      type: 'message',
+      title: 'New message',
+      body: `${data.fromName}: ${data.content.slice(0, 80)}${data.content.length > 80 ? '…' : ''}`,
+      link: '/' + (req.session.userType === 'tourist' ? 'tourist-dashboard' : req.session.userType === 'guide' ? 'guide-dashboard' : 'company-dashboard') + '.html#messages',
+      metadata: { fromId, conversationId: [fromId, toId].sort().join('_') },
+    });
+
     res.json({ success: true, message: data });
   } catch (e) {
     console.error('[messages:send]', e.message);

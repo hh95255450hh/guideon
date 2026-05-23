@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
+const { notify } = require('../services/notificationService');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
@@ -117,6 +118,24 @@ exports.createBooking = async (req, res) => {
       totalAmount: booking.totalAmount, bookingId: booking.id,
     }).catch(() => {});
 
+    // In-app notifications
+    notify({
+      userId: guide.id,
+      type: 'booking_new',
+      title: 'New booking request',
+      body: `${tourist.fullName} requested a tour to ${destination} on ${tourDate}.`,
+      link: '/guide-dashboard.html#bookings',
+      metadata: { bookingId: booking.id },
+    });
+    notify({
+      userId: tourist.id,
+      type: 'booking_new',
+      title: 'Booking request sent',
+      body: `Waiting for ${guide.fullName} to confirm your ${destination} tour on ${tourDate}.`,
+      link: '/tourist-dashboard.html#bookings',
+      metadata: { bookingId: booking.id },
+    });
+
     res.status(201).json({ success: true, message: 'Booking request sent. Waiting for guide confirmation.', booking });
   } catch (err) {
     console.error(err);
@@ -228,6 +247,22 @@ exports.updateStatus = async (req, res) => {
       if (tourist) email.sendTouristBookingConfirmed({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
       if (guide)   email.sendGuideBookingConfirmed({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
 
+      // In-app notifications
+      if (tourist) notify({
+        userId: tourist.id, type: 'booking_accepted',
+        title: 'Booking confirmed!',
+        body: `${guide?.fullName || 'Your guide'} accepted your ${booking.destination} tour for ${booking.tourDate}.`,
+        link: '/tourist-dashboard.html#bookings',
+        metadata: { bookingId: id },
+      });
+      if (guide) notify({
+        userId: guide.id, type: 'booking_accepted',
+        title: 'You confirmed a booking',
+        body: `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} is confirmed.`,
+        link: '/guide-dashboard.html#bookings',
+        metadata: { bookingId: id },
+      });
+
       // Block the date in guide availability
       if (guide) {
         const avail = Array.isArray(guide.availability) ? guide.availability : [];
@@ -239,6 +274,22 @@ exports.updateStatus = async (req, res) => {
       if (tourist) email.sendTouristBookingCancelled({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
       if (guide)   email.sendGuideBookingCancelled({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
 
+      const cancelledBy = userType === 'guide' ? 'guide' : (userType === 'tourist' ? 'tourist' : 'admin');
+      if (tourist) notify({
+        userId: tourist.id, type: 'booking_cancelled',
+        title: 'Booking cancelled',
+        body: `Your ${booking.destination} tour for ${booking.tourDate} was cancelled by the ${cancelledBy}.`,
+        link: '/tourist-dashboard.html#bookings',
+        metadata: { bookingId: id },
+      });
+      if (guide) notify({
+        userId: guide.id, type: 'booking_cancelled',
+        title: 'Booking cancelled',
+        body: `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} was cancelled.`,
+        link: '/guide-dashboard.html#bookings',
+        metadata: { bookingId: id },
+      });
+
       // Restore the date to guide availability (the email promises this)
       if (guide) {
         const avail = Array.isArray(guide.availability) ? guide.availability : [];
@@ -247,14 +298,34 @@ exports.updateStatus = async (req, res) => {
         }
       }
     } else if (status === 'in_progress') {
-      // Notify tourist that the trip has started
       if (tourist) email.sendTouristTripStarted({
         email: tourist.email, name: tourist.fullName,
         guideName: guide?.fullName, guidePhone: guide?.phone,
         destination: booking.destination, bookingId: id,
       }).catch(() => {});
+      if (tourist) notify({
+        userId: tourist.id, type: 'trip_start',
+        title: 'Your tour just started 🚐',
+        body: `${guide?.fullName || 'Your guide'} marked the ${booking.destination} tour as in progress. Have fun!`,
+        link: '/tourist-dashboard.html#bookings',
+        metadata: { bookingId: id },
+      });
     } else if (status === 'completed') {
       if (tourist) email.sendTouristReviewReminder({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, destination: booking.destination, bookingId: id }).catch(() => {});
+      if (tourist) notify({
+        userId: tourist.id, type: 'booking_completed',
+        title: 'Tour completed — leave a review ⭐',
+        body: `How was your ${booking.destination} tour with ${guide?.fullName || 'your guide'}? Help future travelers.`,
+        link: '/tourist-dashboard.html#bookings',
+        metadata: { bookingId: id },
+      });
+      if (guide) notify({
+        userId: guide.id, type: 'booking_completed',
+        title: 'Tour completed 🎉',
+        body: `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} has been completed.`,
+        link: '/guide-dashboard.html#bookings',
+        metadata: { bookingId: id },
+      });
     }
 
     res.json({ success: true, message: 'Booking updated.', booking: updated });

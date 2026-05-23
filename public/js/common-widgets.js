@@ -118,10 +118,23 @@
     document.getElementById('gdCookieEssential').onclick = () => dismiss('essential');
   }
 
+  // Lazy-load the notification bell (only meaningful for signed-in users —
+  // the script self-checks the session and bails if not signed in)
+  function loadNotifications() {
+    if (document.querySelector('script[data-gd-notif]')) return;
+    const s = document.createElement('script');
+    s.src = '/js/notifications.js?v=1';
+    s.async = true;
+    s.dataset.gdNotif = '1';
+    document.body.appendChild(s);
+  }
+
   // ─── Boot ──────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { injectWhatsApp(); injectCookieBar(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      injectWhatsApp(); injectCookieBar(); loadNotifications();
+    });
   } else {
-    injectWhatsApp(); injectCookieBar();
+    injectWhatsApp(); injectCookieBar(); loadNotifications();
   }
 })();
