@@ -23,6 +23,26 @@ const STANDARD_ADDONS = [
   { id: 'a-lunch',   name: 'وجبة فاخرة · Premium Lunch',        description: 'غداء في مطعم تقليدي · Traditional restaurant meal',  price: 12 },
 ];
 
+// Real Unsplash photos — high quality, free to use
+const IMG = {
+  musandam:   'https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80',
+  dhow:       'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1200&q=80',
+  turtle:     'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1200&q=80',
+  turtle2:    'https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80',
+  muscat:     'https://images.unsplash.com/photo-1626516783050-2fab3c4ea33b?w=1200&q=80',
+  mosque:     'https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=1200&q=80',
+  desert:     'https://images.unsplash.com/photo-1542401886-65d6c61db217?w=1200&q=80',
+  desert2:    'https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?w=1200&q=80',
+  camel:      'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80',
+  nizwa:      'https://images.unsplash.com/photo-1626516783050-2fab3c4ea33b?w=1200&q=80',
+  fort:       'https://images.unsplash.com/photo-1574236170880-faba57ab2ce4?w=1200&q=80',
+  souq:       'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=80',
+  salalah:    'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&q=80',
+  khareef:    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
+  wadi:       'https://images.unsplash.com/photo-1583087253076-5d1315860eb7?w=1200&q=80',
+  wadiSwim:   'https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=1200&q=80',
+};
+
 const TOURS = [
   // ─── KHALID AL-RAWAHI (Sur · Musandam · Marine) ─────────────────
   {
@@ -36,6 +56,12 @@ const TOURS = [
     max_group_size: 12,
     price_adult: 45,
     price_child: 25,
+    cover_image: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1200&q=80',
+      'https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80',
+      'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80',
+    ],
     description: 'إبحر في أجمل خوران الخليج، شاهد الدلافين، اسبح في المياه الفيروزية، واستمتع بغداء عُماني أصيل على ظهر السنبوك التقليدي.\n\nCruise the dramatic fjords of Musandam — Arabia\'s Norway. Watch dolphins, snorkel in turquoise waters, and enjoy a traditional Omani lunch on board.',
     meeting_point: 'ميناء خصب 8:00 صباحاً · Khasab Port 8:00 AM',
     includes: ['Boat & captain', 'Snorkeling gear', 'Omani lunch', 'Water & dates', 'Life jackets'],
@@ -60,6 +86,11 @@ const TOURS = [
     max_group_size: 8,
     price_adult: 35,
     price_child: 20,
+    cover_image: 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1200&q=80',
+      'https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80',
+    ],
     description: 'تجربة ليلية ساحرة لمشاهدة السلاحف الخضراء وهي تضع بيضها على الشاطئ. واحدة من أهم مواقع التعشيش في العالم.\n\nWitness green sea turtles nesting on the beach in this unforgettable night experience. One of the world\'s most important nesting sites.',
     meeting_point: 'بوابة محمية رأس الجنز · Ras al-Jinz Reserve gate, 7:30 PM',
     includes: ['Park entry fee', 'Guided night walk', 'Photography rights', 'Local guide'],
@@ -82,6 +113,12 @@ const TOURS = [
     max_group_size: 10,
     price_adult: 40,
     price_child: 22,
+    cover_image: 'https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=1200&q=80',
+      'https://images.unsplash.com/photo-1626516783050-2fab3c4ea33b?w=1200&q=80',
+      'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=80',
+    ],
     description: 'اكتشف عاصمة عُمان الساحرة: جامع السلطان قابوس، سوق مطرح القديم، دار الأوبرا، والكورنيش. تاريخ ١٠٠٠ سنة في يوم واحد.\n\nDiscover Oman\'s captivating capital: Grand Mosque, Muttrah Souq, Royal Opera House, and the Corniche. 1000 years of history in one day.',
     meeting_point: 'مدخل جامع السلطان قابوس · Sultan Qaboos Mosque entrance, 8:30 AM',
     includes: ['Air-conditioned vehicle', 'All entry fees', 'Bottled water', 'Traditional Omani lunch'],
@@ -103,6 +140,12 @@ const TOURS = [
     max_group_size: 8,
     price_adult: 120,
     price_child: 65,
+    cover_image: 'https://images.unsplash.com/photo-1542401886-65d6c61db217?w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1542401886-65d6c61db217?w=1200&q=80',
+      'https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?w=1200&q=80',
+      'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80',
+    ],
     description: 'مغامرة صحراوية لا تُنسى: ركوب الكثبان بسيارات الدفع الرباعي، ركوب الجمال عند الغروب، عشاء بدوي تقليدي، وليلة تحت آلاف النجوم.\n\nUnforgettable desert adventure: 4x4 dune bashing, camel rides at sunset, traditional Bedouin dinner, and a night under thousands of stars.',
     meeting_point: 'الانطلاق من فندقك في مسقط · Pickup from your Muscat hotel, 9:00 AM',
     includes: ['4x4 transport', 'Bedouin camp accommodation', 'All meals (lunch, dinner, breakfast)', 'Camel ride', 'Sandboarding'],
@@ -127,6 +170,12 @@ const TOURS = [
     max_group_size: 12,
     price_adult: 35,
     price_child: 20,
+    cover_image: 'https://images.unsplash.com/photo-1574236170880-faba57ab2ce4?w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1574236170880-faba57ab2ce4?w=1200&q=80',
+      'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=80',
+      'https://images.unsplash.com/photo-1626516783050-2fab3c4ea33b?w=1200&q=80',
+    ],
     description: 'اكتشف عاصمة عُمان القديمة وقلب التراث: قلعة نزوى التاريخية (1668م)، السوق الشهير بفضياته، وحلقة الماعز يوم الجمعة.\n\nDiscover Oman\'s ancient capital: Nizwa Fort (1668), the famous silver souq, and the legendary Friday goat market.',
     meeting_point: 'بوابة قلعة نزوى · Nizwa Fort entrance, 9:00 AM',
     includes: ['Fort entry', 'Local guide', 'Halwa & kahwa tasting', 'Photography assistance'],
@@ -149,6 +198,12 @@ const TOURS = [
     max_group_size: 10,
     price_adult: 50,
     price_child: 28,
+    cover_image: 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&q=80',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80',
+      'https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80',
+    ],
     description: 'تجربة صلالة المذهلة خلال موسم الخريف: شلالات وادي دربات، شواطئ المغسيل، شجرة بوبيب التاريخية، ومزارع جوز الهند.\n\nExperience Salalah\'s magical monsoon season: Wadi Darbat waterfalls, Mughsail beaches, the legendary Boswellia tree, and coconut plantations.',
     meeting_point: 'فندقك في صلالة · Your Salalah hotel, 8:00 AM',
     includes: ['Air-conditioned 4x4', 'All entry fees', 'Lunch at local restaurant', 'Fresh coconut tasting', 'Frankincense gift'],
@@ -173,6 +228,11 @@ const TOURS = [
     max_group_size: 8,
     price_adult: 40,
     price_child: 22,
+    cover_image: 'https://images.unsplash.com/photo-1583087253076-5d1315860eb7?w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1583087253076-5d1315860eb7?w=1200&q=80',
+      'https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=1200&q=80',
+    ],
     description: 'مغامرة في أجمل وادٍ في عُمان: مسير 45 دقيقة بين الصخور، سباحة في برك زمردية، وكهف الشلال السري.\n\nAdventure through Oman\'s most beautiful wadi: 45-min trek between cliffs, swim in emerald pools, and discover the hidden waterfall cave.',
     meeting_point: 'موقف وادي شاب · Wadi Shab parking, 7:30 AM',
     includes: ['Boat across pond', 'Snorkeling mask', 'Safety briefing', 'Dry bags', 'Energy snacks'],
@@ -212,8 +272,8 @@ const TOURS = [
       itinerary: t.itinerary || [],
       meeting_point: t.meeting_point || '',
       languages: ['Arabic', 'English'],
-      images: [],
-      cover_image: '',
+      images: t.images || [],
+      cover_image: t.cover_image || (t.images && t.images[0]) || '',
       cancellation_policy: 'flexible',
       isPublished: true,
       isFeatured: false,

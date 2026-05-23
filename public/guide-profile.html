@@ -549,7 +549,7 @@ async function loadGuideTours() {
         <div class="col-md-6 col-lg-4">
           <a href="/tour-package.html?id=${t.id}" class="text-decoration-none text-dark">
             <div class="card h-100 shadow-sm border-0 position-relative" style="border-radius:14px;overflow:hidden;transition:.2s;">
-              <div style="height:180px;background:url('${img}') center/cover;"></div>
+              <div style="height:200px;background:url('${img}') center/cover, linear-gradient(135deg,#0f7b6c,#0f1c3e);background-size:cover;"></div>
               ${offer}
               <div class="card-body">
                 <h5 class="fw-800 mb-1">${escapeHtml(t.title || '')}</h5>
