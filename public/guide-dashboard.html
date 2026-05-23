@@ -15,7 +15,7 @@
 <title>Guide Dashboard — Guideon</title>
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=28">
+<link rel="stylesheet" href="/css/style.css?v=29">
 </head>
 <body>
 
@@ -132,102 +132,146 @@
         </div>
       </div>
 
-      <!-- TOUR MODAL -->
+      <!-- TOUR MODAL with TABS -->
       <div class="modal fade" id="tourModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
           <div class="modal-content">
             <div class="modal-header" style="background:var(--teal);color:#fff">
               <h5 class="modal-title" id="tourModalTitle" data-i18n="tour_modal_add">Add New Tour</h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-              <form id="tourForm" class="row g-3">
+              <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><button class="nav-link active" type="button" onclick="showTourTab('basics',this)">📝 Basics</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('variants',this)">💼 Packages</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('addons',this)">🎁 Add-ons</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('dates',this)">📅 Dates</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('offer',this)">🏷️ Offer</button></li>
+              </ul>
+
+              <form id="tourForm">
                 <input type="hidden" id="tourId">
 
-                <div class="col-md-8">
-                  <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
-                  <input class="form-control" id="tourTitle" data-i18n-ph="tour_title_ph" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label small fw-600" data-i18n="tour_category">Category</label>
-                  <select class="form-select" id="tourCategory">
-                    <option value="Cultural">🏰 Cultural</option>
-                    <option value="Mountain">🏔️ Mountain</option>
-                    <option value="Desert">🐪 Desert</option>
-                    <option value="Marine">🐬 Marine</option>
-                    <option value="Wildlife">🐢 Wildlife</option>
-                    <option value="Historical">🕌 Historical</option>
-                    <option value="Adventure">⚡ Adventure</option>
-                    <option value="Food">🍽️ Food</option>
-                  </select>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label small fw-600" data-i18n="tour_destination">Destination *</label>
-                  <input class="form-control" id="tourDestination" data-i18n-ph="tour_dest_ph" placeholder="e.g. Nizwa, Jebel Akhdar, Wadi Shab" required>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label small fw-600" data-i18n="tour_duration">Duration (days) *</label>
-                  <input type="number" class="form-control" id="tourDuration" value="1" min="1" max="14" required>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label small fw-600" data-i18n="tour_difficulty">Difficulty</label>
-                  <select class="form-select" id="tourDifficulty">
-                    <option value="easy" data-i18n="diff_easy">Easy</option>
-                    <option value="moderate" selected data-i18n="diff_moderate">Moderate</option>
-                    <option value="hard" data-i18n="diff_hard">Hard</option>
-                  </select>
-                </div>
-
-                <div class="col-md-4">
-                  <label class="form-label small fw-600" data-i18n="tour_price_adult">Price per Adult (OMR) *</label>
-                  <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" required placeholder="40">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label small fw-600" data-i18n="tour_price_child">Price per Child (OMR)</label>
-                  <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" placeholder="20">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label small fw-600" data-i18n="tour_max_group">Max Group Size *</label>
-                  <input type="number" class="form-control" id="tourMaxGroup" value="10" min="1" max="50" required>
-                </div>
-
-                <div class="col-12">
-                  <label class="form-label small fw-600" data-i18n="tour_description">Description *</label>
-                  <textarea class="form-control" id="tourDescription" rows="3" data-i18n-ph="tour_desc_ph" placeholder="Describe what makes this tour special..." required></textarea>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label small fw-600" data-i18n="tour_meeting">Meeting Point</label>
-                  <input class="form-control" id="tourMeeting" data-i18n-ph="tour_meeting_ph" placeholder="e.g. Nizwa Fort entrance, 7:00 AM">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-600" data-i18n="tour_includes">What's Included (comma-separated)</label>
-                  <input class="form-control" id="tourIncludes" placeholder="Transport, Lunch, Water, Guide fees">
-                </div>
-
-                <!-- OFFERS SECTION -->
-                <div class="col-12 mt-3"><hr></div>
-                <div class="col-12">
-                  <h6 class="fw-700" data-i18n="offer_section">🎁 Special Offer (Optional)</h6>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label small fw-600" data-i18n="discount_percent">Discount %</label>
-                  <input type="number" class="form-control" id="tourDiscount" min="0" max="90" placeholder="0">
-                </div>
-                <div class="col-md-5">
-                  <label class="form-label small fw-600" data-i18n="offer_label">Offer Label</label>
-                  <input class="form-control" id="tourOfferLabel" data-i18n-ph="offer_label_ph" placeholder="e.g. Summer Special, Early Bird">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label small fw-600" data-i18n="offer_until">Offer Valid Until</label>
-                  <input type="date" class="form-control" id="tourOfferUntil">
+                <!-- BASICS -->
+                <div id="tt-basics" class="tour-tab row g-3">
+                  <div class="col-md-8">
+                    <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
+                    <input class="form-control" id="tourTitle" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small fw-600" data-i18n="tour_category">Category</label>
+                    <select class="form-select" id="tourCategory">
+                      <option value="Cultural">🏰 Cultural</option>
+                      <option value="Mountain">🏔️ Mountain</option>
+                      <option value="Desert">🐪 Desert</option>
+                      <option value="Marine">🐬 Marine</option>
+                      <option value="Wildlife">🐢 Wildlife</option>
+                      <option value="Historical">🕌 Historical</option>
+                      <option value="Adventure">⚡ Adventure</option>
+                      <option value="Food">🍽️ Food</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-600" data-i18n="tour_destination">Destination *</label>
+                    <input class="form-control" id="tourDestination" placeholder="e.g. Nizwa, Jebel Akhdar" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label small fw-600" data-i18n="tour_duration">Duration (days) *</label>
+                    <input type="number" class="form-control" id="tourDuration" value="1" min="1" max="14" required>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label small fw-600" data-i18n="tour_difficulty">Difficulty</label>
+                    <select class="form-select" id="tourDifficulty">
+                      <option value="easy">Easy</option><option value="moderate" selected>Moderate</option><option value="hard">Hard</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small fw-600" data-i18n="tour_price_adult">Base Adult Price (OMR) *</label>
+                    <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" required placeholder="40">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small fw-600" data-i18n="tour_price_child">Child Price (OMR)</label>
+                    <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" placeholder="20">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small fw-600" data-i18n="tour_max_group">Max Group Size *</label>
+                    <input type="number" class="form-control" id="tourMaxGroup" value="10" min="1" max="50" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-600" data-i18n="tour_description">Description *</label>
+                    <textarea class="form-control" id="tourDescription" rows="3" placeholder="Describe what makes this tour special..." required></textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-600" data-i18n="tour_meeting">Meeting Point</label>
+                    <input class="form-control" id="tourMeeting" placeholder="e.g. Nizwa Fort entrance, 7:00 AM">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-600">What's Included (comma-separated)</label>
+                    <input class="form-control" id="tourIncludes" placeholder="Transport, Lunch, Water, Guide fees">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-600">Key Highlights (one per line)</label>
+                    <textarea class="form-control" id="tourHighlights" rows="3" placeholder="Sunset over the mountains&#10;Traditional Omani lunch&#10;Small group max 8"></textarea>
+                  </div>
                 </div>
 
-                <div class="col-12">
-                  <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="tourPublished" checked>
-                    <label class="form-check-label" for="tourPublished" data-i18n="publish_tour">Publish — visible to tourists in search</label>
+                <!-- VARIANTS (hotel-room style) -->
+                <div id="tt-variants" class="tour-tab" style="display:none">
+                  <div class="alert alert-info small">
+                    💡 <strong>Like hotel rooms</strong>: offer the same tour at multiple price levels. Tourists pick what fits their budget.<br>
+                    <strong>Examples:</strong> Standard, Premium (with lunch & transport), VIP (private + photographer)
+                  </div>
+                  <div id="variantsList"></div>
+                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addVariant()">➕ Add Package Variant</button>
+                </div>
+
+                <!-- ADD-ONS -->
+                <div id="tt-addons" class="tour-tab" style="display:none">
+                  <div class="alert alert-info small">
+                    🎁 <strong>Optional extras</strong> tourists can add to their booking.<br>
+                    <strong>Examples:</strong> Hotel pickup (+5 OMR), Professional photos (+15 OMR), Lunch upgrade (+10 OMR)
+                  </div>
+                  <div id="addonsList"></div>
+                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addAddon()">➕ Add Add-on</button>
+                </div>
+
+                <!-- DATES + ITINERARY -->
+                <div id="tt-dates" class="tour-tab" style="display:none">
+                  <h6 class="fw-700 mb-2">📅 Available Departure Dates</h6>
+                  <p class="small text-muted">Tourists can only book these specific dates.</p>
+                  <div class="d-flex gap-2 mb-2 flex-wrap">
+                    <input type="date" class="form-control form-control-sm" id="newDateInput" style="max-width:200px">
+                    <button type="button" class="btn btn-sm btn-outline-teal" onclick="addAvailableDate()">+ Add Date</button>
+                  </div>
+                  <div id="availableDatesList" class="d-flex flex-wrap gap-1 mb-4"></div>
+
+                  <hr>
+                  <h6 class="fw-700 mb-2 mt-3">🗺️ Day-by-day Itinerary</h6>
+                  <div id="itineraryList"></div>
+                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addItineraryDay()">➕ Add Day</button>
+                </div>
+
+                <!-- OFFER + PUBLISH -->
+                <div id="tt-offer" class="tour-tab row g-3" style="display:none">
+                  <div class="col-12"><h6 class="fw-700">🏷️ Special Offer (Optional)</h6></div>
+                  <div class="col-md-3">
+                    <label class="form-label small fw-600">Discount %</label>
+                    <input type="number" class="form-control" id="tourDiscount" min="0" max="90" placeholder="0">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label small fw-600">Offer Label</label>
+                    <input class="form-control" id="tourOfferLabel" placeholder="e.g. Summer Special">
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label small fw-600">Valid Until</label>
+                    <input type="date" class="form-control" id="tourOfferUntil">
+                  </div>
+                  <div class="col-12 mt-3"><hr></div>
+                  <div class="col-12">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="tourPublished" checked>
+                      <label class="form-check-label" data-i18n="publish_tour">Publish — visible to tourists</label>
+                    </div>
                   </div>
                 </div>
               </form>
@@ -278,7 +322,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=22"></script>
+<script src="/js/i18n.js?v=23"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 let GUIDE = null;
@@ -460,6 +504,79 @@ async function loadMyTours() {
   }
 }
 
+// ── Tour modal tabs + dynamic lists ───────────────────────────
+let TOUR_VARIANTS = [];
+let TOUR_ADDONS   = [];
+let TOUR_DATES    = [];
+let TOUR_ITINERARY= [];
+
+function showTourTab(name, btn) {
+  document.querySelectorAll('.tour-tab').forEach(t => t.style.display = 'none');
+  document.getElementById('tt-' + name).style.display = '';
+  document.querySelectorAll('#tourModal .nav-tabs .nav-link').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function renderVariants() {
+  const el = document.getElementById('variantsList');
+  el.innerHTML = TOUR_VARIANTS.length ? TOUR_VARIANTS.map((v, i) => `
+    <div class="border rounded p-3 mb-2" style="background:#f8f9fa">
+      <div class="row g-2">
+        <div class="col-md-3"><input class="form-control form-control-sm" placeholder="Name (Standard/Premium/VIP)" value="${v.name||''}" onchange="TOUR_VARIANTS[${i}].name=this.value"></div>
+        <div class="col-md-5"><input class="form-control form-control-sm" placeholder="What's included" value="${v.description||''}" onchange="TOUR_VARIANTS[${i}].description=this.value"></div>
+        <div class="col-md-2"><input type="number" class="form-control form-control-sm" placeholder="Adult OMR" value="${v.priceAdult||''}" onchange="TOUR_VARIANTS[${i}].priceAdult=parseFloat(this.value)||0"></div>
+        <div class="col-md-1"><input type="number" class="form-control form-control-sm" placeholder="Child" value="${v.priceChild||''}" onchange="TOUR_VARIANTS[${i}].priceChild=parseFloat(this.value)||0"></div>
+        <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeVariant(${i})">✕</button></div>
+      </div>
+    </div>`).join('') : '<div class="text-muted small">No variants yet. Tourists will see only the base price.</div>';
+}
+function addVariant() { TOUR_VARIANTS.push({ id: 'v'+Date.now(), name:'', description:'', priceAdult:0, priceChild:0 }); renderVariants(); }
+function removeVariant(i) { TOUR_VARIANTS.splice(i,1); renderVariants(); }
+
+function renderAddons() {
+  const el = document.getElementById('addonsList');
+  el.innerHTML = TOUR_ADDONS.length ? TOUR_ADDONS.map((a, i) => `
+    <div class="border rounded p-3 mb-2" style="background:#f8f9fa">
+      <div class="row g-2">
+        <div class="col-md-4"><input class="form-control form-control-sm" placeholder="Name (Hotel pickup)" value="${a.name||''}" onchange="TOUR_ADDONS[${i}].name=this.value"></div>
+        <div class="col-md-5"><input class="form-control form-control-sm" placeholder="Description" value="${a.description||''}" onchange="TOUR_ADDONS[${i}].description=this.value"></div>
+        <div class="col-md-2"><input type="number" class="form-control form-control-sm" placeholder="OMR" value="${a.price||''}" onchange="TOUR_ADDONS[${i}].price=parseFloat(this.value)||0"></div>
+        <div class="col-md-1"><button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="removeAddon(${i})">✕</button></div>
+      </div>
+    </div>`).join('') : '<div class="text-muted small">No add-ons yet.</div>';
+}
+function addAddon() { TOUR_ADDONS.push({ id:'a'+Date.now(), name:'', description:'', price:0 }); renderAddons(); }
+function removeAddon(i) { TOUR_ADDONS.splice(i,1); renderAddons(); }
+
+function renderAvailableDates() {
+  const el = document.getElementById('availableDatesList');
+  el.innerHTML = TOUR_DATES.length ? TOUR_DATES.sort().map((d, i) =>
+    `<span class="badge" style="background:#e8f5f0;color:#0f5c50;border:1px solid #b2d8ce;font-size:.85rem;padding:8px 12px">${d} <button type="button" onclick="removeDate(${i})" style="background:transparent;border:none;color:#0f5c50;margin-left:6px;cursor:pointer">✕</button></span>`
+  ).join('') : '<span class="text-muted small">No dates yet — tour will be unbookable.</span>';
+}
+function addAvailableDate() {
+  const v = document.getElementById('newDateInput').value;
+  if (v && !TOUR_DATES.includes(v)) { TOUR_DATES.push(v); renderAvailableDates(); document.getElementById('newDateInput').value=''; }
+}
+function removeDate(i) { TOUR_DATES.splice(i,1); renderAvailableDates(); }
+
+function renderItinerary() {
+  const el = document.getElementById('itineraryList');
+  el.innerHTML = TOUR_ITINERARY.length ? TOUR_ITINERARY.map((d, i) => `
+    <div class="border rounded p-3 mb-2" style="background:#f8f9fa">
+      <div class="d-flex gap-2 align-items-start">
+        <div class="badge" style="background:var(--teal);color:#fff;padding:8px 12px">Day ${i+1}</div>
+        <div class="flex-grow-1">
+          <input class="form-control form-control-sm mb-1" placeholder="Day title" value="${d.title||''}" onchange="TOUR_ITINERARY[${i}].title=this.value">
+          <textarea class="form-control form-control-sm" rows="2" placeholder="Activities for this day..." onchange="TOUR_ITINERARY[${i}].description=this.value">${d.description||''}</textarea>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItineraryDay(${i})">✕</button>
+      </div>
+    </div>`).join('') : '<div class="text-muted small">No itinerary added.</div>';
+}
+function addItineraryDay() { TOUR_ITINERARY.push({ title:'', description:'' }); renderItinerary(); }
+function removeItineraryDay(i) { TOUR_ITINERARY.splice(i,1); renderItinerary(); }
+
 function openTourModal(tour) {
   document.getElementById('tourId').value          = tour?.id || '';
   document.getElementById('tourTitle').value       = tour?.title || '';
@@ -473,11 +590,19 @@ function openTourModal(tour) {
   document.getElementById('tourDescription').value = tour?.description || '';
   document.getElementById('tourMeeting').value     = tour?.meeting_point || '';
   document.getElementById('tourIncludes').value    = Array.isArray(tour?.includes) ? tour.includes.join(', ') : '';
+  document.getElementById('tourHighlights').value  = Array.isArray(tour?.highlights) ? tour.highlights.join('\n') : '';
   document.getElementById('tourDiscount').value    = tour?.discountPercent || '';
   document.getElementById('tourOfferLabel').value  = tour?.offerLabel || '';
   document.getElementById('tourOfferUntil').value  = tour?.offerUntil ? tour.offerUntil.slice(0,10) : '';
   document.getElementById('tourPublished').checked = tour ? !!tour.isPublished : true;
-  document.getElementById('tourModalTitle').textContent = tour ? (I18N.t('tour_modal_edit') || 'Edit Tour') : (I18N.t('tour_modal_add') || 'Add New Tour');
+  TOUR_VARIANTS  = Array.isArray(tour?.variants)       ? [...tour.variants]       : [];
+  TOUR_ADDONS    = Array.isArray(tour?.addons)         ? [...tour.addons]         : [];
+  TOUR_DATES     = Array.isArray(tour?.availableDates) ? [...tour.availableDates] : [];
+  TOUR_ITINERARY = Array.isArray(tour?.itinerary)      ? [...tour.itinerary]      : [];
+  renderVariants(); renderAddons(); renderAvailableDates(); renderItinerary();
+  document.querySelectorAll('#tourModal .nav-tabs .nav-link').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.querySelectorAll('.tour-tab').forEach((t,i) => t.style.display = i===0 ? '' : 'none');
+  document.getElementById('tourModalTitle').textContent = tour ? 'Edit Tour' : 'Add New Tour';
   new bootstrap.Modal(document.getElementById('tourModal')).show();
 }
 
@@ -511,6 +636,11 @@ async function saveTour() {
     description:    document.getElementById('tourDescription').value.trim(),
     meeting_point:  document.getElementById('tourMeeting').value.trim(),
     includes:       document.getElementById('tourIncludes').value.split(',').map(s => s.trim()).filter(Boolean),
+    highlights:     document.getElementById('tourHighlights').value.split('\n').map(s => s.trim()).filter(Boolean),
+    variants:       TOUR_VARIANTS.filter(v => v.name && v.priceAdult > 0),
+    addons:         TOUR_ADDONS.filter(a => a.name && a.price >= 0),
+    availableDates: TOUR_DATES,
+    itinerary:      TOUR_ITINERARY.filter(d => d.title || d.description),
     discountPercent:parseInt(document.getElementById('tourDiscount').value) || 0,
     offerLabel:     document.getElementById('tourOfferLabel').value.trim(),
     offerUntil:     document.getElementById('tourOfferUntil').value || null,

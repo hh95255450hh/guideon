@@ -65,6 +65,7 @@ exports.create = async (req, res) => {
       includes, excludes, itinerary, meeting_point, languages, images,
       cover_image, cancellation_policy,
       isPublished, discountPercent, offerLabel, offerUntil,
+      variants, addons, availableDates, highlights,
     } = req.body;
 
     if (!title || !description || !price_adult) {
@@ -98,6 +99,10 @@ exports.create = async (req, res) => {
       discountPercent: Math.max(0, Math.min(90, parseInt(discountPercent) || 0)),
       offerLabel: offerLabel || null,
       offerUntil: offerUntil || null,
+      variants:       Array.isArray(variants)       ? variants       : [],
+      addons:         Array.isArray(addons)         ? addons         : [],
+      availableDates: Array.isArray(availableDates) ? availableDates : [],
+      highlights:     Array.isArray(highlights)     ? highlights     : [],
       rating: 0, totalReviews: 0, totalBookings: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -124,7 +129,8 @@ exports.update = async (req, res) => {
       'duration_days', 'max_group_size', 'price_adult', 'price_child', 'currency',
       'includes', 'excludes', 'itinerary', 'meeting_point', 'languages', 'images',
       'cover_image', 'cancellation_policy', 'isPublished',
-      'discountPercent', 'offerLabel', 'offerUntil'];
+      'discountPercent', 'offerLabel', 'offerUntil',
+      'variants', 'addons', 'availableDates', 'highlights'];
     const changes = { updatedAt: new Date().toISOString() };
     for (const k of allowed) {
       if (req.body[k] !== undefined) changes[k] = req.body[k];
