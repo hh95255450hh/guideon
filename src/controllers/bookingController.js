@@ -118,20 +118,24 @@ exports.createBooking = async (req, res) => {
       totalAmount: booking.totalAmount, bookingId: booking.id,
     }).catch(() => {});
 
-    // In-app notifications
+    // In-app notifications (bilingual EN + AR)
     notify({
       userId: guide.id,
       type: 'booking_new',
-      title: 'New booking request',
-      body: `${tourist.fullName} requested a tour to ${destination} on ${tourDate}.`,
+      title:   'New booking request',
+      titleAr: 'طلب حجز جديد',
+      body:   `${tourist.fullName} requested a tour to ${destination} on ${tourDate}.`,
+      bodyAr: `طلب ${tourist.fullName} رحلة إلى ${destination} بتاريخ ${tourDate}.`,
       link: '/guide-dashboard.html#bookings',
       metadata: { bookingId: booking.id },
     });
     notify({
       userId: tourist.id,
       type: 'booking_new',
-      title: 'Booking request sent',
-      body: `Waiting for ${guide.fullName} to confirm your ${destination} tour on ${tourDate}.`,
+      title:   'Booking request sent',
+      titleAr: 'تم إرسال طلب الحجز',
+      body:   `Waiting for ${guide.fullName} to confirm your ${destination} tour on ${tourDate}.`,
+      bodyAr: `في انتظار تأكيد ${guide.fullName} لرحلتك إلى ${destination} بتاريخ ${tourDate}.`,
       link: '/tourist-dashboard.html#bookings',
       metadata: { bookingId: booking.id },
     });
@@ -247,18 +251,22 @@ exports.updateStatus = async (req, res) => {
       if (tourist) email.sendTouristBookingConfirmed({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
       if (guide)   email.sendGuideBookingConfirmed({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
 
-      // In-app notifications
+      // In-app notifications (bilingual EN + AR)
       if (tourist) notify({
         userId: tourist.id, type: 'booking_accepted',
-        title: 'Booking confirmed!',
-        body: `${guide?.fullName || 'Your guide'} accepted your ${booking.destination} tour for ${booking.tourDate}.`,
+        title:   'Booking confirmed!',
+        titleAr: 'تم تأكيد الحجز!',
+        body:   `${guide?.fullName || 'Your guide'} accepted your ${booking.destination} tour for ${booking.tourDate}.`,
+        bodyAr: `قبل ${guide?.fullName || 'مرشدك'} حجزك لرحلة ${booking.destination} بتاريخ ${booking.tourDate}.`,
         link: '/tourist-dashboard.html#bookings',
         metadata: { bookingId: id },
       });
       if (guide) notify({
         userId: guide.id, type: 'booking_accepted',
-        title: 'You confirmed a booking',
-        body: `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} is confirmed.`,
+        title:   'You confirmed a booking',
+        titleAr: 'لقد أكّدت الحجز',
+        body:   `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} is confirmed.`,
+        bodyAr: `تم تأكيد الرحلة مع ${tourist?.fullName || 'السائح'} بتاريخ ${booking.tourDate}.`,
         link: '/guide-dashboard.html#bookings',
         metadata: { bookingId: id },
       });
@@ -275,17 +283,22 @@ exports.updateStatus = async (req, res) => {
       if (guide)   email.sendGuideBookingCancelled({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
 
       const cancelledBy = userType === 'guide' ? 'guide' : (userType === 'tourist' ? 'tourist' : 'admin');
+      const cancelledByAr = userType === 'guide' ? 'المرشد' : (userType === 'tourist' ? 'السائح' : 'الإدارة');
       if (tourist) notify({
         userId: tourist.id, type: 'booking_cancelled',
-        title: 'Booking cancelled',
-        body: `Your ${booking.destination} tour for ${booking.tourDate} was cancelled by the ${cancelledBy}.`,
+        title:   'Booking cancelled',
+        titleAr: 'تم إلغاء الحجز',
+        body:   `Your ${booking.destination} tour for ${booking.tourDate} was cancelled by the ${cancelledBy}.`,
+        bodyAr: `تم إلغاء رحلتك إلى ${booking.destination} بتاريخ ${booking.tourDate} من قبل ${cancelledByAr}.`,
         link: '/tourist-dashboard.html#bookings',
         metadata: { bookingId: id },
       });
       if (guide) notify({
         userId: guide.id, type: 'booking_cancelled',
-        title: 'Booking cancelled',
-        body: `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} was cancelled.`,
+        title:   'Booking cancelled',
+        titleAr: 'تم إلغاء الحجز',
+        body:   `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} was cancelled.`,
+        bodyAr: `تم إلغاء الرحلة مع ${tourist?.fullName || 'السائح'} بتاريخ ${booking.tourDate}.`,
         link: '/guide-dashboard.html#bookings',
         metadata: { bookingId: id },
       });
@@ -305,8 +318,10 @@ exports.updateStatus = async (req, res) => {
       }).catch(() => {});
       if (tourist) notify({
         userId: tourist.id, type: 'trip_start',
-        title: 'Your tour just started 🚐',
-        body: `${guide?.fullName || 'Your guide'} marked the ${booking.destination} tour as in progress. Have fun!`,
+        title:   'Your tour just started 🚐',
+        titleAr: 'بدأت رحلتك الآن 🚐',
+        body:   `${guide?.fullName || 'Your guide'} marked the ${booking.destination} tour as in progress. Have fun!`,
+        bodyAr: `أعلن ${guide?.fullName || 'مرشدك'} بدء رحلة ${booking.destination}. استمتع برحلتك!`,
         link: '/tourist-dashboard.html#bookings',
         metadata: { bookingId: id },
       });
@@ -314,15 +329,19 @@ exports.updateStatus = async (req, res) => {
       if (tourist) email.sendTouristReviewReminder({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, destination: booking.destination, bookingId: id }).catch(() => {});
       if (tourist) notify({
         userId: tourist.id, type: 'booking_completed',
-        title: 'Tour completed — leave a review ⭐',
-        body: `How was your ${booking.destination} tour with ${guide?.fullName || 'your guide'}? Help future travelers.`,
+        title:   'Tour completed — leave a review ⭐',
+        titleAr: 'اكتملت الرحلة — اترك تقييماً ⭐',
+        body:   `How was your ${booking.destination} tour with ${guide?.fullName || 'your guide'}? Help future travelers.`,
+        bodyAr: `كيف كانت رحلتك إلى ${booking.destination} مع ${guide?.fullName || 'مرشدك'}؟ ساعد المسافرين القادمين.`,
         link: '/tourist-dashboard.html#bookings',
         metadata: { bookingId: id },
       });
       if (guide) notify({
         userId: guide.id, type: 'booking_completed',
-        title: 'Tour completed 🎉',
-        body: `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} has been completed.`,
+        title:   'Tour completed 🎉',
+        titleAr: 'اكتملت الرحلة 🎉',
+        body:   `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} has been completed.`,
+        bodyAr: `اكتملت الرحلة مع ${tourist?.fullName || 'السائح'} بتاريخ ${booking.tourDate}.`,
         link: '/guide-dashboard.html#bookings',
         metadata: { bookingId: id },
       });

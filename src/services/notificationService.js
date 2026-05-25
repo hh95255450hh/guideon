@@ -22,15 +22,25 @@ const users         = new SupabaseDB('users');
  * @param {Object} [opts.metadata]
  * @param {Object} [opts.email]   — { subject, html } if you also want an email
  */
+// Bilingual formatter — produces "English text\n\n──────\n\nArabic text"
+function bilingual(en, ar) {
+  if (en && ar) return `${en}\n\n──────\n\n${ar}`;
+  return en || ar || '';
+}
+
 async function notify(opts) {
   if (!opts?.userId || !opts?.type || !opts?.title) return null;
   try {
+    // If caller provided Arabic versions (titleAr / bodyAr), build a bilingual string.
+    const title = opts.titleAr ? bilingual(opts.title, opts.titleAr) : opts.title;
+    const body  = opts.bodyAr  ? bilingual(opts.body || '', opts.bodyAr) : (opts.body || '');
+
     const row = {
       id:       'ntf-' + uuidv4().slice(0, 10),
       userId:   opts.userId,
       type:     opts.type,
-      title:    opts.title.slice(0, 200),
-      body:     (opts.body || '').slice(0, 1000),
+      title:    title.slice(0, 400),
+      body:     body.slice(0, 2000),
       link:     opts.link || null,
       icon:     opts.icon || pickDefaultIcon(opts.type),
       isRead:   false,
@@ -63,7 +73,17 @@ async function notify(opts) {
         const channel = pickEmailChannel(opts.type);
         if (prefs[channel] !== false) {
           const link = opts.link ? (opts.link.startsWith('http') ? opts.link : 'https://guideon.guide' + opts.link) : 'https://guideon.guide';
-          const waBody = `${opts.icon || '🔔'} ${row.title}\n\n${row.body || ''}\n\n${link}`;
+          const icon = opts.icon || pickDefaultIcon(opts.type);
+
+          // Build bilingual WhatsApp message: English block + Arabic block + link.
+          const enBlock = `${icon} ${opts.title}\n${opts.body || ''}`.trim();
+          const arBlock = opts.titleAr || opts.bodyAr
+            ? `${icon} ${opts.titleAr || ''}\n${opts.bodyAr || ''}`.trim()
+            : '';
+          const waBody = arBlock
+            ? `${enBlock}\n\n──────\n\n${arBlock}\n\n🔗 ${link}`
+            : `${enBlock}\n\n🔗 ${link}`;
+
           whatsapp.sendText(user.phone, waBody).catch(() => {});
         }
       } catch (_) { /* never fail the notify because of whatsapp */ }

@@ -34,12 +34,15 @@ async function send(req, res) {
 
     if (error) throw error;
 
-    // Notify the recipient (in-app, no email — too noisy for chat)
+    // Notify the recipient (in-app + WhatsApp — bilingual)
+    const snippet = data.content.slice(0, 80) + (data.content.length > 80 ? '…' : '');
     notify({
       userId: toId,
       type: 'message',
-      title: 'New message',
-      body: `${data.fromName}: ${data.content.slice(0, 80)}${data.content.length > 80 ? '…' : ''}`,
+      title:   'New message',
+      titleAr: 'رسالة جديدة',
+      body:   `${data.fromName}: ${snippet}`,
+      bodyAr: `من ${data.fromName}: ${snippet}`,
       link: '/' + (req.session.userType === 'tourist' ? 'tourist-dashboard' : req.session.userType === 'guide' ? 'guide-dashboard' : 'company-dashboard') + '.html#messages',
       metadata: { fromId, conversationId: [fromId, toId].sort().join('_') },
     });

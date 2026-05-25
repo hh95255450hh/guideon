@@ -58,8 +58,10 @@ exports.submitReview = async (req, res) => {
       notify({
         userId: guide.id,
         type: 'review',
-        title: `New ${review.rating}-star review`,
-        body: `${review.touristName} left a review for your ${booking.destination} tour.`,
+        title:   `New ${review.rating}-star review`,
+        titleAr: `تقييم جديد ${review.rating} نجوم`,
+        body:   `${review.touristName} left a review for your ${booking.destination} tour.`,
+        bodyAr: `قام ${review.touristName} بترك تقييم لرحلة ${booking.destination}.`,
         link: '/guide-dashboard.html#reviews',
         metadata: { reviewId: review.reviewId, rating: review.rating },
       });
