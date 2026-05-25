@@ -5,6 +5,7 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('./emailService');
+const whatsapp     = require('./whatsappService');
 
 const notifications = new SupabaseDB('notifications');
 const users         = new SupabaseDB('users');
@@ -38,17 +39,34 @@ async function notify(opts) {
     };
     await notifications.insert(row);
 
-    // If caller passed email payload AND user opted-in for that channel, send it.
-    if (opts.email && opts.email.subject && opts.email.html) {
+    // Look up the user once for both email + WhatsApp delivery.
+    let user = null;
+    try { user = await users.findById(opts.userId); } catch (_) {}
+
+    // Email channel (only if caller provided payload AND user opted-in)
+    if (user && opts.email && opts.email.subject && opts.email.html) {
       try {
-        const user = await users.findById(opts.userId);
-        const prefs = user?.notifPrefs?.email || {};
+        const prefs = user.notifPrefs?.email || {};
         const channel = pickEmailChannel(opts.type);
-        const allowed = prefs[channel] !== false; // default true
-        if (allowed && user?.email) {
+        const allowed = prefs[channel] !== false;
+        if (allowed && user.email) {
           emailService.send(user.email, opts.email.subject, opts.email.html).catch(() => {});
         }
-      } catch (_) { /* never fail the notify because of email lookup */ }
+      } catch (_) { /* never fail the notify because of email */ }
+    }
+
+    // WhatsApp channel — fires for every notification if user has a phone +
+    // hasn't disabled WhatsApp in their preferences. No-op if WHATSAPP_ENABLED!=true.
+    if (user && user.phone && whatsapp.isEnabled()) {
+      try {
+        const prefs = user.notifPrefs?.whatsapp || {};
+        const channel = pickEmailChannel(opts.type);
+        if (prefs[channel] !== false) {
+          const link = opts.link ? (opts.link.startsWith('http') ? opts.link : 'https://guideon.guide' + opts.link) : 'https://guideon.guide';
+          const waBody = `${opts.icon || '🔔'} ${row.title}\n\n${row.body || ''}\n\n${link}`;
+          whatsapp.sendText(user.phone, waBody).catch(() => {});
+        }
+      } catch (_) { /* never fail the notify because of whatsapp */ }
     }
 
     return row;

@@ -17,7 +17,8 @@ const upload = multer({
 });
 
 router.post('/', requireTourist, review.submitReview);
-router.get('/guide/:guideId', review.guideReviews);
+router.get('/guide/:guideId',     review.guideReviews);
+router.get('/package/:packageId', review.packageReviews);
 
 // POST /api/reviews/upload-photo — upload a single review photo, returns URL
 router.post('/upload-photo', requireLogin, upload.single('photo'), async (req, res) => {

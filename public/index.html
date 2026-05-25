@@ -67,7 +67,7 @@
       <span data-i18n="hero_title">Discover Oman With a</span><br>
       <span style="color:var(--gold)" data-i18n="hero_highlight">Verified Local Expert</span>
     </h1>
-    <p class="mb-4 mx-auto" style="max-width:580px" data-i18n="hero_sub">Connect with certified tourist guides across Muscat, Nizwa, Salalah, Musandam and beyond.</p>
+    <p class="mb-4 mx-auto" style="max-width:580px" data-i18n="hero_sub">Connect with certified tourist guides across the Sultanate of Oman.</p>
 
     <!-- SEARCH -->
     <div class="row justify-content-center">
@@ -921,7 +921,7 @@
 <div id="toast-container"></div>
 
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=33"></script>
+<script src="/js/i18n.js?v=34"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script src="/js/seo.js"></script>
 <script src="/js/newsletter.js"></script>
@@ -1012,12 +1012,14 @@ async function loadFeatured() {
       return `
       <div class="col-md-4">
         <div class="guide-card guide-card-wrap h-100">
-          <div class="guide-card-header">
+          <div class="guide-card-header" ${g.photo ? `style="background-image:linear-gradient(rgba(15,28,62,.25),rgba(15,28,62,.45)),url('${g.photo}');background-size:cover;background-position:center"` : ''}>
             ${getBadge(g)}
             <button class="wishlist-btn ${wishlisted ? 'saved' : ''}" data-id="${g.id}" onclick="toggleWishlist('${g.id}')" title="${I18N.t('saved_guides')}">
               <span class="heart-icon">${wishlisted ? '♥' : '♡'}</span>
             </button>
-            <div class="big-avatar">${initials(g.fullName)}</div>
+            ${g.photo
+              ? `<div class="big-avatar" style="background-image:url('${g.photo}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff"></div>`
+              : `<div class="big-avatar">${initials(g.fullName)}</div>`}
           </div>
           <div class="p-3">
             <div class="d-flex align-items-start justify-content-between mb-1">

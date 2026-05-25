@@ -196,7 +196,7 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=33"></script>
+<script src="/js/i18n.js?v=34"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script src="/js/seo.js"></script>
 <script src="/js/newsletter.js"></script>
@@ -405,12 +405,14 @@ function renderGuides(guides) {
       <div class="col-md-6 col-lg-4">
         <div class="guide-card h-100 guide-card-wrap">
           <!-- Airbnb-style header with avatar -->
-          <div class="guide-card-header">
+          <div class="guide-card-header" ${g.photo ? `style="background-image:linear-gradient(rgba(15,28,62,.25),rgba(15,28,62,.45)),url('${g.photo}');background-size:cover;background-position:center"` : ''}>
             ${badge}
             <button class="wishlist-btn ${wishlisted ? 'saved' : ''}" data-id="${g.id}" onclick="toggleWishlist('${g.id}')" title="${I18N.t('saved_guides')}">
               <span class="heart-icon">${wishlisted ? '♥' : '♡'}</span>
             </button>
-            <div class="big-avatar">${initials(g.fullName)}</div>
+            ${g.photo
+              ? `<div class="big-avatar" style="background-image:url('${g.photo}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff"></div>`
+              : `<div class="big-avatar">${initials(g.fullName)}</div>`}
           </div>
 
           <div class="p-3">

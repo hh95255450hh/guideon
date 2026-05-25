@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
+const { notify } = require('../services/notificationService');
 
 const reviews  = new SupabaseDB('reviews', 'reviewId');
 const bookings = new SupabaseDB('bookings');
@@ -27,11 +28,13 @@ exports.submitReview = async (req, res) => {
       reviewId: 'rv-' + uuidv4().slice(0, 8),
       bookingId, touristId,
       guideId: booking.guideId,
+      packageId: booking.packageId || null,  // tie to the specific tour package
       rating: parseInt(rating),
       comment: comment || '',
       photos: photoList,
       helpfulCount: 0,
       touristName: tourist ? tourist.fullName : 'Anonymous',
+      touristPhoto: tourist?.photo || null,
       createdAt: new Date().toISOString(),
     };
     await reviews.insert(review);
@@ -44,7 +47,7 @@ exports.submitReview = async (req, res) => {
       totalReviews: guideReviews.length,
     });
 
-    // Notify guide of new review
+    // Notify guide of new review (email + in-app)
     if (guide) {
       email.sendGuideNewReview({
         email: guide.email, name: guide.fullName,
@@ -52,6 +55,14 @@ exports.submitReview = async (req, res) => {
         rating: review.rating, comment: review.comment,
         destination: booking.destination,
       }).catch(() => {});
+      notify({
+        userId: guide.id,
+        type: 'review',
+        title: `New ${review.rating}-star review`,
+        body: `${review.touristName} left a review for your ${booking.destination} tour.`,
+        link: '/guide-dashboard.html#reviews',
+        metadata: { reviewId: review.reviewId, rating: review.rating },
+      });
     }
 
     res.status(201).json({ success: true, message: 'Review submitted. Thank you!', review });
@@ -67,6 +78,25 @@ exports.guideReviews = async (req, res) => {
     const list = await reviews.findAllByField('guideId', guideId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json({ success: true, reviews: list });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/reviews/package/:packageId — reviews for a specific tour package
+exports.packageReviews = async (req, res) => {
+  try {
+    const { packageId } = req.params;
+    const list = await reviews.findAllByField('packageId', packageId);
+    list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const avg = list.length ? list.reduce((s, r) => s + r.rating, 0) / list.length : 0;
+    res.json({
+      success: true,
+      count: list.length,
+      averageRating: Math.round(avg * 10) / 10,
+      reviews: list,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
