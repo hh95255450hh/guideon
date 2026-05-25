@@ -521,6 +521,7 @@ const TRANSLATIONS = {
     hp_confirm_delete_act:  'Delete this activity?',
     hp_saved_ok:            'Saved at ',
     hp_saved_fail:          'Save failed',
+    act_empty:              'Activity cards will appear here once added through Homepage Manager.',
     // My tours
     my_tours_title:   '🗺️ My Tours',
     my_tours_desc:    'Create individual tours with their own price, duration, and destination. Add special offers anytime.',
@@ -1461,6 +1462,7 @@ const TRANSLATIONS = {
     hp_confirm_delete_act:  'حذف هذه الفعالية؟',
     hp_saved_ok:            'تم الحفظ في ',
     hp_saved_fail:          'فشل الحفظ',
+    act_empty:              'ستظهر بطاقات الفعاليات هنا بعد إضافتها من إدارة الواجهة.',
     // My tours
     my_tours_title:   '🗺️ رحلاتي',
     my_tours_desc:    'أنشئ رحلات منفصلة بسعر ومدة ووجهة لكل واحدة. أضف عروضاً متى شئت.',

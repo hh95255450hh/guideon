@@ -50,29 +50,31 @@
 
     // ─── ACTIVITIES ───────────────────────
     const acts = settings.activities?.items || [];
-    if (acts.length > 0) {
-      // Find activities grid container - the row.g-4 inside the activities section
-      const actSection = Array.from(document.querySelectorAll('section.py-5'))
-        .find(s => s.querySelector('[data-i18n="activities_title"]'));
-      const grid = actSection?.querySelector('.row.g-4');
-      if (grid) {
-        grid.innerHTML = acts.map(a => `
-          <div class="col-md-6 col-lg-4">
-            <div class="activity-card" onclick="location.href='${esc(a.link || '/search.html')}'">
-              ${a.image ? `<div class="activity-img" style="background-image:url('${esc(a.image)}')"></div>` : '<div class="activity-img" style="background:linear-gradient(135deg,#0f1c3e,#0f7b6c)"></div>'}
-              <div class="activity-body">
-                ${a.badge ? `<div class="activity-badge">${esc(a.badge)}</div>` : ''}
-                <h5 class="fw-800 mb-1">${esc(T(a.title_en, a.title_ar))}</h5>
-                <p class="text-muted small mb-2">${esc(T(a.desc_en, a.desc_ar))}</p>
-                <div class="d-flex justify-content-between align-items-center small">
-                  <span>${esc(a.duration || '')}</span>
-                  ${a.price ? `<span class="text-teal fw-700">${esc(a.price)}</span>` : ''}
-                </div>
+    const grid = document.getElementById('activitiesGrid');
+    if (grid && acts.length > 0) {
+      grid.innerHTML = acts.map(a => `
+        <div class="col-md-6 col-lg-4">
+          <div class="activity-card" onclick="location.href='${esc(a.link || '/search.html')}'">
+            ${a.image ? `<div class="activity-img" style="background-image:url('${esc(a.image)}')"></div>` : '<div class="activity-img" style="background:linear-gradient(135deg,#0f1c3e,#0f7b6c)"></div>'}
+            <div class="activity-body">
+              ${a.badge ? `<div class="activity-badge">${esc(a.badge)}</div>` : ''}
+              <h5 class="fw-800 mb-1">${esc(T(a.title_en, a.title_ar))}</h5>
+              <p class="text-muted small mb-2">${esc(T(a.desc_en, a.desc_ar))}</p>
+              <div class="d-flex justify-content-between align-items-center small">
+                <span>${esc(a.duration || '')}</span>
+                ${a.price ? `<span class="text-teal fw-700">${esc(a.price)}</span>` : ''}
               </div>
             </div>
           </div>
-        `).join('');
-      }
+        </div>
+      `).join('');
+      // Hide the empty-state placeholder
+      const section = grid.closest('section');
+      if (section) section.classList.remove('d-none');
+    } else if (grid && acts.length === 0) {
+      // Hide the whole activities section when empty — cleaner than showing the placeholder publicly
+      const section = grid.closest('section');
+      if (section) section.classList.add('d-none');
     }
   } catch (e) {
     // silent fail — page works with default content
