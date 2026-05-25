@@ -3,23 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Homepage Manager — Guideon Admin</title>
+<title>Homepage Manager — Guideon</title>
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
-<link rel="stylesheet" href="/css/style.css?v=36">
+<link rel="stylesheet" href="/css/style.css?v=37">
 <style>
-  body { background: #f4f7fa; }
-  .panel { background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:24px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
-  .panel h4 { font-weight:800; color:#0f1c3e; margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid #0f7b6c; display:inline-block; }
-  .slide-row { background:#fafbfc; border:1px solid #e5e7eb; border-radius:10px; padding:14px; margin-bottom:10px; }
-  .slide-row .preview { width:100px; height:60px; object-fit:cover; border-radius:6px; background:#ddd; }
-  .small-btn { font-size:.8rem; padding:4px 10px; }
-  .tab-pills { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
-  .tab-pill { padding:8px 18px; border-radius:20px; background:#fff; border:1.5px solid #e5e7eb; cursor:pointer; font-weight:600; font-size:.9rem; transition:.15s; }
-  .tab-pill.active { background:#0f7b6c; color:#fff; border-color:#0f7b6c; }
+  body { background:#f4f7fa; }
+  .hp-hero { background:linear-gradient(135deg,#0f1c3e,#1a2c5b 45%,#0f7b6c); color:#fff; padding:28px 0 22px; margin-bottom:24px; }
+  .hp-hero h2 { font-weight:800; margin:0; }
+  .hp-hero .subtitle { opacity:.85; margin-top:4px; font-size:.95rem; }
+  .info-banner { background:#fff8e6; border:1px solid #ffd76a; border-radius:12px; padding:14px 18px; color:#7a5a00; font-size:.9rem; margin-bottom:20px; }
+  .panel { background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:24px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,.05); }
+  .panel-title { font-weight:800; color:#0f1c3e; margin:0 0 6px; font-size:1.1rem; }
+  .panel-hint { color:#6b7280; font-size:.85rem; margin-bottom:18px; line-height:1.6; }
+  .lang-pair { background:#fafbfc; border:1px solid #eef0f4; border-radius:10px; padding:14px; margin-bottom:14px; }
+  .lang-label { font-weight:700; font-size:.75rem; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+  .lang-label .flag { font-size:1.1rem; }
+  .field-help { font-size:.78rem; color:#9ca3af; margin-top:4px; }
+  .tab-pills { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+  .tab-pill { padding:10px 22px; border-radius:24px; background:#fff; border:1.5px solid #e5e7eb; cursor:pointer; font-weight:700; font-size:.9rem; transition:.15s; color:#374151; }
+  .tab-pill:hover { border-color:#0f7b6c; color:#0f7b6c; }
+  .tab-pill.active { background:#0f7b6c; color:#fff; border-color:#0f7b6c; box-shadow:0 3px 10px rgba(15,123,108,.3); }
   .tab-pane { display:none; }
   .tab-pane.active { display:block; }
+  .item-card { background:#fafbfc; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:14px; }
+  .item-card .item-no { background:#0f7b6c; color:#fff; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.85rem; }
+  .item-preview { width:120px; height:80px; object-fit:cover; border-radius:8px; background:#e5e7eb url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="%23999"><path d="M8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5z"/></svg>') center/40px no-repeat; }
+  .upload-btn { font-size:.78rem; padding:5px 10px; margin-top:6px; }
+  .action-btn { background:none; border:1px solid #d1d5db; border-radius:6px; width:32px; height:32px; cursor:pointer; transition:.15s; }
+  .action-btn:hover:not(:disabled) { background:#f3f4f6; }
+  .action-btn:disabled { opacity:.4; cursor:not-allowed; }
+  .action-btn.danger { color:#dc2626; border-color:#fecaca; }
+  .action-btn.danger:hover { background:#fef2f2; }
+  .save-bar { position:sticky; bottom:0; background:#fff; border-top:2px solid #0f7b6c; padding:14px 24px; margin:24px -24px -24px; border-radius:0 0 14px 14px; display:flex; justify-content:space-between; align-items:center; }
+  .save-bar .status { font-size:.85rem; color:#6b7280; }
+  [dir="rtl"] body { font-family: 'Tajawal', 'Cairo', sans-serif; }
 </style>
 </head>
 <body>
@@ -27,96 +46,158 @@
 <nav class="navbar navbar-dark sticky-top" style="background:#0f1c3e">
   <div class="container">
     <a class="navbar-brand" href="/admin.html"><img src="/logo.png" alt="Guideon" height="40"></a>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 align-items-center">
       <button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()">🌐 عربي</button>
-      <a href="/admin.html" class="btn btn-sm btn-outline-light">← Admin</a>
+      <a href="/admin.html" class="btn btn-sm btn-outline-light"><span data-i18n="hp_back_admin">← Admin Panel</span></a>
+      <a href="/" target="_blank" class="btn btn-sm btn-warning fw-700"><span data-i18n="hp_preview">👁️ Preview Site</span></a>
     </div>
   </div>
 </nav>
 
-<div class="container py-4">
-  <h2 class="fw-800 mb-4" data-i18n="hp_title">🎨 Homepage Manager</h2>
+<div class="hp-hero">
+  <div class="container">
+    <h2 data-i18n="hp_title">🎨 Homepage Manager</h2>
+    <div class="subtitle" data-i18n="hp_subtitle">Edit all visible content on the homepage — text, slides, and activity cards — without touching any code.</div>
+  </div>
+</div>
+
+<div class="container py-2 pb-5">
+
+  <div class="info-banner">
+    ℹ️ <strong data-i18n="hp_tip_title">Quick tip:</strong>
+    <span data-i18n="hp_tip_body">Save each section separately. Refresh the homepage (Ctrl+F5) to see your changes immediately.</span>
+  </div>
 
   <div class="tab-pills">
-    <div class="tab-pill active" data-tab="hero"     onclick="switchTab('hero')"     data-i18n="hp_tab_hero">Hero Section</div>
-    <div class="tab-pill"        data-tab="carousel" onclick="switchTab('carousel')" data-i18n="hp_tab_carousel">Carousel Slides</div>
-    <div class="tab-pill"        data-tab="activities" onclick="switchTab('activities')" data-i18n="hp_tab_activities">Activities Grid</div>
+    <div class="tab-pill active" data-tab="hero"       onclick="switchTab('hero')"><span data-i18n="hp_tab_hero">📝 Hero Section</span></div>
+    <div class="tab-pill"        data-tab="carousel"   onclick="switchTab('carousel')"><span data-i18n="hp_tab_carousel">🎬 Carousel Slides</span></div>
+    <div class="tab-pill"        data-tab="activities" onclick="switchTab('activities')"><span data-i18n="hp_tab_activities">🌍 Activities Grid</span></div>
   </div>
 
-  <!-- ─── HERO TAB ─────────────────────────────── -->
+  <!-- ═══════════════════════════════ HERO TAB ═══════════════════════════════ -->
   <div class="tab-pane active" id="tab-hero">
     <div class="panel">
-      <h4 data-i18n="hp_hero_title">Hero Section Text</h4>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Badge (English)</label>
-          <input type="text" class="form-control" id="hero_badge_en">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Badge (العربية)</label>
-          <input type="text" class="form-control" id="hero_badge_ar" dir="rtl">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Title — line 1 (English)</label>
-          <input type="text" class="form-control" id="hero_title_en">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Title — line 1 (العربية)</label>
-          <input type="text" class="form-control" id="hero_title_ar" dir="rtl">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Title — line 2 / highlight (English)</label>
-          <input type="text" class="form-control" id="hero_highlight_en">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Title — line 2 / highlight (العربية)</label>
-          <input type="text" class="form-control" id="hero_highlight_ar" dir="rtl">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Subtitle (English)</label>
-          <textarea class="form-control" rows="2" id="hero_subtitle_en"></textarea>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label fw-700 small">Subtitle (العربية)</label>
-          <textarea class="form-control" rows="2" id="hero_subtitle_ar" dir="rtl"></textarea>
+      <h3 class="panel-title" data-i18n="hp_hero_title">📝 Hero Section — Top of Homepage</h3>
+      <p class="panel-hint" data-i18n="hp_hero_hint">This is the very first thing visitors see. Use bold, inviting language. Each field must be filled in BOTH English and Arabic.</p>
+
+      <!-- Badge -->
+      <div class="lang-pair">
+        <div class="lang-label">🏷️ <span data-i18n="hp_field_badge">Badge (small text above the main title)</span></div>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇬🇧</span> English</label>
+            <input type="text" class="form-control" id="hero_badge_en" placeholder="Certified Ministry-Licensed Guides">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇸🇦</span> العربية</label>
+            <input type="text" class="form-control" id="hero_badge_ar" dir="rtl" placeholder="مرشدون معتمدون من وزارة التراث والسياحة">
+          </div>
         </div>
       </div>
-      <button class="btn-teal btn mt-3 fw-700" onclick="saveHero()">💾 Save Hero Text</button>
+
+      <!-- Title line 1 -->
+      <div class="lang-pair">
+        <div class="lang-label">📑 <span data-i18n="hp_field_title1">Title — first line (white)</span></div>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇬🇧</span> English</label>
+            <input type="text" class="form-control" id="hero_title_en" placeholder="Discover Oman With a">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇸🇦</span> العربية</label>
+            <input type="text" class="form-control" id="hero_title_ar" dir="rtl" placeholder="اكتشف عُمان مع">
+          </div>
+        </div>
+      </div>
+
+      <!-- Highlight line -->
+      <div class="lang-pair">
+        <div class="lang-label">⭐ <span data-i18n="hp_field_highlight">Title — second line (gold colour)</span></div>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇬🇧</span> English</label>
+            <input type="text" class="form-control" id="hero_highlight_en" placeholder="Verified Local Expert">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇸🇦</span> العربية</label>
+            <input type="text" class="form-control" id="hero_highlight_ar" dir="rtl" placeholder="خبير محلي موثّق">
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtitle -->
+      <div class="lang-pair">
+        <div class="lang-label">💬 <span data-i18n="hp_field_subtitle">Subtitle (description under the title)</span></div>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇬🇧</span> English</label>
+            <textarea class="form-control" rows="2" id="hero_subtitle_en" placeholder="Connect with certified tourist guides across the Sultanate of Oman."></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small"><span class="flag">🇸🇦</span> العربية</label>
+            <textarea class="form-control" rows="2" id="hero_subtitle_ar" dir="rtl" placeholder="تواصل مع مرشدين سياحيين معتمدين في جميع أنحاء سلطنة عُمان."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <span class="status" id="heroStatus"></span>
+        <button class="btn-teal btn fw-700 px-4" onclick="saveHero()">💾 <span data-i18n="hp_save_hero">Save Hero Section</span></button>
+      </div>
     </div>
   </div>
 
-  <!-- ─── CAROUSEL TAB ─────────────────────────── -->
+  <!-- ═══════════════════════════════ CAROUSEL TAB ═══════════════════════════════ -->
   <div class="tab-pane" id="tab-carousel">
     <div class="panel">
-      <h4 data-i18n="hp_carousel_title">Carousel Slides</h4>
-      <p class="text-muted small">Each slide rotates on the homepage every 4.5 seconds. Upload your own photos for authentic Oman content.</p>
+      <h3 class="panel-title" data-i18n="hp_carousel_title">🎬 Carousel Slides — Rotating Photos</h3>
+      <p class="panel-hint" data-i18n="hp_carousel_hint">These photos rotate every 4.5 seconds on the homepage. Add real photos you've taken of Oman. Each slide needs an image, a destination badge, a headline, and a button link. Order matters — use ↑↓ to rearrange.</p>
+
       <div id="slidesList"></div>
-      <button class="btn btn-outline-teal mt-2 fw-700" onclick="addSlide()">+ Add Slide</button>
-      <hr>
-      <button class="btn-teal btn fw-700" onclick="saveCarousel()">💾 Save All Slides</button>
+
+      <button class="btn btn-outline-teal fw-700 mt-2" onclick="addSlide()">
+        ➕ <span data-i18n="hp_add_slide">Add a new slide</span>
+      </button>
+
+      <div class="save-bar">
+        <span class="status" id="carouselStatus"></span>
+        <button class="btn-teal btn fw-700 px-4" onclick="saveCarousel()">💾 <span data-i18n="hp_save_carousel">Save All Slides</span></button>
+      </div>
     </div>
   </div>
 
-  <!-- ─── ACTIVITIES TAB ───────────────────────── -->
+  <!-- ═══════════════════════════════ ACTIVITIES TAB ═══════════════════════════════ -->
   <div class="tab-pane" id="tab-activities">
     <div class="panel">
-      <h4 data-i18n="hp_activities_title">Activities Grid</h4>
-      <p class="text-muted small">12 cards showing on the homepage. Each represents an activity type linking to a search filter.</p>
+      <h3 class="panel-title" data-i18n="hp_act_title">🌍 Activities Grid — Tour Categories</h3>
+      <p class="panel-hint" data-i18n="hp_act_hint">The 12 cards in the "Adventures" section. Each card links to a search filter so visitors can find tours by activity type (Desert / Mountain / Wadi / etc.).</p>
+
       <div id="activitiesList"></div>
-      <button class="btn btn-outline-teal mt-2 fw-700" onclick="addActivity()">+ Add Activity</button>
-      <hr>
-      <button class="btn-teal btn fw-700" onclick="saveActivities()">💾 Save All Activities</button>
+
+      <button class="btn btn-outline-teal fw-700 mt-2" onclick="addActivity()">
+        ➕ <span data-i18n="hp_add_act">Add a new activity</span>
+      </button>
+
+      <div class="save-bar">
+        <span class="status" id="actStatus"></span>
+        <button class="btn-teal btn fw-700 px-4" onclick="saveActivities()">💾 <span data-i18n="hp_save_act">Save All Activities</span></button>
+      </div>
     </div>
   </div>
+
 </div>
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=37"></script>
+<script src="/js/i18n.js?v=38"></script>
 <script>
 let SETTINGS = {};
 let SLIDES = [];
 let ACTIVITIES = [];
+
+function T(key, fallback) {
+  return (window.I18N && I18N.t && I18N.t(key)) || fallback || key;
+}
 
 function toast(msg, type='') {
   const el = document.createElement('div');
@@ -124,6 +205,15 @@ function toast(msg, type='') {
   el.textContent = msg;
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => el.remove(), 3000);
+}
+
+function showStatus(id, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = ok
+    ? '✅ ' + T('hp_saved_ok', 'Saved at ') + new Date().toLocaleTimeString()
+    : '❌ ' + T('hp_saved_fail', 'Save failed');
+  el.style.color = ok ? '#0f7b6c' : '#dc2626';
 }
 
 function switchTab(name) {
@@ -136,74 +226,126 @@ async function loadSettings() {
   const d = await r.json();
   SETTINGS = d.settings || {};
 
-  // Hero
   const h = SETTINGS.hero || {};
   ['badge_en','badge_ar','title_en','title_ar','highlight_en','highlight_ar','subtitle_en','subtitle_ar'].forEach(k => {
     const el = document.getElementById('hero_' + k);
-    if (el) el.value = h[k] || '';
+    if (el && h[k]) el.value = h[k];
   });
 
-  // Carousel
   SLIDES = (SETTINGS.carousel?.slides) || [];
   renderSlides();
 
-  // Activities
   ACTIVITIES = (SETTINGS.activities?.items) || [];
   renderActivities();
 }
 
-// ─── HERO ───────────────────────────────────────
+// ─── HERO ───────────────────────────────────────────────────────────────
 async function saveHero() {
   const value = {};
   ['badge_en','badge_ar','title_en','title_ar','highlight_en','highlight_ar','subtitle_en','subtitle_ar'].forEach(k => {
     value[k] = document.getElementById('hero_' + k).value.trim();
   });
-  const r = await fetch('/api/site-settings/hero', {
-    method: 'PUT', credentials: 'include',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ value }),
-  });
-  const d = await r.json();
-  toast(d.success ? '✅ Hero saved' : '❌ ' + d.message, d.success ? 'success' : 'error');
+  try {
+    const r = await fetch('/api/site-settings/hero', {
+      method: 'PUT', credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ value }),
+    });
+    const d = await r.json();
+    showStatus('heroStatus', d.success);
+    toast(d.success ? '✅ ' + T('hp_saved_ok', 'Saved') : '❌ ' + (d.message || 'Failed'));
+  } catch (e) {
+    showStatus('heroStatus', false);
+    toast('❌ ' + e.message);
+  }
 }
 
-// ─── CAROUSEL ──────────────────────────────────
+// ─── CAROUSEL ───────────────────────────────────────────────────────────
 function renderSlides() {
   const list = document.getElementById('slidesList');
+  if (!SLIDES.length) {
+    list.innerHTML = '<div class="text-muted small text-center py-4">📭 ' + T('hp_no_slides', 'No slides yet — click the green button below to add one') + '</div>';
+    return;
+  }
+
   list.innerHTML = SLIDES.map((s, i) => `
-    <div class="slide-row">
-      <div class="row g-2 align-items-center">
-        <div class="col-md-2">
-          ${s.image ? `<img class="preview" src="${s.image}">` : `<div class="preview"></div>`}
-          <input type="file" accept="image/*" class="form-control form-control-sm mt-1" onchange="uploadSlideImage(${i}, this)">
+    <div class="item-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div class="item-no">${i+1}</div>
+          <strong>${T('hp_slide', 'Slide')} #${i+1}</strong>
         </div>
+        <div class="d-flex gap-1">
+          <button class="action-btn" onclick="moveSlide(${i},-1)" ${i===0?'disabled':''} title="${T('hp_move_up','Move up')}">↑</button>
+          <button class="action-btn" onclick="moveSlide(${i},1)" ${i===SLIDES.length-1?'disabled':''} title="${T('hp_move_down','Move down')}">↓</button>
+          <button class="action-btn danger" onclick="removeSlide(${i})" title="${T('hp_delete','Delete')}">✕</button>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <!-- Image -->
+        <div class="col-md-3">
+          <label class="form-label small fw-700">📸 ${T('hp_image', 'Image')}</label>
+          ${s.image ? `<img class="item-preview d-block mb-2" src="${esc(s.image)}">` : `<div class="item-preview mb-2"></div>`}
+          <input type="file" accept="image/*" class="form-control form-control-sm" onchange="uploadSlideImage(${i}, this)">
+          <div class="field-help">${T('hp_image_hint','Recommended size: 1920×500px')}</div>
+        </div>
+
+        <!-- Texts -->
         <div class="col-md-9">
           <div class="row g-2">
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Badge EN (🏰 Nizwa)" value="${escapeAttr(s.badge_en||'')}" onchange="SLIDES[${i}].badge_en=this.value"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="شارة عربي" value="${escapeAttr(s.badge_ar||'')}" onchange="SLIDES[${i}].badge_ar=this.value" dir="rtl"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Title EN" value="${escapeAttr(s.title_en||'')}" onchange="SLIDES[${i}].title_en=this.value"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="عنوان عربي" value="${escapeAttr(s.title_ar||'')}" onchange="SLIDES[${i}].title_ar=this.value" dir="rtl"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Description EN" value="${escapeAttr(s.desc_en||'')}" onchange="SLIDES[${i}].desc_en=this.value"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="وصف عربي" value="${escapeAttr(s.desc_ar||'')}" onchange="SLIDES[${i}].desc_ar=this.value" dir="rtl"></div>
-            <div class="col-md-8"><input class="form-control form-control-sm" placeholder="Button link (/search.html?destination=Nizwa)" value="${escapeAttr(s.link||'')}" onchange="SLIDES[${i}].link=this.value"></div>
-            <div class="col-md-4"><input class="form-control form-control-sm" placeholder="Button text" value="${escapeAttr(s.button_text||'Explore')}" onchange="SLIDES[${i}].button_text=this.value"></div>
+            <div class="col-md-6">
+              <label class="form-label small fw-700">🏷️ ${T('hp_slide_badge_en', 'Badge — English')}</label>
+              <input class="form-control form-control-sm" placeholder="🏰 Nizwa" value="${esc(s.badge_en||'')}" onchange="SLIDES[${i}].badge_en=this.value">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-700">🏷️ ${T('hp_slide_badge_ar', 'الشارة — العربية')}</label>
+              <input class="form-control form-control-sm" placeholder="🏰 نزوى" value="${esc(s.badge_ar||'')}" onchange="SLIDES[${i}].badge_ar=this.value" dir="rtl">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-700">📑 ${T('hp_slide_title_en', 'Headline — English')}</label>
+              <input class="form-control form-control-sm" placeholder="Nizwa Fort & Souq" value="${esc(s.title_en||'')}" onchange="SLIDES[${i}].title_en=this.value">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-700">📑 ${T('hp_slide_title_ar', 'العنوان — العربية')}</label>
+              <input class="form-control form-control-sm" placeholder="قلعة نزوى والسوق" value="${esc(s.title_ar||'')}" onchange="SLIDES[${i}].title_ar=this.value" dir="rtl">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-700">💬 ${T('hp_slide_desc_en', 'Description — English')}</label>
+              <input class="form-control form-control-sm" placeholder="Oman's ancient capital..." value="${esc(s.desc_en||'')}" onchange="SLIDES[${i}].desc_en=this.value">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-700">💬 ${T('hp_slide_desc_ar', 'الوصف — العربية')}</label>
+              <input class="form-control form-control-sm" placeholder="عاصمة عُمان القديمة..." value="${esc(s.desc_ar||'')}" onchange="SLIDES[${i}].desc_ar=this.value" dir="rtl">
+            </div>
+
+            <div class="col-md-8">
+              <label class="form-label small fw-700">🔗 ${T('hp_slide_link', 'Button link')}</label>
+              <input class="form-control form-control-sm" placeholder="/search.html?destination=Nizwa" value="${esc(s.link||'')}" onchange="SLIDES[${i}].link=this.value">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small fw-700">🔘 ${T('hp_slide_btn_text', 'Button text')}</label>
+              <input class="form-control form-control-sm" placeholder="${T('hp_explore','Explore')}" value="${esc(s.button_text||'')}" onchange="SLIDES[${i}].button_text=this.value">
+            </div>
           </div>
-        </div>
-        <div class="col-md-1 text-end">
-          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveSlide(${i},-1)" ${i===0?'disabled':''}>↑</button>
-          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveSlide(${i},1)" ${i===SLIDES.length-1?'disabled':''}>↓</button>
-          <button class="btn btn-sm btn-danger w-100" onclick="removeSlide(${i})">✕</button>
         </div>
       </div>
     </div>
-  `).join('') || '<div class="text-muted small">No slides yet. Click "+ Add Slide" to create your first.</div>';
+  `).join('');
 }
 
 function addSlide() {
-  SLIDES.push({ image:'', badge_en:'', badge_ar:'', title_en:'', title_ar:'', desc_en:'', desc_ar:'', link:'/search.html', button_text:'Explore' });
+  SLIDES.push({ image:'', badge_en:'', badge_ar:'', title_en:'', title_ar:'', desc_en:'', desc_ar:'', link:'/search.html', button_text:'' });
   renderSlides();
+  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
 }
-function removeSlide(i) { if (confirm('Delete this slide?')) { SLIDES.splice(i,1); renderSlides(); } }
+function removeSlide(i) {
+  if (confirm(T('hp_confirm_delete_slide', 'Delete this slide? This cannot be undone.'))) {
+    SLIDES.splice(i,1); renderSlides();
+  }
+}
 function moveSlide(i, dir) {
   const j = i + dir;
   if (j < 0 || j >= SLIDES.length) return;
@@ -221,60 +363,108 @@ async function uploadSlideImage(i, input) {
     if (!d.success) throw new Error(d.message);
     SLIDES[i].image = d.photo;
     renderSlides();
-    toast('✅ Image uploaded', 'success');
+    toast('✅ ' + T('hp_image_uploaded', 'Image uploaded'));
   } catch (e) {
-    toast('❌ Upload failed: ' + e.message, 'error');
+    toast('❌ ' + e.message);
   }
 }
 
 async function saveCarousel() {
-  const value = { slides: SLIDES };
-  const r = await fetch('/api/site-settings/carousel', {
-    method:'PUT', credentials:'include',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ value }),
-  });
-  const d = await r.json();
-  toast(d.success ? '✅ Carousel saved' : '❌ ' + d.message, d.success ? 'success' : 'error');
+  try {
+    const r = await fetch('/api/site-settings/carousel', {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ value: { slides: SLIDES } }),
+    });
+    const d = await r.json();
+    showStatus('carouselStatus', d.success);
+    toast(d.success ? '✅ ' + T('hp_saved_ok', 'Saved') : '❌ ' + d.message);
+  } catch (e) {
+    showStatus('carouselStatus', false);
+    toast('❌ ' + e.message);
+  }
 }
 
-// ─── ACTIVITIES ────────────────────────────────
+// ─── ACTIVITIES ─────────────────────────────────────────────────────────
 function renderActivities() {
   const list = document.getElementById('activitiesList');
+  if (!ACTIVITIES.length) {
+    list.innerHTML = '<div class="text-muted small text-center py-4">📭 ' + T('hp_no_acts', 'No activity cards yet — click below to add one') + '</div>';
+    return;
+  }
   list.innerHTML = ACTIVITIES.map((a, i) => `
-    <div class="slide-row">
-      <div class="row g-2 align-items-center">
-        <div class="col-md-2">
-          ${a.image ? `<img class="preview" src="${a.image}">` : `<div class="preview"></div>`}
-          <input type="file" accept="image/*" class="form-control form-control-sm mt-1" onchange="uploadActImage(${i}, this)">
+    <div class="item-card">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div class="item-no">${i+1}</div>
+          <strong>${T('hp_activity', 'Activity')} #${i+1}</strong>
+        </div>
+        <div class="d-flex gap-1">
+          <button class="action-btn" onclick="moveAct(${i},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="action-btn" onclick="moveAct(${i},1)" ${i===ACTIVITIES.length-1?'disabled':''}>↓</button>
+          <button class="action-btn danger" onclick="removeAct(${i})">✕</button>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label small fw-700">📸 ${T('hp_image', 'Image')}</label>
+          ${a.image ? `<img class="item-preview d-block mb-2" src="${esc(a.image)}">` : `<div class="item-preview mb-2"></div>`}
+          <input type="file" accept="image/*" class="form-control form-control-sm" onchange="uploadActImage(${i}, this)">
         </div>
         <div class="col-md-9">
           <div class="row g-2">
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="🏔️ Badge" value="${escapeAttr(a.badge||'')}" onchange="ACTIVITIES[${i}].badge=this.value"></div>
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="From price" value="${escapeAttr(a.price||'')}" onchange="ACTIVITIES[${i}].price=this.value"></div>
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="Duration" value="${escapeAttr(a.duration||'')}" onchange="ACTIVITIES[${i}].duration=this.value"></div>
-            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="Link" value="${escapeAttr(a.link||'')}" onchange="ACTIVITIES[${i}].link=this.value"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Title EN" value="${escapeAttr(a.title_en||'')}" onchange="ACTIVITIES[${i}].title_en=this.value"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="عنوان عربي" value="${escapeAttr(a.title_ar||'')}" onchange="ACTIVITIES[${i}].title_ar=this.value" dir="rtl"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Description EN" value="${escapeAttr(a.desc_en||'')}" onchange="ACTIVITIES[${i}].desc_en=this.value"></div>
-            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="وصف عربي" value="${escapeAttr(a.desc_ar||'')}" onchange="ACTIVITIES[${i}].desc_ar=this.value" dir="rtl"></div>
+            <div class="col-md-3">
+              <label class="form-label small fw-700">🏷️ ${T('hp_act_badge', 'Icon badge')}</label>
+              <input class="form-control form-control-sm" placeholder="🏔️ Mountain" value="${esc(a.badge||'')}" onchange="ACTIVITIES[${i}].badge=this.value">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-700">💰 ${T('hp_act_price', 'From price')}</label>
+              <input class="form-control form-control-sm" placeholder="${T('hp_from_price','From 40 OMR')}" value="${esc(a.price||'')}" onchange="ACTIVITIES[${i}].price=this.value">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-700">⏱ ${T('hp_act_duration', 'Duration')}</label>
+              <input class="form-control form-control-sm" placeholder="${T('hp_act_dur_ph','Half day')}" value="${esc(a.duration||'')}" onchange="ACTIVITIES[${i}].duration=this.value">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small fw-700">🔗 ${T('hp_link', 'Link')}</label>
+              <input class="form-control form-control-sm" placeholder="/search.html" value="${esc(a.link||'')}" onchange="ACTIVITIES[${i}].link=this.value">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-700">📑 ${T('hp_slide_title_en', 'Title — English')}</label>
+              <input class="form-control form-control-sm" placeholder="Mountain Climbing" value="${esc(a.title_en||'')}" onchange="ACTIVITIES[${i}].title_en=this.value">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-700">📑 ${T('hp_slide_title_ar', 'العنوان — العربية')}</label>
+              <input class="form-control form-control-sm" placeholder="تسلق الجبال" value="${esc(a.title_ar||'')}" onchange="ACTIVITIES[${i}].title_ar=this.value" dir="rtl">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label small fw-700">💬 ${T('hp_slide_desc_en', 'Description — English')}</label>
+              <input class="form-control form-control-sm" placeholder="Conquer Jebel Shams..." value="${esc(a.desc_en||'')}" onchange="ACTIVITIES[${i}].desc_en=this.value">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-700">💬 ${T('hp_slide_desc_ar', 'الوصف — العربية')}</label>
+              <input class="form-control form-control-sm" placeholder="اصعد جبل شمس..." value="${esc(a.desc_ar||'')}" onchange="ACTIVITIES[${i}].desc_ar=this.value" dir="rtl">
+            </div>
           </div>
-        </div>
-        <div class="col-md-1 text-end">
-          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveAct(${i},-1)" ${i===0?'disabled':''}>↑</button>
-          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveAct(${i},1)" ${i===ACTIVITIES.length-1?'disabled':''}>↓</button>
-          <button class="btn btn-sm btn-danger w-100" onclick="removeAct(${i})">✕</button>
         </div>
       </div>
     </div>
-  `).join('') || '<div class="text-muted small">No activities yet. Click "+ Add Activity".</div>';
+  `).join('');
 }
 
 function addActivity() {
   ACTIVITIES.push({ image:'', badge:'🏔️', title_en:'', title_ar:'', desc_en:'', desc_ar:'', price:'', duration:'', link:'/search.html' });
   renderActivities();
+  setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
 }
-function removeAct(i) { if (confirm('Delete?')) { ACTIVITIES.splice(i,1); renderActivities(); } }
+function removeAct(i) {
+  if (confirm(T('hp_confirm_delete_act', 'Delete this activity?'))) {
+    ACTIVITIES.splice(i,1); renderActivities();
+  }
+}
 function moveAct(i, dir) {
   const j = i + dir;
   if (j < 0 || j >= ACTIVITIES.length) return;
@@ -292,24 +482,31 @@ async function uploadActImage(i, input) {
     if (!d.success) throw new Error(d.message);
     ACTIVITIES[i].image = d.photo;
     renderActivities();
-    toast('✅ Image uploaded', 'success');
+    toast('✅ ' + T('hp_image_uploaded', 'Image uploaded'));
   } catch (e) {
-    toast('❌ Upload failed: ' + e.message, 'error');
+    toast('❌ ' + e.message);
   }
 }
 
 async function saveActivities() {
-  const value = { items: ACTIVITIES };
-  const r = await fetch('/api/site-settings/activities', {
-    method:'PUT', credentials:'include',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ value }),
-  });
-  const d = await r.json();
-  toast(d.success ? '✅ Activities saved' : '❌ ' + d.message, d.success ? 'success' : 'error');
+  try {
+    const r = await fetch('/api/site-settings/activities', {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ value: { items: ACTIVITIES } }),
+    });
+    const d = await r.json();
+    showStatus('actStatus', d.success);
+    toast(d.success ? '✅ ' + T('hp_saved_ok', 'Saved') : '❌ ' + d.message);
+  } catch (e) {
+    showStatus('actStatus', false);
+    toast('❌ ' + e.message);
+  }
 }
 
-function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;'); }
+function esc(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 // Boot — must be admin
 (async () => {
@@ -321,10 +518,13 @@ function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;'); }
       return;
     }
     loadSettings();
-  } catch (e) {
-    window.location.href = '/login.html';
-  }
+  } catch (e) { window.location.href = '/login.html'; }
 })();
+
+// Re-render lists when language changes so labels translate
+window.addEventListener('langchange', () => { renderSlides(); renderActivities(); });
+const _origToggle = I18N.toggle;
+I18N.toggle = function () { _origToggle.call(I18N); renderSlides(); renderActivities(); };
 </script>
 <script src="/js/common-widgets.js?v=2"></script>
 </body>
