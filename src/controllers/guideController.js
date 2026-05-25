@@ -6,12 +6,34 @@ const packages = new SupabaseDB('tour_packages');
 
 exports.searchGuides = async (req, res) => {
   try {
-    const { destination, language, date, specialisation, minRating, sortBy, minPrice, maxPrice } = req.query;
+    const { destination, governorate, language, date, specialisation, minRating, sortBy, minPrice, maxPrice } = req.query;
 
     let guides = await users.findAll(u => u.userType === 'guide' && u.isVerified && !u.isSuspended);
 
     if (destination) {
       guides = guides.filter(g => (g.destinations || []).some(d => d.toLowerCase().includes(destination.toLowerCase())));
+    }
+    // Governorate-level filter: match guides whose destination list contains
+    // ANY wilayat from that governorate.
+    if (governorate) {
+      const govWilayats = {
+        'Muscat':              ['Muscat','Muttrah','Bawshar','As Seeb','Al Amerat','Qurayyat'],
+        'Dhofar':              ['Salalah','Taqah','Mirbat','Thumrait','Sadah','Rakhyut','Dhalkut','Shaleem','Al Mazyona'],
+        'Musandam':            ['Khasab','Bukha','Dibba','Madha','Musandam'],
+        'Al Buraimi':          ['Al Buraimi','Buraimi','Mahdah','As Sunaynah'],
+        'Ad Dakhiliyah':       ['Nizwa','Bahla','Manah','Al Hamra','Adam','Izki','Samail','Bidbid','Jabal Akhdar','Jabal Al Akhdar'],
+        'Al Batinah North':    ['Sohar','Shinas','Liwa','Saham','Al Khaburah','As Suwayq'],
+        'Al Batinah South':    ['Rustaq','Al Awabi','Nakhal','Wadi Al Maawil','Barka','Al Masnaah'],
+        'Ash Sharqiyah North': ['Ibra','Al Mudhaibi','Bidiyah','Al Qabil','Wadi Bani Khalid','Dima','Wadi Shab'],
+        'Ash Sharqiyah South': ['Sur','Al Kamil','Jalan','Masirah','Ras al-Jinz','Ras al Jinz'],
+        'Ad Dhahirah':         ['Ibri','Yanqul','Dhank'],
+        'Al Wusta':            ['Haima','Mahut','Duqm','Al Jazer','Wahiba'],
+      };
+      const targets = govWilayats[governorate] || [];
+      guides = guides.filter(g => (g.destinations || []).some(d => {
+        const dl = d.toLowerCase();
+        return targets.some(t => dl.includes(t.toLowerCase()));
+      }));
     }
     if (language) {
       guides = guides.filter(g => (g.languages || []).some(l => l.toLowerCase().includes(language.toLowerCase())));
