@@ -1,12 +1,10 @@
-[
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "guide.guideon.app",
-      "sha256_cert_fingerprints": [
-        "REPLACE_WITH_YOUR_SHA256_FINGERPRINT_FROM_PLAY_CONSOLE"
-      ]
-    }
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "guide.guideon.twa",
+    "sha256_cert_fingerprints": [
+      "14:4A:C2:D9:A8:FA:0B:12:10:CF:1A:3A:EA:D5:F9:A9:F7:F8:2F:2A:30:88:9E:7B:15:58:67:ED:22:C0:02:AF"
+    ]
   }
-]
+}]
