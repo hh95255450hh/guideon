@@ -92,7 +92,11 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-600 small" data-i18n="phone_lbl">Phone</label>
-              <input type="tel" class="form-control" id="phone" data-i18n-ph="phone_ph" placeholder="+968 XXXX XXXX">
+              <div class="input-group">
+                <select class="form-select" id="phoneCountry" style="max-width:140px"></select>
+                <input type="tel" class="form-control" id="phoneLocal" data-i18n-ph="phone_local_ph" placeholder="9525 5450" pattern="[0-9 ]*" inputmode="numeric">
+              </div>
+              <input type="hidden" id="phone">
             </div>
           </div>
 
@@ -210,9 +214,15 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=36"></script>
+<script src="/js/i18n.js?v=37"></script>
+<script src="/js/country-codes.js?v=1"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
+// Populate the country code dropdown on page load (default: Oman)
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.populateCountryCodes) populateCountryCodes(document.getElementById('phoneCountry'), 'OM');
+});
+
 function switchType(type) {
   document.getElementById('userType').value = type;
   ['tourist','guide','company'].forEach(t => {
@@ -298,7 +308,9 @@ async function doRegister(e) {
     fullName: document.getElementById('fullName').value,
     email:    document.getElementById('email').value,
     password,
-    phone:    document.getElementById('phone').value,
+    phone:    window.buildPhoneE164
+                ? buildPhoneE164(document.getElementById('phoneCountry').value, document.getElementById('phoneLocal').value)
+                : document.getElementById('phone').value,
     userType: type,
   };
 

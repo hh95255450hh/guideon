@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Homepage Manager — Guideon Admin</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=36">
+<style>
+  body { background: #f4f7fa; }
+  .panel { background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:24px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+  .panel h4 { font-weight:800; color:#0f1c3e; margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid #0f7b6c; display:inline-block; }
+  .slide-row { background:#fafbfc; border:1px solid #e5e7eb; border-radius:10px; padding:14px; margin-bottom:10px; }
+  .slide-row .preview { width:100px; height:60px; object-fit:cover; border-radius:6px; background:#ddd; }
+  .small-btn { font-size:.8rem; padding:4px 10px; }
+  .tab-pills { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+  .tab-pill { padding:8px 18px; border-radius:20px; background:#fff; border:1.5px solid #e5e7eb; cursor:pointer; font-weight:600; font-size:.9rem; transition:.15s; }
+  .tab-pill.active { background:#0f7b6c; color:#fff; border-color:#0f7b6c; }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark sticky-top" style="background:#0f1c3e">
+  <div class="container">
+    <a class="navbar-brand" href="/admin.html"><img src="/logo.png" alt="Guideon" height="40"></a>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()">🌐 عربي</button>
+      <a href="/admin.html" class="btn btn-sm btn-outline-light">← Admin</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4">
+  <h2 class="fw-800 mb-4" data-i18n="hp_title">🎨 Homepage Manager</h2>
+
+  <div class="tab-pills">
+    <div class="tab-pill active" data-tab="hero"     onclick="switchTab('hero')"     data-i18n="hp_tab_hero">Hero Section</div>
+    <div class="tab-pill"        data-tab="carousel" onclick="switchTab('carousel')" data-i18n="hp_tab_carousel">Carousel Slides</div>
+    <div class="tab-pill"        data-tab="activities" onclick="switchTab('activities')" data-i18n="hp_tab_activities">Activities Grid</div>
+  </div>
+
+  <!-- ─── HERO TAB ─────────────────────────────── -->
+  <div class="tab-pane active" id="tab-hero">
+    <div class="panel">
+      <h4 data-i18n="hp_hero_title">Hero Section Text</h4>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Badge (English)</label>
+          <input type="text" class="form-control" id="hero_badge_en">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Badge (العربية)</label>
+          <input type="text" class="form-control" id="hero_badge_ar" dir="rtl">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Title — line 1 (English)</label>
+          <input type="text" class="form-control" id="hero_title_en">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Title — line 1 (العربية)</label>
+          <input type="text" class="form-control" id="hero_title_ar" dir="rtl">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Title — line 2 / highlight (English)</label>
+          <input type="text" class="form-control" id="hero_highlight_en">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Title — line 2 / highlight (العربية)</label>
+          <input type="text" class="form-control" id="hero_highlight_ar" dir="rtl">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Subtitle (English)</label>
+          <textarea class="form-control" rows="2" id="hero_subtitle_en"></textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-700 small">Subtitle (العربية)</label>
+          <textarea class="form-control" rows="2" id="hero_subtitle_ar" dir="rtl"></textarea>
+        </div>
+      </div>
+      <button class="btn-teal btn mt-3 fw-700" onclick="saveHero()">💾 Save Hero Text</button>
+    </div>
+  </div>
+
+  <!-- ─── CAROUSEL TAB ─────────────────────────── -->
+  <div class="tab-pane" id="tab-carousel">
+    <div class="panel">
+      <h4 data-i18n="hp_carousel_title">Carousel Slides</h4>
+      <p class="text-muted small">Each slide rotates on the homepage every 4.5 seconds. Upload your own photos for authentic Oman content.</p>
+      <div id="slidesList"></div>
+      <button class="btn btn-outline-teal mt-2 fw-700" onclick="addSlide()">+ Add Slide</button>
+      <hr>
+      <button class="btn-teal btn fw-700" onclick="saveCarousel()">💾 Save All Slides</button>
+    </div>
+  </div>
+
+  <!-- ─── ACTIVITIES TAB ───────────────────────── -->
+  <div class="tab-pane" id="tab-activities">
+    <div class="panel">
+      <h4 data-i18n="hp_activities_title">Activities Grid</h4>
+      <p class="text-muted small">12 cards showing on the homepage. Each represents an activity type linking to a search filter.</p>
+      <div id="activitiesList"></div>
+      <button class="btn btn-outline-teal mt-2 fw-700" onclick="addActivity()">+ Add Activity</button>
+      <hr>
+      <button class="btn-teal btn fw-700" onclick="saveActivities()">💾 Save All Activities</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=37"></script>
+<script>
+let SETTINGS = {};
+let SLIDES = [];
+let ACTIVITIES = [];
+
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg ' + type;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-pill').forEach(p => p.classList.toggle('active', p.dataset.tab === name));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+}
+
+async function loadSettings() {
+  const r = await fetch('/api/site-settings');
+  const d = await r.json();
+  SETTINGS = d.settings || {};
+
+  // Hero
+  const h = SETTINGS.hero || {};
+  ['badge_en','badge_ar','title_en','title_ar','highlight_en','highlight_ar','subtitle_en','subtitle_ar'].forEach(k => {
+    const el = document.getElementById('hero_' + k);
+    if (el) el.value = h[k] || '';
+  });
+
+  // Carousel
+  SLIDES = (SETTINGS.carousel?.slides) || [];
+  renderSlides();
+
+  // Activities
+  ACTIVITIES = (SETTINGS.activities?.items) || [];
+  renderActivities();
+}
+
+// ─── HERO ───────────────────────────────────────
+async function saveHero() {
+  const value = {};
+  ['badge_en','badge_ar','title_en','title_ar','highlight_en','highlight_ar','subtitle_en','subtitle_ar'].forEach(k => {
+    value[k] = document.getElementById('hero_' + k).value.trim();
+  });
+  const r = await fetch('/api/site-settings/hero', {
+    method: 'PUT', credentials: 'include',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ value }),
+  });
+  const d = await r.json();
+  toast(d.success ? '✅ Hero saved' : '❌ ' + d.message, d.success ? 'success' : 'error');
+}
+
+// ─── CAROUSEL ──────────────────────────────────
+function renderSlides() {
+  const list = document.getElementById('slidesList');
+  list.innerHTML = SLIDES.map((s, i) => `
+    <div class="slide-row">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-2">
+          ${s.image ? `<img class="preview" src="${s.image}">` : `<div class="preview"></div>`}
+          <input type="file" accept="image/*" class="form-control form-control-sm mt-1" onchange="uploadSlideImage(${i}, this)">
+        </div>
+        <div class="col-md-9">
+          <div class="row g-2">
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Badge EN (🏰 Nizwa)" value="${escapeAttr(s.badge_en||'')}" onchange="SLIDES[${i}].badge_en=this.value"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="شارة عربي" value="${escapeAttr(s.badge_ar||'')}" onchange="SLIDES[${i}].badge_ar=this.value" dir="rtl"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Title EN" value="${escapeAttr(s.title_en||'')}" onchange="SLIDES[${i}].title_en=this.value"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="عنوان عربي" value="${escapeAttr(s.title_ar||'')}" onchange="SLIDES[${i}].title_ar=this.value" dir="rtl"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Description EN" value="${escapeAttr(s.desc_en||'')}" onchange="SLIDES[${i}].desc_en=this.value"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="وصف عربي" value="${escapeAttr(s.desc_ar||'')}" onchange="SLIDES[${i}].desc_ar=this.value" dir="rtl"></div>
+            <div class="col-md-8"><input class="form-control form-control-sm" placeholder="Button link (/search.html?destination=Nizwa)" value="${escapeAttr(s.link||'')}" onchange="SLIDES[${i}].link=this.value"></div>
+            <div class="col-md-4"><input class="form-control form-control-sm" placeholder="Button text" value="${escapeAttr(s.button_text||'Explore')}" onchange="SLIDES[${i}].button_text=this.value"></div>
+          </div>
+        </div>
+        <div class="col-md-1 text-end">
+          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveSlide(${i},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveSlide(${i},1)" ${i===SLIDES.length-1?'disabled':''}>↓</button>
+          <button class="btn btn-sm btn-danger w-100" onclick="removeSlide(${i})">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('') || '<div class="text-muted small">No slides yet. Click "+ Add Slide" to create your first.</div>';
+}
+
+function addSlide() {
+  SLIDES.push({ image:'', badge_en:'', badge_ar:'', title_en:'', title_ar:'', desc_en:'', desc_ar:'', link:'/search.html', button_text:'Explore' });
+  renderSlides();
+}
+function removeSlide(i) { if (confirm('Delete this slide?')) { SLIDES.splice(i,1); renderSlides(); } }
+function moveSlide(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= SLIDES.length) return;
+  [SLIDES[i], SLIDES[j]] = [SLIDES[j], SLIDES[i]];
+  renderSlides();
+}
+
+async function uploadSlideImage(i, input) {
+  if (!input.files?.[0]) return;
+  const fd = new FormData();
+  fd.append('photo', input.files[0]);
+  try {
+    const r = await fetch('/api/upload/photo', { method:'POST', credentials:'include', body: fd });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    SLIDES[i].image = d.photo;
+    renderSlides();
+    toast('✅ Image uploaded', 'success');
+  } catch (e) {
+    toast('❌ Upload failed: ' + e.message, 'error');
+  }
+}
+
+async function saveCarousel() {
+  const value = { slides: SLIDES };
+  const r = await fetch('/api/site-settings/carousel', {
+    method:'PUT', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ value }),
+  });
+  const d = await r.json();
+  toast(d.success ? '✅ Carousel saved' : '❌ ' + d.message, d.success ? 'success' : 'error');
+}
+
+// ─── ACTIVITIES ────────────────────────────────
+function renderActivities() {
+  const list = document.getElementById('activitiesList');
+  list.innerHTML = ACTIVITIES.map((a, i) => `
+    <div class="slide-row">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-2">
+          ${a.image ? `<img class="preview" src="${a.image}">` : `<div class="preview"></div>`}
+          <input type="file" accept="image/*" class="form-control form-control-sm mt-1" onchange="uploadActImage(${i}, this)">
+        </div>
+        <div class="col-md-9">
+          <div class="row g-2">
+            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="🏔️ Badge" value="${escapeAttr(a.badge||'')}" onchange="ACTIVITIES[${i}].badge=this.value"></div>
+            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="From price" value="${escapeAttr(a.price||'')}" onchange="ACTIVITIES[${i}].price=this.value"></div>
+            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="Duration" value="${escapeAttr(a.duration||'')}" onchange="ACTIVITIES[${i}].duration=this.value"></div>
+            <div class="col-md-3"><input class="form-control form-control-sm" placeholder="Link" value="${escapeAttr(a.link||'')}" onchange="ACTIVITIES[${i}].link=this.value"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Title EN" value="${escapeAttr(a.title_en||'')}" onchange="ACTIVITIES[${i}].title_en=this.value"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="عنوان عربي" value="${escapeAttr(a.title_ar||'')}" onchange="ACTIVITIES[${i}].title_ar=this.value" dir="rtl"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="Description EN" value="${escapeAttr(a.desc_en||'')}" onchange="ACTIVITIES[${i}].desc_en=this.value"></div>
+            <div class="col-md-6"><input class="form-control form-control-sm" placeholder="وصف عربي" value="${escapeAttr(a.desc_ar||'')}" onchange="ACTIVITIES[${i}].desc_ar=this.value" dir="rtl"></div>
+          </div>
+        </div>
+        <div class="col-md-1 text-end">
+          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveAct(${i},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="btn btn-sm btn-outline-secondary mb-1 w-100" onclick="moveAct(${i},1)" ${i===ACTIVITIES.length-1?'disabled':''}>↓</button>
+          <button class="btn btn-sm btn-danger w-100" onclick="removeAct(${i})">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('') || '<div class="text-muted small">No activities yet. Click "+ Add Activity".</div>';
+}
+
+function addActivity() {
+  ACTIVITIES.push({ image:'', badge:'🏔️', title_en:'', title_ar:'', desc_en:'', desc_ar:'', price:'', duration:'', link:'/search.html' });
+  renderActivities();
+}
+function removeAct(i) { if (confirm('Delete?')) { ACTIVITIES.splice(i,1); renderActivities(); } }
+function moveAct(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= ACTIVITIES.length) return;
+  [ACTIVITIES[i], ACTIVITIES[j]] = [ACTIVITIES[j], ACTIVITIES[i]];
+  renderActivities();
+}
+
+async function uploadActImage(i, input) {
+  if (!input.files?.[0]) return;
+  const fd = new FormData();
+  fd.append('photo', input.files[0]);
+  try {
+    const r = await fetch('/api/upload/photo', { method:'POST', credentials:'include', body: fd });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    ACTIVITIES[i].image = d.photo;
+    renderActivities();
+    toast('✅ Image uploaded', 'success');
+  } catch (e) {
+    toast('❌ Upload failed: ' + e.message, 'error');
+  }
+}
+
+async function saveActivities() {
+  const value = { items: ACTIVITIES };
+  const r = await fetch('/api/site-settings/activities', {
+    method:'PUT', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ value }),
+  });
+  const d = await r.json();
+  toast(d.success ? '✅ Activities saved' : '❌ ' + d.message, d.success ? 'success' : 'error');
+}
+
+function escapeAttr(s) { return String(s||'').replace(/"/g,'&quot;'); }
+
+// Boot — must be admin
+(async () => {
+  try {
+    const r = await fetch('/api/auth/me', { credentials:'include' });
+    const d = await r.json();
+    if (!d.success || (d.user.userType !== 'admin' && d.user.userType !== 'staff')) {
+      window.location.href = '/login.html';
+      return;
+    }
+    loadSettings();
+  } catch (e) {
+    window.location.href = '/login.html';
+  }
+})();
+</script>
+<script src="/js/common-widgets.js?v=2"></script>
+</body>
+</html>

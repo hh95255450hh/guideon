@@ -152,6 +152,7 @@ app.use('/api/upload',   uploadRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/site-settings', require('./routes/siteSettings'));
 app.use('/api',          require('./routes/guideAnalytics'));
 app.use('/api/qa', require('./routes/qa'));
 app.use('/api', require('./routes/extras'));
@@ -164,7 +165,8 @@ app.get(['/search', '/guide-profile', '/login', '/register',
          '/wishlist', '/profile', '/checkout', '/checkout-success', '/offline',
          '/forgot-password', '/reset-password',
          '/tour-package', '/shared-wishlist', '/qr', '/two-factor',
-         '/terms', '/privacy', '/faq', '/how-it-works'], (req, res, next) => {
+         '/terms', '/privacy', '/faq', '/how-it-works',
+         '/admin-homepage'], (req, res, next) => {
   res.sendFile(path.join(__dirname, '..', 'public', req.path.replace('/', '') + '.html'), err => {
     if (err) next();
   });
