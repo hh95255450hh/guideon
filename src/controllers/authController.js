@@ -305,14 +305,21 @@ exports.uploadPhoto = async (req, res) => {
 };
 
 exports.me = async (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ success: false, message: 'Not authenticated.' });
+  try {
+    if (!req.session.userId) {
+      return res.status(401).json({ success: false, message: 'Not authenticated.' });
+    }
+    const user = await users.findById(req.session.userId);
+    if (!user) return res.status(401).json({ success: false, message: 'User not found.' });
+    const safe = { ...user };
+    delete safe.password;
+    delete safe.twoFactorSecret;
+    delete safe.twoFactorBackupCodes;
+    res.json({ success: true, user: safe });
+  } catch (e) {
+    console.error('[auth:me]', e.message);
+    res.status(500).json({ success: false, message: 'Failed to load user.' });
   }
-  const user = await users.findById(req.session.userId);
-  if (!user) return res.status(401).json({ success: false, message: 'User not found.' });
-  const safe = { ...user };
-  delete safe.password;
-  res.json({ success: true, user: safe });
 };
 
 exports.saveFcmToken = async (req, res) => {

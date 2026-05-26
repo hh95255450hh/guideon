@@ -156,7 +156,12 @@ exports.disable = async (req, res) => {
 
 // GET /api/2fa/status
 exports.status = async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ success: false });
-  const user = await users.findById(req.session.userId);
-  res.json({ success: true, enabled: !!user?.twoFactorEnabled });
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false });
+    const user = await users.findById(req.session.userId);
+    res.json({ success: true, enabled: !!user?.twoFactorEnabled });
+  } catch (e) {
+    console.error('[2fa:status]', e.message);
+    res.status(500).json({ success: false, message: 'Failed to check 2FA status.' });
+  }
 };

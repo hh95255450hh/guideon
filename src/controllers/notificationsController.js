@@ -59,20 +59,30 @@ exports.markAllRead = async (req, res) => {
 
 // GET /api/notifications/preferences
 exports.getPrefs = async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ success: false });
-  const u = await users.findById(req.session.userId);
-  res.json({ success: true, prefs: u?.notifPrefs || {} });
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false });
+    const u = await users.findById(req.session.userId);
+    res.json({ success: true, prefs: u?.notifPrefs || {} });
+  } catch (e) {
+    console.error('[notifications:getPrefs]', e.message);
+    res.status(500).json({ success: false, message: 'Failed to load preferences.' });
+  }
 };
 
 // PUT /api/notifications/preferences
 exports.savePrefs = async (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ success: false });
-  const { email, inapp, whatsapp } = req.body;
-  const safe = {
-    email:    { bookings: !!email?.bookings,    messages: !!email?.messages,    reminders: !!email?.reminders,    marketing: !!email?.marketing },
-    inapp:    { bookings: !!inapp?.bookings,    messages: !!inapp?.messages,    reminders: !!inapp?.reminders,    system:    !!inapp?.system },
-    whatsapp: { bookings: !!whatsapp?.bookings, messages: !!whatsapp?.messages, reminders: !!whatsapp?.reminders, system:    !!whatsapp?.system },
-  };
-  await users.update(req.session.userId, { notifPrefs: safe });
-  res.json({ success: true, prefs: safe });
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false });
+    const { email, inapp, whatsapp } = req.body || {};
+    const safe = {
+      email:    { bookings: !!email?.bookings,    messages: !!email?.messages,    reminders: !!email?.reminders,    marketing: !!email?.marketing },
+      inapp:    { bookings: !!inapp?.bookings,    messages: !!inapp?.messages,    reminders: !!inapp?.reminders,    system:    !!inapp?.system },
+      whatsapp: { bookings: !!whatsapp?.bookings, messages: !!whatsapp?.messages, reminders: !!whatsapp?.reminders, system:    !!whatsapp?.system },
+    };
+    await users.update(req.session.userId, { notifPrefs: safe });
+    res.json({ success: true, prefs: safe });
+  } catch (e) {
+    console.error('[notifications:savePrefs]', e.message);
+    res.status(500).json({ success: false, message: 'Failed to save preferences.' });
+  }
 };

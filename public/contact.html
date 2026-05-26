@@ -509,11 +509,10 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
   btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${isAr ? 'جاري الإرسال...' : 'Sending...'}`;
 
   try {
-    const csrf = (document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/) || [])[1] || '';
     const r = await fetch('/api/contact/send', {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     const d = await r.json();
@@ -537,11 +536,10 @@ document.getElementById('newsletterForm').addEventListener('submit', async e => 
   msg.innerHTML = '';
   if (!email) return;
   try {
-    const csrf = (document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/) || [])[1] || '';
     const r = await fetch('/api/newsletter/subscribe', {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, source: 'contact_page', language: isAr ? 'ar' : 'en' }),
     });
     const d = await r.json();
