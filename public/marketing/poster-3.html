@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Guideon — Free Launch</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1080px; overflow:hidden; }
+  body { font-family:'Segoe UI','Cairo','Tajawal',Tahoma,Arial,sans-serif; }
+
+  .poster {
+    width:1080px; height:1080px; position:relative; color:#fff;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(200,155,60,.35) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(26,188,156,.35) 0%, transparent 50%),
+      linear-gradient(135deg, #0f1c3e 0%, #0a1430 100%);
+    overflow:hidden;
+  }
+
+  /* Confetti shapes */
+  .shape { position:absolute; opacity:.4; }
+  .s1 { top:80px; left:120px; width:40px; height:40px; background:#c89b3c; transform:rotate(15deg); border-radius:8px; }
+  .s2 { top:200px; right:160px; width:50px; height:50px; border:4px solid #1abc9c; border-radius:50%; }
+  .s3 { bottom:280px; left:100px; width:60px; height:60px; background:#c89b3c; transform:rotate(45deg); }
+  .s4 { bottom:120px; right:140px; width:35px; height:35px; background:#1abc9c; border-radius:50%; }
+  .s5 { top:50%; left:60px; width:30px; height:30px; border:3px solid #c89b3c; transform:rotate(20deg); }
+
+  .logo-top { position:absolute; top:60px; right:80px; }
+  .logo-top img { height:64px; }
+
+  .content { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:0 60px; text-align:center; }
+
+  .super { font-size:30px; color:#c89b3c; font-weight:800; letter-spacing:4px; margin-bottom:30px; }
+
+  .big-num { font-size:280px; font-weight:900; color:#c89b3c; line-height:.85; letter-spacing:-10px; margin-bottom:10px; text-shadow:0 8px 40px rgba(200,155,60,.4); }
+  .big-num .currency { font-size:130px; vertical-align:top; margin-right:14px; opacity:.9; }
+
+  h1 { font-size:90px; font-weight:900; line-height:1; margin-bottom:18px; letter-spacing:-2px; }
+  h1 .accent { color:#c89b3c; }
+  .sub { font-size:32px; opacity:.85; margin-bottom:42px; max-width:780px; line-height:1.4; }
+
+  .benefits { display:flex; flex-direction:column; gap:14px; margin-bottom:42px; }
+  .benefit { background:rgba(255,255,255,.1); padding:18px 32px; border-radius:18px; font-size:26px; font-weight:700; display:flex; align-items:center; gap:18px; border-right:5px solid #c89b3c; }
+  .benefit .icon { font-size:34px; }
+
+  .cta-wrap { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .cta { background:linear-gradient(135deg,#c89b3c,#e6b950); color:#000; padding:24px 60px; border-radius:18px; font-size:38px; font-weight:900; box-shadow:0 14px 40px rgba(200,155,60,.5); }
+  .web { font-size:24px; opacity:.7; }
+
+  .badge-corner { position:absolute; top:60px; left:60px; background:#fff; color:#c70039; padding:12px 22px; border-radius:14px; font-size:22px; font-weight:900; transform:rotate(-8deg); box-shadow:0 6px 18px rgba(0,0,0,.3); }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="shape s1"></div>
+  <div class="shape s2"></div>
+  <div class="shape s3"></div>
+  <div class="shape s4"></div>
+  <div class="shape s5"></div>
+
+  <div class="logo-top"><img src="/logo.png" alt="Guideon"></div>
+  <div class="badge-corner">⏰ لفترة محدودة!</div>
+
+  <div class="content">
+    <div class="super">🎁 عرض الإطلاق</div>
+
+    <div class="big-num">
+      <span class="currency">$</span>0
+    </div>
+
+    <h1>مجاناً <span class="accent">تماماً</span></h1>
+    <div class="sub">احجز رحلتك السياحية في عُمان بدون أي رسوم خدمة من المنصة</div>
+
+    <div class="benefits">
+      <div class="benefit"><span class="icon">✅</span><span>لا رسوم اشتراك</span></div>
+      <div class="benefit"><span class="icon">✅</span><span>لا عمولات على الحجز</span></div>
+      <div class="benefit"><span class="icon">✅</span><span>تواصل مباشر مع المرشد</span></div>
+    </div>
+
+    <div class="cta-wrap">
+      <div class="cta">احجز الآن مجاناً →</div>
+      <div class="web">guideon.guide</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

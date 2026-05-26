@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Guideon — Trust & Verified</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1080px; overflow:hidden; }
+  body { font-family:'Segoe UI','Cairo','Tajawal',Tahoma,Arial,sans-serif; }
+
+  .poster {
+    width:1080px; height:1080px; position:relative; overflow:hidden; color:#fff;
+    background:
+      radial-gradient(ellipse at top right, rgba(200,155,60,.2) 0%, transparent 60%),
+      linear-gradient(135deg,#0a1430 0%, #0f1c3e 50%, #0c5e54 100%);
+  }
+
+  /* Big decorative checkmark in background */
+  .bg-check { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:900px; color:rgba(200,155,60,.06); font-weight:900; }
+
+  .logo-top { position:absolute; top:60px; right:80px; left:80px; display:flex; justify-content:space-between; align-items:center; }
+  .logo-top img { height:64px; }
+  .logo-top .stars { font-size:26px; color:#c89b3c; }
+
+  .content { position:absolute; inset:0; padding:160px 80px 100px; display:flex; flex-direction:column; align-items:center; text-align:center; }
+
+  .seal { width:200px; height:200px; border-radius:50%; background:linear-gradient(135deg,#c89b3c,#e6b950); display:flex; align-items:center; justify-content:center; font-size:120px; box-shadow:0 16px 40px rgba(200,155,60,.5); margin-bottom:30px; position:relative; }
+  .seal::before { content:''; position:absolute; inset:-12px; border-radius:50%; border:4px dashed #c89b3c; opacity:.5; }
+
+  h1 { font-size:72px; font-weight:900; line-height:1.05; margin-bottom:14px; letter-spacing:-2px; }
+  h1 .accent { color:#c89b3c; }
+  .sub { font-size:30px; opacity:.85; margin-bottom:42px; max-width:780px; line-height:1.4; }
+
+  .badges { display:flex; gap:16px; margin-bottom:36px; flex-wrap:wrap; justify-content:center; }
+  .badge-pill { background:rgba(255,255,255,.12); border:2px solid rgba(200,155,60,.3); padding:16px 26px; border-radius:50px; font-size:22px; font-weight:700; backdrop-filter:blur(8px); display:flex; align-items:center; gap:10px; }
+  .badge-pill .ico { color:#c89b3c; font-size:28px; }
+
+  .stats { display:flex; gap:50px; margin-bottom:42px; }
+  .stat { text-align:center; }
+  .stat .num { font-size:80px; font-weight:900; color:#c89b3c; line-height:1; }
+  .stat .lbl { font-size:20px; opacity:.7; margin-top:6px; }
+
+  .cta { background:#c89b3c; color:#000; padding:22px 56px; border-radius:18px; font-size:34px; font-weight:900; box-shadow:0 12px 36px rgba(200,155,60,.4); }
+
+  .footer-strip { position:absolute; bottom:30px; right:0; left:0; text-align:center; font-size:22px; opacity:.6; }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="bg-check">✓</div>
+
+  <div class="logo-top">
+    <img src="/logo.png" alt="Guideon">
+    <div class="stars">★★★★★ 4.9</div>
+  </div>
+
+  <div class="content">
+    <div class="seal">✓</div>
+
+    <h1>مرشدون <span class="accent">معتمدون 100%</span></h1>
+    <div class="sub">كل مرشد في Guideon موثّق ومرخّص من وزارة التراث والسياحة العمانية</div>
+
+    <div class="badges">
+      <div class="badge-pill"><span class="ico">🏛️</span><span>ترخيص الوزارة</span></div>
+      <div class="badge-pill"><span class="ico">🔍</span><span>توثيق الهوية</span></div>
+      <div class="badge-pill"><span class="ico">⭐</span><span>تقييمات حقيقية</span></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num">100%</div><div class="lbl">موثوقون</div></div>
+      <div class="stat"><div class="num">24/7</div><div class="lbl">دعم فني</div></div>
+      <div class="stat"><div class="num">2FA</div><div class="lbl">حماية حسابك</div></div>
+    </div>
+
+    <div class="cta">احجز بثقة — guideon.guide</div>
+  </div>
+
+  <div class="footer-strip">📞 +968 9525 5450 &nbsp;·&nbsp; 📧 info@guideon.guide</div>
+</div>
+</body>
+</html>

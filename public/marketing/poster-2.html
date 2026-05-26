@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Guideon — Discover Oman</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1080px; overflow:hidden; }
+  body { font-family:'Segoe UI','Cairo','Tajawal',Tahoma,Arial,sans-serif; }
+
+  .poster { width:1080px; height:1080px; position:relative; background:#0f1c3e; color:#fff; overflow:hidden; }
+
+  .header { background:linear-gradient(135deg,#0f1c3e,#0f7b6c); padding:50px 70px; display:flex; justify-content:space-between; align-items:center; }
+  .header img { height:72px; }
+  .header .tag { background:rgba(255,255,255,.15); padding:10px 20px; border-radius:30px; font-size:20px; font-weight:700; backdrop-filter:blur(8px); }
+
+  .title-row { padding:50px 70px 30px; text-align:center; }
+  .title-row h1 { font-size:78px; font-weight:900; line-height:1.05; letter-spacing:-2px; }
+  .title-row h1 .accent { color:#c89b3c; }
+  .title-row p { font-size:30px; opacity:.85; margin-top:18px; }
+
+  .grid { padding:0 70px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .destination { aspect-ratio:1/1; border-radius:22px; overflow:hidden; position:relative; box-shadow:0 8px 24px rgba(0,0,0,.3); }
+  .destination .img { position:absolute; inset:0; background-size:cover; background-position:center; }
+  .destination .overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.2) 60%, transparent 100%); }
+  .destination .label { position:absolute; bottom:24px; right:24px; left:24px; }
+  .destination .label .ar { font-size:34px; font-weight:900; }
+  .destination .label .en { font-size:22px; opacity:.85; }
+  .destination .pin { position:absolute; top:22px; right:22px; background:#c89b3c; color:#000; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:900; }
+
+  .d1 .img { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Sultan_Qaboos_Grand_Mosque_%281%29.jpg/1280px-Sultan_Qaboos_Grand_Mosque_%281%29.jpg'); background-position:center 35%; }
+  .d2 .img { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Wahiba_Sands.jpg/1280px-Wahiba_Sands.jpg'); }
+  .d3 .img { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Nizwa_Fort_%282%29.jpg/1280px-Nizwa_Fort_%282%29.jpg'); }
+  .d4 .img { background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Wadi_Shab%2C_Oman.jpg/1280px-Wadi_Shab%2C_Oman.jpg'); }
+
+  .footer { position:absolute; bottom:0; right:0; left:0; padding:30px 70px; background:linear-gradient(to top, rgba(0,0,0,.9), transparent); display:flex; justify-content:space-between; align-items:center; }
+  .footer .cta { background:#c89b3c; color:#000; padding:18px 38px; border-radius:14px; font-size:30px; font-weight:900; box-shadow:0 10px 24px rgba(200,155,60,.4); }
+  .footer .web { font-size:26px; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="header">
+    <img src="/logo.png" alt="Guideon">
+    <div class="tag">🇴🇲 عُمان</div>
+  </div>
+
+  <div class="title-row">
+    <h1>اكتشف <span class="accent">جمال عُمان</span></h1>
+    <p>أربع وجهات لا تُنسى مع مرشد محلي خبير</p>
+  </div>
+
+  <div class="grid">
+    <div class="destination d1">
+      <div class="img"></div><div class="overlay"></div>
+      <div class="pin">1</div>
+      <div class="label"><div class="ar">مسقط</div><div class="en">Muscat</div></div>
+    </div>
+    <div class="destination d2">
+      <div class="img"></div><div class="overlay"></div>
+      <div class="pin">2</div>
+      <div class="label"><div class="ar">الوهيبة</div><div class="en">Wahiba Sands</div></div>
+    </div>
+    <div class="destination d3">
+      <div class="img"></div><div class="overlay"></div>
+      <div class="pin">3</div>
+      <div class="label"><div class="ar">نزوى</div><div class="en">Nizwa</div></div>
+    </div>
+    <div class="destination d4">
+      <div class="img"></div><div class="overlay"></div>
+      <div class="pin">4</div>
+      <div class="label"><div class="ar">وادي شاب</div><div class="en">Wadi Shab</div></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="cta">احجز الآن →</div>
+    <div class="web">guideon.guide</div>
+  </div>
+</div>
+</body>
+</html>

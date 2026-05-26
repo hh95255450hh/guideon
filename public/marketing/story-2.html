@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Guideon — Story 2 Adventure</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; }
+  body { font-family:'Segoe UI','Cairo','Tajawal',Tahoma,Arial,sans-serif; }
+
+  .story {
+    width:1080px; height:1920px; position:relative; overflow:hidden; color:#fff;
+    background:
+      linear-gradient(180deg, rgba(184,115,51,.55) 0%, rgba(15,28,62,.85) 100%),
+      url('https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Wahiba_Sands.jpg/1920px-Wahiba_Sands.jpg');
+    background-size: cover, cover; background-position: center, center;
+  }
+
+  .progress { position:absolute; top:30px; right:30px; left:30px; height:4px; background:rgba(255,255,255,.3); border-radius:2px; overflow:hidden; }
+  .progress::after { content:''; display:block; width:80%; height:100%; background:#fff; }
+
+  .top { position:absolute; top:70px; right:50px; left:50px; display:flex; align-items:center; gap:18px; }
+  .top .avatar { width:60px; height:60px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; padding:6px; }
+  .top .avatar img { width:100%; height:100%; object-fit:contain; }
+  .top .info .name { font-size:24px; font-weight:800; }
+  .top .info .time { font-size:18px; opacity:.7; }
+
+  .center { position:absolute; top:280px; right:60px; left:60px; text-align:center; }
+  .center .tag { display:inline-block; background:rgba(0,0,0,.35); backdrop-filter:blur(8px); padding:14px 30px; border-radius:40px; font-size:28px; font-weight:800; margin-bottom:36px; border:2px solid rgba(255,255,255,.3); }
+  .center h1 { font-size:120px; font-weight:900; line-height:1; letter-spacing:-3px; text-shadow:0 6px 30px rgba(0,0,0,.5); margin-bottom:20px; }
+  .center h1 .accent { color:#c89b3c; }
+  .center .sub { font-size:36px; opacity:.95; line-height:1.4; max-width:840px; margin:0 auto; }
+
+  .destinations { position:absolute; right:60px; left:60px; bottom:580px; }
+  .destinations h3 { font-size:30px; text-align:center; margin-bottom:24px; opacity:.9; }
+  .dest-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .dest-pill { background:rgba(255,255,255,.18); backdrop-filter:blur(12px); padding:24px 22px; border-radius:20px; text-align:center; font-size:30px; font-weight:800; border:2px solid rgba(255,255,255,.25); }
+  .dest-pill .ico { font-size:42px; display:block; margin-bottom:10px; }
+  .dest-pill .name-ar { font-size:30px; font-weight:900; color:#c89b3c; }
+  .dest-pill .name-en { font-size:18px; font-weight:600; opacity:.85; margin-top:4px; }
+
+  .bottom { position:absolute; bottom:80px; right:60px; left:60px; text-align:center; }
+  .bottom .cta { background:#fff; color:#0f1c3e; padding:32px 0; border-radius:24px; font-size:42px; font-weight:900; box-shadow:0 16px 50px rgba(0,0,0,.4); display:block; }
+  .bottom .web { font-size:28px; margin-top:18px; opacity:.9; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="story">
+  <div class="progress"></div>
+
+  <div class="top">
+    <div class="avatar"><img src="/logo.png" alt="Guideon"></div>
+    <div class="info">
+      <div class="name">guideon.guide</div>
+      <div class="time">رحلة العمر بانتظارك</div>
+    </div>
+  </div>
+
+  <div class="center">
+    <div class="tag">🏜️ مغامرة عُمانية</div>
+    <h1>عش<br><span class="accent">المغامرة</span></h1>
+    <div class="sub">من رمال الوهيبة إلى قمم الجبل الأخضر — اختبر عُمان كما لم تختبرها من قبل</div>
+  </div>
+
+  <div class="destinations">
+    <h3>🗺️ وجهات لا تُنسى</h3>
+    <div class="dest-row">
+      <div class="dest-pill"><span class="ico">🏜️</span><div class="name-ar">الوهيبة</div><div class="name-en">Wahiba Sands</div></div>
+      <div class="dest-pill"><span class="ico">⛰️</span><div class="name-ar">الجبل الأخضر</div><div class="name-en">Jabal Akhdar</div></div>
+      <div class="dest-pill"><span class="ico">🏰</span><div class="name-ar">نزوى</div><div class="name-en">Nizwa</div></div>
+      <div class="dest-pill"><span class="ico">🏖️</span><div class="name-ar">صلالة</div><div class="name-en">Salalah</div></div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="cta">ابدأ رحلتك ←</div>
+    <div class="web">guideon.guide</div>
+  </div>
+</div>
+</body>
+</html>

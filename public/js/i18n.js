@@ -415,6 +415,8 @@ const TRANSLATIONS = {
     nav_help:         'Help',
     payment_accept:   'Secure Payment Methods',
     guide_tours_note: "Tours can be added later from your guide dashboard.",
+    admin_homepage_link: 'Homepage Manager',
+    admin_marketing_link:'Marketing Kit',
     // Password confirmation & strength
     pass_confirm:     'Confirm Password *',
     pass_confirm_ph:  'Re-type password',
@@ -1552,6 +1554,8 @@ const TRANSLATIONS = {
     nav_help:         'مساعدة',
     payment_accept:   'طرق دفع آمنة',
     guide_tours_note: 'يمكنك إضافة الرحلات لاحقاً من لوحة المرشد.',
+    admin_homepage_link: 'إدارة الواجهة',
+    admin_marketing_link:'منشورات إعلانية',
     // Password confirmation & strength
     pass_confirm:     'تأكيد كلمة المرور *',
     pass_confirm_ph:  'أعِد كتابة كلمة المرور',

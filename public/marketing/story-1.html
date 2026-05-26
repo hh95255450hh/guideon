@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Guideon — Story 1</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; }
+  body { font-family:'Segoe UI','Cairo','Tajawal',Tahoma,Arial,sans-serif; }
+
+  .story {
+    width:1080px; height:1920px; position:relative; overflow:hidden; color:#fff;
+    background:
+      linear-gradient(180deg, rgba(15,28,62,.85) 0%, rgba(15,28,62,.45) 50%, rgba(15,123,108,.9) 100%),
+      url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Sultan_Qaboos_Grand_Mosque_%281%29.jpg/1920px-Sultan_Qaboos_Grand_Mosque_%281%29.jpg');
+    background-size: cover, cover; background-position: center, center;
+  }
+
+  .progress { position:absolute; top:30px; right:30px; left:30px; height:4px; background:rgba(255,255,255,.3); border-radius:2px; overflow:hidden; }
+  .progress::after { content:''; display:block; width:60%; height:100%; background:#fff; }
+
+  .top { position:absolute; top:70px; right:50px; left:50px; display:flex; align-items:center; gap:18px; }
+  .top .avatar { width:60px; height:60px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; padding:6px; }
+  .top .avatar img { width:100%; height:100%; object-fit:contain; }
+  .top .info .name { font-size:24px; font-weight:800; }
+  .top .info .time { font-size:18px; opacity:.7; }
+
+  .hero { position:absolute; top:280px; right:60px; left:60px; text-align:center; }
+  .hero .ribbon { display:inline-block; background:#c89b3c; color:#000; padding:14px 34px; border-radius:40px; font-size:26px; font-weight:900; margin-bottom:40px; box-shadow:0 8px 24px rgba(200,155,60,.5); }
+  .hero h1 { font-size:130px; font-weight:900; line-height:1; letter-spacing:-4px; text-shadow:0 6px 32px rgba(0,0,0,.4); }
+  .hero h1 .accent { color:#c89b3c; }
+  .hero .sub { font-size:36px; opacity:.95; margin-top:24px; line-height:1.4; }
+
+  .features { position:absolute; right:60px; left:60px; bottom:480px; display:flex; flex-direction:column; gap:20px; }
+  .feature { background:rgba(255,255,255,.18); backdrop-filter:blur(14px); padding:24px 32px; border-radius:24px; font-size:32px; font-weight:700; display:flex; align-items:center; gap:20px; border:2px solid rgba(255,255,255,.25); }
+  .feature .ico { font-size:42px; }
+
+  .cta-section { position:absolute; bottom:120px; right:60px; left:60px; }
+  .cta-section .arrow-up { text-align:center; font-size:60px; animation:bounce 1.5s infinite; margin-bottom:20px; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .swipe { text-align:center; font-size:28px; opacity:.9; margin-bottom:20px; }
+  .swipe strong { color:#c89b3c; font-weight:900; }
+  .cta-btn { background:linear-gradient(135deg,#c89b3c,#e6b950); color:#000; padding:32px 0; border-radius:24px; font-size:46px; font-weight:900; text-align:center; box-shadow:0 16px 50px rgba(200,155,60,.5); }
+</style>
+</head>
+<body>
+<div class="story">
+  <div class="progress"></div>
+
+  <div class="top">
+    <div class="avatar"><img src="/logo.png" alt="Guideon"></div>
+    <div class="info">
+      <div class="name">guideon.guide</div>
+      <div class="time">الآن · عُمان 🇴🇲</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="ribbon">🌿 الإطلاق الرسمي</div>
+    <h1>اكتشف<br><span class="accent">عُمان</span></h1>
+    <div class="sub">مع مرشد سياحي محلي معتمد من الوزارة</div>
+  </div>
+
+  <div class="features">
+    <div class="feature"><span class="ico">✅</span><span>مرشدون موثّقون</span></div>
+    <div class="feature"><span class="ico">⭐</span><span>تقييمات حقيقية</span></div>
+    <div class="feature"><span class="ico">🎁</span><span>مجاناً خلال الإطلاق</span></div>
+  </div>
+
+  <div class="cta-section">
+    <div class="arrow-up">⬆️</div>
+    <div class="swipe">اسحب للأعلى أو زر <strong>guideon.guide</strong></div>
+    <div class="cta-btn">احجز رحلتك الآن</div>
+  </div>
+</div>
+</body>
+</html>
