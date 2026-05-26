@@ -13,28 +13,35 @@ function getResend() {
 
 const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.guide>';
 const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'info@guideon.guide';
-const APP_URL   = process.env.APP_URL         || 'http://localhost:3000';
+const APP_URL   = process.env.APP_URL         || 'https://guideon.guide';
+const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://guideon.guide';
+const LOGO_URL  = process.env.EMAIL_LOGO_URL  || `${PUBLIC_URL}/logo.png`;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL   || 'admin@guideon.guide';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
-function layout(body) {
+function layout(body, preheader = '') {
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f4f3;font-family:'Segoe UI',Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f3;padding:32px 16px;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+</head>
+<body style="margin:0;padding:0;background:#f0f4f3;font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;color:#1a1a1a;">
+${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#f0f4f3;opacity:0;">${preheader}</div>` : ''}
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background:#f0f4f3;padding:32px 16px;">
   <tr><td align="center">
-    <table width="600" cellpadding="0" cellspacing="0"
+    <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation"
            style="background:#fff;border-radius:14px;overflow:hidden;
                   box-shadow:0 4px 16px rgba(0,0,0,0.09);max-width:600px;width:100%;">
 
-      <!-- Header -->
+      <!-- Header with real logo -->
       <tr>
-        <td style="background:linear-gradient(135deg,#0f7b6c,#1abc9c);padding:30px 40px;text-align:center;">
-          <div style="font-size:30px;font-weight:800;color:#fff;letter-spacing:-1px;">
-            🌿 Guideon
-          </div>
-          <div style="color:rgba(255,255,255,0.8);font-size:12px;letter-spacing:1.5px;margin-top:4px;">
+        <td style="background:linear-gradient(135deg,#0f1c3e 0%,#1a2c5b 50%,#0f7b6c 100%);padding:32px 40px;text-align:center;">
+          <img src="${LOGO_URL}" alt="Guideon" width="180" height="auto" style="display:inline-block;max-width:180px;height:auto;margin-bottom:6px;border:0;outline:none;text-decoration:none;">
+          <div style="color:rgba(255,255,255,0.85);font-size:11px;letter-spacing:2px;margin-top:8px;font-weight:600;">
             DISCOVER OMAN WITH A LOCAL GUIDE
           </div>
         </td>
@@ -45,12 +52,19 @@ function layout(body) {
 
       <!-- Footer -->
       <tr>
-        <td style="background:#f8faf9;border-top:1px solid #e8efed;padding:20px 40px;text-align:center;">
-          <p style="margin:0;font-size:12px;color:#aaa;line-height:1.7;">
-            Guideon — Find Your Certified Local Guide in Oman<br>
-            <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;">guideon.guide</a>
-            &nbsp;·&nbsp;
-            © ${new Date().getFullYear()} Guideon. All rights reserved.
+        <td style="background:#f8faf9;border-top:1px solid #e8efed;padding:24px 40px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:13px;color:#666;line-height:1.7;font-weight:600;">
+            Guideon &mdash; Find Your Certified Local Guide in Oman
+          </p>
+          <p style="margin:0 0 10px;font-size:12px;color:#888;line-height:1.7;">
+            <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600;">guideon.guide</a>
+            &nbsp;&middot;&nbsp;
+            <a href="mailto:info@guideon.guide" style="color:#0f7b6c;text-decoration:none;">info@guideon.guide</a>
+            &nbsp;&middot;&nbsp;
+            <a href="tel:+96895255450" style="color:#0f7b6c;text-decoration:none;">+968 9525 5450</a>
+          </p>
+          <p style="margin:0;font-size:11px;color:#aaa;">
+            Muscat, Sultanate of Oman &nbsp;&middot;&nbsp; &copy; ${new Date().getFullYear()} Guideon. All rights reserved.
           </p>
         </td>
       </tr>
@@ -437,6 +451,27 @@ function adminNewCompany({ companyName, email, companyRegNo }) {
 // ══════════════════════════════════════════════════════════════════════════════
 //  SEND HELPER
 // ══════════════════════════════════════════════════════════════════════════════
+//
+// Strips HTML tags to produce a plain-text alternative. Email clients that don't
+// render HTML use this; spam filters also rank multipart messages higher.
+function htmlToText(html) {
+  return String(html || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|tr|li|h[1-6])>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+}
+
 async function send(to, subject, html) {
   const resend = getResend();
   if (!resend) {
@@ -444,15 +479,26 @@ async function send(to, subject, html) {
     return;
   }
   try {
+    // Anti-spam: keep subject clean. Most major filters penalise messages
+    // whose subject is mostly emoji or punctuation.
+    const cleanSubject = String(subject || 'Message from Guideon').trim().slice(0, 180);
+
     const { error } = await resend.emails.send({
       from: FROM,
       to,
-      subject,
+      subject: cleanSubject,
       html,
+      text: htmlToText(html),
       reply_to: REPLY_TO,
+      headers: {
+        'List-Unsubscribe': `<mailto:unsubscribe@guideon.guide?subject=Unsubscribe>, <${APP_URL}/api/newsletter/unsubscribe>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        'X-Entity-Ref-ID': `guideon-${Date.now()}`,
+        'X-Mailer': 'Guideon Platform',
+      },
     });
-    if (error) console.error(`[Email] Failed: ${subject} → ${to}:`, error.message);
-    else console.log(`[Email] Sent: ${subject} → ${to}`);
+    if (error) console.error(`[Email] Failed: ${cleanSubject} → ${to}:`, error.message);
+    else console.log(`[Email] Sent: ${cleanSubject} → ${to}`);
   } catch (err) {
     console.error(`[Email] Error: ${subject} → ${to}:`, err.message);
   }
@@ -467,60 +513,60 @@ module.exports = {
 
   // Tourist
   sendTouristWelcome: (data) =>
-    send(data.email, 'Welcome to Guideon! 🌿', touristWelcome(data)),
+    send(data.email, 'Welcome to Guideon', touristWelcome(data)),
 
   sendTouristBookingPending: (data) =>
-    send(data.email, `Booking Request Sent — ${data.destination}`, touristBookingPending(data)),
+    send(data.email, `Booking request sent — ${data.destination}`, touristBookingPending(data)),
 
   sendTouristBookingConfirmed: (data) =>
-    send(data.email, `Booking Confirmed — ${data.destination} 🎉`, touristBookingConfirmed(data)),
+    send(data.email, `Your booking is confirmed — ${data.destination}`, touristBookingConfirmed(data)),
 
   sendTouristBookingCancelled: (data) =>
-    send(data.email, `Booking Cancelled — ${data.destination}`, touristBookingCancelled(data)),
+    send(data.email, `Booking cancelled — ${data.destination}`, touristBookingCancelled(data)),
 
   sendTouristTripStarted: (data) =>
-    send(data.email, `Your trip with ${data.guideName} has started! 🚀`, touristTripStarted(data)),
+    send(data.email, `Your tour with ${data.guideName} has started`, touristTripStarted(data)),
 
   sendTouristReviewReminder: (data) =>
-    send(data.email, `How was your tour with ${data.guideName}? ⭐`, touristReviewReminder(data)),
+    send(data.email, `How was your tour with ${data.guideName}?`, touristReviewReminder(data)),
 
   // Guide
   sendGuideWelcome: (data) =>
-    send(data.email, 'Welcome to Guideon — Account Created 🌿', guideWelcome(data)),
+    send(data.email, 'Welcome to Guideon — Account created', guideWelcome(data)),
 
   sendGuideNewBooking: (data) =>
-    send(data.email, `New Booking Request — ${data.destination} 📩`, guideNewBooking(data)),
+    send(data.email, `New booking request — ${data.destination}`, guideNewBooking(data)),
 
   sendGuideBookingConfirmed: (data) =>
-    send(data.email, `Booking Confirmed — ${data.destination}`, guideBookingConfirmed(data)),
+    send(data.email, `Booking confirmed — ${data.destination}`, guideBookingConfirmed(data)),
 
   sendGuideBookingCancelled: (data) =>
-    send(data.email, `Booking Cancelled — ${data.destination}`, guideBookingCancelled(data)),
+    send(data.email, `Booking cancelled — ${data.destination}`, guideBookingCancelled(data)),
 
   sendGuideVerified: (data) =>
-    send(data.email, 'Your Guideon Account is Verified! 🎉', guideVerified(data)),
+    send(data.email, 'Your Guideon account is verified', guideVerified(data)),
 
   sendGuideNewReview: (data) =>
-    send(data.email, `New Review from ${data.touristName} ${('⭐').repeat(data.rating)}`, guideNewReview(data)),
+    send(data.email, `New review from ${data.touristName}`, guideNewReview(data)),
 
   // Company
   sendCompanyWelcome: (data) =>
-    send(data.email, 'Welcome to Guideon — Company Account Created 🏢', companyWelcome(data)),
+    send(data.email, 'Welcome to Guideon — Company account created', companyWelcome(data)),
 
   sendCompanyVerified: (data) =>
-    send(data.email, `${data.companyName} is Now Live on Guideon! 🎉`, companyVerified(data)),
+    send(data.email, `${data.companyName} is now live on Guideon`, companyVerified(data)),
 
   // Auth
   sendEmailVerification: (data) =>
-    send(data.email, 'Confirm Your Guideon Email ✉️', emailVerification(data)),
+    send(data.email, 'Please confirm your email address', emailVerification(data)),
 
   sendPasswordReset: (data) =>
-    send(data.email, 'Reset Your Guideon Password 🔐', passwordReset(data)),
+    send(data.email, 'Reset your Guideon password', passwordReset(data)),
 
   // Admin
   sendAdminNewGuide: (data) =>
-    send(ADMIN_EMAIL, `New Guide Registration — ${data.guideName}`, adminNewGuide(data)),
+    send(ADMIN_EMAIL, `New guide registration — ${data.guideName}`, adminNewGuide(data)),
 
   sendAdminNewCompany: (data) =>
-    send(ADMIN_EMAIL, `New Company Registration — ${data.companyName}`, adminNewCompany(data)),
+    send(ADMIN_EMAIL, `New company registration — ${data.companyName}`, adminNewCompany(data)),
 };
