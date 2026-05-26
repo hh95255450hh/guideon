@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contact Us — Guideon</title>
+<meta name="description" content="Get in touch with Guideon. Email, phone, WhatsApp, and contact form — official addresses for support, bookings, and partnerships.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=33">
+<style>
+  :root { --teal:#0f7b6c; --navy:#0f1c3e; --gold:#c89b3c; }
+  body { background:#f4f7f6; }
+  .contact-hero { background:linear-gradient(135deg,#0f1c3e 0%,#1a2c5b 50%,#0f7b6c 100%); color:#fff; padding:60px 0 50px; }
+  .contact-hero h1 { font-size:2.5rem; font-weight:800; letter-spacing:-1px; margin-bottom:10px; }
+  .contact-hero p  { opacity:.9; font-size:1.1rem; max-width:680px; margin:0 auto; }
+  .stat-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.12); padding:8px 18px; border-radius:30px; font-size:.85rem; backdrop-filter:blur(8px); margin:4px; }
+
+  .section { padding:60px 0; }
+  .section-title { font-size:1.7rem; font-weight:800; color:var(--navy); margin-bottom:8px; text-align:center; }
+  .section-sub   { color:#666; text-align:center; margin-bottom:36px; max-width:600px; margin-inline:auto; }
+
+  /* Email cards */
+  .email-card { background:#fff; border:1px solid #eaeef2; border-radius:16px; padding:24px 22px; height:100%; transition:.25s; position:relative; overflow:hidden; }
+  .email-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--teal); transform:scaleY(0); transform-origin:top; transition:.3s; }
+  .email-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(15,28,62,.12); border-color:var(--teal); }
+  .email-card:hover::before { transform:scaleY(1); }
+  .email-card .ec-icon { font-size:1.8rem; width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#e8f5f2,#d3ece4); margin-bottom:14px; }
+  .email-card h5 { font-weight:800; color:var(--navy); margin-bottom:6px; }
+  .email-card .ec-addr { font-family:'Courier New',monospace; color:var(--teal); font-weight:700; font-size:.95rem; word-break:break-all; }
+  .email-card .ec-desc { color:#666; font-size:.88rem; margin-top:6px; line-height:1.6; }
+  .email-card .ec-copy { position:absolute; top:14px; right:14px; background:#f4f7f6; border:none; border-radius:8px; padding:5px 10px; font-size:.75rem; cursor:pointer; color:#666; transition:.2s; }
+  .email-card .ec-copy:hover { background:var(--teal); color:#fff; }
+  html[dir="rtl"] .email-card::before { left:auto; right:0; }
+  html[dir="rtl"] .email-card .ec-copy { right:auto; left:14px; }
+
+  /* Contact form */
+  .form-wrap { background:#fff; border-radius:18px; padding:36px; box-shadow:0 8px 28px rgba(15,28,62,.08); }
+  .form-wrap .form-label { font-weight:700; color:var(--navy); font-size:.9rem; }
+  .form-wrap .form-control, .form-wrap .form-select { border:2px solid #e5e7eb; border-radius:10px; padding:11px 14px; transition:.2s; }
+  .form-wrap .form-control:focus, .form-wrap .form-select:focus { border-color:var(--teal); box-shadow:0 0 0 4px rgba(15,123,108,.1); }
+  .btn-send { background:linear-gradient(135deg,var(--teal),#1abc9c); border:none; color:#fff; padding:13px 36px; border-radius:12px; font-weight:800; font-size:1rem; transition:.2s; }
+  .btn-send:hover { transform:translateY(-2px); box-shadow:0 10px 24px rgba(15,123,108,.35); color:#fff; }
+  .btn-send:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+  /* Sidebar info */
+  .info-card { background:#fff; border-radius:18px; padding:28px; box-shadow:0 8px 28px rgba(15,28,62,.06); height:100%; }
+  .info-row { display:flex; gap:14px; align-items:flex-start; padding:14px 0; border-bottom:1px solid #f0f2f4; }
+  .info-row:last-child { border-bottom:none; }
+  .info-row .ir-icon { width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg,#e8f5f2,#d3ece4); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+  .info-row .ir-label { font-size:.78rem; color:#888; text-transform:uppercase; letter-spacing:1px; }
+  .info-row .ir-value { font-weight:700; color:var(--navy); }
+  .info-row a { color:var(--teal); text-decoration:none; }
+  .info-row a:hover { text-decoration:underline; }
+
+  /* Hours table */
+  .hours-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eee; font-size:.92rem; }
+  .hours-row:last-child { border-bottom:none; }
+  .hours-row .day { color:#666; }
+  .hours-row .time { color:var(--navy); font-weight:700; }
+  .hours-row.today { background:#e8f5f2; margin:0 -12px; padding:8px 12px; border-radius:8px; border:none; }
+
+  /* Channel cards */
+  .channel-card { background:#fff; border-radius:16px; padding:22px; text-align:center; transition:.25s; border:2px solid transparent; height:100%; }
+  .channel-card:hover { border-color:var(--teal); transform:translateY(-3px); box-shadow:0 12px 24px rgba(15,28,62,.1); }
+  .channel-card .ch-icon { font-size:2.4rem; margin-bottom:10px; }
+  .channel-card .ch-name { font-weight:800; color:var(--navy); margin-bottom:4px; }
+  .channel-card .ch-meta { font-size:.82rem; color:#888; margin-bottom:14px; }
+  .channel-card .ch-btn  { display:inline-block; background:var(--teal); color:#fff; padding:8px 22px; border-radius:8px; font-size:.85rem; font-weight:700; text-decoration:none; }
+  .channel-card .ch-btn:hover { background:#0c685b; color:#fff; }
+
+  /* Newsletter */
+  .newsletter-card { background:linear-gradient(135deg,#0f1c3e,#0f7b6c); border-radius:20px; padding:40px; color:#fff; text-align:center; }
+  .newsletter-card h3 { font-weight:800; }
+  .newsletter-card .form-control { border-radius:10px; padding:14px 18px; border:none; }
+  .newsletter-card .btn-light { font-weight:800; padding:12px 28px; border-radius:10px; }
+
+  /* FAQ */
+  .faq-mini { background:#fff; border:1px solid #eaeef2; border-radius:12px; margin-bottom:10px; overflow:hidden; transition:.2s; }
+  .faq-mini.open { border-color:var(--teal); }
+  .faq-mini .q { padding:16px 20px; cursor:pointer; font-weight:700; color:var(--navy); display:flex; justify-content:space-between; align-items:center; }
+  .faq-mini .arr { color:var(--teal); transition:.25s; }
+  .faq-mini.open .arr { transform:rotate(180deg); }
+  .faq-mini .a { max-height:0; overflow:hidden; transition:max-height .3s; padding:0 20px; color:#555; line-height:1.7; font-size:.92rem; }
+  .faq-mini.open .a { max-height:240px; padding:0 20px 18px; }
+
+  .copied-toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px); background:#0f1c3e; color:#fff; padding:12px 24px; border-radius:10px; opacity:0; transition:.3s; z-index:9999; font-weight:700; }
+  .copied-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="44"></a>
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navMenu"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <li class="nav-item"><a class="nav-link" href="/search.html" data-i18n="nav_find">Find a Guide</a></li>
+        <li class="nav-item"><a class="nav-link" href="/how-it-works.html" data-i18n="footer_howitworks">How it works</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/contact.html" data-i18n="nav_contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="/login.html" data-i18n="nav_login">Log In</a></li>
+        <li class="nav-item"><button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()">🌐 عربي</button></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="contact-hero text-center">
+  <div class="container">
+    <div style="font-size:3.2rem;line-height:1">✉️</div>
+    <h1 data-i18n="contact_hero_title">Get in Touch</h1>
+    <p data-i18n="contact_hero_sub">We're here to help — whether you're planning a tour, need support, or want to partner with us. Pick the channel that works best for you.</p>
+    <div class="mt-4">
+      <span class="stat-pill">⚡ <span data-i18n="contact_reply_24">Reply within 24h</span></span>
+      <span class="stat-pill">🌐 <span data-i18n="contact_bilingual">EN · العربية</span></span>
+      <span class="stat-pill">🇴🇲 <span data-i18n="contact_oman_based">Based in Muscat, Oman</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── OFFICIAL EMAIL ADDRESSES ──────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title" data-i18n="contact_addresses_title">📧 Official Email Addresses</h2>
+    <p class="section-sub" data-i18n="contact_addresses_sub">Pick the right address for the fastest response. All addresses are routed to our team in Muscat.</p>
+
+    <div class="row g-3">
+      <div class="col-md-6 col-lg-4">
+        <div class="email-card">
+          <button class="ec-copy" onclick="copyEmail('info@guideon.guide', this)" data-i18n="copy">Copy</button>
+          <div class="ec-icon">📨</div>
+          <h5 data-i18n="contact_addr_info">General Inquiries</h5>
+          <a class="ec-addr" href="mailto:info@guideon.guide">info@guideon.guide</a>
+          <p class="ec-desc" data-i18n="contact_addr_info_desc">For general questions, partnerships, press, or anything that doesn't fit the categories below.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="email-card">
+          <button class="ec-copy" onclick="copyEmail('support@guideon.guide', this)" data-i18n="copy">Copy</button>
+          <div class="ec-icon">🛟</div>
+          <h5 data-i18n="contact_addr_support">Customer Support</h5>
+          <a class="ec-addr" href="mailto:support@guideon.guide">support@guideon.guide</a>
+          <p class="ec-desc" data-i18n="contact_addr_support_desc">Account issues, technical problems, payment questions, refunds, or trouble logging in.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="email-card">
+          <button class="ec-copy" onclick="copyEmail('bookings@guideon.guide', this)" data-i18n="copy">Copy</button>
+          <div class="ec-icon">📅</div>
+          <h5 data-i18n="contact_addr_bookings">Bookings & Tours</h5>
+          <a class="ec-addr" href="mailto:bookings@guideon.guide">bookings@guideon.guide</a>
+          <p class="ec-desc" data-i18n="contact_addr_bookings_desc">Modify, cancel, or ask about a specific booking. Include your booking ID for fastest help.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="email-card">
+          <button class="ec-copy" onclick="copyEmail('admin@guideon.guide', this)" data-i18n="copy">Copy</button>
+          <div class="ec-icon">🔐</div>
+          <h5 data-i18n="contact_addr_admin">Verification & Licensing</h5>
+          <a class="ec-addr" href="mailto:admin@guideon.guide">admin@guideon.guide</a>
+          <p class="ec-desc" data-i18n="contact_addr_admin_desc">Guide & company verification, document submission, ministry licensing inquiries.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="email-card">
+          <button class="ec-copy" onclick="copyEmail('noreply@guideon.guide', this)" data-i18n="copy">Copy</button>
+          <div class="ec-icon">🤖</div>
+          <h5 data-i18n="contact_addr_noreply">Automated Messages</h5>
+          <a class="ec-addr">noreply@guideon.guide</a>
+          <p class="ec-desc" data-i18n="contact_addr_noreply_desc">System emails come from this address (booking confirmations, password resets). Do not reply — replies are auto-routed to support.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-4">
+        <div class="email-card" style="background:linear-gradient(135deg,#fffbea,#fff);border-color:#ffe58a">
+          <div class="ec-icon" style="background:linear-gradient(135deg,#fff3cc,#ffe58a)">📰</div>
+          <h5 data-i18n="contact_addr_press">Press & Media</h5>
+          <a class="ec-addr" href="mailto:info@guideon.guide?subject=Press%20Inquiry">info@guideon.guide</a>
+          <p class="ec-desc" data-i18n="contact_addr_press_desc">For journalists, bloggers and content creators. Use subject "Press Inquiry" for priority routing.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CONTACT FORM + SIDEBAR ────────────────────────────────────────── -->
+<section class="section" style="background:#fff;">
+  <div class="container">
+    <h2 class="section-title" data-i18n="contact_form_title">💬 Send Us a Message</h2>
+    <p class="section-sub" data-i18n="contact_form_sub">Fill the form below and we'll get back to you within 24 hours. You'll also receive a confirmation email instantly.</p>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="form-wrap">
+          <form id="contactForm" novalidate>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" data-i18n="contact_form_name">Full Name *</label>
+                <input class="form-control" id="cName" required maxlength="100" data-i18n-ph="contact_form_name_ph" placeholder="Your name">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" data-i18n="contact_form_email">Email Address *</label>
+                <input class="form-control" id="cEmail" type="email" required maxlength="120" data-i18n-ph="contact_form_email_ph" placeholder="you@example.com">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" data-i18n="contact_form_phone">Phone (Optional)</label>
+                <input class="form-control" id="cPhone" type="tel" maxlength="30" data-i18n-ph="contact_form_phone_ph" placeholder="+968 9XXX XXXX">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" data-i18n="contact_form_category">Category *</label>
+                <select class="form-select" id="cCategory" required>
+                  <option value="" data-i18n="contact_form_cat_choose">Choose...</option>
+                  <option value="General Inquiry" data-i18n="contact_form_cat_general">General Inquiry</option>
+                  <option value="Booking Support" data-i18n="contact_form_cat_booking">Booking Support</option>
+                  <option value="Technical Issue" data-i18n="contact_form_cat_tech">Technical Issue</option>
+                  <option value="Become a Guide" data-i18n="contact_form_cat_guide">Become a Guide</option>
+                  <option value="Business Partnership" data-i18n="contact_form_cat_partner">Business Partnership</option>
+                  <option value="Press / Media" data-i18n="contact_form_cat_press">Press / Media</option>
+                  <option value="Feedback" data-i18n="contact_form_cat_feedback">Feedback / Suggestion</option>
+                  <option value="Other" data-i18n="contact_form_cat_other">Other</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label" data-i18n="contact_form_subject">Subject *</label>
+                <input class="form-control" id="cSubject" required maxlength="180" data-i18n-ph="contact_form_subject_ph" placeholder="Brief description of your inquiry">
+              </div>
+              <div class="col-12">
+                <label class="form-label" data-i18n="contact_form_message">Your Message *</label>
+                <textarea class="form-control" id="cMessage" rows="6" required maxlength="5000" data-i18n-ph="contact_form_message_ph" placeholder="Write your message here..."></textarea>
+                <div class="text-end small text-muted mt-1"><span id="charCount">0</span>/5000</div>
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cAgree" required>
+                  <label class="form-check-label small" for="cAgree" data-i18n="contact_form_agree">I agree that my message will be processed per the <a href="/privacy.html" class="text-decoration-none" style="color:var(--teal);font-weight:700">Privacy Policy</a>.</label>
+                </div>
+              </div>
+              <div class="col-12" id="contactAlert"></div>
+              <div class="col-12">
+                <button type="submit" class="btn-send btn" id="sendBtn">
+                  <span data-i18n="contact_form_send">✉️ Send Message</span>
+                </button>
+                <span class="ms-3 small text-muted" data-i18n="contact_form_security">🔒 Secure · No spam · Reply in 24h</span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="info-card">
+          <h5 class="fw-800 mb-3" style="color:var(--navy)" data-i18n="contact_info_title">Direct Contact Info</h5>
+
+          <div class="info-row">
+            <div class="ir-icon">📞</div>
+            <div>
+              <div class="ir-label" data-i18n="contact_info_phone">Phone</div>
+              <div class="ir-value"><bdi><a href="tel:+96895255450" dir="ltr">+968 9525 5450</a></bdi></div>
+              <div class="small text-muted" data-i18n="contact_info_phone_hours">Sun–Thu, 8am–8pm Oman time</div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="ir-icon">💬</div>
+            <div>
+              <div class="ir-label">WhatsApp</div>
+              <div class="ir-value"><a href="https://wa.me/96895255450" target="_blank" rel="noopener" dir="ltr">+968 9525 5450</a></div>
+              <div class="small text-muted" data-i18n="contact_info_whatsapp_hours">Available 24/7 · Fastest channel</div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="ir-icon">📍</div>
+            <div>
+              <div class="ir-label" data-i18n="contact_info_address">Address</div>
+              <div class="ir-value" data-i18n="contact_info_city">Muscat, Sultanate of Oman</div>
+              <div class="small text-muted" data-i18n="contact_info_country">P.O. Box · Muscat 100</div>
+            </div>
+          </div>
+
+          <div class="info-row">
+            <div class="ir-icon">🌐</div>
+            <div>
+              <div class="ir-label" data-i18n="contact_info_web">Website</div>
+              <div class="ir-value"><a href="https://guideon.guide" dir="ltr">guideon.guide</a></div>
+            </div>
+          </div>
+
+          <hr style="margin:20px 0;border-color:#eee">
+          <h6 class="fw-800 mb-2" style="color:var(--navy)" data-i18n="contact_hours_title">🕒 Business Hours (Oman Time)</h6>
+          <div id="hoursList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CHANNELS ───────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title" data-i18n="contact_channels_title">🌍 More Ways to Reach Us</h2>
+    <p class="section-sub" data-i18n="contact_channels_sub">Choose your preferred channel — we're active everywhere.</p>
+
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="channel-card">
+          <div class="ch-icon">💬</div>
+          <div class="ch-name">WhatsApp</div>
+          <div class="ch-meta" data-i18n="contact_ch_wa_meta">Reply &lt; 1 hour</div>
+          <a href="https://wa.me/96895255450" target="_blank" rel="noopener" class="ch-btn" data-i18n="contact_ch_open">Open</a>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="channel-card">
+          <div class="ch-icon">📧</div>
+          <div class="ch-name">Email</div>
+          <div class="ch-meta" data-i18n="contact_ch_email_meta">Reply &lt; 24 hours</div>
+          <a href="mailto:info@guideon.guide" class="ch-btn" data-i18n="contact_ch_email_btn">Email Us</a>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="channel-card">
+          <div class="ch-icon">📞</div>
+          <div class="ch-name" data-i18n="contact_ch_phone">Phone</div>
+          <div class="ch-meta" data-i18n="contact_ch_phone_meta">Business hours</div>
+          <a href="tel:+96895255450" class="ch-btn" data-i18n="contact_ch_call">Call</a>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="channel-card">
+          <div class="ch-icon">📍</div>
+          <div class="ch-name" data-i18n="contact_ch_visit">Visit</div>
+          <div class="ch-meta" data-i18n="contact_ch_visit_meta">By appointment</div>
+          <a href="mailto:info@guideon.guide?subject=Visit%20Request" class="ch-btn" data-i18n="contact_ch_book">Book</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── NEWSLETTER ─────────────────────────────────────────────────────── -->
+<section class="section" style="background:#fff">
+  <div class="container">
+    <div class="newsletter-card">
+      <div style="font-size:2.4rem">📬</div>
+      <h3 class="mt-2" data-i18n="contact_news_title">Stay in the Loop</h3>
+      <p class="opacity-75 mb-4" data-i18n="contact_news_sub">Get the best of Oman travel — hidden gems, new tours, and exclusive offers — delivered monthly. No spam, unsubscribe anytime.</p>
+      <form id="newsletterForm" class="row g-2 justify-content-center" style="max-width:520px;margin:0 auto">
+        <div class="col-sm-8"><input type="email" id="nlEmail" required class="form-control" data-i18n-ph="contact_news_ph" placeholder="your@email.com"></div>
+        <div class="col-sm-4"><button type="submit" class="btn btn-light w-100" data-i18n="contact_news_btn">Subscribe</button></div>
+        <div id="nlMsg" class="col-12 small mt-2"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ─── EMAIL FAQ ──────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container" style="max-width:780px">
+    <h2 class="section-title" data-i18n="contact_faq_title">❓ Common Questions About Our Emails</h2>
+    <p class="section-sub" data-i18n="contact_faq_sub">Quick answers about how email and communication work on Guideon.</p>
+
+    <div class="faq-mini">
+      <div class="q" onclick="this.parentElement.classList.toggle('open')">
+        <span data-i18n="contact_faq_q1">Why didn't I receive my booking confirmation email?</span><span class="arr">▼</span>
+      </div>
+      <div class="a"><p data-i18n="contact_faq_a1">Check your spam/junk folder first — emails from <code>noreply@guideon.guide</code> can occasionally land there. If still missing after 10 minutes, log in and check your dashboard, or contact <a href="mailto:support@guideon.guide">support@guideon.guide</a>.</p></div>
+    </div>
+
+    <div class="faq-mini">
+      <div class="q" onclick="this.parentElement.classList.toggle('open')">
+        <span data-i18n="contact_faq_q2">Can I reply to automated emails?</span><span class="arr">▼</span>
+      </div>
+      <div class="a"><p data-i18n="contact_faq_a2">Yes! When you click "Reply" on any Guideon email, your response is automatically routed to <code>info@guideon.guide</code> and reaches our support team within seconds.</p></div>
+    </div>
+
+    <div class="faq-mini">
+      <div class="q" onclick="this.parentElement.classList.toggle('open')">
+        <span data-i18n="contact_faq_q3">How do I stop receiving marketing emails?</span><span class="arr">▼</span>
+      </div>
+      <div class="a"><p data-i18n="contact_faq_a3">Every newsletter has an "Unsubscribe" link at the bottom. You can also log in and adjust your notification preferences in your account settings. Booking-related emails (confirmations, refunds) cannot be disabled for security reasons.</p></div>
+    </div>
+
+    <div class="faq-mini">
+      <div class="q" onclick="this.parentElement.classList.toggle('open')">
+        <span data-i18n="contact_faq_q4">Are my messages and data secure?</span><span class="arr">▼</span>
+      </div>
+      <div class="a"><p data-i18n="contact_faq_a4">Absolutely. All emails use TLS encryption in transit, and we authenticate our domain with SPF, DKIM, and DMARC to prevent spoofing. Read our <a href="/privacy.html">Privacy Policy</a> for details.</p></div>
+    </div>
+
+    <div class="faq-mini">
+      <div class="q" onclick="this.parentElement.classList.toggle('open')">
+        <span data-i18n="contact_faq_q5">What languages do you support?</span><span class="arr">▼</span>
+      </div>
+      <div class="a"><p data-i18n="contact_faq_a5">All our emails and support channels are fully bilingual (English & Arabic). You'll receive both versions in the same email, and our team replies in your preferred language.</p></div>
+    </div>
+
+    <div class="faq-mini">
+      <div class="q" onclick="this.parentElement.classList.toggle('open')">
+        <span data-i18n="contact_faq_q6">How fast do you reply?</span><span class="arr">▼</span>
+      </div>
+      <div class="a"><p data-i18n="contact_faq_a6">WhatsApp: under 1 hour. Email: under 24 hours (usually 2–4 hours during Oman business hours). Urgent booking issues are prioritized and replied to within 30 minutes during business hours.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-4">
+        <img src="/logo.png" alt="Guideon" height="52">
+        <p class="small opacity-75 mt-2" data-i18n="footer_desc">Connecting tourists with certified guides across Oman.</p>
+      </div>
+      <div class="col-md-4">
+        <h6 data-i18n="footer_contact">Contact Us</h6>
+        <div class="small opacity-75">
+          <div class="mb-1">📧 <a href="mailto:info@guideon.guide" class="text-white text-decoration-none" dir="ltr">info@guideon.guide</a></div>
+          <div class="mb-1">📞 <bdi><a href="tel:+96895255450" class="text-white text-decoration-none" dir="ltr">+968 9525 5450</a></bdi></div>
+          <div class="mb-1">💬 <a href="https://wa.me/96895255450" target="_blank" rel="noopener" class="text-white text-decoration-none">WhatsApp</a></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <h6 data-i18n="footer_legal">Legal</h6>
+        <a href="/terms.html" data-i18n="footer_terms">Terms</a>
+        <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
+        <a href="/faq.html" data-i18n="footer_faq">FAQ</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer_bottom">Guideon © 2026. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<div id="copiedToast" class="copied-toast" data-i18n="copied">✓ Copied!</div>
+<div id="toast-container"></div>
+
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=38"></script>
+<script>
+// ─── Copy email to clipboard ───────────────────────────────────────────────
+function copyEmail(addr, btn) {
+  navigator.clipboard.writeText(addr).then(() => {
+    const t = document.getElementById('copiedToast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+    const old = btn.textContent;
+    btn.textContent = '✓';
+    setTimeout(() => { btn.textContent = old; }, 1200);
+  });
+}
+
+// ─── Char counter ──────────────────────────────────────────────────────────
+document.getElementById('cMessage').addEventListener('input', e => {
+  document.getElementById('charCount').textContent = e.target.value.length;
+});
+
+// ─── Business hours (highlight today) ──────────────────────────────────────
+const isAr = (document.documentElement.lang || 'en').startsWith('ar');
+const days = isAr
+  ? ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']
+  : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const hours = isAr
+  ? ['8:00 ص – 8:00 م','8:00 ص – 8:00 م','8:00 ص – 8:00 م','8:00 ص – 8:00 م','8:00 ص – 8:00 م','مغلق','10:00 ص – 4:00 م']
+  : ['8:00 AM – 8:00 PM','8:00 AM – 8:00 PM','8:00 AM – 8:00 PM','8:00 AM – 8:00 PM','8:00 AM – 8:00 PM','Closed','10:00 AM – 4:00 PM'];
+const todayIdx = new Date().getDay();
+document.getElementById('hoursList').innerHTML = days.map((d, i) => `
+  <div class="hours-row ${i === todayIdx ? 'today' : ''}">
+    <span class="day">${d}${i === todayIdx ? ' · ' + (isAr ? 'اليوم' : 'Today') : ''}</span>
+    <span class="time">${hours[i]}</span>
+  </div>
+`).join('');
+
+// ─── Contact form ──────────────────────────────────────────────────────────
+document.getElementById('contactForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const alertBox = document.getElementById('contactAlert');
+  const btn = document.getElementById('sendBtn');
+  alertBox.innerHTML = '';
+
+  const payload = {
+    name:     document.getElementById('cName').value.trim(),
+    email:    document.getElementById('cEmail').value.trim(),
+    phone:    document.getElementById('cPhone').value.trim(),
+    category: document.getElementById('cCategory').value,
+    subject:  document.getElementById('cSubject').value.trim(),
+    message:  document.getElementById('cMessage').value.trim(),
+  };
+
+  if (!payload.name || !payload.email || !payload.subject || !payload.message || !payload.category) {
+    alertBox.innerHTML = `<div class="alert alert-warning">${isAr ? 'يرجى تعبئة جميع الحقول المطلوبة.' : 'Please fill all required fields.'}</div>`;
+    return;
+  }
+  if (!document.getElementById('cAgree').checked) {
+    alertBox.innerHTML = `<div class="alert alert-warning">${isAr ? 'يرجى الموافقة على سياسة الخصوصية.' : 'Please accept the Privacy Policy.'}</div>`;
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${isAr ? 'جاري الإرسال...' : 'Sending...'}`;
+
+  try {
+    const csrf = (document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/) || [])[1] || '';
+    const r = await fetch('/api/contact/send', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'Failed');
+    alertBox.innerHTML = `<div class="alert alert-success">✅ ${isAr ? 'تم إرسال رسالتك! ستصلك رسالة تأكيد على بريدك الإلكتروني، وسنرد خلال 24 ساعة.' : 'Your message has been sent! Check your inbox for a confirmation. We\\'ll reply within 24 hours.'}</div>`;
+    e.target.reset();
+    document.getElementById('charCount').textContent = '0';
+  } catch (err) {
+    alertBox.innerHTML = `<div class="alert alert-danger">❌ ${err.message || (isAr ? 'فشل الإرسال. حاول مرة أخرى.' : 'Failed to send. Please try again.')}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span>${isAr ? '✉️ إرسال الرسالة' : '✉️ Send Message'}</span>`;
+  }
+});
+
+// ─── Newsletter ────────────────────────────────────────────────────────────
+document.getElementById('newsletterForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = document.getElementById('nlEmail').value.trim();
+  const msg = document.getElementById('nlMsg');
+  msg.innerHTML = '';
+  if (!email) return;
+  try {
+    const csrf = (document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/) || [])[1] || '';
+    const r = await fetch('/api/newsletter/subscribe', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+      body: JSON.stringify({ email, source: 'contact_page', language: isAr ? 'ar' : 'en' }),
+    });
+    const d = await r.json();
+    msg.innerHTML = d.success
+      ? `<div class="text-warning">🎉 ${d.message}</div>`
+      : `<div class="text-warning">${d.message}</div>`;
+    if (d.success) e.target.reset();
+  } catch (err) {
+    msg.innerHTML = `<div class="text-warning">${isAr ? 'فشل الاشتراك.' : 'Subscription failed.'}</div>`;
+  }
+});
+</script>
+<script src="/js/common-widgets.js?v=2"></script>
+</body>
+</html>
