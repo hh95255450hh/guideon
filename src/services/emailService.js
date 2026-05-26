@@ -11,9 +11,10 @@ function getResend() {
   return _resend;
 }
 
-const FROM    = process.env.EMAIL_FROM  || 'Guideon <onboarding@resend.dev>';
-const APP_URL = process.env.APP_URL     || 'http://localhost:3000';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@Guideon.om';
+const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.guide>';
+const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'info@guideon.guide';
+const APP_URL   = process.env.APP_URL         || 'http://localhost:3000';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL   || 'admin@guideon.guide';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
 function layout(body) {
@@ -443,7 +444,13 @@ async function send(to, subject, html) {
     return;
   }
   try {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject,
+      html,
+      reply_to: REPLY_TO,
+    });
     if (error) console.error(`[Email] Failed: ${subject} → ${to}:`, error.message);
     else console.log(`[Email] Sent: ${subject} → ${to}`);
   } catch (err) {

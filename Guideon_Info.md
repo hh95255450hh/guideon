@@ -80,10 +80,11 @@
 | SUPABASE_URL | https://uwgkszszsogivhphlfdy.supabase.co |
 | SUPABASE_ANON_KEY | sb_publishable_e7f2BmlvGIxIs3Ya1jyKrQ_hqW7X-jM |
 | RESEND_API_KEY | re_43dnbDNB_C59XJtiSgQcWMvzxQFoac1qi |
-| EMAIL_FROM | Guideon <onboarding@resend.dev> |
+| EMAIL_FROM | Guideon <noreply@guideon.guide> |
+| EMAIL_REPLY_TO | info@guideon.guide |
 | ADMIN_EMAIL | Hh95255450hh@hotmail.com |
 
-> بعد التحقق من guideon.guide في Resend، غيّر EMAIL_FROM إلى: `Guideon <noreply@guideon.guide>`
+> ✅ النطاق guideon.guide مُحقَّق في Resend — الإرسال من `noreply@guideon.guide` والردود تذهب لـ `info@guideon.guide` عبر Cloudflare Routing.
 
 ---
 
