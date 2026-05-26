@@ -35,12 +35,19 @@
   .feature { background:rgba(255,255,255,.18); backdrop-filter:blur(14px); padding:24px 32px; border-radius:24px; font-size:32px; font-weight:700; display:flex; align-items:center; gap:20px; border:2px solid rgba(255,255,255,.25); }
   .feature .ico { font-size:42px; }
 
-  .cta-section { position:absolute; bottom:120px; right:60px; left:60px; }
-  .cta-section .arrow-up { text-align:center; font-size:60px; animation:bounce 1.5s infinite; margin-bottom:20px; }
+  .cta-section { position:absolute; bottom:100px; right:60px; left:60px; }
+  .qr-strip { background:#fff; padding:24px; border-radius:24px; display:flex; align-items:center; gap:24px; margin-bottom:24px; box-shadow:0 16px 40px rgba(0,0,0,.4); border:4px solid #c89b3c; }
+  .qr-strip img { width:160px; height:160px; flex-shrink:0; }
+  .qr-strip .text { flex:1; color:#0f1c3e; text-align:right; }
+  .qr-strip .text .big { font-size:30px; font-weight:900; }
+  .qr-strip .text .small { font-size:18px; font-weight:600; opacity:.7; margin-top:4px; }
+  .qr-strip .text .url { font-size:20px; color:#0f7b6c; font-weight:800; margin-top:6px; direction:ltr; }
+
+  .cta-section .arrow-up { display:none; }
   @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-  .swipe { text-align:center; font-size:28px; opacity:.9; margin-bottom:20px; }
+  .swipe { text-align:center; font-size:24px; opacity:.85; margin-bottom:16px; }
   .swipe strong { color:#c89b3c; font-weight:900; }
-  .cta-btn { background:linear-gradient(135deg,#c89b3c,#e6b950); color:#000; padding:32px 0; border-radius:24px; font-size:46px; font-weight:900; text-align:center; box-shadow:0 16px 50px rgba(200,155,60,.5); }
+  .cta-btn { background:linear-gradient(135deg,#c89b3c,#e6b950); color:#000; padding:30px 0; border-radius:24px; font-size:42px; font-weight:900; text-align:center; box-shadow:0 16px 50px rgba(200,155,60,.5); }
 </style>
 </head>
 <body>
@@ -68,8 +75,15 @@
   </div>
 
   <div class="cta-section">
-    <div class="arrow-up">⬆️</div>
-    <div class="swipe">اسحب للأعلى أو زر <strong>guideon.guide</strong></div>
+    <div class="qr-strip">
+      <img src="/marketing/qr-guideon.svg" alt="QR">
+      <div class="text">
+        <div class="big">📱 امسح للحجز</div>
+        <div class="small">SCAN TO BOOK YOUR TOUR</div>
+        <div class="url">guideon.guide</div>
+      </div>
+    </div>
+    <div class="swipe">أو اضغط <strong>guideon.guide</strong></div>
     <div class="cta-btn">احجز رحلتك الآن</div>
   </div>
 </div>

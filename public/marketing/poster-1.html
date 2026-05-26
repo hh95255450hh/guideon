@@ -48,10 +48,15 @@
   .cta-btn { background:#c89b3c; color:#000; font-weight:900; padding:24px 50px; border-radius:18px; font-size:34px; box-shadow:0 12px 30px rgba(200,155,60,.5); }
   .cta-arrow { font-size:48px; color:#c89b3c; }
 
-  .footer-bar { position:absolute; bottom:60px; right:80px; left:80px; display:flex; justify-content:space-between; align-items:center; z-index:2; }
-  .footer-bar .left { display:flex; align-items:center; gap:16px; font-size:24px; font-weight:700; }
-  .footer-bar .right { font-size:22px; opacity:.9; }
+  .footer-bar { position:absolute; bottom:60px; right:80px; display:flex; align-items:center; gap:16px; font-size:24px; font-weight:700; z-index:2; }
   .icon-circle { width:50px; height:50px; background:#c89b3c; color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; }
+
+  .qr-badge { position:absolute; bottom:50px; left:50px; background:#fff; padding:14px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.35); display:flex; align-items:center; gap:14px; z-index:3; border:3px solid #c89b3c; }
+  .qr-badge img { width:130px; height:130px; display:block; }
+  .qr-badge .qr-text { color:#0f1c3e; max-width:130px; }
+  .qr-badge .qr-label { font-size:18px; font-weight:900; line-height:1.2; }
+  .qr-badge .qr-en { font-size:13px; opacity:.7; margin-top:4px; font-weight:600; }
+  .qr-badge .qr-url { font-size:14px; color:#0f7b6c; font-weight:800; margin-top:6px; direction:ltr; }
 </style>
 </head>
 <body>
@@ -85,11 +90,17 @@
   </div>
 
   <div class="footer-bar">
-    <div class="left">
-      <div class="icon-circle">💬</div>
-      <div dir="ltr">+968 9525 5450</div>
+    <div class="icon-circle">💬</div>
+    <div dir="ltr">+968 9525 5450</div>
+  </div>
+
+  <div class="qr-badge">
+    <img src="/marketing/qr-guideon.svg" alt="QR Code">
+    <div class="qr-text">
+      <div class="qr-label">امسح للزيارة</div>
+      <div class="qr-en">SCAN TO VISIT</div>
+      <div class="qr-url">guideon.guide</div>
     </div>
-    <div class="right">@guideon.guide</div>
   </div>
 </div>
 </body>

@@ -48,6 +48,13 @@
   .web { font-size:24px; opacity:.7; }
 
   .badge-corner { position:absolute; top:60px; left:60px; background:#fff; color:#c70039; padding:12px 22px; border-radius:14px; font-size:22px; font-weight:900; transform:rotate(-8deg); box-shadow:0 6px 18px rgba(0,0,0,.3); }
+
+  .qr-badge { position:absolute; bottom:60px; left:60px; background:#fff; padding:14px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,.4); display:flex; align-items:center; gap:14px; z-index:5; border:3px solid #c89b3c; }
+  .qr-badge img { width:130px; height:130px; display:block; }
+  .qr-badge .qr-text { color:#0f1c3e; }
+  .qr-badge .qr-label { font-size:18px; font-weight:900; }
+  .qr-badge .qr-en { font-size:13px; opacity:.7; margin-top:4px; font-weight:600; }
+  .qr-badge .qr-url { font-size:14px; color:#0f7b6c; font-weight:800; margin-top:6px; direction:ltr; }
 </style>
 </head>
 <body>
@@ -60,6 +67,15 @@
 
   <div class="logo-top"><img src="/logo.png" alt="Guideon"></div>
   <div class="badge-corner">⏰ لفترة محدودة!</div>
+
+  <div class="qr-badge">
+    <img src="/marketing/qr-guideon.svg" alt="QR">
+    <div class="qr-text">
+      <div class="qr-label">امسح للحجز</div>
+      <div class="qr-en">SCAN TO BOOK</div>
+      <div class="qr-url">guideon.guide</div>
+    </div>
+  </div>
 
   <div class="content">
     <div class="super">🎁 عرض الإطلاق</div>
