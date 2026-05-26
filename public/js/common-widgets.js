@@ -33,6 +33,44 @@
       html[dir="rtl"] .gd-wa-btn { left: 16px; }
     }
 
+    /* Contact / Email floating button — sits above the WhatsApp button */
+    .gd-contact-btn {
+      position: fixed; bottom: 92px; right: 24px; z-index: 9998;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #0f7b6c, #1abc9c); color: #fff; border: none;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(15,123,108,0.45);
+      cursor: pointer; transition: transform .2s, box-shadow .2s;
+      text-decoration: none;
+    }
+    .gd-contact-btn:hover { transform: scale(1.08); box-shadow: 0 6px 22px rgba(15,123,108,0.65); color: #fff; }
+    .gd-contact-btn .gd-contact-label {
+      position: absolute; right: 66px; background: #0f1c3e; color: #fff;
+      padding: 6px 12px; border-radius: 8px; font-size: .82rem; font-weight: 700;
+      white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+      transform: translateX(6px);
+    }
+    .gd-contact-btn:hover .gd-contact-label { opacity: 1; transform: translateX(0); }
+    .gd-contact-btn .gd-contact-label::after {
+      content: ''; position: absolute; top: 50%; right: -5px; transform: translateY(-50%);
+      border: 5px solid transparent; border-left-color: #0f1c3e;
+    }
+    @media (max-width: 576px) {
+      .gd-contact-btn { width: 50px; height: 50px; bottom: 76px; right: 16px; }
+      .gd-contact-btn .gd-contact-label { display: none; }
+    }
+    html[dir="rtl"] .gd-contact-btn { right: auto; left: 24px; }
+    html[dir="rtl"] .gd-contact-btn .gd-contact-label {
+      right: auto; left: 66px; transform: translateX(-6px);
+    }
+    html[dir="rtl"] .gd-contact-btn:hover .gd-contact-label { transform: translateX(0); }
+    html[dir="rtl"] .gd-contact-btn .gd-contact-label::after {
+      right: auto; left: -5px; border-left-color: transparent; border-right-color: #0f1c3e;
+    }
+    @media (max-width: 576px) {
+      html[dir="rtl"] .gd-contact-btn { left: 16px; }
+    }
+
     .gd-cookie-bar {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
       background: #fff; border-top: 3px solid #0f7b6c;
@@ -78,6 +116,27 @@
     a.title = lang === 'ar' ? 'تواصل عبر واتساب' : 'Chat on WhatsApp';
     a.setAttribute('aria-label', a.title);
     a.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.71.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+    document.body.appendChild(a);
+  }
+
+  // ─── Contact / Email floating button ──────────────────────────────────
+  function injectContact() {
+    if (document.querySelector('.gd-contact-btn')) return;
+    // Skip if we're already on the contact page
+    if (location.pathname === '/contact.html' || location.pathname.endsWith('/contact')) return;
+    const lang = (document.documentElement.lang || 'en').startsWith('ar') ? 'ar' : 'en';
+    const label = lang === 'ar' ? 'تواصل معنا' : 'Contact us';
+    const a = document.createElement('a');
+    a.className = 'gd-contact-btn';
+    a.href = '/contact.html';
+    a.title = label;
+    a.setAttribute('aria-label', label);
+    a.innerHTML = `
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <polyline points="22,6 12,13 2,6"/>
+      </svg>
+      <span class="gd-contact-label">${label}</span>`;
     document.body.appendChild(a);
   }
 
@@ -132,9 +191,9 @@
   // ─── Boot ──────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      injectWhatsApp(); injectCookieBar(); loadNotifications();
+      injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications();
     });
   } else {
-    injectWhatsApp(); injectCookieBar(); loadNotifications();
+    injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications();
   }
 })();
