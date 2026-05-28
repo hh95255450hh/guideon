@@ -104,22 +104,46 @@ function table(...rows) {
   </table>`;
 }
 
+// Bilingual body: Arabic block on top (RTL), divider, English block below (LTR).
+// `ar` and `en` are HTML strings for each language's content.
+function bilingual(ar, en) {
+  return `
+    <div dir="rtl" lang="ar" style="text-align:right;">${ar}</div>
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:14px 0;">
+      <tr>
+        <td style="border-top:1px solid #e8efed;height:1px;font-size:0;line-height:0;">&nbsp;</td>
+        <td style="width:60px;text-align:center;color:#aaa;font-size:10px;letter-spacing:2px;padding:0 8px;">ENGLISH</td>
+        <td style="border-top:1px solid #e8efed;height:1px;font-size:0;line-height:0;">&nbsp;</td>
+      </tr>
+    </table>
+    <div dir="ltr" lang="en">${en}</div>`;
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 //  TOURIST EMAILS
 // ══════════════════════════════════════════════════════════════════════════════
 
 function touristWelcome({ name }) {
-  return layout(`
-    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🌿</h1>
-    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
-      Hi <strong>${name}</strong>, your account is ready. Explore Oman with a certified local guide —
-      from the deserts of Wahiba Sands to the fjords of Musandam.
-    </p>
-    ${btn('Find a Guide', `${APP_URL}/search.html`)}
-    <p style="margin:16px 0 0;font-size:13px;color:#888;text-align:center;line-height:1.6;">
-      Need help? Just reply to this email — we're here for you.
-    </p>
-  `);
+  return layout(bilingual(
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">مرحباً بك في Guideon! 🌿</h1>
+     <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.85;">
+       أهلاً <strong>${name}</strong>، حسابك جاهز الآن. اكتشف عُمان مع مرشد محلي معتمد —
+       من رمال الوهيبة إلى مضايق مسندم.
+     </p>
+     ${btn('ابحث عن مرشد', `${APP_URL}/search.html`)}
+     <p style="margin:16px 0 0;font-size:13px;color:#888;text-align:center;line-height:1.6;">
+       تحتاج مساعدة؟ فقط رُدّ على هذه الرسالة — نحن هنا من أجلك.
+     </p>`,
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🌿</h1>
+     <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.7;">
+       Hi <strong>${name}</strong>, your account is ready. Explore Oman with a certified local guide —
+       from the deserts of Wahiba Sands to the fjords of Musandam.
+     </p>
+     ${btn('Find a Guide', `${APP_URL}/search.html`)}
+     <p style="margin:16px 0 0;font-size:13px;color:#888;text-align:center;line-height:1.6;">
+       Need help? Just reply to this email — we're here for you.
+     </p>`
+  ));
 }
 
 function touristBookingPending({ name, guideName, destination, tourDate, duration, totalAmount, bookingId }) {
@@ -222,20 +246,32 @@ function touristReviewReminder({ name, guideName, destination, bookingId }) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function guideWelcome({ name }) {
-  return layout(`
-    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🌿</h1>
-    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
-      Hi <strong>${name}</strong>, your guide account has been created. Our team will review
-      and verify your licence shortly. You'll receive an email once approved.
-    </p>
-    <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-      <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
-        📋 <strong>Next steps:</strong> Complete your profile, add your availability, and wait for verification.
-        Once verified, tourists can find and book you.
-      </p>
-    </div>
-    ${btn('Complete My Profile', `${APP_URL}/guide-dashboard.html`)}
-  `);
+  return layout(bilingual(
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">مرحباً بك في Guideon! 🌿</h1>
+     <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.85;">
+       أهلاً <strong>${name}</strong>، تم إنشاء حساب المرشد الخاص بك. سيقوم فريقنا بمراجعة
+       وتوثيق ترخيصك قريباً. ستصلك رسالة بريد فور الموافقة.
+     </p>
+     <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.7;text-align:right;">
+         📋 <strong>الخطوات التالية:</strong> أكمل ملفك، أضف مواعيد توفّرك، وانتظر التوثيق.
+         بمجرد التوثيق، سيتمكن السياح من إيجادك وحجزك.
+       </p>
+     </div>
+     ${btn('أكمل ملفي', `${APP_URL}/guide-dashboard.html`)}`,
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🌿</h1>
+     <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.7;">
+       Hi <strong>${name}</strong>, your guide account has been created. Our team will review
+       and verify your licence shortly. You'll receive an email once approved.
+     </p>
+     <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
+         📋 <strong>Next steps:</strong> Complete your profile, add your availability, and wait for verification.
+         Once verified, tourists can find and book you.
+       </p>
+     </div>
+     ${btn('Complete My Profile', `${APP_URL}/guide-dashboard.html`)}`
+  ));
 }
 
 function guideNewBooking({ name, touristName, destination, tourDate, duration, participants, totalAmount, bookingId }) {
@@ -296,20 +332,32 @@ function guideBookingCancelled({ name, touristName, destination, tourDate, booki
 }
 
 function guideVerified({ name }) {
-  return layout(`
-    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">You're Verified! 🎉</h1>
-    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
-      Congratulations <strong>${name}</strong>! Your guide account has been verified by the Guideon team.
-      You are now visible to tourists and can start receiving bookings.
-    </p>
-    ${badge('✓ VERIFIED GUIDE', '#0f7b6c', '#e8f5f2')}
-    <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-      <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
-        🗓️ <strong>Add your availability</strong> so tourists can book your tours.
-      </p>
-    </div>
-    ${btn('Set My Availability', `${APP_URL}/guide-dashboard.html`)}
-  `);
+  return layout(bilingual(
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">تم توثيق حسابك! 🎉</h1>
+     <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.85;">
+       مبروك <strong>${name}</strong>! تم توثيق حساب المرشد الخاص بك من قِبل فريق Guideon.
+       أصبحت الآن ظاهراً للسياح ويمكنك البدء في استقبال الحجوزات.
+     </p>
+     <div style="text-align:right;margin-bottom:18px;">${badge('✓ مرشد موثّق', '#0f7b6c', '#e8f5f2')}</div>
+     <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.7;text-align:right;">
+         🗓️ <strong>أضف مواعيد توفّرك</strong> حتى يتمكن السياح من حجز رحلاتك.
+       </p>
+     </div>
+     ${btn('حدّد مواعيدي', `${APP_URL}/guide-dashboard.html`)}`,
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">You're Verified! 🎉</h1>
+     <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.7;">
+       Congratulations <strong>${name}</strong>! Your guide account has been verified by the Guideon team.
+       You are now visible to tourists and can start receiving bookings.
+     </p>
+     ${badge('✓ VERIFIED GUIDE', '#0f7b6c', '#e8f5f2')}
+     <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
+         🗓️ <strong>Add your availability</strong> so tourists can book your tours.
+       </p>
+     </div>
+     ${btn('Set My Availability', `${APP_URL}/guide-dashboard.html`)}`
+  ));
 }
 
 function guideNewReview({ name, touristName, rating, comment, destination }) {
@@ -336,37 +384,61 @@ function guideNewReview({ name, touristName, rating, comment, destination }) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function companyVerified({ name, companyName }) {
-  return layout(`
-    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Your Company is Approved! 🎉</h1>
-    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
-      Congratulations <strong>${name}</strong>! <strong>${companyName}</strong> has been reviewed and approved by the Guideon team.
-      Your company is now live and visible to tourists browsing the platform.
-    </p>
-    ${badge('✓ APPROVED & LISTED', '#0f7b6c', '#e8f5f2')}
-    <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-      <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
-        📦 <strong>Next step:</strong> Add your tour packages and services from your dashboard so tourists can discover your offerings.
-      </p>
-    </div>
-    ${btn('Go to Company Dashboard', `${APP_URL}/company-dashboard.html`)}
-  `);
+  return layout(bilingual(
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">تمت الموافقة على شركتك! 🎉</h1>
+     <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.85;">
+       مبروك <strong>${name}</strong>! تمت مراجعة <strong>${companyName}</strong> والموافقة عليها من فريق Guideon.
+       شركتك الآن منشورة وظاهرة للسياح الذين يتصفحون المنصة.
+     </p>
+     <div style="text-align:right;margin-bottom:18px;">${badge('✓ موافَق عليها ومنشورة', '#0f7b6c', '#e8f5f2')}</div>
+     <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.7;text-align:right;">
+         📦 <strong>الخطوة التالية:</strong> أضف باقات رحلاتك وخدماتك من لوحة التحكم ليكتشفها السياح.
+       </p>
+     </div>
+     ${btn('اذهب للوحة الشركة', `${APP_URL}/company-dashboard.html`)}`,
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Your Company is Approved! 🎉</h1>
+     <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.7;">
+       Congratulations <strong>${name}</strong>! <strong>${companyName}</strong> has been reviewed and approved by the Guideon team.
+       Your company is now live and visible to tourists browsing the platform.
+     </p>
+     ${badge('✓ APPROVED & LISTED', '#0f7b6c', '#e8f5f2')}
+     <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.6;">
+         📦 <strong>Next step:</strong> Add your tour packages and services from your dashboard so tourists can discover your offerings.
+       </p>
+     </div>
+     ${btn('Go to Company Dashboard', `${APP_URL}/company-dashboard.html`)}`
+  ));
 }
 
 function companyWelcome({ name, companyName }) {
-  return layout(`
-    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🏢</h1>
-    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
-      Hi <strong>${name}</strong>, your company account for <strong>${companyName}</strong> has been created.
-      Our team will review your profile before it goes live to tourists.
-    </p>
-    <div style="background:#e8f0ff;border:1px solid #b0c4f5;border-radius:8px;padding:16px 20px;margin-bottom:24px;">
-      <p style="margin:0;font-size:13px;color:#1a3a7a;line-height:1.6;">
-        📋 <strong>Next steps:</strong> Complete your company profile, add your tour packages and services.
-        Once reviewed, tourists can discover and contact your company.
-      </p>
-    </div>
-    ${btn('Go to Company Dashboard', `${APP_URL}/company-dashboard.html`)}
-  `);
+  return layout(bilingual(
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">مرحباً بك في Guideon! 🏢</h1>
+     <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.85;">
+       أهلاً <strong>${name}</strong>، تم إنشاء حساب شركة <strong>${companyName}</strong>.
+       سيراجع فريقنا ملفك قبل نشره للسياح.
+     </p>
+     <div style="background:#e8f0ff;border:1px solid #b0c4f5;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#1a3a7a;line-height:1.7;text-align:right;">
+         📋 <strong>الخطوات التالية:</strong> أكمل ملف شركتك، أضف باقات الرحلات والخدمات.
+         بعد المراجعة، سيتمكن السياح من اكتشاف شركتك والتواصل معها.
+       </p>
+     </div>
+     ${btn('اذهب للوحة الشركة', `${APP_URL}/company-dashboard.html`)}`,
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Welcome to Guideon! 🏢</h1>
+     <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.7;">
+       Hi <strong>${name}</strong>, your company account for <strong>${companyName}</strong> has been created.
+       Our team will review your profile before it goes live to tourists.
+     </p>
+     <div style="background:#e8f0ff;border:1px solid #b0c4f5;border-radius:8px;padding:16px 20px;margin-bottom:20px;">
+       <p style="margin:0;font-size:13px;color:#1a3a7a;line-height:1.6;">
+         📋 <strong>Next steps:</strong> Complete your company profile, add your tour packages and services.
+         Once reviewed, tourists can discover and contact your company.
+       </p>
+     </div>
+     ${btn('Go to Company Dashboard', `${APP_URL}/company-dashboard.html`)}`
+  ));
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -393,22 +465,32 @@ function emailVerification({ name, token }) {
 
 function passwordReset({ name, token }) {
   const link = `${APP_URL}/reset-password.html?token=${token}`;
-  return layout(`
-    <h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Reset Your Password 🔐</h1>
-    <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
-      Hi <strong>${name}</strong>, we received a request to reset your password. Click the button below to choose a new password.
-    </p>
-    ${btn('Reset Password', link, '#cc0000')}
-    <p style="margin:16px 0 0;font-size:12px;color:#888;text-align:center;line-height:1.6;">
-      Or copy this link into your browser:<br>
-      <span style="font-family:monospace;font-size:11px;color:#0f7b6c;word-break:break-all;">${link}</span>
-    </p>
-    <div style="background:#fffbea;border:1px solid #ffe58a;border-radius:8px;padding:16px 20px;margin-top:24px;">
-      <p style="margin:0;font-size:13px;color:#7a6300;line-height:1.6;">
-        ⏰ This link expires in <strong>1 hour</strong>. If you didn't request this, ignore this email — your password won't change.
-      </p>
-    </div>
-  `);
+  return layout(bilingual(
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">إعادة تعيين كلمة المرور 🔐</h1>
+     <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.85;">
+       مرحباً <strong>${name}</strong>، استلمنا طلباً لإعادة تعيين كلمة المرور. اضغط الزر أدناه لاختيار كلمة مرور جديدة.
+     </p>
+     ${btn('إعادة تعيين كلمة المرور', link, '#cc0000')}
+     <div style="background:#fffbea;border:1px solid #ffe58a;border-radius:8px;padding:16px 20px;margin-top:20px;">
+       <p style="margin:0;font-size:13px;color:#7a6300;line-height:1.7;text-align:right;">
+         ⏰ ينتهي هذا الرابط خلال <strong>ساعة واحدة</strong>. إذا لم تطلب ذلك، تجاهل هذه الرسالة — لن تتغير كلمة مرورك.
+       </p>
+     </div>`,
+    `<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#1a1a1a;">Reset Your Password 🔐</h1>
+     <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.7;">
+       Hi <strong>${name}</strong>, we received a request to reset your password. Click the button below to choose a new password.
+     </p>
+     ${btn('Reset Password', link, '#cc0000')}
+     <p style="margin:16px 0 0;font-size:12px;color:#888;text-align:center;line-height:1.6;">
+       Or copy this link into your browser:<br>
+       <span style="font-family:monospace;font-size:11px;color:#0f7b6c;word-break:break-all;">${link}</span>
+     </p>
+     <div style="background:#fffbea;border:1px solid #ffe58a;border-radius:8px;padding:16px 20px;margin-top:20px;">
+       <p style="margin:0;font-size:13px;color:#7a6300;line-height:1.6;">
+         ⏰ This link expires in <strong>1 hour</strong>. If you didn't request this, ignore this email — your password won't change.
+       </p>
+     </div>`
+  ));
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

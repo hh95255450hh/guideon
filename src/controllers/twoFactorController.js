@@ -69,6 +69,7 @@ exports.enable = async (req, res) => {
       twoFactorSecret: secret,
       twoFactorEnabled: true,
       twoFactorBackupCodes: backupCodes,
+      loginsSince2FA: 0, // start the trusted window now (just verified a code)
     });
 
     delete req.session.pending2faSecret;
@@ -106,6 +107,9 @@ exports.verifyLogin = async (req, res) => {
     }
 
     if (!valid) return res.status(401).json({ success: false, message: 'Wrong code.' });
+
+    // Reset the "logins since 2FA" counter — the next ~10 logins skip the code.
+    await users.update(user.id, { loginsSince2FA: 0 }).catch(() => {});
 
     // Promote the pending login into a real session
     await new Promise((resolve, reject) => req.session.regenerate(err => err ? reject(err) : resolve()));

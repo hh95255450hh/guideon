@@ -6,6 +6,11 @@ const emailService = require('../services/emailService');
 
 const users = new SupabaseDB('users');
 
+// How many password-only logins are allowed between TOTP prompts.
+// The admin asked to be prompted every 10th login rather than every time.
+// Override with env LOGINS_BEFORE_2FA if you want it stricter/looser.
+const LOGINS_BEFORE_2FA = parseInt(process.env.LOGINS_BEFORE_2FA, 10) || 10;
+
 function randomToken() {
   return crypto.randomBytes(32).toString('hex');
 }
@@ -188,17 +193,28 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
-    // If 2FA is enabled, don't create the session yet — require TOTP code first.
+    // If 2FA is enabled, require the TOTP code — but only every Nth login.
+    // Between prompts the user logs in with just their password. The counter
+    // (loginsSince2FA) is reset to 0 each time the code is actually entered.
     if (user.twoFactorEnabled) {
-      await new Promise((resolve, reject) => {
-        req.session.regenerate(err => err ? reject(err) : resolve());
-      });
-      req.session.pending2faUserId = user.id;
-      return res.json({
-        success: true,
-        requires2FA: true,
-        message: 'Enter your authenticator code.',
-      });
+      const count = user.loginsSince2FA;
+      const mustPrompt = (count === null || count === undefined || count >= LOGINS_BEFORE_2FA);
+
+      if (mustPrompt) {
+        // Don't create the session yet — require the authenticator code first.
+        await new Promise((resolve, reject) => {
+          req.session.regenerate(err => err ? reject(err) : resolve());
+        });
+        req.session.pending2faUserId = user.id;
+        return res.json({
+          success: true,
+          requires2FA: true,
+          message: 'Enter your authenticator code.',
+        });
+      }
+
+      // Within the trusted window — skip the code, just bump the counter.
+      await users.update(user.id, { loginsSince2FA: (count || 0) + 1 }).catch(() => {});
     }
 
     // Regenerate session ID on login to prevent session fixation attacks
@@ -212,7 +228,10 @@ exports.login = async (req, res) => {
     delete safe.password;
     delete safe.twoFactorSecret;
     delete safe.twoFactorBackupCodes;
-    res.json({ success: true, message: 'Login successful.', user: safe });
+    const loginsLeft = user.twoFactorEnabled
+      ? Math.max(0, LOGINS_BEFORE_2FA - ((user.loginsSince2FA || 0) + 1))
+      : null;
+    res.json({ success: true, message: 'Login successful.', user: safe, twoFactorLoginsLeft: loginsLeft });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
@@ -341,9 +360,13 @@ exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, message: 'Email is required.' });
 
-    const user = await users.findByField('email', email.toLowerCase());
-    // Always return success to avoid email enumeration
+    const normalized = String(email).trim().toLowerCase();
+    const user = await users.findByField('email', normalized);
+
+    // Always return success to avoid email enumeration — but log server-side
+    // so we can diagnose "no email arrived" reports from the Railway logs.
     if (!user) {
+      console.warn(`[forgot-password] No account found for "${normalized}" — no email sent.`);
       return res.json({ success: true, message: 'If that email is registered, you will receive a reset link shortly.' });
     }
 
@@ -354,15 +377,21 @@ exports.forgotPassword = async (req, res) => {
       resetPasswordExpires: expires,
     });
 
-    emailService.sendPasswordReset({
-      email: user.email,
-      name: user.fullName,
-      token,
-    }).catch(() => {});
+    // Await the send so failures are logged (the email service logs Sent/Failed).
+    try {
+      await emailService.sendPasswordReset({
+        email: user.email,
+        name: user.fullName || 'there',
+        token,
+      });
+      console.log(`[forgot-password] Reset email dispatched to ${user.email}`);
+    } catch (mailErr) {
+      console.error(`[forgot-password] Failed to send reset email to ${user.email}:`, mailErr.message);
+    }
 
     res.json({ success: true, message: 'If that email is registered, you will receive a reset link shortly.' });
   } catch (err) {
-    console.error(err);
+    console.error('[forgot-password]', err);
     res.status(500).json({ success: false, message: 'Server error. Please try again.' });
   }
 };
