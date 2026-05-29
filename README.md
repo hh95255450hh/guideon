@@ -3,7 +3,7 @@
 منصة حجز المرشدين السياحيين والشركات المعتمدة في سلطنة عُمان.
 
 🌐 **Live:** https://guideon-production.up.railway.app
-🌐 **Domain:** https://guideon.guide
+🌐 **Domain:** https://www.guideon.om
 
 ---
 

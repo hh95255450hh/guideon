@@ -1,16 +1,16 @@
 /**
  * Send a bilingual test email (Arabic on top, English below) to verify
- * Resend + guideon.guide domain + logo + anti-spam headers.
+ * Resend + www.guideon.om domain + logo + anti-spam headers.
  * Usage: node scripts/test-email.js [recipient]
  */
 require('dotenv').config();
 const { Resend } = require('resend');
 
 const TO        = process.argv[2] || 'Hh95255450hh@hotmail.com';
-const FROM      = process.env.EMAIL_FROM     || 'Guideon <noreply@guideon.guide>';
-const REPLY_TO  = process.env.EMAIL_REPLY_TO || 'info@guideon.guide';
-const APP_URL   = process.env.APP_URL        || 'https://guideon.guide';
-const PUBLIC_URL= process.env.PUBLIC_URL     || 'https://guideon.guide';
+const FROM      = process.env.EMAIL_FROM     || 'Guideon <noreply@guideon.om>';
+const REPLY_TO  = process.env.EMAIL_REPLY_TO || 'info@guideon.om';
+const APP_URL   = process.env.APP_URL        || 'https://www.guideon.om';
+const PUBLIC_URL= process.env.PUBLIC_URL     || 'https://www.guideon.om';
 const LOGO_URL  = process.env.EMAIL_LOGO_URL || `${PUBLIC_URL}/logo.png`;
 
 const html = `<!DOCTYPE html>
@@ -59,11 +59,11 @@ const html = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;width:140px;border-bottom:1px solid #f0f0f0;text-align:right">المُرسِل</td>
-            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0;text-align:right" dir="ltr">noreply@guideon.guide</td>
+            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0;text-align:right" dir="ltr">noreply@guideon.om</td>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;border-bottom:1px solid #f0f0f0;text-align:right">عنوان الرد</td>
-            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0;text-align:right" dir="ltr">info@guideon.guide</td>
+            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0;text-align:right" dir="ltr">info@guideon.om</td>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;border-bottom:1px solid #f0f0f0;text-align:right">مزود الخدمة</td>
@@ -75,14 +75,14 @@ const html = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;text-align:right">النطاق</td>
-            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600;text-align:right" dir="ltr">guideon.guide</td>
+            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600;text-align:right" dir="ltr">www.guideon.om</td>
           </tr>
         </table>
 
         <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:10px;padding:16px 20px;margin:20px 0;text-align:right">
           <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.85">
             <strong>نصيحة:</strong> جرّب الضغط على زر "رد" (Reply) في هذه الرسالة — سيُوجَّه ردك تلقائياً إلى
-            <span dir="ltr" style="font-weight:700">info@guideon.guide</span> وسيصل إلى صندوق Hotmail الخاص بك خلال ثوانٍ.
+            <span dir="ltr" style="font-weight:700">info@guideon.om</span> وسيصل إلى صندوق Hotmail الخاص بك خلال ثوانٍ.
           </p>
         </div>
 
@@ -124,11 +124,11 @@ const html = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;width:140px;border-bottom:1px solid #f0f0f0">Sender</td>
-            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0">noreply@guideon.guide</td>
+            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0">noreply@guideon.om</td>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;border-bottom:1px solid #f0f0f0">Reply-To</td>
-            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0">info@guideon.guide</td>
+            <td style="padding:12px 18px;font-size:13px;color:#0f7b6c;font-weight:700;border-bottom:1px solid #f0f0f0">info@guideon.om</td>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;border-bottom:1px solid #f0f0f0">Provider</td>
@@ -140,14 +140,14 @@ const html = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777">Domain</td>
-            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600">guideon.guide</td>
+            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600">www.guideon.om</td>
           </tr>
         </table>
 
         <div style="background:#e8f5f2;border:1px solid #b2d8ce;border-radius:10px;padding:16px 20px;margin:20px 0">
           <p style="margin:0;font-size:13px;color:#0f5c50;line-height:1.75">
             <strong>Tip:</strong> Try clicking "Reply" on this email — your response will be automatically routed to
-            <strong>info@guideon.guide</strong> and forwarded to your Hotmail inbox within seconds.
+            <strong>info@guideon.om</strong> and forwarded to your Hotmail inbox within seconds.
           </p>
         </div>
 
@@ -163,9 +163,9 @@ const html = `<!DOCTYPE html>
           Guideon &mdash; Find Your Certified Local Guide in Oman
         </p>
         <p style="margin:0 0 10px;font-size:12px;color:#888;line-height:1.7">
-          <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600">guideon.guide</a>
+          <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600">www.guideon.om</a>
           &nbsp;&middot;&nbsp;
-          <a href="mailto:info@guideon.guide" style="color:#0f7b6c;text-decoration:none">info@guideon.guide</a>
+          <a href="mailto:info@guideon.om" style="color:#0f7b6c;text-decoration:none">info@guideon.om</a>
           &nbsp;&middot;&nbsp;
           <a href="tel:+96895255450" style="color:#0f7b6c;text-decoration:none">+968 9525 5450</a>
         </p>
@@ -192,13 +192,13 @@ const text = `Guideon — اختبار البريد الإلكتروني / Email
 تكوينه بشكل صحيح ويعمل بكفاءة.
 
 تفاصيل التكوين:
-- المُرسِل: noreply@guideon.guide
-- عنوان الرد: info@guideon.guide
+- المُرسِل: noreply@guideon.om
+- عنوان الرد: info@guideon.om
 - مزود الخدمة: Resend (طوكيو)
 - الاستقبال: Cloudflare Email Routing
-- النطاق: guideon.guide
+- النطاق: www.guideon.om
 
-نصيحة: جرّب الضغط على زر "رد" — سيُوجَّه ردك تلقائياً إلى info@guideon.guide
+نصيحة: جرّب الضغط على زر "رد" — سيُوجَّه ردك تلقائياً إلى info@guideon.om
 ومنه إلى صندوق Hotmail الخاص بك.
 
 مع أطيب التحيات،
@@ -214,21 +214,21 @@ This is a test email from Guideon to confirm that our email pipeline is
 configured correctly and running smoothly.
 
 Configuration:
-- Sender:    noreply@guideon.guide
-- Reply-To:  info@guideon.guide
+- Sender:    noreply@guideon.om
+- Reply-To:  info@guideon.om
 - Provider:  Resend (Tokyo)
 - Receiving: Cloudflare Email Routing
-- Domain:    guideon.guide
+- Domain:    www.guideon.om
 
 Tip: Try clicking "Reply" on this email — your response will be routed to
-info@guideon.guide and forwarded to your Hotmail inbox within seconds.
+info@guideon.om and forwarded to your Hotmail inbox within seconds.
 
 Best regards,
 The Guideon Team
 
 —
 Guideon — Find Your Certified Local Guide in Oman
-${APP_URL} · info@guideon.guide · +968 9525 5450
+${APP_URL} · info@guideon.om · +968 9525 5450
 Muscat, Sultanate of Oman · © ${new Date().getFullYear()} Guideon`;
 
 (async () => {
@@ -252,7 +252,7 @@ Muscat, Sultanate of Oman · © ${new Date().getFullYear()} Guideon`;
       text,
       reply_to: REPLY_TO,
       headers: {
-        'List-Unsubscribe': '<mailto:unsubscribe@guideon.guide?subject=Unsubscribe>',
+        'List-Unsubscribe': '<mailto:unsubscribe@www.guideon.om?subject=Unsubscribe>',
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         'X-Entity-Ref-ID': `guideon-test-${Date.now()}`,
         'X-Mailer': 'Guideon Platform',

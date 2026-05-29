@@ -10,7 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const QRCode = require('qrcode');
 
-const TARGET_URL = 'https://guideon.guide';
+const TARGET_URL = 'https://www.guideon.om';
 const OUT_DIR    = path.resolve(__dirname, '..', 'public', 'marketing');
 
 const opts = {

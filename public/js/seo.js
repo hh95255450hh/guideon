@@ -7,7 +7,7 @@
     siteName: 'Guideon',
     title: 'Guideon — Certified Local Guides in Oman',
     description: 'Find and book Ministry-licensed local guides across Oman. Muscat, Salalah, Nizwa, Musandam, Wahiba Sands and more.',
-    image: 'https://guideon.guide/logo.png',
+    image: 'https://www.guideon.om/logo.png',
     url: location.href,
     type: 'website',
     locale: 'en_US',
@@ -67,8 +67,8 @@
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Guideon',
-      url: 'https://guideon.guide',
-      logo: 'https://guideon.guide/logo.png',
+      url: 'https://www.guideon.om',
+      logo: 'https://www.guideon.om/logo.png',
       description: 'Tourism marketplace connecting tourists with certified local guides in Oman.',
       address: {
         '@type': 'PostalAddress',
@@ -85,7 +85,7 @@
       '@type': 'Person',
       name: guide.fullName,
       jobTitle: 'Tourist Guide',
-      image: guide.photo || 'https://guideon.guide/logo.png',
+      image: guide.photo || 'https://www.guideon.om/logo.png',
       description: guide.bio || `Certified local guide in Oman specializing in ${(guide.destinations || []).join(', ')}.`,
       knowsLanguage: guide.languages || [],
       areaServed: guide.destinations || [],
@@ -99,7 +99,7 @@
       worksFor: {
         '@type': 'Organization',
         name: 'Guideon',
-        url: 'https://guideon.guide',
+        url: 'https://www.guideon.om',
       },
     });
   }
@@ -112,7 +112,7 @@
       '@type': 'Product',
       name: tour.title,
       description: tour.description || '',
-      image: tour.cover_image || tour.coverImage || tour.image || (tour.images && tour.images[0]) || 'https://guideon.guide/logo.png',
+      image: tour.cover_image || tour.coverImage || tour.image || (tour.images && tour.images[0]) || 'https://www.guideon.om/logo.png',
       brand: { '@type': 'Brand', name: 'Guideon' },
       offers: {
         '@type': 'Offer',
@@ -155,10 +155,10 @@
       '@context': 'https://schema.org',
       '@type': 'WebSite',
       name: 'Guideon',
-      url: 'https://guideon.guide',
+      url: 'https://www.guideon.om',
       potentialAction: {
         '@type': 'SearchAction',
-        target: 'https://guideon.guide/search.html?q={search_term_string}',
+        target: 'https://www.guideon.om/search.html?q={search_term_string}',
         'query-input': 'required name=search_term_string',
       },
     });

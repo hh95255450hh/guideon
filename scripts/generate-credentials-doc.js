@@ -99,13 +99,13 @@ const adminTable = new Table({
     new TableRow({
       children: [
         cell('Login URL', { bold: true, bg: lightBg, width: 3120 }),
-        cell('https://guideon.guide/login.html', { mono: true, width: 6240 }),
+        cell('https://www.guideon.om/login.html', { mono: true, width: 6240 }),
       ],
     }),
     new TableRow({
       children: [
         cell('Admin Panel', { bold: true, bg: lightBg, width: 3120 }),
-        cell('https://guideon.guide/admin.html', { mono: true, width: 6240 }),
+        cell('https://www.guideon.om/admin.html', { mono: true, width: 6240 }),
       ],
     }),
   ],
@@ -144,17 +144,17 @@ const servicesTable = new Table({
   columnWidths: [2340, 7020],
   rows: [
     headerRow('Service', 'URL / Detail'),
-    new TableRow({ children: [cell('Live Site', { bold: true, width: 2340 }), cell('https://guideon.guide', { mono: true, color: teal, width: 7020 })] }),
-    new TableRow({ children: [cell('Login', { bold: true, width: 2340 }), cell('https://guideon.guide/login.html', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Admin Panel', { bold: true, width: 2340 }), cell('https://guideon.guide/admin.html', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Tourist Register', { bold: true, width: 2340 }), cell('https://guideon.guide/register.html', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Live Site', { bold: true, width: 2340 }), cell('https://www.guideon.om', { mono: true, color: teal, width: 7020 })] }),
+    new TableRow({ children: [cell('Login', { bold: true, width: 2340 }), cell('https://www.guideon.om/login.html', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Admin Panel', { bold: true, width: 2340 }), cell('https://www.guideon.om/admin.html', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Tourist Register', { bold: true, width: 2340 }), cell('https://www.guideon.om/register.html', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('GitHub', { bold: true, width: 2340 }), cell('https://github.com/hh95255450hh/guideon', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Railway', { bold: true, width: 2340 }), cell('proactive-perception (production)', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Supabase', { bold: true, width: 2340 }), cell('https://supabase.com/dashboard/project/uwgkszszsogivhphlfdy', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Cloudflare', { bold: true, width: 2340 }), cell('https://dash.cloudflare.com — Zone: guideon.guide', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Resend', { bold: true, width: 2340 }), cell('https://resend.com — Domain: guideon.guide (verified)', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Cloudflare', { bold: true, width: 2340 }), cell('https://dash.cloudflare.com — Zone: www.guideon.om', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Resend', { bold: true, width: 2340 }), cell('https://resend.com — Domain: www.guideon.om (verified)', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Hostinger', { bold: true, width: 2340 }), cell('Domain registrar (DNS managed by Cloudflare)', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Email From', { bold: true, width: 2340 }), cell('Guideon <noreply@guideon.guide>', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Email From', { bold: true, width: 2340 }), cell('Guideon <noreply@guideon.om>', { mono: true, width: 7020 })] }),
   ],
 });
 
@@ -285,7 +285,7 @@ const doc = new Document({
       new Paragraph({ children: [new TextRun({ text: '1. Enable 2FA for the admin account (planned for next iteration)', font: 'Arial', size: 22 })] }),
       new Paragraph({ children: [new TextRun({ text: '2. Add Cloudflare Turnstile (CAPTCHA) to registration form', font: 'Arial', size: 22 })] }),
       new Paragraph({ children: [new TextRun({ text: '3. Replace Stripe placeholder keys with real ones before accepting payments', font: 'Arial', size: 22 })] }),
-      new Paragraph({ children: [new TextRun({ text: '4. Set up Cloudflare Email Routing to receive emails at noreply@guideon.guide', font: 'Arial', size: 22 })] }),
+      new Paragraph({ children: [new TextRun({ text: '4. Set up Cloudflare Email Routing to receive emails at noreply@guideon.om', font: 'Arial', size: 22 })] }),
       new Paragraph({ children: [new TextRun({ text: '5. Delete demo accounts once real users join', font: 'Arial', size: 22 })] }),
 
       // Final note

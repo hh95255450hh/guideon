@@ -700,7 +700,7 @@ exports.createStaff = async (req, res) => {
             Password: <code>${password}</code><br>
             <em style="font-size:.85em;color:#666">Please change your password after first login.</em>
           </div>
-          <p>Sign in here: <a href="${process.env.APP_URL || 'https://guideon.guide'}/login.html">${process.env.APP_URL || 'https://guideon.guide'}/login.html</a></p>
+          <p>Sign in here: <a href="${process.env.APP_URL || 'https://www.guideon.om'}/login.html">${process.env.APP_URL || 'https://www.guideon.om'}/login.html</a></p>
         </div>
       </div>`
     ).catch(() => {});

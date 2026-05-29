@@ -72,7 +72,7 @@ async function notify(opts) {
         const prefs = user.notifPrefs?.whatsapp || {};
         const channel = pickEmailChannel(opts.type);
         if (prefs[channel] !== false) {
-          const link = opts.link ? (opts.link.startsWith('http') ? opts.link : 'https://guideon.guide' + opts.link) : 'https://guideon.guide';
+          const link = opts.link ? (opts.link.startsWith('http') ? opts.link : 'https://www.guideon.om' + opts.link) : 'https://www.guideon.om';
           const icon = opts.icon || pickDefaultIcon(opts.type);
 
           // Build bilingual WhatsApp message: English block + Arabic block + link.

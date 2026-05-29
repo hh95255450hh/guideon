@@ -12,4 +12,4 @@ Disallow: /reset-password
 Disallow: /forgot-password
 Disallow: /uploads/
 
-Sitemap: https://guideon.guide/sitemap.xml
+Sitemap: https://www.guideon.om/sitemap.xml

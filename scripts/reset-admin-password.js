@@ -8,7 +8,7 @@ const { createClient } = require('@supabase/supabase-js');
 const bcrypt = require('bcryptjs');
 
 const NEW_PASSWORD = process.argv[2] || 'Hh92Admin@2026';
-const ADMIN_EMAIL  = 'hh92hh@guideon.guide';
+const ADMIN_EMAIL  = 'hh92hh@guideon.om';
 
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
@@ -40,5 +40,5 @@ const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
   console.log('  User ID:  ' + data[0].id);
   console.log('  Type:     ' + data[0].userType);
   console.log('  Active:   ' + !data[0].isSuspended);
-  console.log('\nLogin at: https://guideon.guide/login.html');
+  console.log('\nLogin at: https://www.guideon.om/login.html');
 })();

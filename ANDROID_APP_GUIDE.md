@@ -4,7 +4,7 @@
 
 We're NOT building a new mobile app from scratch. Instead, we wrap your existing PWA (which is already 95% ready) into a tiny Android shell — a **TWA**. Benefits:
 
-- ✅ Uses your live site `https://guideon.guide` — every update appears instantly, no app-store re-submission
+- ✅ Uses your live site `https://www.guideon.om` — every update appears instantly, no app-store re-submission
 - ✅ Full-screen, no browser bar (looks/feels native)
 - ✅ Tiny APK (<1 MB)
 - ✅ Works offline (your existing service worker)
@@ -18,7 +18,7 @@ We're NOT building a new mobile app from scratch. Instead, we wrap your existing
 
 | Item | Status |
 |---|---|
-| HTTPS live domain | ✅ guideon.guide |
+| HTTPS live domain | ✅ www.guideon.om |
 | PWA manifest.json | ✅ /manifest.json |
 | Service worker | ✅ /sw.js |
 | 512×512 icon | ✅ /icon-512.png |
@@ -33,7 +33,7 @@ We're NOT building a new mobile app from scratch. Instead, we wrap your existing
 
 ### STEP 1 — Verify your PWA passes Lighthouse audit
 
-1. Open Chrome → visit https://guideon.guide
+1. Open Chrome → visit https://www.guideon.om
 2. F12 → **Lighthouse** tab
 3. Check ✅ **"Progressive Web App"** + **"Mobile"**
 4. Click **Analyze page load**
@@ -44,7 +44,7 @@ We're NOT building a new mobile app from scratch. Instead, we wrap your existing
 PWABuilder is a free Microsoft tool that converts any PWA → Play-Store-ready APK.
 
 1. Visit **https://www.pwabuilder.com**
-2. Enter `https://guideon.guide` → click **Start**
+2. Enter `https://www.guideon.om` → click **Start**
 3. Wait ~20 seconds for analysis
 4. Click **Package For Stores** → **Android**
 5. Fill in:
@@ -75,7 +75,7 @@ PWABuilder is a free Microsoft tool that converts any PWA → Play-Store-ready A
 2. Open `public/.well-known/assetlinks.json` in your project
 3. Replace `REPLACE_WITH_YOUR_SHA256_FINGERPRINT_FROM_PLAY_CONSOLE` with the actual fingerprint
 4. Commit + push to GitHub → Railway auto-deploys in ~30 seconds
-5. Verify: open `https://guideon.guide/.well-known/assetlinks.json` in browser — it must return the JSON with the real fingerprint (this is what tells Android "this app is officially mine")
+5. Verify: open `https://www.guideon.om/.well-known/assetlinks.json` in browser — it must return the JSON with the real fingerprint (this is what tells Android "this app is officially mine")
 
 ### STEP 4 — Create a Google Play Console account
 
@@ -98,7 +98,7 @@ PWABuilder is a free Microsoft tool that converts any PWA → Play-Store-ready A
 
 | Section | What to put |
 |---|---|
-| **Privacy policy URL** | `https://guideon.guide/privacy.html` |
+| **Privacy policy URL** | `https://www.guideon.om/privacy.html` |
 | **App access** | "All functionality available without restrictions" |
 | **Ads** | "No, my app does not contain ads" |
 | **Content rating** | Fill the questionnaire (it's a travel/booking app — answer no to all sensitive questions) |
@@ -120,7 +120,7 @@ PWABuilder is a free Microsoft tool that converts any PWA → Play-Store-ready A
 | **Tablet screenshots** | Optional but recommended |
 | **Category** | Travel & Local |
 | **Tags** | Tourism, Travel, Oman, Booking |
-| **Contact details** | email: `Hh95255450hh@hotmail.com`, phone: `+96895255450`, website: `https://guideon.guide` |
+| **Contact details** | email: `Hh95255450hh@hotmail.com`, phone: `+96895255450`, website: `https://www.guideon.om` |
 
 ### STEP 6 — Upload the AAB
 
@@ -185,7 +185,7 @@ Need help? WhatsApp +968 9525 5450 or email Hh95255450hh@hotmail.com
 
 Download Guideon and discover the real Oman with someone who knows it best.
 
-guideon.guide
+www.guideon.om
 ```
 
 ---

@@ -4,7 +4,7 @@
  *
  * Usage:
  *   node scripts/set-admin-email.js <oldEmail> <newEmail>
- *   node scripts/set-admin-email.js hh92hh@guideon.guide Hh95255450hh@hotmail.com
+ *   node scripts/set-admin-email.js hh92hh@guideon.om Hh95255450hh@hotmail.com
  */
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
