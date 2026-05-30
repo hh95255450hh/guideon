@@ -46,6 +46,7 @@
     }
     html[dir="rtl"] .gd-bell-panel { right: auto; left: 0; }
     @keyframes gdBellFade { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes gdBellShake { 0%,100%{transform:rotate(0)} 20%{transform:rotate(15deg)} 40%{transform:rotate(-12deg)} 60%{transform:rotate(8deg)} 80%{transform:rotate(-5deg)} }
 
     .gd-bell-header {
       padding: 14px 18px; border-bottom: 1px solid #e5e7eb;
@@ -255,6 +256,39 @@
     return new Date(ts).toLocaleDateString();
   }
 
+  // ─── Real-time bell via SSE (instant updates; polling stays as backup) ──
+  function bellBeep() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine'; o.frequency.value = 720;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+      o.start(); o.stop(ctx.currentTime + 0.27);
+      setTimeout(() => ctx.close().catch(()=>{}), 500);
+    } catch {}
+  }
+
+  function connectBellSSE() {
+    if (!('EventSource' in window) || window.__gdBellSSE) return;
+    try {
+      const es = new EventSource('/api/messages/stream', { withCredentials: true });
+      window.__gdBellSSE = es;
+      es.addEventListener('notification', () => {
+        pollUnread();
+        bellBeep();
+        const panel = document.getElementById('gdBellPanel');
+        if (panel && panel.style.display !== 'none') loadList();
+        const btn = document.getElementById('gdBellBtn');
+        if (btn) { btn.style.animation = 'gdBellShake .5s'; setTimeout(() => { btn.style.animation = ''; }, 520); }
+      });
+      // Browser auto-reconnects on error; the 30s poll covers any gap.
+    } catch {}
+  }
+
   // ─── Check session, then inject ────────────────────────────────────────
   async function init() {
     try {
@@ -263,6 +297,7 @@
       inject();
       pollUnread();
       setInterval(pollUnread, POLL_INTERVAL);
+      connectBellSSE();
     } catch (e) {}
   }
 

@@ -1,6 +1,4 @@
 (() => {
-  const VAPID_KEY = 'NwaVO_x8unxTQqE24RG9OzAEiRlriePJQaYC4PPdXGw';
-
   if ('serviceWorker' in navigator) {
     // Clear all old caches first, then register fresh service worker
     if ('caches' in window) {
@@ -24,53 +22,58 @@
       .catch(() => {});
   }
 
-  // ── Request push notification permission ────────────────────────────────────
-  async function requestNotificationPermission() {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  // ── Web Push (standard VAPID — no Firebase) ─────────────────────────────────
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(base64);
+    const out = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+
+  async function enablePush() {
+    if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
+
+    // Get the server's VAPID public key (skip entirely if push isn't configured)
+    let vapid;
+    try {
+      const r = await fetch('/api/notifications/vapid-key', { credentials: 'include' });
+      const d = await r.json();
+      if (!d.enabled || !d.key) return;
+      vapid = d.key;
+    } catch { return; }
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
 
     try {
-      const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
-      const { getMessaging, getToken } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js');
-
-      const firebaseConfig = {
-        apiKey:            'AIzaSyPlaceholder',
-        authDomain:        'guideon-55995.firebaseapp.com',
-        projectId:         'guideon-55995',
-        storageBucket:     'guideon-55995.appspot.com',
-        messagingSenderId: '108887603705271785305',
-        appId:             '1:108887603705271785305:web:placeholder',
-      };
-
-      const app = getApps().find(a => a.name === 'guideon-pwa') ||
-                  (await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'))
-                    .initializeApp(firebaseConfig, 'guideon-pwa');
-
-      const messaging = getMessaging(app);
-      const swReg = await navigator.serviceWorker.ready;
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-
-      if (token) {
-        await fetch('/api/auth/fcm-token', {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapid),
         });
       }
+      await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: sub }),
+      });
     } catch (err) {
-      console.warn('[FCM] token error:', err.message);
+      console.warn('[push] subscribe failed:', err.message);
     }
   }
+  window.enablePush = enablePush; // allow a manual "Enable notifications" button
 
-  // Request permission only if user is logged in
+  // Auto-prompt only if the user is logged in
   window.addEventListener('load', () => {
     setTimeout(() => {
       fetch('/api/auth/me', { credentials: 'include' })
-        .then(r => r.ok && requestNotificationPermission())
+        .then(r => r.ok && enablePush())
         .catch(() => {});
     }, 3000);
   });

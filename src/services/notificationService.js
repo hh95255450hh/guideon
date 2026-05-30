@@ -6,6 +6,8 @@ const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('./emailService');
 const whatsapp     = require('./whatsappService');
+const push         = require('./pushService');
+const sse          = require('./sseHub');
 
 const notifications = new SupabaseDB('notifications');
 const users         = new SupabaseDB('users');
@@ -48,6 +50,21 @@ async function notify(opts) {
       createdAt: new Date().toISOString(),
     };
     await notifications.insert(row);
+
+    // ── Real-time in-app bell (SSE) — updates the bell instantly ──
+    try { sse.publish(opts.userId, 'notification', row); } catch (_) {}
+
+    // ── Web Push (VAPID) — reaches the user even when the site is closed ──
+    try {
+      const link = opts.link ? (opts.link.startsWith('http') ? opts.link : 'https://guideon.om' + opts.link) : 'https://guideon.om';
+      const icon = opts.icon || pickDefaultIcon(opts.type);
+      push.sendToUser(opts.userId, {
+        title: `${icon} ${opts.titleAr || opts.title}`.slice(0, 80),
+        body:  (opts.bodyAr || opts.body || '').slice(0, 160),
+        tag:   opts.type,
+        data:  { url: link },
+      }).catch(() => {});
+    } catch (_) {}
 
     // Look up the user once for both email + WhatsApp delivery.
     let user = null;

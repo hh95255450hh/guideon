@@ -1,6 +1,36 @@
 const SupabaseDB = require('../models/SupabaseDB');
+const push = require('../services/pushService');
 const notifications = new SupabaseDB('notifications');
 const users         = new SupabaseDB('users');
+
+// GET /api/notifications/vapid-key — public key the browser needs to subscribe
+exports.vapidKey = (req, res) => {
+  res.json({ success: true, enabled: push.isEnabled(), key: push.publicKey() });
+};
+
+// POST /api/notifications/subscribe  { subscription }
+exports.subscribe = async (req, res) => {
+  try {
+    if (!req.session.userId) return res.status(401).json({ success: false });
+    const { subscription } = req.body || {};
+    await push.saveSubscription(req.session.userId, subscription, req.headers['user-agent']);
+    res.json({ success: true });
+  } catch (e) {
+    console.error('[notifications:subscribe]', e.message);
+    res.status(400).json({ success: false, message: 'Could not save subscription.' });
+  }
+};
+
+// POST /api/notifications/unsubscribe  { endpoint }
+exports.unsubscribe = async (req, res) => {
+  try {
+    const { endpoint } = req.body || {};
+    if (endpoint) await push.removeByEndpoint(endpoint);
+    res.json({ success: true });
+  } catch (e) {
+    res.json({ success: true });
+  }
+};
 
 // GET /api/notifications — list + unread count for the signed-in user
 exports.list = async (req, res) => {

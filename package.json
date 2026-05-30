@@ -36,7 +36,8 @@
     "resend": "^6.12.3",
     "speakeasy": "^2.0.0",
     "stripe": "^16.0.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "docx": "^9.6.1",
