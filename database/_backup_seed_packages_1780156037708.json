@@ -1,0 +1,776 @@
+[
+  {
+    "id": "pkg-2ab54b39-b5f",
+    "providerId": "guide-003",
+    "providerType": "guide",
+    "title": "مشاهدة السلاحف في رأس الجنز · Ras al-Jinz Turtle Night",
+    "description": "تجربة ليلية ساحرة لمشاهدة السلاحف الخضراء وهي تضع بيضها على الشاطئ. واحدة من أهم مواقع التعشيش في العالم.\n\nWitness green sea turtles nesting on the beach in this unforgettable night experience. One of the world's most important nesting sites.",
+    "destination": "Ras al-Jinz",
+    "region": "Al Sharqiyah",
+    "category": "Wildlife",
+    "difficulty": "easy",
+    "duration_days": 1,
+    "max_group_size": 8,
+    "price_adult": 35,
+    "price_child": 20,
+    "currency": "OMR",
+    "includes": [
+      "Park entry fee",
+      "Guided night walk",
+      "Photography rights",
+      "Local guide"
+    ],
+    "excludes": [],
+    "itinerary": [],
+    "meeting_point": "بوابة محمية رأس الجنز · Ras al-Jinz Reserve gate, 7:30 PM",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1200&q=80",
+      "https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1200&q=80",
+    "cancellation_policy": "flexible",
+    "isPublished": true,
+    "isFeatured": false,
+    "rating": 4.87,
+    "totalReviews": 32,
+    "totalBookings": 48,
+    "createdAt": "2026-05-23T16:29:00.692+00:00",
+    "updatedAt": "2026-05-23T17:04:28.426+00:00",
+    "variants": [
+      {
+        "id": "v-std",
+        "name": "عادية · Standard",
+        "priceAdult": 35,
+        "priceChild": 20,
+        "description": "الزيارة الأساسية · Basic guided visit"
+      },
+      {
+        "id": "v-prm",
+        "name": "مميّزة · Premium",
+        "priceAdult": 90,
+        "priceChild": 50,
+        "description": "إقامة في الإيكولودج · Stay at the Eco-lodge"
+      }
+    ],
+    "addons": [
+      {
+        "id": "a-pickup",
+        "name": "استلام من الفندق · Hotel Pickup",
+        "price": 8,
+        "description": "استلام وتوصيل من فندقك · Round-trip from your hotel"
+      },
+      {
+        "id": "a-photos",
+        "name": "صور احترافية · Pro Photos",
+        "price": 15,
+        "description": "مصور محترف يرافق الجولة · Photographer included"
+      },
+      {
+        "id": "a-lunch",
+        "name": "وجبة فاخرة · Premium Lunch",
+        "price": 12,
+        "description": "غداء في مطعم تقليدي · Traditional restaurant meal"
+      }
+    ],
+    "availableDates": [
+      "2026-05-30",
+      "2026-06-06",
+      "2026-06-13",
+      "2026-06-20",
+      "2026-06-27",
+      "2026-07-04",
+      "2026-07-12",
+      "2026-07-22",
+      "2026-08-06",
+      "2026-08-21"
+    ],
+    "highlights": [
+      "100% turtle sighting guarantee",
+      "Educational presentation",
+      "Stargazing included",
+      "Photography allowed (no flash)"
+    ],
+    "discountPercent": 0,
+    "offerLabel": null,
+    "offerUntil": null,
+    "guideId": "guide-003",
+    "duration_hours": 0,
+    "duration_minutes": 0,
+    "categories": [
+      "Wildlife"
+    ]
+  },
+  {
+    "id": "pkg-5d73c398-6f7",
+    "providerId": "guide-001",
+    "providerType": "guide",
+    "title": "سفاري رمال الوهيبة · Wahiba Sands Overnight Safari",
+    "description": "مغامرة صحراوية لا تُنسى: ركوب الكثبان بسيارات الدفع الرباعي، ركوب الجمال عند الغروب، عشاء بدوي تقليدي، وليلة تحت آلاف النجوم.\n\nUnforgettable desert adventure: 4x4 dune bashing, camel rides at sunset, traditional Bedouin dinner, and a night under thousands of stars.",
+    "destination": "Wahiba Sands",
+    "region": "Al Sharqiyah",
+    "category": "Desert",
+    "difficulty": "moderate",
+    "duration_days": 2,
+    "max_group_size": 8,
+    "price_adult": 120,
+    "price_child": 65,
+    "currency": "OMR",
+    "includes": [
+      "4x4 transport",
+      "Bedouin camp accommodation",
+      "All meals (lunch, dinner, breakfast)",
+      "Camel ride",
+      "Sandboarding"
+    ],
+    "excludes": [],
+    "itinerary": [],
+    "meeting_point": "الانطلاق من فندقك في مسقط · Pickup from your Muscat hotel, 9:00 AM",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1542401886-65d6c61db217?w=1200&q=80",
+      "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?w=1200&q=80",
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1542401886-65d6c61db217?w=1200&q=80",
+    "cancellation_policy": "flexible",
+    "isPublished": true,
+    "isFeatured": false,
+    "rating": 4.68,
+    "totalReviews": 20,
+    "totalBookings": 51,
+    "createdAt": "2026-05-23T16:29:01.999+00:00",
+    "updatedAt": "2026-05-23T17:04:29.333+00:00",
+    "variants": [
+      {
+        "id": "v-std",
+        "name": "عادية · Standard",
+        "priceAdult": 120,
+        "priceChild": 65,
+        "description": "خيمة مشتركة · Shared tent accommodation"
+      },
+      {
+        "id": "v-prm",
+        "name": "مميّزة · Premium",
+        "priceAdult": 200,
+        "priceChild": 110,
+        "description": "خيمة خاصة + حمام · Private tent with bathroom"
+      },
+      {
+        "id": "v-vip",
+        "name": "VIP فاخرة",
+        "priceAdult": 380,
+        "priceChild": 200,
+        "description": "جناح صحراوي فاخر + رحلة بالمنطاد · Luxury suite + hot-air balloon"
+      }
+    ],
+    "addons": [
+      {
+        "id": "a-pickup",
+        "name": "استلام من الفندق · Hotel Pickup",
+        "price": 8,
+        "description": "استلام وتوصيل من فندقك · Round-trip from your hotel"
+      },
+      {
+        "id": "a-photos",
+        "name": "صور احترافية · Pro Photos",
+        "price": 15,
+        "description": "مصور محترف يرافق الجولة · Photographer included"
+      },
+      {
+        "id": "a-lunch",
+        "name": "وجبة فاخرة · Premium Lunch",
+        "price": 12,
+        "description": "غداء في مطعم تقليدي · Traditional restaurant meal"
+      }
+    ],
+    "availableDates": [
+      "2026-05-30",
+      "2026-06-06",
+      "2026-06-13",
+      "2026-06-20",
+      "2026-06-27",
+      "2026-07-04",
+      "2026-07-12",
+      "2026-07-22",
+      "2026-08-06",
+      "2026-08-21"
+    ],
+    "highlights": [
+      "Sunset dune bashing",
+      "Authentic Bedouin hospitality",
+      "Stargazing in pristine desert",
+      "Sunrise camel ride",
+      "Traditional henna"
+    ],
+    "discountPercent": 10,
+    "offerLabel": "عرض الحجز المبكر · Early Bird",
+    "offerUntil": "2026-06-22T00:00:00+00:00",
+    "guideId": "guide-001",
+    "duration_hours": 0,
+    "duration_minutes": 0,
+    "categories": [
+      "Desert"
+    ]
+  },
+  {
+    "id": "pkg-69f0aef5-d48",
+    "providerId": "guide-003",
+    "providerType": "guide",
+    "title": "رحلة الإبحار في خوران مسندم · Musandam Dhow Cruise",
+    "description": "إبحر في أجمل خوران الخليج، شاهد الدلافين، اسبح في المياه الفيروزية، واستمتع بغداء عُماني أصيل على ظهر السنبوك التقليدي.\n\nCruise the dramatic fjords of Musandam — Arabia's Norway. Watch dolphins, snorkel in turquoise waters, and enjoy a traditional Omani lunch on board.",
+    "destination": "Musandam",
+    "region": "Musandam",
+    "category": "Marine",
+    "difficulty": "easy",
+    "duration_days": 1,
+    "max_group_size": 12,
+    "price_adult": 45,
+    "price_child": 25,
+    "currency": "OMR",
+    "includes": [
+      "Boat & captain",
+      "Snorkeling gear",
+      "Omani lunch",
+      "Water & dates",
+      "Life jackets"
+    ],
+    "excludes": [],
+    "itinerary": [],
+    "meeting_point": "ميناء خصب 8:00 صباحاً · Khasab Port 8:00 AM",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1200&q=80",
+      "https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80",
+      "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1200&q=80",
+    "cancellation_policy": "flexible",
+    "isPublished": true,
+    "isFeatured": false,
+    "rating": 4.66,
+    "totalReviews": 7,
+    "totalBookings": 14,
+    "createdAt": "2026-05-23T16:28:59.629+00:00",
+    "updatedAt": "2026-05-23T17:04:27.939+00:00",
+    "variants": [
+      {
+        "id": "v-std",
+        "name": "عادية · Standard",
+        "priceAdult": 45,
+        "priceChild": 25,
+        "description": "الرحلة الأساسية مع غداء · Base tour with lunch"
+      },
+      {
+        "id": "v-prm",
+        "name": "مميّزة · Premium",
+        "priceAdult": 75,
+        "priceChild": 40,
+        "description": "غداء فاخر + معدات غطس متقدمة · Premium lunch + diving gear"
+      },
+      {
+        "id": "v-vip",
+        "name": "VIP خاصة",
+        "priceAdult": 150,
+        "priceChild": 80,
+        "description": "سنبوك خاص لمجموعتك + مصور · Private dhow + photographer included"
+      }
+    ],
+    "addons": [
+      {
+        "id": "a-pickup",
+        "name": "استلام من الفندق · Hotel Pickup",
+        "price": 8,
+        "description": "استلام وتوصيل من فندقك · Round-trip from your hotel"
+      },
+      {
+        "id": "a-photos",
+        "name": "صور احترافية · Pro Photos",
+        "price": 15,
+        "description": "مصور محترف يرافق الجولة · Photographer included"
+      },
+      {
+        "id": "a-lunch",
+        "name": "وجبة فاخرة · Premium Lunch",
+        "price": 12,
+        "description": "غداء في مطعم تقليدي · Traditional restaurant meal"
+      }
+    ],
+    "availableDates": [
+      "2026-05-30",
+      "2026-06-06",
+      "2026-06-13",
+      "2026-06-20",
+      "2026-06-27",
+      "2026-07-04",
+      "2026-07-12",
+      "2026-07-22",
+      "2026-08-06",
+      "2026-08-21"
+    ],
+    "highlights": [
+      "Dolphin watching guaranteed",
+      "Two snorkeling stops",
+      "Traditional dhow boat",
+      "Stunning fjord scenery",
+      "Small group max 12"
+    ],
+    "discountPercent": 15,
+    "offerLabel": "عرض الصيف · Summer Special",
+    "offerUntil": "2026-07-22T00:00:00+00:00",
+    "guideId": "guide-003",
+    "duration_hours": 0,
+    "duration_minutes": 0,
+    "categories": [
+      "Marine"
+    ]
+  },
+  {
+    "id": "pkg-d77b140b-063",
+    "providerId": "guide-002",
+    "providerType": "guide",
+    "title": "سحر خريف صلالة · Salalah Khareef Magic",
+    "description": "تجربة صلالة المذهلة خلال موسم الخريف: شلالات وادي دربات، شواطئ المغسيل، شجرة بوبيب التاريخية، ومزارع جوز الهند.\n\nExperience Salalah's magical monsoon season: Wadi Darbat waterfalls, Mughsail beaches, the legendary Boswellia tree, and coconut plantations.",
+    "destination": "Salalah",
+    "region": "Dhofar",
+    "category": "Cultural",
+    "difficulty": "easy",
+    "duration_days": 1,
+    "max_group_size": 10,
+    "price_adult": 50,
+    "price_child": 28,
+    "currency": "OMR",
+    "includes": [
+      "Air-conditioned 4x4",
+      "All entry fees",
+      "Lunch at local restaurant",
+      "Fresh coconut tasting",
+      "Frankincense gift"
+    ],
+    "excludes": [],
+    "itinerary": [],
+    "meeting_point": "فندقك في صلالة · Your Salalah hotel, 8:00 AM",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&q=80",
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80",
+      "https://images.unsplash.com/photo-1591025207163-942350e47db2?w=1200&q=80"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&q=80",
+    "cancellation_policy": "flexible",
+    "isPublished": true,
+    "isFeatured": false,
+    "rating": 4.65,
+    "totalReviews": 30,
+    "totalBookings": 34,
+    "createdAt": "2026-05-23T16:29:02.712+00:00",
+    "updatedAt": "2026-05-23T17:04:30.046+00:00",
+    "variants": [
+      {
+        "id": "v-std",
+        "name": "عادية · Standard",
+        "priceAdult": 50,
+        "priceChild": 28,
+        "description": "الجولة الأساسية · Group tour up to 10"
+      },
+      {
+        "id": "v-prm",
+        "name": "مميّزة · Premium",
+        "priceAdult": 95,
+        "priceChild": 50,
+        "description": "مجموعة صغيرة (5 كحد أقصى) · Small group max 5"
+      },
+      {
+        "id": "v-vip",
+        "name": "VIP خاصة",
+        "priceAdult": 180,
+        "priceChild": 95,
+        "description": "جولة خاصة لعائلتك فقط · Fully private for your family"
+      }
+    ],
+    "addons": [
+      {
+        "id": "a-pickup",
+        "name": "استلام من الفندق · Hotel Pickup",
+        "price": 8,
+        "description": "استلام وتوصيل من فندقك · Round-trip from your hotel"
+      },
+      {
+        "id": "a-photos",
+        "name": "صور احترافية · Pro Photos",
+        "price": 15,
+        "description": "مصور محترف يرافق الجولة · Photographer included"
+      },
+      {
+        "id": "a-lunch",
+        "name": "وجبة فاخرة · Premium Lunch",
+        "price": 12,
+        "description": "غداء في مطعم تقليدي · Traditional restaurant meal"
+      }
+    ],
+    "availableDates": [
+      "2026-05-30",
+      "2026-06-06",
+      "2026-06-13",
+      "2026-06-20",
+      "2026-06-27",
+      "2026-07-04",
+      "2026-07-12",
+      "2026-07-22",
+      "2026-08-06",
+      "2026-08-21"
+    ],
+    "highlights": [
+      "Lush green mountains (Jun-Sep)",
+      "Wadi Darbat waterfall",
+      "Mughsail blowholes",
+      "Frankincense Land of UNESCO"
+    ],
+    "discountPercent": 20,
+    "offerLabel": "عرض موسم الخريف · Khareef Special",
+    "offerUntil": "2026-07-07T00:00:00+00:00",
+    "guideId": "guide-002",
+    "duration_hours": 0,
+    "duration_minutes": 0,
+    "categories": [
+      "Cultural"
+    ]
+  },
+  {
+    "id": "pkg-74a51db8-030",
+    "providerId": "guide-002",
+    "providerType": "guide",
+    "title": "استكشاف وادي شاب · Wadi Shab Hike & Swim",
+    "description": "مغامرة في أجمل وادٍ في عُمان: مسير 45 دقيقة بين الصخور، سباحة في برك زمردية، وكهف الشلال السري.\n\nAdventure through Oman's most beautiful wadi: 45-min trek between cliffs, swim in emerald pools, and discover the hidden waterfall cave.",
+    "destination": "Wadi Shab",
+    "region": "Al Sharqiyah",
+    "category": "Adventure",
+    "difficulty": "moderate",
+    "duration_days": 1,
+    "max_group_size": 8,
+    "price_adult": 40,
+    "price_child": 22,
+    "currency": "OMR",
+    "includes": [
+      "Boat across pond",
+      "Snorkeling mask",
+      "Safety briefing",
+      "Dry bags",
+      "Energy snacks"
+    ],
+    "excludes": [],
+    "itinerary": [],
+    "meeting_point": "موقف وادي شاب · Wadi Shab parking, 7:30 AM",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1583087253076-5d1315860eb7?w=1200&q=80",
+      "https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=1200&q=80"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1583087253076-5d1315860eb7?w=1200&q=80",
+    "cancellation_policy": "flexible",
+    "isPublished": true,
+    "isFeatured": false,
+    "rating": 4.77,
+    "totalReviews": 11,
+    "totalBookings": 43,
+    "createdAt": "2026-05-23T16:29:02.983+00:00",
+    "updatedAt": "2026-05-23T17:04:30.485+00:00",
+    "variants": [
+      {
+        "id": "v-std",
+        "name": "عادية · Standard",
+        "priceAdult": 40,
+        "priceChild": 22,
+        "description": "الجولة الأساسية · Group adventure"
+      },
+      {
+        "id": "v-prm",
+        "name": "مميّزة · Premium",
+        "priceAdult": 70,
+        "priceChild": 38,
+        "description": "مع غداء بيكنيك + معدات تصوير · Picnic lunch + GoPro footage"
+      }
+    ],
+    "addons": [
+      {
+        "id": "a-pickup",
+        "name": "استلام من الفندق · Hotel Pickup",
+        "price": 8,
+        "description": "استلام وتوصيل من فندقك · Round-trip from your hotel"
+      },
+      {
+        "id": "a-photos",
+        "name": "صور احترافية · Pro Photos",
+        "price": 15,
+        "description": "مصور محترف يرافق الجولة · Photographer included"
+      },
+      {
+        "id": "a-lunch",
+        "name": "وجبة فاخرة · Premium Lunch",
+        "price": 12,
+        "description": "غداء في مطعم تقليدي · Traditional restaurant meal"
+      }
+    ],
+    "availableDates": [
+      "2026-05-30",
+      "2026-06-06",
+      "2026-06-13",
+      "2026-06-20",
+      "2026-06-27",
+      "2026-07-04",
+      "2026-07-12",
+      "2026-07-22",
+      "2026-08-06",
+      "2026-08-21"
+    ],
+    "highlights": [
+      "Hidden waterfall cave (swim through)",
+      "Crystal clear pools",
+      "Cliff jumping (optional)",
+      "Stunning canyon scenery"
+    ],
+    "discountPercent": 0,
+    "offerLabel": null,
+    "offerUntil": null,
+    "guideId": "guide-002",
+    "duration_hours": 0,
+    "duration_minutes": 0,
+    "categories": [
+      "Adventure"
+    ]
+  },
+  {
+    "id": "pkg-72c73f2d-283",
+    "providerId": "guide-001",
+    "providerType": "guide",
+    "title": "درب التراث في مسقط · Muscat Heritage Trail",
+    "description": "اكتشف عاصمة عُمان الساحرة: جامع السلطان قابوس، سوق مطرح القديم، دار الأوبرا، والكورنيش. تاريخ ١٠٠٠ سنة في يوم واحد.\n\nDiscover Oman's captivating capital: Grand Mosque, Muttrah Souq, Royal Opera House, and the Corniche. 1000 years of history in one day.",
+    "destination": "Muscat",
+    "region": "Muscat",
+    "category": "Historical",
+    "difficulty": "easy",
+    "duration_days": 1,
+    "max_group_size": 10,
+    "price_adult": 40,
+    "price_child": 22,
+    "currency": "OMR",
+    "includes": [
+      "Air-conditioned vehicle",
+      "All entry fees",
+      "Bottled water",
+      "Traditional Omani lunch"
+    ],
+    "excludes": [],
+    "itinerary": [],
+    "meeting_point": "مدخل جامع السلطان قابوس · Sultan Qaboos Mosque entrance, 8:30 AM",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=1200&q=80",
+      "https://images.unsplash.com/photo-1626516783050-2fab3c4ea33b?w=1200&q=80",
+      "https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=80"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=1200&q=80",
+    "cancellation_policy": "flexible",
+    "isPublished": true,
+    "isFeatured": false,
+    "rating": 4.53,
+    "totalReviews": 15,
+    "totalBookings": 47,
+    "createdAt": "2026-05-23T16:29:01.695+00:00",
+    "updatedAt": "2026-05-23T17:04:28.985+00:00",
+    "variants": [
+      {
+        "id": "v-std",
+        "name": "عادية · Standard",
+        "priceAdult": 40,
+        "priceChild": 22,
+        "description": "الجولة الأساسية مع غداء · Base tour with lunch"
+      },
+      {
+        "id": "v-prm",
+        "name": "مميّزة · Premium",
+        "priceAdult": 75,
+        "priceChild": 40,
+        "description": "سيارة فاخرة + غداء في مطعم راقٍ · Luxury car + upscale restaurant"
+      },
+      {
+        "id": "v-vip",
+        "name": "VIP خاصة",
+        "priceAdult": 130,
+        "priceChild": 70,
+        "description": "مرشد خاص + سيارة بسائق · Private guide + chauffeur"
+      }
+    ],
+    "addons": [
+      {
+        "id": "a-pickup",
+        "name": "استلام من الفندق · Hotel Pickup",
+        "price": 8,
+        "description": "استلام وتوصيل من فندقك · Round-trip from your hotel"
+      },
+      {
+        "id": "a-photos",
+        "name": "صور احترافية · Pro Photos",
+        "price": 15,
+        "description": "مصور محترف يرافق الجولة · Photographer included"
+      },
+      {
+        "id": "a-lunch",
+        "name": "وجبة فاخرة · Premium Lunch",
+        "price": 12,
+        "description": "غداء في مطعم تقليدي · Traditional restaurant meal"
+      }
+    ],
+    "availableDates": [
+      "2026-05-30",
+      "2026-06-06",
+      "2026-06-13",
+      "2026-06-20",
+      "2026-06-27",
+      "2026-07-04",
+      "2026-07-12",
+      "2026-07-22",
+      "2026-08-06",
+      "2026-08-21"
+    ],
+    "highlights": [
+      "World's 2nd largest chandelier",
+      "Authentic Muttrah Souq",
+      "Royal Opera House tour",
+      "Sunset at Corniche"
+    ],
+    "discountPercent": 0,
+    "offerLabel": null,
+    "offerUntil": null,
+    "guideId": "guide-001",
+    "duration_hours": 0,
+    "duration_minutes": 0,
+    "categories": [
+      "Historical"
+    ]
+  },
+  {
+    "id": "pkg-2b12eabd-3bb",
+    "providerId": "guide-001",
+    "providerType": "guide",
+    "title": "قلعة نزوى والسوق التقليدي · Nizwa Fort & Souq",
+    "description": "اكتشف عاصمة عُمان القديمة وقلب التراث: قلعة نزوى التاريخية (1668م)، السوق الشهير بفضياته، وحلقة الماعز يوم الجمعة.\n\nDiscover Oman's ancient capital: Nizwa Fort (1668), the famous silver souq, and the legendary Friday goat market.",
+    "destination": "Nizwa",
+    "region": "Ad Dakhiliyah",
+    "category": "Historical",
+    "difficulty": "easy",
+    "duration_days": 1,
+    "max_group_size": 12,
+    "price_adult": 35,
+    "price_child": 20,
+    "currency": "OMR",
+    "includes": [
+      "Fort entry",
+      "Local guide",
+      "Halwa & kahwa tasting",
+      "Photography assistance"
+    ],
+    "excludes": [],
+    "itinerary": [],
+    "meeting_point": "بوابة قلعة نزوى · Nizwa Fort entrance, 9:00 AM",
+    "languages": [
+      "Arabic",
+      "English"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1574236170880-faba57ab2ce4?w=1200&q=80",
+      "https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&q=80",
+      "https://images.unsplash.com/photo-1626516783050-2fab3c4ea33b?w=1200&q=80"
+    ],
+    "cover_image": "https://images.unsplash.com/photo-1574236170880-faba57ab2ce4?w=1200&q=80",
+    "cancellation_policy": "flexible",
+    "isPublished": true,
+    "isFeatured": false,
+    "rating": 4.74,
+    "totalReviews": 31,
+    "totalBookings": 37,
+    "createdAt": "2026-05-23T16:29:02.385+00:00",
+    "updatedAt": "2026-05-23T17:04:29.654+00:00",
+    "variants": [
+      {
+        "id": "v-std",
+        "name": "عادية · Standard",
+        "priceAdult": 35,
+        "priceChild": 20,
+        "description": "الجولة الأساسية · Basic guided tour"
+      },
+      {
+        "id": "v-prm",
+        "name": "مميّزة · Premium",
+        "priceAdult": 65,
+        "priceChild": 35,
+        "description": "مع غداء عُماني + ورشة حلوى · Omani lunch + halwa workshop"
+      }
+    ],
+    "addons": [
+      {
+        "id": "a-pickup",
+        "name": "استلام من الفندق · Hotel Pickup",
+        "price": 8,
+        "description": "استلام وتوصيل من فندقك · Round-trip from your hotel"
+      },
+      {
+        "id": "a-photos",
+        "name": "صور احترافية · Pro Photos",
+        "price": 15,
+        "description": "مصور محترف يرافق الجولة · Photographer included"
+      },
+      {
+        "id": "a-lunch",
+        "name": "وجبة فاخرة · Premium Lunch",
+        "price": 12,
+        "description": "غداء في مطعم تقليدي · Traditional restaurant meal"
+      }
+    ],
+    "availableDates": [
+      "2026-05-30",
+      "2026-06-06",
+      "2026-06-13",
+      "2026-06-20",
+      "2026-06-27",
+      "2026-07-04",
+      "2026-07-12",
+      "2026-07-22",
+      "2026-08-06",
+      "2026-08-21"
+    ],
+    "highlights": [
+      "350-year-old fort tower",
+      "Friday goat market (Fri only)",
+      "Traditional silver shopping",
+      "Halwa making demo"
+    ],
+    "discountPercent": 0,
+    "offerLabel": null,
+    "offerUntil": null,
+    "guideId": "guide-001",
+    "duration_hours": 0,
+    "duration_minutes": 0,
+    "categories": [
+      "Historical"
+    ]
+  }
+]

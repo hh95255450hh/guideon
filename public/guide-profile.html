@@ -522,21 +522,20 @@ async function loadGuideTours() {
         </div>`;
     }
 
-    // Real Unsplash photos as fallback (no generic local placeholders)
+    // Local Oman photos as fallback (no external/stock images)
     const pickImg = (t) => {
       if (t.cover_image) return t.cover_image;
       if (t.coverImage) return t.coverImage;
       if (t.image) return t.image;
       if (t.images && t.images[0]) return t.images[0];
       const d = (t.destination || t.region || '').toLowerCase();
-      if (d.includes('musandam'))                                return 'https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1200&q=80';
-      if (d.includes('salalah') || d.includes('dhofar'))         return 'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=1200&q=80';
-      if (d.includes('nizwa') || d.includes('bahla'))            return 'https://images.unsplash.com/photo-1574236170880-faba57ab2ce4?w=1200&q=80';
-      if (d.includes('wahiba') || d.includes('desert') || d.includes('sand')) return 'https://images.unsplash.com/photo-1542401886-65d6c61db217?w=1200&q=80';
-      if (d.includes('wadi'))                                    return 'https://images.unsplash.com/photo-1583087253076-5d1315860eb7?w=1200&q=80';
-      if (d.includes('sur') || d.includes('jinz'))               return 'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1200&q=80';
-      if (d.includes('jebel') || d.includes('akhdar') || d.includes('mountain')) return 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80';
-      return 'https://images.unsplash.com/photo-1591608971362-f08b2a75731a?w=1200&q=80'; // Muscat default
+      if (d.includes('musandam'))                                return '/img/musandam.jpg';
+      if (d.includes('salalah') || d.includes('dhofar'))         return '/img/salalah.jpg';
+      if (d.includes('nizwa') || d.includes('bahla'))            return '/img/nizwa.jpg';
+      if (d.includes('wahiba') || d.includes('desert') || d.includes('sand')) return '/img/desert.jpg';
+      if (d.includes('wadi'))                                    return '/img/wadi.jpg';
+      if (d.includes('jebel') || d.includes('akhdar') || d.includes('mountain')) return '/img/salalah.jpg';
+      return '/img/muscat.jpg'; // Muscat default
     };
 
     list.innerHTML = tours.map(t => {
