@@ -177,6 +177,38 @@
     document.getElementById('gdCookieEssential').onclick = () => dismiss('essential');
   }
 
+  // ─── Show / hide password toggle (auto-enhances every password field) ──
+  function enhancePasswordFields() {
+    const isAr = (document.documentElement.lang || 'en').startsWith('ar');
+    const showLabel = isAr ? 'إظهار كلمة المرور' : 'Show password';
+    const hideLabel = isAr ? 'إخفاء كلمة المرور' : 'Hide password';
+    document.querySelectorAll('input[type="password"]').forEach((input) => {
+      if (input.dataset.gdPwd) return;
+      input.dataset.gdPwd = '1';
+      if (input.closest('.pwd-wrap')) return; // already wrapped manually
+
+      const wrap = document.createElement('div');
+      wrap.className = 'pwd-wrap';
+      input.parentNode.insertBefore(wrap, input);
+      wrap.appendChild(input);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pwd-toggle';
+      btn.textContent = '👁️';
+      btn.setAttribute('aria-label', showLabel);
+      btn.setAttribute('title', showLabel);
+      btn.addEventListener('click', () => {
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.textContent = show ? '🙈' : '👁️';
+        btn.setAttribute('aria-label', show ? hideLabel : showLabel);
+        btn.setAttribute('title', show ? hideLabel : showLabel);
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
   // Lazy-load the notification bell (only meaningful for signed-in users —
   // the script self-checks the session and bails if not signed in)
   function loadNotifications() {
@@ -191,7 +223,7 @@
   // ─── Boot ──────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications();
+      injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); enhancePasswordFields();
     });
   } else {
     injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications();
