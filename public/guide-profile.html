@@ -522,20 +522,14 @@ async function loadGuideTours() {
         </div>`;
     }
 
-    // Local Oman photos as fallback (no external/stock images)
+    // ONLY real uploaded images — no stock/fake fallback.
+    // When empty, the card shows a clean branded gradient placeholder.
     const pickImg = (t) => {
       if (t.cover_image) return t.cover_image;
       if (t.coverImage) return t.coverImage;
       if (t.image) return t.image;
       if (t.images && t.images[0]) return t.images[0];
-      const d = (t.destination || t.region || '').toLowerCase();
-      if (d.includes('musandam'))                                return '/img/musandam.jpg';
-      if (d.includes('salalah') || d.includes('dhofar'))         return '/img/salalah.jpg';
-      if (d.includes('nizwa') || d.includes('bahla'))            return '/img/nizwa.jpg';
-      if (d.includes('wahiba') || d.includes('desert') || d.includes('sand')) return '/img/desert.jpg';
-      if (d.includes('wadi'))                                    return '/img/wadi.jpg';
-      if (d.includes('jebel') || d.includes('akhdar') || d.includes('mountain')) return '/img/salalah.jpg';
-      return '/img/muscat.jpg'; // Muscat default
+      return '';
     };
 
     list.innerHTML = tours.map(t => {
@@ -558,7 +552,7 @@ async function loadGuideTours() {
         <div class="col-md-6 col-lg-4">
           <a href="/tour-package.html?id=${t.id}" class="text-decoration-none text-dark">
             <div class="card h-100 shadow-sm border-0 position-relative" style="border-radius:14px;overflow:hidden;transition:.2s;">
-              <div style="height:200px;background:url('${img}') center/cover, linear-gradient(135deg,#0f7b6c,#0f1c3e);background-size:cover;"></div>
+              <div style="height:200px;${img ? `background:url('${img}') center/cover;` : 'background:linear-gradient(135deg,#0f7b6c,#1abc9c);display:flex;align-items:center;justify-content:center;'}">${img ? '' : '<span style="font-size:2.6rem;opacity:.9">🗺️</span>'}</div>
               ${offer}
               <div class="card-body">
                 <h5 class="fw-800 mb-1">${escapeHtml(t.title || '')}</h5>
