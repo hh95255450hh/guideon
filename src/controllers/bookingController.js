@@ -7,6 +7,37 @@ const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
 const packages = new SupabaseDB('tour_packages');
 
+// Columns added by migration 021 that may not exist yet on older deployments.
+// We strip them and retry so the booking flow keeps working before the migration runs.
+const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons'];
+const isMissingColumnError = (msg) => /Could not find the '\w+' column|schema cache/i.test(msg || '');
+
+async function insertBookingSafe(record) {
+  try {
+    return await bookings.insert(record);
+  } catch (e) {
+    if (isMissingColumnError(e.message)) {
+      const clean = { ...record };
+      OPTIONAL_BOOKING_COLS.forEach(c => delete clean[c]);
+      return await bookings.insert(clean);
+    }
+    throw e; // e.g. duplicate-key — handled by caller
+  }
+}
+
+async function updateBookingSafe(id, data) {
+  try {
+    return await bookings.update(id, data);
+  } catch (e) {
+    if (isMissingColumnError(e.message)) {
+      const clean = { ...data };
+      OPTIONAL_BOOKING_COLS.forEach(c => delete clean[c]);
+      return await bookings.update(id, clean);
+    }
+    throw e;
+  }
+}
+
 exports.createBooking = async (req, res) => {
   try {
     const {
@@ -92,7 +123,7 @@ exports.createBooking = async (req, res) => {
     };
 
     try {
-      await bookings.insert(booking);
+      await insertBookingSafe(booking);
     } catch (insertErr) {
       // Unique violation = race condition: another tourist booked the same date first
       if (insertErr.message && (insertErr.message.includes('duplicate key') || insertErr.message.includes('uniq_active_booking'))) {
@@ -236,7 +267,7 @@ exports.updateStatus = async (req, res) => {
     if (status === 'in_progress') updateData.startedAt = new Date().toISOString();
     if (status === 'completed')   updateData.completedAt = new Date().toISOString();
 
-    const updated = await bookings.update(id, updateData);
+    const updated = await updateBookingSafe(id, updateData);
 
     // Send emails based on new status
     const tourist = await users.findById(booking.touristId);

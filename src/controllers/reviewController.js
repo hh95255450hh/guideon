@@ -7,6 +7,23 @@ const reviews  = new SupabaseDB('reviews', 'reviewId');
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
 
+// Columns the app writes that may be missing from older `reviews` tables.
+// Migration 022 adds them; until it runs we strip them so reviews still save.
+const OPTIONAL_REVIEW_COLS = ['packageId', 'touristPhoto'];
+const isMissingColumnError = (msg) =>
+  /Could not find the '\w+' column|column \S+ does not exist|schema cache/i.test(msg || '');
+async function insertReviewSafe(record) {
+  try { return await reviews.insert(record); }
+  catch (e) {
+    if (isMissingColumnError(e.message)) {
+      const clean = { ...record };
+      OPTIONAL_REVIEW_COLS.forEach(c => delete clean[c]);
+      return await reviews.insert(clean);
+    }
+    throw e;
+  }
+}
+
 exports.submitReview = async (req, res) => {
   try {
     const { bookingId, rating, comment, photos } = req.body;
@@ -37,7 +54,7 @@ exports.submitReview = async (req, res) => {
       touristPhoto: tourist?.photo || null,
       createdAt: new Date().toISOString(),
     };
-    await reviews.insert(review);
+    await insertReviewSafe(review);
 
     const guideReviews = await reviews.findAllByField('guideId', booking.guideId);
     const avg = guideReviews.reduce((s, r) => s + r.rating, 0) / guideReviews.length;
