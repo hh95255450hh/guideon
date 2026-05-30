@@ -175,16 +175,16 @@
   <div class="container">
     <div class="row text-center g-4">
       <div class="col-6 col-md-3">
-        <div class="stat-item"><div class="stat-num">3</div><div class="stat-label" data-i18n="stat_guides">Certified Guides</div></div>
+        <div class="stat-item"><div class="stat-num" id="stat-guides">3</div><div class="stat-label" data-i18n="stat_guides">Certified Guides</div></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="stat-item"><div class="stat-num">6</div><div class="stat-label" data-i18n="stat_dests">Destinations Covered</div></div>
+        <div class="stat-item"><div class="stat-num" id="stat-dests">6</div><div class="stat-label" data-i18n="stat_dests">Destinations Covered</div></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="stat-item"><div class="stat-num">4.8 ★</div><div class="stat-label" data-i18n="stat_rating">Average Rating</div></div>
+        <div class="stat-item"><div class="stat-num" id="stat-rating">4.8 ★</div><div class="stat-label" data-i18n="stat_rating">Average Rating</div></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="stat-item"><div class="stat-num">148</div><div class="stat-label" data-i18n="stat_tourists">Happy Tourists</div></div>
+        <div class="stat-item"><div class="stat-num" id="stat-tourists">148</div><div class="stat-label" data-i18n="stat_tourists">Happy Tourists</div></div>
       </div>
     </div>
   </div>
@@ -863,6 +863,21 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 });
+
+// Live platform statistics — real numbers from the database (cached 5 min server-side).
+// Falls back silently to the hard-coded values if the request fails.
+async function loadStats() {
+  try {
+    const { stats } = await api('GET', '/stats/public');
+    if (!stats) return;
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.textContent = val; };
+    if (typeof stats.guides === 'number')        set('stat-guides', stats.guides);
+    if (typeof stats.destinations === 'number')  set('stat-dests', stats.destinations);
+    if (typeof stats.happyTourists === 'number') set('stat-tourists', stats.happyTourists);
+    if (typeof stats.avgRating === 'number')     set('stat-rating', stats.avgRating.toFixed(1) + ' ★');
+  } catch (_) { /* keep fallback values */ }
+}
+document.addEventListener('DOMContentLoaded', loadStats);
 
 /* ── CURRENCY (TourHQ) ── */
 const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };

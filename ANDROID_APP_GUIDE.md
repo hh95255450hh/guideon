@@ -48,7 +48,7 @@ PWABuilder is a free Microsoft tool that converts any PWA → Play-Store-ready A
 3. Wait ~20 seconds for analysis
 4. Click **Package For Stores** → **Android**
 5. Fill in:
-   - **Package ID**: `guide.guideon.app`  (must match assetlinks.json on the site)
+   - **Package ID**: `guide.guideon.twa`  (must match assetlinks.json on the site — already set)
    - **App Name**: `Guideon`
    - **Launcher name**: `Guideon`
    - **Version**: `1.0.0`
@@ -143,7 +143,7 @@ PWABuilder is a free Microsoft tool that converts any PWA → Play-Store-ready A
 - Google reviews apps in **2-7 days** (sometimes hours)
 - You'll get an email when approved or if changes are needed
 - Once live, app appears at:
-  `https://play.google.com/store/apps/details?id=guide.guideon.app`
+  `https://play.google.com/store/apps/details?id=guide.guideon.twa`
 
 ---
 
