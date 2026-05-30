@@ -882,3 +882,51 @@ body { color: var(--text); }
   /* Sections: less padding */
   section.py-5 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   ALWAYS-EXPANDED NAVBAR — remove hamburger, keep tools fixed & tidy on top
+   ════════════════════════════════════════════════════════════════════════ */
+/* Never show the hamburger toggle, and always render the menu */
+.navbar .navbar-toggler { display: none !important; }
+.navbar .navbar-collapse { display: flex !important; flex-basis: auto; }
+
+/* Nav links stay on a horizontal row at every width */
+.navbar .navbar-nav { flex-direction: row; flex-wrap: wrap; align-items: center; }
+
+/* Tablet & mobile (<992px): drop the menu under the brand, centered + wrapped */
+@media (max-width: 991.98px) {
+  .navbar > .container { flex-wrap: wrap; }
+
+  .navbar .navbar-collapse {
+    flex-basis: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .navbar .navbar-nav {
+    justify-content: center;
+    margin: 0 !important;
+    gap: 2px;
+  }
+  .navbar .navbar-nav .nav-link {
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  .navbar .navbar-nav .nav-link.active,
+  .navbar .navbar-nav .nav-link:hover {
+    background: rgba(255,255,255,0.12);
+  }
+
+  /* Controls (lang, theme, currency, QR, Plan Trip, auth) wrap neatly, centered */
+  .navbar .navbar-controls {
+    margin: 0 !important;
+    justify-content: center;
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    gap: 6px;
+  }
+}
