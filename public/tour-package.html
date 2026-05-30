@@ -243,15 +243,25 @@ function renderPackage() {
       </label>`).join('');
   }
 
+  const today = new Date().toISOString().slice(0,10);
   const dates = Array.isArray(p.availableDates) ? p.availableDates : [];
   const datesEl = document.getElementById('datesContainer');
-  if (dates.length) {
-    const future = dates.filter(d => d >= new Date().toISOString().slice(0,10)).sort();
-    datesEl.innerHTML = future.length ? future.map(d => `
+  const future = dates.filter(d => d >= today).sort();
+  const isAr = window.I18N && I18N.lang === 'ar';
+  if (future.length) {
+    // Guide set specific dates → show them as quick-pick buttons
+    datesEl.innerHTML = future.map(d => `
       <button class="date-btn" onclick="selectDate('${d}',this)">${formatDate(d)}</button>
-    `).join('') : '<div class="small text-muted">No upcoming dates available.</div>';
+    `).join('');
   } else {
-    datesEl.innerHTML = '<div class="small text-muted">Contact the guide for available dates.</div>';
+    // No preset dates → let the tourist request any future date; guide confirms it
+    datesEl.innerHTML = `
+      <input type="date" id="freeDateInput" class="form-control form-control-sm" min="${today}"
+             onchange="selectFreeDate(this.value)" style="max-width:210px">
+      <div class="small text-muted mt-1" style="width:100%">
+        ${isAr ? 'اختر أي تاريخ — سيؤكّد المرشد التوفّر بعد إرسال طلبك.'
+               : 'Pick any date — the guide will confirm availability after you request.'}
+      </div>`;
   }
 
   document.getElementById('basePrice').textContent = (Math.min(...variants.map(v => v.priceAdult || Infinity))).toFixed(2) + ' OMR';
@@ -277,6 +287,12 @@ function selectDate(date, btn) {
   SELECTED_DATE = date;
   document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
+  recalcPrice();
+}
+
+// Free date picker (packages with no preset availableDates)
+function selectFreeDate(date) {
+  SELECTED_DATE = date || null;
   recalcPrice();
 }
 
