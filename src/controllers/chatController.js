@@ -236,4 +236,61 @@ const chat = async (req, res, next) => {
   }
 };
 
-module.exports = { chat };
+// ── POST /api/chat/stream — streams the reply token-by-token (plain text) ──────
+const chatStream = async (req, res) => {
+  const { messages } = req.body || {};
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ success: false, message: 'messages array is required' });
+  }
+  const history = messages.slice(-12).filter(m => m.role === 'user' || m.role === 'assistant');
+  for (const m of history) {
+    if (!m.role || typeof m.content !== 'string') {
+      return res.status(400).json({ success: false, message: 'Invalid message format' });
+    }
+  }
+
+  // Plain-text streaming. no-transform prevents the compression middleware
+  // from buffering, so chunks reach the browser immediately.
+  res.writeHead(200, {
+    'Content-Type': 'text/plain; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    'X-Accel-Buffering': 'no',
+  });
+
+  // No API key → stream the local knowledge-base answer in small slices.
+  if (!isApiKeyConfigured()) {
+    const reply = localReply(history);
+    const words = reply.split(/(\s+)/);
+    let i = 0;
+    const tick = setInterval(() => {
+      if (i >= words.length) { clearInterval(tick); return res.end(); }
+      res.write(words[i++]);
+    }, 18);
+    req.on('close', () => clearInterval(tick));
+    return;
+  }
+
+  try {
+    const stream = await getOpenAI().chat.completions.create({
+      model: 'gpt-4o-mini',
+      max_tokens: 400,
+      temperature: 0.7,
+      stream: true,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
+    });
+    for await (const chunk of stream) {
+      const delta = chunk.choices?.[0]?.delta?.content || '';
+      if (delta) res.write(delta);
+    }
+    res.end();
+  } catch (err) {
+    // If nothing was sent yet, fall back to the local reply so the user still
+    // gets an answer instead of an error.
+    if (!res.writableEnded) {
+      try { res.write(localReply(history)); } catch {}
+      res.end();
+    }
+  }
+};
+
+module.exports = { chat, chatStream };

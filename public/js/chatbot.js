@@ -120,15 +120,30 @@
       renderUser(text); scrollEnd();
       showTyping();
       try {
-        const r = await fetch('/api/chat', {
+        const r = await fetch('/api/chat/stream', {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: msgs.slice(-14) }),
         });
-        const d = await r.json();
+        if (!r.ok || !r.body) {
+          const d = await r.json().catch(() => ({}));
+          throw new Error(d.message || 'Error');
+        }
+        // Stream the reply token-by-token into a live bubble
         hideTyping();
-        if (!r.ok) throw new Error(d.message || 'Error');
-        appendBot(d.data.reply);
+        const bubble = startBotStream();
+        const reader = r.body.getReader();
+        const dec = new TextDecoder();
+        let full = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          full += dec.decode(value, { stream: true });
+          bubble.innerHTML = fmt(full);
+          scrollEnd();
+        }
+        if (!full.trim()) bubble.innerHTML = fmt('…');
+        finishBotStream(full.trim());
       } catch (err) {
         hideTyping();
         appendBot(err.message.toLowerCase().includes('limit')
@@ -136,6 +151,20 @@
           : '😔 I\'m temporarily unavailable. Please try again in a moment.\nأنا غير متاح مؤقتاً. حاول مجدداً بعد لحظة.');
       } finally { setBusy(false); }
     };
+
+    // Live-streaming bot bubble helpers
+    function startBotStream() {
+      const el = document.createElement('div');
+      el.className = 'cb-msg bot';
+      el.innerHTML = `<div class="cb-msg-av">🌿</div><div><div class="cb-bubble"></div><div class="cb-time">GuideonBot · ${time()}</div></div>`;
+      document.getElementById('cb-msgs').appendChild(el);
+      scrollEnd();
+      return el.querySelector('.cb-bubble');
+    }
+    function finishBotStream(text) {
+      msgs.push({ role: 'assistant', content: text }); save();
+      if (!open) showBadge();
+    }
 
     window.cbKey     = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cbSend(); } };
     window.cbResize  = (el) => { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 90) + 'px'; };

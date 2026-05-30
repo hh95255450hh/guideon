@@ -111,11 +111,15 @@
           <div class="p-2 border-bottom d-flex align-items-center gap-2">
             <button class="btn btn-sm btn-outline-secondary" onclick="guideShowConvoList()" data-i18n="msg_back">← Back</button>
             <strong id="guideMsgThreadName" class="ms-1"></strong>
+            <span id="guideMsgOnline" class="rounded-circle" style="display:none;width:9px;height:9px;background:#22c55e" title="Online"></span>
           </div>
           <div id="guideMsgThreadMessages" style="height:280px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f8f9fa"></div>
-          <div class="p-2 border-top d-flex gap-2">
-            <input class="form-control form-control-sm" id="guideMsgInput" data-i18n-ph="msg_reply_ph" placeholder="Write a reply...">
-            <button class="btn btn-sm btn-teal" onclick="guideSendMsg()" data-i18n="msg_send">Send</button>
+          <div id="guideMsgTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic">…</div>
+          <div class="p-2 border-top d-flex gap-2 align-items-center">
+            <input type="file" id="guideMsgFile" accept="image/*" style="display:none" onchange="guideAttach(this)">
+            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('guideMsgFile').click()" title="Attach image" style="flex-shrink:0">📎</button>
+            <input class="form-control form-control-sm" id="guideMsgInput" data-i18n-ph="msg_reply_ph" placeholder="Write a reply..." oninput="guideTyping()">
+            <button class="btn btn-sm btn-teal" onclick="guideSendMsg()" data-i18n="msg_send" style="flex-shrink:0">Send</button>
           </div>
         </div>
       </div>
@@ -422,6 +426,7 @@ async function checkAuth() {
     renderGallery();
     if (GUIDE.videoUrl) document.getElementById('videoUrlInput').value = GUIDE.videoUrl;
     guideLoadConvos();
+    guideConnectSSE();
   } catch { window.location.href = '/login.html'; }
 }
 
@@ -986,10 +991,100 @@ window.onLangChange = () => {
 
 checkAuth();
 
-/* ── GUIDE MESSAGES ── */
+/* ── GUIDE MESSAGES (real-time) ── */
 let GUIDE_CONVOS = [];
 let GUIDE_ACTIVE_OTHER_ID = null;
 let GUIDE_POLL = null;
+let GUIDE_SSE = null;
+let GUIDE_TYPING_TS = 0;
+let GUIDE_TYPING_HIDE = null;
+let GUIDE_PENDING_READ = false; // I sent a msg, waiting for it to be read
+
+// Short pleasant "ping" via WebAudio (no asset needed)
+function guideBeep() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.value = 680;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
+    o.start(); o.stop(ctx.currentTime + 0.3);
+    setTimeout(() => ctx.close().catch(()=>{}), 500);
+  } catch {}
+}
+
+// Open the real-time SSE channel (polling stays as a safety net)
+function guideConnectSSE() {
+  if (GUIDE_SSE) return;
+  try {
+    GUIDE_SSE = new EventSource('/api/messages/stream', { withCredentials: true });
+    GUIDE_SSE.addEventListener('message', (e) => {
+      let m; try { m = JSON.parse(e.data); } catch { return; }
+      const otherId  = m.fromId === GUIDE.id ? m.toId : m.fromId;
+      const incoming = m.toId === GUIDE.id;
+      if (GUIDE_ACTIVE_OTHER_ID && otherId === GUIDE_ACTIVE_OTHER_ID) {
+        guideLoadThread();
+        if (incoming) guideBeep();
+      } else {
+        if (incoming) guideBeep();
+        guideLoadConvos();
+      }
+    });
+    GUIDE_SSE.addEventListener('typing', (e) => {
+      let t; try { t = JSON.parse(e.data); } catch { return; }
+      if (GUIDE_ACTIVE_OTHER_ID && t.fromId === GUIDE_ACTIVE_OTHER_ID) guideShowTyping(t.isTyping);
+    });
+    GUIDE_SSE.addEventListener('read', () => {
+      // Recipient opened the thread → upgrade my single ticks to double
+      document.querySelectorAll('.g-tick').forEach(el => { el.textContent = '✓✓'; el.style.color = '#bfe3ff'; });
+      GUIDE_PENDING_READ = false;
+    });
+    // On error the browser auto-reconnects; the 9s poll covers any gap.
+  } catch {}
+}
+
+function guideShowTyping(on) {
+  const el = document.getElementById('guideMsgTyping');
+  if (!el) return;
+  clearTimeout(GUIDE_TYPING_HIDE);
+  if (on) {
+    el.textContent = (I18N.t('msg_typing') || 'typing…');
+    el.style.display = '';
+    GUIDE_TYPING_HIDE = setTimeout(() => { el.style.display = 'none'; }, 4000);
+  } else { el.style.display = 'none'; }
+}
+
+// Throttled "I'm typing" ping to the other user
+function guideTyping() {
+  if (!GUIDE_ACTIVE_OTHER_ID) return;
+  const now = Date.now();
+  if (now - GUIDE_TYPING_TS < 2500) return;
+  GUIDE_TYPING_TS = now;
+  fetch('/api/messages/typing', {
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ toId: GUIDE_ACTIVE_OTHER_ID, isTyping: true }),
+  }).catch(()=>{});
+}
+
+// Attach an image: upload then send as a message
+async function guideAttach(inp) {
+  const file = inp.files && inp.files[0];
+  inp.value = '';
+  if (!file || !GUIDE_ACTIVE_OTHER_ID) return;
+  if (file.size > 10 * 1024 * 1024) { toast('Max 10 MB', 'error'); return; }
+  toast(I18N.t('uploading') || 'Uploading…');
+  try {
+    const fd = new FormData(); fd.append('file', file);
+    const ur = await fetch('/api/upload/message-attachment', { method: 'POST', credentials: 'include', body: fd });
+    const ud = await ur.json();
+    if (!ur.ok || !ud.success) throw new Error(ud.message || 'Upload failed');
+    await guideSendMsg({ attachmentUrl: ud.url, attachmentType: 'image', attachmentName: ud.name });
+  } catch (e) { toast(e.message || 'Upload failed', 'error'); }
+}
 
 async function guideLoadConvos() {
   try {
@@ -1038,11 +1133,12 @@ function guideUpdateBadge() {
 async function guideOpenThread(otherId, otherName) {
   GUIDE_ACTIVE_OTHER_ID = otherId;
   document.getElementById('guideMsgThreadName').textContent = otherName;
+  document.getElementById('guideMsgTyping').style.display = 'none';
   document.getElementById('guideMsgConvoView').style.display = 'none';
   document.getElementById('guideMsgThreadView').style.display = '';
   await guideLoadThread();
   clearInterval(GUIDE_POLL);
-  GUIDE_POLL = setInterval(guideLoadThread, 9000);
+  GUIDE_POLL = setInterval(guideLoadThread, 9000); // safety net behind SSE
 }
 
 function guideShowConvoList() {
@@ -1059,6 +1155,8 @@ async function guideLoadThread() {
     const r = await fetch(`/api/messages/thread/${GUIDE_ACTIVE_OTHER_ID}`, { credentials: 'include' });
     const d = await r.json();
     guideRenderThread(d.messages || []);
+    const dot = document.getElementById('guideMsgOnline');
+    if (dot) dot.style.display = d.online ? '' : 'none';
     guideUpdateBadge();
   } catch {}
 }
@@ -1070,29 +1168,46 @@ function guideRenderThread(msgs) {
     el.innerHTML = `<div class="text-center text-muted small mt-auto pt-4">${I18N.t('msg_empty')}</div>`;
     return;
   }
+  let lastDay = '';
   el.innerHTML = msgs.map(m => {
     const isMine = m.fromId !== GUIDE_ACTIVE_OTHER_ID;
     const align = isMine ? 'align-self:flex-end;background:var(--teal);color:#fff' : 'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
-    return `<div style="max-width:75%;padding:7px 11px;border-radius:14px;${align}">
-      <div style="font-size:.9rem">${guideEscHtml(m.content)}</div>
-      <div style="font-size:.7rem;opacity:.65;margin-top:2px;text-align:${isMine?'right':'left'}">${guideFmtTime(m.createdAt)}</div>
+    // Date separator
+    const day = new Date(m.createdAt).toLocaleDateString([], { day:'numeric', month:'short', year:'numeric' });
+    let sep = '';
+    if (day !== lastDay) { lastDay = day; sep = `<div style="align-self:center;font-size:.68rem;color:#9aa3ab;background:#eef1f3;padding:1px 9px;border-radius:10px;margin:4px 0">${day}</div>`; }
+    // Attachment (image) or text
+    let bodyHtml = '';
+    if (m.attachmentUrl && m.attachmentType === 'image') {
+      bodyHtml += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" alt="image" style="max-width:180px;max-height:180px;border-radius:9px;display:block;margin-bottom:${m.content?'4px':'0'}"></a>`;
+    } else if (m.attachmentUrl) {
+      bodyHtml += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${guideEscHtml(m.attachmentName||'file')}</a>`;
+    }
+    if (m.content) bodyHtml += `<div style="font-size:.9rem">${guideEscHtml(m.content)}</div>`;
+    // Read receipt (only on my messages)
+    const tick = isMine ? `<span class="g-tick" style="margin-inline-start:5px;${m.isRead?'color:#bfe3ff':''}">${m.isRead ? '✓✓' : '✓'}</span>` : '';
+    return `${sep}<div style="max-width:78%;padding:7px 11px;border-radius:14px;${align}">
+      ${bodyHtml}
+      <div style="font-size:.7rem;opacity:.7;margin-top:2px;text-align:${isMine?'right':'left'}">${guideFmtTime(m.createdAt)}${tick}</div>
     </div>`;
   }).join('');
   if (wasAtBottom) el.scrollTop = el.scrollHeight;
 }
 
-async function guideSendMsg() {
+async function guideSendMsg(extra) {
   const input = document.getElementById('guideMsgInput');
-  const content = input.value.trim();
-  if (!content || !GUIDE_ACTIVE_OTHER_ID) return;
+  const content = (input.value || '').trim();
+  const payload = { toId: GUIDE_ACTIVE_OTHER_ID, content, ...(extra || {}) };
+  if ((!content && !payload.attachmentUrl) || !GUIDE_ACTIVE_OTHER_ID) return;
   input.value = '';
   try {
     const r = await fetch('/api/messages', {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ toId: GUIDE_ACTIVE_OTHER_ID, content }),
+      body: JSON.stringify(payload),
     });
     if (!r.ok) throw new Error();
+    GUIDE_PENDING_READ = true;
     await guideLoadThread();
   } catch { toast(I18N.t('msg_send_fail'), 'error'); }
 }

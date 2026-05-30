@@ -1,41 +1,71 @@
 const { createClient } = require('@supabase/supabase-js');
 const { notify } = require('../services/notificationService');
+const sse = require('../services/sseHub');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
 );
 
-// POST /api/messages  { toId, content }
+// Attachment columns may be missing until migration 023 runs — strip & retry.
+const OPTIONAL_MSG_COLS = ['attachmentUrl', 'attachmentType', 'attachmentName'];
+const isMissingColumnError = (msg) =>
+  /Could not find the '\w+' column|column \S+ does not exist|schema cache/i.test(msg || '');
+
+async function insertMessageSafe(record) {
+  let { data, error } = await supabase.from('messages').insert(record).select().single();
+  if (error && isMissingColumnError(error.message)) {
+    const clean = { ...record };
+    OPTIONAL_MSG_COLS.forEach(c => delete clean[c]);
+    ({ data, error } = await supabase.from('messages').insert(clean).select().single());
+  }
+  if (error) throw error;
+  return data;
+}
+
+const convId = (a, b) => [a, b].sort().join('_');
+
+// POST /api/messages  { toId, content, attachmentUrl?, attachmentType?, attachmentName? }
 async function send(req, res) {
   try {
-    const { toId, content } = req.body;
+    const { toId, content, attachmentUrl, attachmentType, attachmentName } = req.body;
     const fromId = req.session.userId;
-    if (!toId || !content || !content.trim()) {
-      return res.status(400).json({ success: false, message: 'toId and content are required.' });
+    const text = (content || '').trim();
+    if (!toId || (!text && !attachmentUrl)) {
+      return res.status(400).json({ success: false, message: 'toId and content (or attachment) are required.' });
     }
 
     // Get sender and recipient names
     const [{ data: fromUser }, { data: toUser }] = await Promise.all([
-      supabase.from('users').select('fullName,email').eq('id', fromId).single(),
+      supabase.from('users').select('fullName,email,photo').eq('id', fromId).single(),
       supabase.from('users').select('fullName').eq('id', toId).single(),
     ]);
     if (!toUser) return res.status(404).json({ success: false, message: 'Recipient not found.' });
 
-    const { data, error } = await supabase.from('messages').insert({
+    const record = {
       fromId,
       toId,
       fromName: fromUser?.fullName || fromUser?.email || fromId,
       toName:   toUser.fullName,
-      content:  content.trim(),
+      content:  text,
       isRead:   false,
       createdAt: new Date().toISOString(),
-    }).select().single();
+    };
+    if (attachmentUrl) {
+      record.attachmentUrl  = String(attachmentUrl).slice(0, 1000);
+      record.attachmentType = attachmentType === 'file' ? 'file' : 'image';
+      record.attachmentName = (attachmentName || '').slice(0, 200);
+    }
 
-    if (error) throw error;
+    const data = await insertMessageSafe(record);
 
-    // Notify the recipient (in-app + WhatsApp — bilingual)
-    const snippet = data.content.slice(0, 80) + (data.content.length > 80 ? '…' : '');
+    // ── Real-time push (SSE) to BOTH participants ──
+    // Recipient sees it appear instantly; sender's other tabs stay in sync.
+    sse.publish(toId,   'message', data);
+    sse.publish(fromId, 'message', data);
+
+    // Notify the recipient (in-app) — only if they're not actively connected
+    const snippet = (data.content || (data.attachmentType === 'image' ? '📷 Photo' : '📎 Attachment')).slice(0, 80);
     notify({
       userId: toId,
       type: 'message',
@@ -44,7 +74,7 @@ async function send(req, res) {
       body:   `${data.fromName}: ${snippet}`,
       bodyAr: `من ${data.fromName}: ${snippet}`,
       link: '/' + (req.session.userType === 'tourist' ? 'tourist-dashboard' : req.session.userType === 'guide' ? 'guide-dashboard' : 'company-dashboard') + '.html#messages',
-      metadata: { fromId, conversationId: [fromId, toId].sort().join('_') },
+      metadata: { fromId, conversationId: convId(fromId, toId) },
     });
 
     res.json({ success: true, message: data });
@@ -59,18 +89,16 @@ async function conversations(req, res) {
   try {
     const userId = req.session.userId;
 
-    // All messages involving current user
     const { data: sent }     = await supabase.from('messages').select('*').eq('fromId', userId).order('createdAt', { ascending: false });
     const { data: received } = await supabase.from('messages').select('*').eq('toId',   userId).order('createdAt', { ascending: false });
 
     const all = [...(sent || []), ...(received || [])];
-    // Group by the other participant
     const map = {};
     for (const m of all) {
       const otherId   = m.fromId === userId ? m.toId   : m.fromId;
       const otherName = m.fromId === userId ? m.toName : m.fromName;
       if (!map[otherId]) {
-        map[otherId] = { otherId, otherName, lastMessage: m, unread: 0 };
+        map[otherId] = { otherId, otherName, lastMessage: m, unread: 0, online: sse.isOnline(otherId) };
       } else {
         const existing = new Date(map[otherId].lastMessage.createdAt);
         if (new Date(m.createdAt) > existing) map[otherId].lastMessage = m;
@@ -103,14 +131,20 @@ async function thread(req, res) {
     if (error) throw error;
 
     // Mark received messages as read
-    await supabase
-      .from('messages')
-      .update({ isRead: true })
-      .eq('fromId', otherId)
-      .eq('toId', userId)
-      .eq('isRead', false);
+    const hadUnread = (msgs || []).some(m => m.fromId === otherId && m.toId === userId && !m.isRead);
+    if (hadUnread) {
+      await supabase
+        .from('messages')
+        .update({ isRead: true })
+        .eq('fromId', otherId)
+        .eq('toId', userId)
+        .eq('isRead', false);
 
-    res.json({ success: true, messages: msgs || [] });
+      // Tell the OTHER user (the sender) that their messages were read → ✓✓
+      sse.publish(otherId, 'read', { by: userId, conversationId: convId(userId, otherId) });
+    }
+
+    res.json({ success: true, messages: msgs || [], online: sse.isOnline(otherId) });
   } catch (e) {
     console.error('[messages:thread]', e.message);
     res.status(500).json({ success: false, message: 'Could not load thread.' });
@@ -134,4 +168,37 @@ async function unreadCount(req, res) {
   }
 }
 
-module.exports = { send, conversations, thread, unreadCount };
+// POST /api/messages/typing  { toId, isTyping }
+function typing(req, res) {
+  const { toId, isTyping } = req.body;
+  const fromId = req.session.userId;
+  if (toId) {
+    sse.publish(toId, 'typing', { fromId, isTyping: !!isTyping });
+  }
+  res.json({ success: true });
+}
+
+// GET /api/messages/stream — Server-Sent Events real-time channel
+function stream(req, res) {
+  const userId = req.session.userId;
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no', // disable proxy buffering
+  });
+  res.write('retry: 5000\n\n');
+  res.write('event: ready\ndata: {"ok":true}\n\n');
+
+  sse.addClient(userId, res);
+
+  // Heartbeat so proxies don't close the idle connection
+  const ping = setInterval(() => {
+    try { res.write(': ping\n\n'); } catch { clearInterval(ping); }
+  }, 25000);
+
+  req.on('close', () => clearInterval(ping));
+}
+
+module.exports = { send, conversations, thread, unreadCount, typing, stream };

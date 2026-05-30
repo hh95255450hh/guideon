@@ -1,12 +1,14 @@
 const express = require('express');
 const { requireLogin } = require('../middleware/auth');
-const { send, conversations, thread, unreadCount } = require('../controllers/messagesController');
+const { send, conversations, thread, unreadCount, typing, stream } = require('../controllers/messagesController');
 
 const router = express.Router();
 
 router.use(requireLogin);
 
+router.get('/stream',              stream);          // SSE real-time channel
 router.post('/',                   send);
+router.post('/typing',             typing);
 router.get('/conversations',       conversations);
 router.get('/thread/:otherId',     thread);
 router.get('/unread-count',        unreadCount);

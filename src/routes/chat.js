@@ -1,6 +1,6 @@
 const router  = require('express').Router();
 const rateLimit = require('express-rate-limit');
-const { chat } = require('../controllers/chatController');
+const { chat, chatStream } = require('../controllers/chatController');
 
 // 20 messages per hour per IP — prevents API abuse
 const chatLimiter = rateLimit({
@@ -18,5 +18,6 @@ const chatLimiter = rateLimit({
 });
 
 router.post('/', chatLimiter, chat);
+router.post('/stream', chatLimiter, chatStream);
 
 module.exports = router;

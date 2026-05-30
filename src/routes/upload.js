@@ -89,6 +89,30 @@ router.delete('/gallery', requireLogin, async (req, res) => {
   }
 });
 
+// POST /api/upload/message-attachment — upload an image to send in chat
+router.post('/message-attachment', requireLogin, upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+  try {
+    const { url } = await uploadBuffer({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      folder: `messages/${req.session.userId}`,
+      contentType: req.file.mimetype,
+    });
+    res.json({ success: true, url, name: req.file.originalname, type: 'image' });
+  } catch (e) {
+    console.error('[upload:message-attachment]', e.message);
+    const msg = String(e.message || '');
+    if (/row-level security|RLS|policy/i.test(msg)) {
+      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016.' });
+    }
+    if (/exceeded|too large/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'File is too large. Maximum 10 MB.' });
+    }
+    res.status(500).json({ success: false, message: 'Upload failed.' });
+  }
+});
+
 // POST /api/upload/video — save YouTube video URL
 router.post('/video', requireLogin, async (req, res) => {
   const { videoUrl } = req.body;
