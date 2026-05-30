@@ -1,4 +1,4 @@
-﻿/* ── Guideon i18n — Arabic / English ── */
+/* ── Guideon i18n — Arabic / English ── */
 
 const TRANSLATIONS = {
   en: {
@@ -348,7 +348,7 @@ const TRANSLATIONS = {
     qr_step2_title:   'Point at QR',
     qr_step2_desc:    'Camera will detect it',
     qr_step3_title:   'Tap notification',
-    qr_step3_desc:    'Opens www.guideon.om',
+    qr_step3_desc:    'Opens guideon.om',
     back_home:        '← Back to Home',
     // Guide dashboard analytics
     your_analytics:   '📊 Your Analytics',
@@ -981,7 +981,7 @@ const TRANSLATIONS = {
     faq_t_a8:  'Modest clothing covering shoulders and knees is appreciated, especially at mosques. For desert/wadi tours bring sun protection and water shoes. Each tour page lists specific recommendations.',
     // Guides Q&A
     faq_g_q1:  'How do I join as a guide?',
-    faq_g_a1:  'Register at <a href="/register.html?type=guide">www.guideon.om/register</a>, complete your profile, upload your MoHT licence, and submit for verification. Approval usually within 48 hours.',
+    faq_g_a1:  'Register at <a href="/register.html?type=guide">guideon.om/register</a>, complete your profile, upload your MoHT licence, and submit for verification. Approval usually within 48 hours.',
     faq_g_q2:  'Is there a fee to join?',
     faq_g_a2:  '<strong>Free during the launch period.</strong> After launch we plan a small service fee (10-15%) on completed bookings only — never a monthly fee.',
     faq_g_q3:  'How are tours priced?',
@@ -996,9 +996,9 @@ const TRANSLATIONS = {
     faq_a_q1:  'I forgot my password.',
     faq_a_a1:  'Click "Forgot password" on the login page. We send a reset link to your registered email (link is valid for 1 hour).',
     faq_a_q2:  'How do I enable Two-Factor Authentication?',
-    faq_a_a2:  'Sign in, then visit <a href="/two-factor.html">www.guideon.om/two-factor</a>. Scan the QR with Google Authenticator (or any TOTP app) and save your backup codes. Strongly recommended for guides and admins.',
+    faq_a_a2:  'Sign in, then visit <a href="/two-factor.html">guideon.om/two-factor</a>. Scan the QR with Google Authenticator (or any TOTP app) and save your backup codes. Strongly recommended for guides and admins.',
     faq_a_q3:  'How do I delete my account?',
-    faq_a_a3:  'Email <a href="mailto:info@www.guideon.om">info@www.guideon.om</a> from your registered address. We confirm and delete within 30 days. Note: bookings and tax records are retained for 7 years per Omani law.',
+    faq_a_a3:  'Email <a href="mailto:info@guideon.om">info@guideon.om</a> from your registered address. We confirm and delete within 30 days. Note: bookings and tax records are retained for 7 years per Omani law.',
     faq_a_q4:  'Is my data safe?',
     faq_a_a4:  'Yes. Passwords are encrypted (bcrypt), all traffic uses HTTPS, optional 2FA available, regular security audits. Read our full <a href="/privacy.html">Privacy Policy</a>.',
     // Payments
@@ -1127,9 +1127,9 @@ const TRANSLATIONS = {
     contact_faq_title:          '❓ Common Questions About Our Emails',
     contact_faq_sub:            'Quick answers about how email and communication work on Guideon.',
     contact_faq_q1:             "Why didn't I receive my booking confirmation email?",
-    contact_faq_a1:             'Check your spam/junk folder first — emails from noreply@www.guideon.om can occasionally land there. If still missing after 10 minutes, log in and check your dashboard, or contact support@www.guideon.om.',
+    contact_faq_a1:             'Check your spam/junk folder first — emails from noreply@guideon.om can occasionally land there. If still missing after 10 minutes, log in and check your dashboard, or contact support@guideon.om.',
     contact_faq_q2:             'Can I reply to automated emails?',
-    contact_faq_a2:             'Yes! When you click "Reply" on any Guideon email, your response is automatically routed to info@www.guideon.om and reaches our support team within seconds.',
+    contact_faq_a2:             'Yes! When you click "Reply" on any Guideon email, your response is automatically routed to info@guideon.om and reaches our support team within seconds.',
     contact_faq_q3:             'How do I stop receiving marketing emails?',
     contact_faq_a3:             'Every newsletter has an "Unsubscribe" link at the bottom. You can also log in and adjust your notification preferences in your account settings. Booking-related emails (confirmations, refunds) cannot be disabled for security reasons.',
     contact_faq_q4:             'Are my messages and data secure?',
@@ -1487,7 +1487,7 @@ const TRANSLATIONS = {
     qr_step2_title:   'وجّهها للرمز',
     qr_step2_desc:    'ستكتشفه الكاميرا تلقائياً',
     qr_step3_title:   'اضغط الإشعار',
-    qr_step3_desc:    'يفتح www.guideon.om',
+    qr_step3_desc:    'يفتح guideon.om',
     back_home:        '← العودة للرئيسية',
     // Guide dashboard analytics
     your_analytics:   '📊 إحصائياتك',
@@ -2121,7 +2121,7 @@ const TRANSLATIONS = {
     faq_t_a8:  'يُفضَّل لبس محتشم يغطي الكتفين والركبتين، خاصة في المساجد. لرحلات الصحراء/الوديان، أحضر واقي شمس وأحذية مياه. كل صفحة رحلة تذكر التوصيات المحددة.',
     // Guides Q&A
     faq_g_q1:  'كيف أنضم كمرشد؟',
-    faq_g_a1:  'سجّل في <a href="/register.html?type=guide">www.guideon.om/register</a>، أكمل ملفك، ارفع ترخيص وزارة التراث والسياحة، وقدّم للتحقق. تتم الموافقة عادةً خلال 48 ساعة.',
+    faq_g_a1:  'سجّل في <a href="/register.html?type=guide">guideon.om/register</a>، أكمل ملفك، ارفع ترخيص وزارة التراث والسياحة، وقدّم للتحقق. تتم الموافقة عادةً خلال 48 ساعة.',
     faq_g_q2:  'هل هناك رسوم للانضمام؟',
     faq_g_a2:  '<strong>مجاني خلال فترة الإطلاق.</strong> بعد الإطلاق نخطط لرسوم خدمة بسيطة (10-15%) على الحجوزات المكتملة فقط — أبداً لا توجد رسوم شهرية.',
     faq_g_q3:  'كيف يتم تسعير الرحلات؟',
@@ -2136,9 +2136,9 @@ const TRANSLATIONS = {
     faq_a_q1:  'نسيت كلمة المرور.',
     faq_a_a1:  'اضغط "نسيت كلمة المرور" في صفحة تسجيل الدخول. سنرسل رابط إعادة تعيين إلى بريدك المسجل (صالح لمدة ساعة واحدة).',
     faq_a_q2:  'كيف أفعّل المصادقة الثنائية؟',
-    faq_a_a2:  'سجّل دخولك، ثم زر <a href="/two-factor.html">www.guideon.om/two-factor</a>. امسح رمز QR باستخدام Google Authenticator (أو أي تطبيق TOTP) واحفظ رموز النسخ الاحتياطي. ننصح بها بشدة للمرشدين والمدراء.',
+    faq_a_a2:  'سجّل دخولك، ثم زر <a href="/two-factor.html">guideon.om/two-factor</a>. امسح رمز QR باستخدام Google Authenticator (أو أي تطبيق TOTP) واحفظ رموز النسخ الاحتياطي. ننصح بها بشدة للمرشدين والمدراء.',
     faq_a_q3:  'كيف أحذف حسابي؟',
-    faq_a_a3:  'راسل <a href="mailto:info@www.guideon.om">info@www.guideon.om</a> من بريدك المسجل. نقوم بالتأكيد والحذف خلال 30 يوماً. ملاحظة: تُحفظ سجلات الحجوزات والضرائب لمدة 7 سنوات حسب القانون العماني.',
+    faq_a_a3:  'راسل <a href="mailto:info@guideon.om">info@guideon.om</a> من بريدك المسجل. نقوم بالتأكيد والحذف خلال 30 يوماً. ملاحظة: تُحفظ سجلات الحجوزات والضرائب لمدة 7 سنوات حسب القانون العماني.',
     faq_a_q4:  'هل بياناتي آمنة؟',
     faq_a_a4:  'نعم. كلمات المرور مشفّرة (bcrypt)، جميع الاتصالات تستخدم HTTPS، 2FA متاحة، تدقيقات أمنية منتظمة. اقرأ <a href="/privacy.html">سياسة الخصوصية</a> كاملة.',
     // Payments
@@ -2267,9 +2267,9 @@ const TRANSLATIONS = {
     contact_faq_title:          '❓ أسئلة شائعة حول رسائلنا',
     contact_faq_sub:            'إجابات سريعة حول طريقة عمل البريد الإلكتروني والتواصل في Guideon.',
     contact_faq_q1:             'لماذا لم تصلني رسالة تأكيد الحجز؟',
-    contact_faq_a1:             'تحقق من مجلد الرسائل غير المرغوبة (Spam/Junk) أولاً — رسائل noreply@www.guideon.om قد تذهب هناك أحياناً. إذا لم تصل بعد 10 دقائق، سجّل دخولك وتحقق من لوحة التحكم، أو راسل support@www.guideon.om.',
+    contact_faq_a1:             'تحقق من مجلد الرسائل غير المرغوبة (Spam/Junk) أولاً — رسائل noreply@guideon.om قد تذهب هناك أحياناً. إذا لم تصل بعد 10 دقائق، سجّل دخولك وتحقق من لوحة التحكم، أو راسل support@guideon.om.',
     contact_faq_q2:             'هل يمكنني الرد على الرسائل التلقائية؟',
-    contact_faq_a2:             'نعم! عند الضغط على "رد" في أي رسالة من Guideon، يُوجَّه ردك تلقائياً إلى info@www.guideon.om ويصل إلى فريق الدعم خلال ثوانٍ.',
+    contact_faq_a2:             'نعم! عند الضغط على "رد" في أي رسالة من Guideon، يُوجَّه ردك تلقائياً إلى info@guideon.om ويصل إلى فريق الدعم خلال ثوانٍ.',
     contact_faq_q3:             'كيف أوقف رسائل التسويق؟',
     contact_faq_a3:             'كل نشرة إخبارية تحتوي على رابط "إلغاء الاشتراك" في الأسفل. يمكنك أيضاً تسجيل الدخول وتعديل تفضيلات الإشعارات من إعدادات حسابك. لا يمكن إيقاف رسائل الحجز (التأكيدات، استرداد الأموال) لأسباب أمنية.',
     contact_faq_q4:             'هل رسائلي وبياناتي آمنة؟',

@@ -79,7 +79,7 @@ function generateVoucher(booking, guide, tourist) {
       // Footer
       const footerY = doc.page.height - 60;
       doc.fontSize(8).fillColor(GREY)
-         .text('Guideon — www.guideon.om · Find Your Certified Local Guide in Oman', 50, footerY, {
+         .text('Guideon — guideon.om · Find Your Certified Local Guide in Oman', 50, footerY, {
            width: doc.page.width - 100, align: 'center'
          })
          .text(`Generated ${new Date().toISOString()}`, 50, footerY + 14, {

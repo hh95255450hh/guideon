@@ -36,7 +36,7 @@ exports.ask = async (req, res) => {
     // Notify guide
     if (guide.email) {
       emailService.send?.(guide.email, `New question on Guideon — ${asker?.fullName || 'a tourist'}`,
-        `<p>Hi ${guide.fullName},</p><p>${asker?.fullName || 'A tourist'} asked you:</p><blockquote style="border-left:4px solid #0f7b6c;padding-left:12px;color:#333">${question}</blockquote><p><a href="${process.env.APP_URL || 'https://www.guideon.om'}/guide-dashboard.html">Reply on your dashboard</a></p>`
+        `<p>Hi ${guide.fullName},</p><p>${asker?.fullName || 'A tourist'} asked you:</p><blockquote style="border-left:4px solid #0f7b6c;padding-left:12px;color:#333">${question}</blockquote><p><a href="${process.env.APP_URL || 'https://guideon.om'}/guide-dashboard.html">Reply on your dashboard</a></p>`
       );
     }
 

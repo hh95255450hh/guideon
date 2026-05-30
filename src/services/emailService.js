@@ -13,8 +13,8 @@ function getResend() {
 
 const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.om>';
 const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'info@guideon.om';
-const APP_URL   = process.env.APP_URL         || 'https://www.guideon.om';
-const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://www.guideon.om';
+const APP_URL   = process.env.APP_URL         || 'https://guideon.om';
+const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://guideon.om';
 const LOGO_URL  = process.env.EMAIL_LOGO_URL  || `${PUBLIC_URL}/logo.png`;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL   || 'admin@guideon.om';
 
@@ -57,7 +57,7 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1
             Guideon &mdash; Find Your Certified Local Guide in Oman
           </p>
           <p style="margin:0 0 10px;font-size:12px;color:#888;line-height:1.7;">
-            <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600;">www.guideon.om</a>
+            <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600;">guideon.om</a>
             &nbsp;&middot;&nbsp;
             <a href="mailto:info@guideon.om" style="color:#0f7b6c;text-decoration:none;">info@guideon.om</a>
             &nbsp;&middot;&nbsp;
@@ -573,7 +573,7 @@ async function send(to, subject, html) {
       text: htmlToText(html),
       reply_to: REPLY_TO,
       headers: {
-        'List-Unsubscribe': `<mailto:unsubscribe@www.guideon.om?subject=Unsubscribe>, <${APP_URL}/api/newsletter/unsubscribe>`,
+        'List-Unsubscribe': `<mailto:unsubscribe@guideon.om?subject=Unsubscribe>, <${APP_URL}/api/newsletter/unsubscribe>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         'X-Entity-Ref-ID': `guideon-${Date.now()}`,
         'X-Mailer': 'Guideon Platform',

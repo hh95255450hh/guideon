@@ -1,6 +1,6 @@
 /**
  * Send a bilingual test email (Arabic on top, English below) to verify
- * Resend + www.guideon.om domain + logo + anti-spam headers.
+ * Resend + guideon.om domain + logo + anti-spam headers.
  * Usage: node scripts/test-email.js [recipient]
  */
 require('dotenv').config();
@@ -9,8 +9,8 @@ const { Resend } = require('resend');
 const TO        = process.argv[2] || 'Hh95255450hh@hotmail.com';
 const FROM      = process.env.EMAIL_FROM     || 'Guideon <noreply@guideon.om>';
 const REPLY_TO  = process.env.EMAIL_REPLY_TO || 'info@guideon.om';
-const APP_URL   = process.env.APP_URL        || 'https://www.guideon.om';
-const PUBLIC_URL= process.env.PUBLIC_URL     || 'https://www.guideon.om';
+const APP_URL   = process.env.APP_URL        || 'https://guideon.om';
+const PUBLIC_URL= process.env.PUBLIC_URL     || 'https://guideon.om';
 const LOGO_URL  = process.env.EMAIL_LOGO_URL || `${PUBLIC_URL}/logo.png`;
 
 const html = `<!DOCTYPE html>
@@ -75,7 +75,7 @@ const html = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777;text-align:right">النطاق</td>
-            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600;text-align:right" dir="ltr">www.guideon.om</td>
+            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600;text-align:right" dir="ltr">guideon.om</td>
           </tr>
         </table>
 
@@ -140,7 +140,7 @@ const html = `<!DOCTYPE html>
           </tr>
           <tr>
             <td style="padding:12px 18px;font-size:13px;color:#777">Domain</td>
-            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600">www.guideon.om</td>
+            <td style="padding:12px 18px;font-size:13px;color:#1a1a1a;font-weight:600">guideon.om</td>
           </tr>
         </table>
 
@@ -163,7 +163,7 @@ const html = `<!DOCTYPE html>
           Guideon &mdash; Find Your Certified Local Guide in Oman
         </p>
         <p style="margin:0 0 10px;font-size:12px;color:#888;line-height:1.7">
-          <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600">www.guideon.om</a>
+          <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600">guideon.om</a>
           &nbsp;&middot;&nbsp;
           <a href="mailto:info@guideon.om" style="color:#0f7b6c;text-decoration:none">info@guideon.om</a>
           &nbsp;&middot;&nbsp;
@@ -196,7 +196,7 @@ const text = `Guideon — اختبار البريد الإلكتروني / Email
 - عنوان الرد: info@guideon.om
 - مزود الخدمة: Resend (طوكيو)
 - الاستقبال: Cloudflare Email Routing
-- النطاق: www.guideon.om
+- النطاق: guideon.om
 
 نصيحة: جرّب الضغط على زر "رد" — سيُوجَّه ردك تلقائياً إلى info@guideon.om
 ومنه إلى صندوق Hotmail الخاص بك.
@@ -218,7 +218,7 @@ Configuration:
 - Reply-To:  info@guideon.om
 - Provider:  Resend (Tokyo)
 - Receiving: Cloudflare Email Routing
-- Domain:    www.guideon.om
+- Domain:    guideon.om
 
 Tip: Try clicking "Reply" on this email — your response will be routed to
 info@guideon.om and forwarded to your Hotmail inbox within seconds.
@@ -252,7 +252,7 @@ Muscat, Sultanate of Oman · © ${new Date().getFullYear()} Guideon`;
       text,
       reply_to: REPLY_TO,
       headers: {
-        'List-Unsubscribe': '<mailto:unsubscribe@www.guideon.om?subject=Unsubscribe>',
+        'List-Unsubscribe': '<mailto:unsubscribe@guideon.om?subject=Unsubscribe>',
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         'X-Entity-Ref-ID': `guideon-test-${Date.now()}`,
         'X-Mailer': 'Guideon Platform',

@@ -36,7 +36,7 @@ exports.subscribe = async (req, res) => {
       emailService.send(
         normalized,
         'Welcome to Guideon 🌿',
-        `<h2 style="font-family:sans-serif;color:#0f7b6c">Welcome!</h2><p>Thanks for subscribing. You'll get the best of Oman travel — tips, hidden gems, and exclusive deals — straight to your inbox.</p><p><a href="${process.env.APP_URL || 'https://www.guideon.om'}">Visit Guideon</a></p>`
+        `<h2 style="font-family:sans-serif;color:#0f7b6c">Welcome!</h2><p>Thanks for subscribing. You'll get the best of Oman travel — tips, hidden gems, and exclusive deals — straight to your inbox.</p><p><a href="${process.env.APP_URL || 'https://guideon.om'}">Visit Guideon</a></p>`
       ).catch(() => {});
     }
 

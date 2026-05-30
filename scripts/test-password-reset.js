@@ -58,7 +58,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANO
       token,
     });
     console.log('  ✅ Email dispatched. Check inbox + Spam/Junk.');
-    console.log(`     Reset link in the email: ${process.env.APP_URL || 'https://www.guideon.om'}/reset-password.html?token=${token.slice(0,12)}...`);
+    console.log(`     Reset link in the email: ${process.env.APP_URL || 'https://guideon.om'}/reset-password.html?token=${token.slice(0,12)}...`);
   } catch (e) {
     console.error('  ❌ Send failed:', e.message);
   }

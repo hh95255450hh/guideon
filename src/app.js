@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 
 const express = require('express');
 const session = require('express-session');
@@ -60,7 +60,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(morgan('dev'));
 }
 
-const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://www.guideon.om,https://www.www.guideon.om,https://guideon-production.up.railway.app')
+const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,https://guideon.om,https://www.guideon.om,https://guideon-production.up.railway.app')
   .split(',').map(s => s.trim()).filter(Boolean);
 
 app.use(cors({

@@ -4,7 +4,7 @@ const SupabaseDB = require('../models/SupabaseDB');
 const users    = new SupabaseDB('users');
 const packages = new SupabaseDB('tour_packages');
 
-const APP_URL = process.env.APP_URL || 'https://www.guideon.om';
+const APP_URL = process.env.APP_URL || 'https://guideon.om';
 
 // Cache sitemap for 1 hour
 let sitemapCache = null;

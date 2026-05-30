@@ -44,7 +44,7 @@
 
 ## 📧 إعدادات الإيميل (Resend)
 
-**الحالة:** بانتظار التحقق من domain www.guideon.om
+**الحالة:** بانتظار التحقق من domain guideon.om
 
 ### سجلات DNS المطلوبة في Hostinger
 
@@ -80,11 +80,11 @@
 | SUPABASE_URL | https://uwgkszszsogivhphlfdy.supabase.co |
 | SUPABASE_ANON_KEY | sb_publishable_e7f2BmlvGIxIs3Ya1jyKrQ_hqW7X-jM |
 | RESEND_API_KEY | re_43dnbDNB_C59XJtiSgQcWMvzxQFoac1qi |
-| EMAIL_FROM | Guideon <noreply@www.guideon.om> |
-| EMAIL_REPLY_TO | info@www.guideon.om |
+| EMAIL_FROM | Guideon <noreply@guideon.om> |
+| EMAIL_REPLY_TO | info@guideon.om |
 | ADMIN_EMAIL | Hh95255450hh@hotmail.com |
 
-> ✅ النطاق www.guideon.om مُحقَّق في Resend — الإرسال من `noreply@www.guideon.om` والردود تذهب لـ `info@www.guideon.om` عبر Cloudflare Routing.
+> ✅ النطاق guideon.om مُحقَّق في Resend — الإرسال من `noreply@guideon.om` والردود تذهب لـ `info@guideon.om` عبر Cloudflare Routing.
 
 ---
 
@@ -289,4 +289,4 @@ git push origin main
 - **الوصف:** منصة حجز مرشدين سياحيين معتمدين في سلطنة عُمان
 - **GitHub:** hh95255450hh
 - **الإيميل:** Hh95255450hh@hotmail.com
-- **Domain:** www.guideon.om
+- **Domain:** guideon.om

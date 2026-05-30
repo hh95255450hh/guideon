@@ -40,5 +40,5 @@ const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY)
   console.log('  User ID:  ' + data[0].id);
   console.log('  Type:     ' + data[0].userType);
   console.log('  Active:   ' + !data[0].isSuspended);
-  console.log('\nLogin at: https://www.guideon.om/login.html');
+  console.log('\nLogin at: https://guideon.om/login.html');
 })();

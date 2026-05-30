@@ -23,7 +23,7 @@ exports.share = async (req, res) => {
     const inserted = await shared.insert(record);
     res.status(201).json({
       success: true,
-      shareUrl: `${process.env.APP_URL || 'https://www.guideon.om'}/shared-wishlist.html?id=${inserted.id}`,
+      shareUrl: `${process.env.APP_URL || 'https://guideon.om'}/shared-wishlist.html?id=${inserted.id}`,
       wishlist: inserted,
     });
   } catch (err) {

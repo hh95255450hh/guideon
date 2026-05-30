@@ -99,13 +99,13 @@ const adminTable = new Table({
     new TableRow({
       children: [
         cell('Login URL', { bold: true, bg: lightBg, width: 3120 }),
-        cell('https://www.guideon.om/login.html', { mono: true, width: 6240 }),
+        cell('https://guideon.om/login.html', { mono: true, width: 6240 }),
       ],
     }),
     new TableRow({
       children: [
         cell('Admin Panel', { bold: true, bg: lightBg, width: 3120 }),
-        cell('https://www.guideon.om/admin.html', { mono: true, width: 6240 }),
+        cell('https://guideon.om/admin.html', { mono: true, width: 6240 }),
       ],
     }),
   ],
@@ -144,15 +144,15 @@ const servicesTable = new Table({
   columnWidths: [2340, 7020],
   rows: [
     headerRow('Service', 'URL / Detail'),
-    new TableRow({ children: [cell('Live Site', { bold: true, width: 2340 }), cell('https://www.guideon.om', { mono: true, color: teal, width: 7020 })] }),
-    new TableRow({ children: [cell('Login', { bold: true, width: 2340 }), cell('https://www.guideon.om/login.html', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Admin Panel', { bold: true, width: 2340 }), cell('https://www.guideon.om/admin.html', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Tourist Register', { bold: true, width: 2340 }), cell('https://www.guideon.om/register.html', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Live Site', { bold: true, width: 2340 }), cell('https://guideon.om', { mono: true, color: teal, width: 7020 })] }),
+    new TableRow({ children: [cell('Login', { bold: true, width: 2340 }), cell('https://guideon.om/login.html', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Admin Panel', { bold: true, width: 2340 }), cell('https://guideon.om/admin.html', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Tourist Register', { bold: true, width: 2340 }), cell('https://guideon.om/register.html', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('GitHub', { bold: true, width: 2340 }), cell('https://github.com/hh95255450hh/guideon', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Railway', { bold: true, width: 2340 }), cell('proactive-perception (production)', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Supabase', { bold: true, width: 2340 }), cell('https://supabase.com/dashboard/project/uwgkszszsogivhphlfdy', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Cloudflare', { bold: true, width: 2340 }), cell('https://dash.cloudflare.com — Zone: www.guideon.om', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Resend', { bold: true, width: 2340 }), cell('https://resend.com — Domain: www.guideon.om (verified)', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Cloudflare', { bold: true, width: 2340 }), cell('https://dash.cloudflare.com — Zone: guideon.om', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Resend', { bold: true, width: 2340 }), cell('https://resend.com — Domain: guideon.om (verified)', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Hostinger', { bold: true, width: 2340 }), cell('Domain registrar (DNS managed by Cloudflare)', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Email From', { bold: true, width: 2340 }), cell('Guideon <noreply@guideon.om>', { mono: true, width: 7020 })] }),
   ],
