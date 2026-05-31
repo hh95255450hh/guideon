@@ -12,6 +12,9 @@ const sse          = require('./sseHub');
 const notifications = new SupabaseDB('notifications');
 const users         = new SupabaseDB('users');
 
+// Canonical site URL — driven by APP_URL so it follows whatever domain is live.
+const BASE_URL = process.env.APP_URL || 'https://guideon.guide';
+
 /**
  * Create an in-app notification.
  * @param {Object} opts
@@ -56,7 +59,7 @@ async function notify(opts) {
 
     // ── Web Push (VAPID) — reaches the user even when the site is closed ──
     try {
-      const link = opts.link ? (opts.link.startsWith('http') ? opts.link : 'https://guideon.om' + opts.link) : 'https://guideon.om';
+      const link = opts.link ? (opts.link.startsWith('http') ? opts.link : BASE_URL + opts.link) : BASE_URL;
       const icon = opts.icon || pickDefaultIcon(opts.type);
       push.sendToUser(opts.userId, {
         title: `${icon} ${opts.titleAr || opts.title}`.slice(0, 80),
@@ -89,7 +92,7 @@ async function notify(opts) {
         const prefs = user.notifPrefs?.whatsapp || {};
         const channel = pickEmailChannel(opts.type);
         if (prefs[channel] !== false) {
-          const link = opts.link ? (opts.link.startsWith('http') ? opts.link : 'https://guideon.om' + opts.link) : 'https://guideon.om';
+          const link = opts.link ? (opts.link.startsWith('http') ? opts.link : BASE_URL + opts.link) : BASE_URL;
           const icon = opts.icon || pickDefaultIcon(opts.type);
 
           // Build bilingual WhatsApp message: English block + Arabic block + link.
