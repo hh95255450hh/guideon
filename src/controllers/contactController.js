@@ -1,11 +1,11 @@
 /**
  * Contact form controller.
- * Sends user's message to info@guideon.om + sends an auto-reply confirmation
+ * Sends user's message to hh92hh@guideon.om + sends an auto-reply confirmation
  * to the user. Both emails are bilingual: Arabic on top, English below.
  */
 const emailService = require('../services/emailService');
 
-const CONTACT_INBOX = process.env.CONTACT_INBOX || 'info@guideon.om';
+const CONTACT_INBOX = process.env.CONTACT_INBOX || 'hh92hh@guideon.om';
 const APP_URL       = process.env.APP_URL       || 'https://guideon.om';
 const PUBLIC_URL    = process.env.PUBLIC_URL    || 'https://guideon.om';
 const LOGO_URL      = process.env.EMAIL_LOGO_URL || `${PUBLIC_URL}/logo.png`;
@@ -170,7 +170,7 @@ function autoReplyHtml({ name, subject }) {
         <p style="margin:0 0 10px;font-size:12px;color:#888;line-height:1.7">
           <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600">guideon.om</a>
           &nbsp;&middot;&nbsp;
-          <a href="mailto:info@guideon.om" style="color:#0f7b6c;text-decoration:none">info@guideon.om</a>
+          <a href="mailto:hh92hh@guideon.om" style="color:#0f7b6c;text-decoration:none">hh92hh@guideon.om</a>
           &nbsp;&middot;&nbsp;
           <a href="tel:+96895255450" style="color:#0f7b6c;text-decoration:none">+968 9525 5450</a>
         </p>
@@ -202,7 +202,7 @@ exports.send = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Message is too long (max 5000 chars).' });
     }
 
-    // 1) Send to staff inbox (info@guideon.om)
+    // 1) Send to staff inbox (hh92hh@guideon.om)
     await emailService.send(
       CONTACT_INBOX,
       `Contact form: ${subject}`,
