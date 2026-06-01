@@ -1010,7 +1010,10 @@ async function loadPopularTours() {
       el.innerHTML = `<div class="swiper-slide text-center text-muted py-4">${isAr ? 'لا توجد رحلات بعد.' : 'No tours yet.'}</div>`;
       return;
     }
-    el.innerHTML = tours.map(t => {
+    // Fill the loop with at least ~8 slides so coverflow glides smoothly
+    let slides = tours.slice();
+    while (slides.length > 0 && slides.length < 8) slides = slides.concat(tours);
+    el.innerHTML = slides.map(t => {
       const img = t.cover_image || (t.images && t.images[0]) || '';
       const price = t.price_adult || 0;
       const bookings = t.totalBookings || 0;
