@@ -93,10 +93,18 @@ h1, h2, h3, h4, h5, .section-title, .navbar-brand, .fw-800, .fw-700 { font-famil
 }
 body.dark-mode .navbar.sticky-top { background: #07302e !important; }
 
-.navbar .nav-link {
-  position: relative; font-weight: 600; font-size: .94rem; padding: 8px 14px !important;
-  display: inline-flex; align-items: center; gap: 7px; border-radius: 8px;
+/* logo on a white rounded chip so the navy mark stays clearly visible */
+.navbar-brand { padding: 0; }
+.navbar-brand img {
+  background: #fff; padding: 5px 12px; border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.22); height: 46px !important;
 }
+
+.navbar .nav-link {
+  position: relative; color: #ffffff !important; font-weight: 600; font-size: .94rem;
+  padding: 8px 14px !important; display: inline-flex; align-items: center; gap: 7px; border-radius: 8px;
+}
+.navbar .navbar-controls .btn, .navbar .lang-toggle, .navbar .theme-btn { color: #fff; }
 .navbar .nav-link .nav-ic { font-size: 1.05rem; line-height: 1; opacity: .9; }
 .navbar .nav-link::after {
   content: ''; position: absolute; left: 14px; right: 14px; bottom: 3px; height: 2px;
