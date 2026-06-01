@@ -27,7 +27,9 @@
     if (heroSubtitle  && (h.subtitle_en || h.subtitle_ar))   heroSubtitle.textContent  = T(h.subtitle_en, h.subtitle_ar);
 
     // ─── CAROUSEL ─────────────────────────
-    const slides = settings.carousel?.slides || [];
+    // Only use admin slides that actually have an image — otherwise keep the
+    // default hardcoded carousel (an empty/half-filled slide must NOT wipe it).
+    const slides = (settings.carousel?.slides || []).filter(s => s && s.image);
     const inner = document.querySelector('#omanCarousel .carousel-inner');
     const indicators = document.querySelector('#omanCarousel .carousel-indicators');
     if (slides.length > 0 && inner && indicators) {
@@ -49,7 +51,8 @@
     }
 
     // ─── ACTIVITIES ───────────────────────
-    const acts = settings.activities?.items || [];
+    // Skip blank cards (no image and no title) so they don't replace defaults.
+    const acts = (settings.activities?.items || []).filter(a => a && (a.image || a.title_en || a.title_ar));
     const grid = document.getElementById('activitiesGrid');
     if (grid && acts.length > 0) {
       grid.innerHTML = acts.map(a => `

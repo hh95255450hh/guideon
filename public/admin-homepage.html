@@ -358,10 +358,10 @@ async function uploadSlideImage(i, input) {
   const fd = new FormData();
   fd.append('photo', input.files[0]);
   try {
-    const r = await fetch('/api/upload/photo', { method:'POST', credentials:'include', body: fd });
+    const r = await fetch('/api/upload/image', { method:'POST', credentials:'include', body: fd });
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
-    SLIDES[i].image = d.photo;
+    SLIDES[i].image = d.url;
     renderSlides();
     toast('✅ ' + T('hp_image_uploaded', 'Image uploaded'));
   } catch (e) {
@@ -477,10 +477,10 @@ async function uploadActImage(i, input) {
   const fd = new FormData();
   fd.append('photo', input.files[0]);
   try {
-    const r = await fetch('/api/upload/photo', { method:'POST', credentials:'include', body: fd });
+    const r = await fetch('/api/upload/image', { method:'POST', credentials:'include', body: fd });
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
-    ACTIVITIES[i].image = d.photo;
+    ACTIVITIES[i].image = d.url;
     renderActivities();
     toast('✅ ' + T('hp_image_uploaded', 'Image uploaded'));
   } catch (e) {

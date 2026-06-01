@@ -89,6 +89,28 @@ router.delete('/gallery', requireLogin, async (req, res) => {
   }
 });
 
+// POST /api/upload/image — generic image upload (homepage slides, etc.)
+// Returns { success, url } with NO side effects on the user's profile.
+router.post('/image', requireLogin, upload.single('photo'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+  try {
+    const { url } = await uploadBuffer({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      folder: `homepage/${req.session.userId}`,
+      contentType: req.file.mimetype,
+    });
+    res.json({ success: true, url });
+  } catch (e) {
+    console.error('[upload:image]', e.message);
+    const msg = String(e.message || '');
+    if (/row-level security|RLS|policy/i.test(msg)) {
+      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016.' });
+    }
+    res.status(500).json({ success: false, message: 'Upload failed: ' + msg });
+  }
+});
+
 // POST /api/upload/message-attachment — upload an image to send in chat
 router.post('/message-attachment', requireLogin, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
