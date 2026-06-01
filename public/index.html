@@ -20,7 +20,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 <link rel="stylesheet" href="/css/style.css?v=40">
-<link rel="stylesheet" href="/css/upgrade.css?v=6">
+<link rel="stylesheet" href="/css/upgrade.css?v=7">
 </head>
 <body>
 
@@ -738,74 +738,71 @@
 </section>
 
 <!-- FOOTER -->
-<footer>
+<footer class="gd-footer">
   <div class="container">
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div style="font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:10px"><img loading="lazy" decoding="async" src="/logo.png" alt="Guideon" height="52"></div>
-        <p class="small opacity-75" data-i18n="footer_desc">Connecting tourists with certified guides across Oman.</p>
+    <div class="row gy-5 gx-4">
+      <!-- Brand -->
+      <div class="col-lg-4 col-md-12 gd-foot-brand">
+        <img loading="lazy" decoding="async" src="/logo.png" alt="Guideon" height="48" class="gd-foot-logo">
+        <p class="gd-foot-desc" data-i18n="footer_desc">Connecting tourists with certified guides across Oman.</p>
+        <div class="gd-foot-social">
+          <a href="https://wa.me/96895255450" target="_blank" rel="noopener" title="WhatsApp">💬</a>
+          <a href="mailto:hh92hh@guideon.om" title="Email">✉️</a>
+          <a href="tel:+96895255450" title="Call">📞</a>
+        </div>
       </div>
-      <div class="col-6 col-md-2">
-        <h6 data-i18n="footer_platform">Platform</h6>
+      <!-- Platform -->
+      <div class="col-6 col-lg-2 gd-foot-col">
+        <h6 class="gd-foot-h" data-i18n="footer_platform">Platform</h6>
         <a href="/search.html" data-i18n="nav_find">Find a Guide</a>
         <a href="/how-it-works.html" data-i18n="footer_howitworks">How it works</a>
         <a href="/register.html" data-i18n="nav_signup">Sign Up</a>
         <a href="/login.html" data-i18n="nav_login">Log In</a>
       </div>
-      <div class="col-6 col-md-2">
-        <h6 data-i18n="footer_dests">Destinations</h6>
+      <!-- Destinations -->
+      <div class="col-6 col-lg-2 gd-foot-col">
+        <h6 class="gd-foot-h" data-i18n="footer_dests">Destinations</h6>
         <a href="/search.html?destination=Muscat">Muscat</a>
         <a href="/search.html?destination=Nizwa">Nizwa</a>
         <a href="/search.html?destination=Salalah">Salalah</a>
         <a href="/search.html?destination=Musandam">Musandam</a>
       </div>
-      <div class="col-6 col-md-1">
-        <h6 data-i18n="footer_legal">Legal</h6>
+      <!-- Legal -->
+      <div class="col-6 col-lg-2 gd-foot-col">
+        <h6 class="gd-foot-h" data-i18n="footer_legal">Legal</h6>
         <a href="/terms.html" data-i18n="footer_terms">Terms</a>
         <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
         <a href="/faq.html" data-i18n="footer_faq">FAQ</a>
         <a href="/contact.html" data-i18n="nav_contact">Contact</a>
       </div>
-      <div class="col-md-3" style="margin-left:0">
-        <h6 data-i18n="footer_contact">Contact Us</h6>
-        <div class="small opacity-75">
-          <div class="mb-1">📧 <bdi><a href="mailto:hh92hh@guideon.om" class="text-white text-decoration-none" dir="ltr">hh92hh@guideon.om</a></bdi></div>
-          <div class="mb-1">📞 <bdi><a href="tel:+96895255450" class="text-white text-decoration-none" dir="ltr" style="display:inline-block">+968 9525 5450</a></bdi></div>
-          <div class="mb-1">💬 <a href="https://wa.me/96895255450" target="_blank" rel="noopener" class="text-white text-decoration-none">WhatsApp</a></div>
-          <div class="mb-1">📍 Muscat, Sultanate of Oman</div>
-          <div class="mt-2">
-            <a href="/register.html" class="btn btn-sm btn-outline-light" data-i18n="nav_signup">Join Guideon</a>
-          </div>
-        </div>
+      <!-- Contact -->
+      <div class="col-6 col-lg-2 gd-foot-col">
+        <h6 class="gd-foot-h" data-i18n="footer_contact">Contact Us</h6>
+        <a href="mailto:hh92hh@guideon.om" dir="ltr">hh92hh@guideon.om</a>
+        <a href="tel:+96895255450" dir="ltr">+968 9525 5450</a>
+        <a href="https://wa.me/96895255450" target="_blank" rel="noopener">WhatsApp</a>
+        <span class="gd-foot-loc">📍 Muscat, Oman</span>
       </div>
     </div>
-    <hr style="border-color:rgba(255,255,255,0.1);margin:24px 0 16px">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <div>
-        <div class="small opacity-50 mb-2" data-i18n="payment_accept">Secure Payment Methods</div>
-        <div class="payment-icons">
-          <div class="payment-icon">💳 Visa</div>
-          <div class="payment-icon">💳 MC</div>
-          <div class="payment-icon">🅿️ PayPal</div>
-          <div class="payment-icon">🍎 Pay</div>
-          <div class="payment-icon">🌐 Bank</div>
-        </div>
+
+    <div class="gd-foot-bar">
+      <div class="gd-pay">
+        <span class="gd-pay-label" data-i18n="payment_accept">Secure payments</span>
+        <span class="gd-pay-chip">Visa</span>
+        <span class="gd-pay-chip">Mastercard</span>
+        <span class="gd-pay-chip">PayPal</span>
+        <span class="gd-pay-chip">Apple Pay</span>
+        <span class="gd-pay-chip">Bank</span>
       </div>
-      <div class="trustpilot-badge">
-        <div style="font-size:1.1rem;font-weight:800;color:#fff">★★★★★</div>
-        <div style="font-size:0.7rem;opacity:0.6;color:#fff">Excellent · 4.8/5</div>
+      <div class="gd-foot-links">
+        <a href="/terms.html" data-i18n="footer_terms">Terms</a>
+        <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
+        <a href="/how-it-works.html" data-i18n="footer_howitworks">How it works</a>
+        <a href="/faq.html" data-i18n="footer_faq">FAQ</a>
       </div>
     </div>
-    <div class="footer-bottom">
+    <div class="gd-foot-copy">
       <span data-i18n="footer_bottom">Guideon © 2026. All rights reserved.</span>
-      ·
-      <a href="/terms.html" class="text-white opacity-75 text-decoration-none" data-i18n="footer_terms">Terms</a>
-      ·
-      <a href="/privacy.html" class="text-white opacity-75 text-decoration-none" data-i18n="footer_privacy">Privacy</a>
-      ·
-      <a href="/how-it-works.html" class="text-white opacity-75 text-decoration-none" data-i18n="footer_howitworks">How it works</a>
-      ·
-      <a href="/faq.html" class="text-white opacity-75 text-decoration-none" data-i18n="footer_faq">FAQ</a>
     </div>
   </div>
 </footer>
