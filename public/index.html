@@ -20,7 +20,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 <link rel="stylesheet" href="/css/style.css?v=40">
-<link rel="stylesheet" href="/css/upgrade.css?v=7">
+<link rel="stylesheet" href="/css/upgrade.css?v=8">
 </head>
 <body>
 
@@ -278,6 +278,22 @@
     <div class="swiper guides-swiper">
       <div class="swiper-wrapper" id="featuredGuides">
         <div class="swiper-slide text-center py-5 text-muted" data-i18n="loading_guides">Loading guides...</div>
+      </div>
+      <div class="swiper-pagination"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MOST BOOKED TOURS -->
+<section class="py-5" style="background:#fafbfc">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-2">
+      <div><h2 class="section-title" data-i18n="popular_tours">Most Booked Tours</h2></div>
+      <a href="/search.html" class="btn-outline-teal btn btn-sm" data-i18n="sec_view_all">View All →</a>
+    </div>
+    <div class="swiper tours-swiper">
+      <div class="swiper-wrapper" id="popularTours">
+        <div class="swiper-slide text-center py-5 text-muted">…</div>
       </div>
       <div class="swiper-pagination"></div>
     </div>
@@ -983,6 +999,59 @@ async function loadFeatured() {
   }
 }
 
+async function loadPopularTours() {
+  const esc = s => String(s == null ? '' : s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const isAr = window.I18N && I18N.lang === 'ar';
+  try {
+    const data = await api('GET', '/packages/popular');
+    const tours = data.packages || [];
+    const el = document.getElementById('popularTours');
+    if (!tours.length) {
+      el.innerHTML = `<div class="swiper-slide text-center text-muted py-4">${isAr ? 'لا توجد رحلات بعد.' : 'No tours yet.'}</div>`;
+      return;
+    }
+    el.innerHTML = tours.map(t => {
+      const img = t.cover_image || (t.images && t.images[0]) || '';
+      const price = t.price_adult || 0;
+      const bookings = t.totalBookings || 0;
+      const bookLbl = isAr ? 'حجز' : 'bookings';
+      const perLbl = isAr ? '/ للفرد' : '/ person';
+      const viewLbl = isAr ? 'عرض الرحلة' : 'View Tour';
+      return `
+      <div class="swiper-slide">
+        <div class="tour-card h-100" onclick="location.href='/tour-package.html?id=${t.id}'" style="cursor:pointer">
+          <div class="tour-img" ${img ? `style="background-image:linear-gradient(rgba(15,28,62,.15),rgba(15,28,62,.4)),url('${img}')"` : ''}>
+            ${bookings > 0 ? `<span class="tour-book-chip">🔥 ${bookings} ${bookLbl}</span>` : ''}
+          </div>
+          <div class="tour-body">
+            <div class="tour-title">${esc(t.title)}</div>
+            <div class="tour-meta">📍 ${esc(t.destination || '')}${t.providerName ? ' · ' + esc(t.providerName) : ''}</div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+              <div><span class="tour-price">OMR ${price}</span> <span class="tour-meta">${perLbl}</span></div>
+              ${t.rating ? `<span class="tour-meta">⭐ ${t.rating}</span>` : ''}
+            </div>
+            <button class="tour-btn w-100">${viewLbl} →</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    if (window.Swiper) {
+      if (window._toursSwiper) { try { window._toursSwiper.destroy(true, true); } catch {} }
+      window._toursSwiper = new Swiper('.tours-swiper', {
+        effect: 'coverflow', grabCursor: true, centeredSlides: true, slidesPerView: 'auto',
+        loop: true, loopAdditionalSlides: 5, initialSlide: 0, spaceBetween: 12,
+        coverflowEffect: { rotate: 0, stretch: 0, depth: 220, modifier: 1.5, scale: 0.88, slideShadows: false },
+        pagination: { el: '.tours-swiper .swiper-pagination', clickable: true },
+        autoplay: { delay: 3400, disableOnInteraction: false, pauseOnMouseEnter: true },
+      });
+    }
+  } catch {
+    const el = document.getElementById('popularTours');
+    if (el) el.innerHTML = '';
+  }
+}
+
 async function checkSession() {
   try {
     const data = await api('GET', '/auth/me');
@@ -1019,6 +1088,7 @@ function toggleDark() {
 
 checkSession();
 loadFeatured();
+loadPopularTours();
 </script>
 <script src="/js/pwa.js?v=12"></script>
 <script src="/js/common-widgets.js?v=4"></script>

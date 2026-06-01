@@ -4,6 +4,7 @@ const { requireLogin, requireAdmin } = require('../middleware/auth');
 
 router.get('/',          pkg.list);
 router.get('/mine',      requireLogin, pkg.mine);
+router.get('/popular',   pkg.popular);
 router.get('/:id',       pkg.get);
 router.post('/',         requireLogin, pkg.create);
 router.put('/:id',       requireLogin, pkg.update);

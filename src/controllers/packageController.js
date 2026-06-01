@@ -40,6 +40,27 @@ exports.list = async (req, res) => {
   }
 };
 
+// GET /api/packages/popular — most-booked published tours (homepage carousel)
+exports.popular = async (req, res) => {
+  try {
+    let pkgs = await packages.findAllByField('isPublished', true);
+    pkgs.sort((a, b) =>
+      ((b.totalBookings || 0) - (a.totalBookings || 0)) ||
+      ((b.rating || 0) - (a.rating || 0)) ||
+      (new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    );
+    const top = pkgs.slice(0, 10);
+    const enriched = await Promise.all(top.map(async p => {
+      const prov = await users.findById(p.providerId).catch(() => null);
+      return { ...p, providerName: prov ? prov.fullName : '' };
+    }));
+    res.json({ success: true, packages: enriched });
+  } catch (err) {
+    console.error('[packages:popular]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 // GET /api/packages/:id — single package details
 exports.get = async (req, res) => {
   try {
