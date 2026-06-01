@@ -252,8 +252,14 @@ exports.allBookings = async (req, res) => {
       return {
         ...b,
         guideName:    guide   ? guide.fullName   : 'Unknown',
+        guideEmail:   guide   ? guide.email       : '',
+        guidePhone:   guide   ? (guide.phone || '') : '',
+        guideVerified: guide  ? !!guide.isVerified : false,
+        guideRating:  guide   ? (guide.rating || 0) : 0,
+        guidePricePerDay: guide ? (guide.pricePerDay || 0) : 0,
         touristName:  tourist ? tourist.fullName  : 'Unknown',
         touristEmail: tourist ? tourist.email     : '',
+        touristPhone: tourist ? (tourist.phone || '') : '',
       };
     }));
     res.json({ success: true, bookings: enriched });
