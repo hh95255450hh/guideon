@@ -1,0 +1,92 @@
+/* ════════════════════════════════════════════════════════════════════
+   Guideon — Homepage visual upgrade (loads after style.css, overrides it)
+   Brand-consistent: navy / teal / gold. CSS-only, no markup changes.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --font-head: 'Plus Jakarta Sans', 'Tajawal', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Tajawal', 'Segoe UI', system-ui, sans-serif;
+  --shadow-soft: 0 6px 24px rgba(16, 30, 54, .08);
+  --shadow-hover: 0 18px 44px rgba(15, 28, 62, .18);
+}
+[dir="rtl"] { --font-head: 'Tajawal', 'Plus Jakarta Sans', system-ui, sans-serif;
+              --font-body: 'Tajawal', 'Plus Jakarta Sans', system-ui, sans-serif; }
+
+body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+h1, h2, h3, h4, h5, .section-title, .navbar-brand, .fw-800, .fw-700 { font-family: var(--font-head); letter-spacing: -.01em; }
+
+/* ─── HERO — layered gradient mesh + glow + entrance animation ─────────── */
+.hero {
+  padding: 92px 0 64px;
+  background:
+    radial-gradient(1100px 480px at 12% -10%, rgba(201,168,76,.22), transparent 60%),
+    radial-gradient(900px 520px at 100% 0%, rgba(26,188,156,.28), transparent 55%),
+    linear-gradient(135deg, #0b1530 0%, #11244b 45%, #0f7b6c 120%);
+}
+.hero::after {
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 22px 22px; mask-image: linear-gradient(#000, transparent 75%);
+}
+.hero h1 { font-size: clamp(2rem, 5.2vw, 3.4rem); line-height: 1.12; letter-spacing: -.02em; }
+.hero h1 [data-i18n="hero_highlight"] {
+  background: linear-gradient(90deg, #f3d27a, #c9a84c);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero p { font-size: clamp(1rem, 1.7vw, 1.28rem); opacity: .94; }
+.hero .badge-gold {
+  background: rgba(201,168,76,.16); color: #f3d27a; border: 1px solid rgba(201,168,76,.45);
+  padding: 7px 16px; border-radius: 999px; font-weight: 700; backdrop-filter: blur(4px);
+}
+.hero > .container { animation: heroIn .8s cubic-bezier(.22,1,.36,1) both; }
+@keyframes heroIn { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+
+/* ─── SEARCH BOX — elevated glass card ────────────────────────────────── */
+.search-box {
+  border-radius: 20px; padding: 22px; border: 1px solid rgba(255,255,255,.6);
+  box-shadow: 0 24px 60px rgba(11, 21, 48, .28);
+  background: rgba(255,255,255,.97); backdrop-filter: blur(8px);
+}
+.search-box .btn-search {
+  background: linear-gradient(135deg, #0f7b6c, #0a5c50); border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(15,123,108,.35); letter-spacing: .2px;
+}
+.search-box .btn-search:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(15,123,108,.45); }
+.search-box .form-control, .search-box .form-select { border-radius: 12px; transition: border-color .15s, box-shadow .15s; }
+
+/* ─── SECTION TITLES — refined ────────────────────────────────────────── */
+.section-title { font-size: clamp(1.5rem, 2.6vw, 2.1rem); letter-spacing: -.02em; }
+.section-title::after { width: 56px; height: 4px; background: linear-gradient(90deg, var(--gold), #e7c97a); }
+
+/* ─── CARDS — smoother lift + image zoom ──────────────────────────────── */
+.guide-card, .activity-card, .blog-card, .card {
+  border-radius: 18px; box-shadow: var(--shadow-soft);
+  transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s;
+}
+.guide-card:hover, .activity-card:hover, .blog-card:hover {
+  transform: translateY(-7px); box-shadow: var(--shadow-hover);
+}
+.guide-card .card-img, .activity-card .activity-img, .blog-card img {
+  transition: transform .5s cubic-bezier(.22,1,.36,1);
+}
+.guide-card:hover .card-img, .activity-card:hover .activity-img, .blog-card:hover img { transform: scale(1.07); }
+.guide-card, .activity-card { overflow: hidden; }
+
+/* ─── BUTTONS — gold CTA polish ───────────────────────────────────────── */
+.btn-gold {
+  background: linear-gradient(135deg, #d8b85a, #c9a84c) !important; border: none;
+  box-shadow: 0 6px 18px rgba(201,168,76,.4); font-weight: 700;
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(201,168,76,.5); }
+
+/* ─── STATS STRIP — subtle elevation ──────────────────────────────────── */
+.stats-strip { box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+
+/* ─── NAVBAR — glass on scroll feel ───────────────────────────────────── */
+.navbar.sticky-top { backdrop-filter: blur(10px); }
+
+/* Respect reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero > .container { animation: none; }
+  * { transition: none !important; }
+}
