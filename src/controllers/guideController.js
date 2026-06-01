@@ -136,7 +136,13 @@ exports.updateProfile = async (req, res) => {
 exports.topGuides = async (req, res) => {
   try {
     const guides = await users.findAll(u => u.userType === 'guide' && u.isVerified && !u.isSuspended);
-    guides.sort((a, b) => b.rating - a.rating);
+    // Best first: rating → reviews → bookings → earliest joined (deterministic)
+    guides.sort((a, b) =>
+      ((b.rating || 0) - (a.rating || 0)) ||
+      ((b.totalReviews || 0) - (a.totalReviews || 0)) ||
+      ((b.totalBookings || 0) - (a.totalBookings || 0)) ||
+      (new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+    );
     const top = guides.slice(0, 10).map(({ password, ...g }) => g);
     res.json({ success: true, guides: top });
   } catch (err) {
