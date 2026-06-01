@@ -137,7 +137,7 @@ exports.topGuides = async (req, res) => {
   try {
     const guides = await users.findAll(u => u.userType === 'guide' && u.isVerified && !u.isSuspended);
     guides.sort((a, b) => b.rating - a.rating);
-    const top = guides.slice(0, 3).map(({ password, ...g }) => g);
+    const top = guides.slice(0, 10).map(({ password, ...g }) => g);
     res.json({ success: true, guides: top });
   } catch (err) {
     console.error(err);

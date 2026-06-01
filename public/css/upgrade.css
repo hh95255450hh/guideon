@@ -87,11 +87,16 @@ h1, h2, h3, h4, h5, .section-title, .navbar-brand, .fw-800, .fw-700 { font-famil
 
 /* ─── NAVBAR — Visit-Oman style: flat dark teal + icon nav + bright CTA ─── */
 .navbar.sticky-top {
-  background: linear-gradient(110deg, #0a3a37 0%, #0f7b6c 60%, #2ec4b0 100%) !important;
-  box-shadow: 0 1px 0 rgba(255,255,255,.06), 0 6px 24px rgba(8,30,28,.30);
+  background: linear-gradient(110deg, rgba(10,58,55,.78) 0%, rgba(15,123,108,.62) 58%, rgba(46,196,176,.52) 100%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border-bottom: 1px solid rgba(255,255,255,.20);
+  box-shadow: 0 10px 34px rgba(8,30,28,.38), inset 0 1px 0 rgba(255,255,255,.28);
   padding-top: 6px; padding-bottom: 6px;
 }
-body.dark-mode .navbar.sticky-top { background: linear-gradient(110deg, #07302e 0%, #0a5c50 60%, #128f7d 100%) !important; }
+body.dark-mode .navbar.sticky-top {
+  background: linear-gradient(110deg, rgba(7,48,46,.82) 0%, rgba(10,92,80,.6) 60%, rgba(18,143,125,.5) 100%) !important;
+}
 
 /* logo restored to original — just a soft shadow for edge definition */
 .navbar-brand img { filter: drop-shadow(0 1px 4px rgba(0,0,0,.35)); }
