@@ -168,6 +168,27 @@ async function unreadCount(req, res) {
   }
 }
 
+// GET /api/messages/support-agent — who a tourist/guide should message for help
+async function supportAgent(req, res) {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id,fullName')
+      .eq('userType', 'admin')
+      .order('createdAt', { ascending: true })
+      .limit(1);
+    if (error) throw error;
+    if (!data || !data.length) {
+      return res.status(404).json({ success: false, message: 'Support is unavailable right now.' });
+    }
+    // Friendly display name instead of the admin's personal name
+    res.json({ success: true, agent: { id: data[0].id, name: 'Guideon Support', nameAr: 'دعم Guideon', online: sse.isOnline(data[0].id) } });
+  } catch (e) {
+    console.error('[messages:supportAgent]', e.message);
+    res.status(500).json({ success: false, message: 'Could not reach support.' });
+  }
+}
+
 // POST /api/messages/typing  { toId, isTyping }
 function typing(req, res) {
   const { toId, isTyping } = req.body;
@@ -201,4 +222,4 @@ function stream(req, res) {
   req.on('close', () => clearInterval(ping));
 }
 
-module.exports = { send, conversations, thread, unreadCount, typing, stream };
+module.exports = { send, conversations, thread, unreadCount, typing, stream, supportAgent };

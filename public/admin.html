@@ -126,6 +126,7 @@
     <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">📋 Bookings</button>
     <button class="admin-tab" onclick="showTab('admins',this)" data-i18n="tab_admins">👑 Admins</button>
     <button class="admin-tab" onclick="showTab('staff',this)" data-i18n="tab_staff">👔 Staff</button>
+    <button class="admin-tab" onclick="showTab('messages',this)">💬 Messages <span class="badge bg-danger" id="adminMsgBadge" style="display:none"></span></button>
     <button class="admin-tab" onclick="showTab('broadcast',this)" data-i18n="tab_broadcast">📢 Broadcast</button>
     <button class="admin-tab" onclick="showTab('analytics',this)" data-i18n="tab_analytics">📈 Analytics</button>
     <button class="admin-tab" onclick="showTab('audit',this)" data-i18n="tab_audit">🔍 Audit Log</button>
@@ -300,6 +301,36 @@
     </div>
   </div>
 
+  <!-- ═════════════════════════ MESSAGES (support inbox) ═════════════════════════ -->
+  <div id="tab-messages" class="d-none">
+    <div class="t-card p-0" style="max-width:760px">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="fw-700 mb-0">💬 Support Inbox</h5>
+        <span class="text-muted small">Messages from guides & tourists</span>
+      </div>
+      <!-- conversation list -->
+      <div id="adminConvoView">
+        <div id="adminConvoList" class="list-group list-group-flush" style="max-height:520px;overflow-y:auto">
+          <div class="text-center py-4 text-muted small">Loading…</div>
+        </div>
+      </div>
+      <!-- thread -->
+      <div id="adminThreadView" style="display:none">
+        <div class="p-2 border-bottom d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-secondary" onclick="adminShowConvoList()">← Back</button>
+          <strong id="adminThreadName" class="ms-1"></strong>
+          <span id="adminThreadOnline" class="rounded-circle" style="display:none;width:9px;height:9px;background:#22c55e"></span>
+        </div>
+        <div id="adminThreadMessages" style="height:360px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f8f9fa"></div>
+        <div id="adminThreadTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic">…</div>
+        <div class="p-2 border-top d-flex gap-2 align-items-center">
+          <input class="form-control form-control-sm" id="adminMsgInput" placeholder="Type a reply…" oninput="adminTyping()">
+          <button class="btn btn-sm btn-teal" onclick="adminSendMsg()" style="flex-shrink:0">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═════════════════════════ BROADCAST ═════════════════════════ -->
   <div id="tab-broadcast" class="d-none">
     <div class="t-card p-4">
@@ -409,7 +440,7 @@ function doLogout() {
 
 // ── Tab switch ───────────────────────────────────────────────
 let ACTIVE_TAB = 'pending';
-const TABS = ['pending','guides','companies','tourists','bookings','admins','staff','broadcast','analytics','audit','export'];
+const TABS = ['pending','guides','companies','tourists','bookings','admins','staff','messages','broadcast','analytics','audit','export'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
@@ -423,6 +454,7 @@ function showTab(name, btn) {
   else if (name==='analytics') loadAnalytics();
   else if (name==='audit')     loadAudit();
   else if (name==='staff')     loadStaff();
+  else if (name==='messages')  adminLoadConvos();
 }
 
 // ── Staff Management ──────────────────────────────────────────
@@ -687,6 +719,8 @@ async function checkAuth() {
     window.CURRENT_USER_ID = d.user.id;
     loadStats();
     loadPending();
+    adminConnectSSE();
+    adminLoadConvos();
   } catch { window.location.href='/login.html'; }
 }
 
@@ -1019,6 +1053,100 @@ window.onLangChange = () => {
   if (ACTIVE_TAB === 'tourists')   loadTourists();
   if (ACTIVE_TAB === 'bookings')   loadAllBookings();
 };
+
+/* ── ADMIN SUPPORT INBOX ── */
+let ADMIN_ACTIVE_OTHER=null, ADMIN_SSE=null, ADMIN_TYPING_TS=0, ADMIN_TYPING_HIDE=null;
+function admEsc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function admTime(iso){const d=new Date(iso);const diff=Date.now()-d;if(diff<60000)return'<1m';if(diff<3600000)return Math.floor(diff/60000)+'m';if(diff<86400000)return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});return d.toLocaleDateString([],{day:'numeric',month:'short'});}
+
+async function adminLoadConvos(){
+  try{
+    const r=await fetch('/api/messages/conversations',{credentials:'include'});
+    const d=await r.json();
+    const list=d.conversations||[];
+    const el=document.getElementById('adminConvoList');
+    if(el){
+      if(!list.length){el.innerHTML='<div class="text-center py-4 text-muted small">No messages yet.</div>';}
+      else{
+        el.innerHTML=list.map(c=>{
+          const preview=(c.lastMessage.content||'📎 attachment').slice(0,55);
+          const unread=c.unread>0?`<span class="badge bg-danger ms-1">${c.unread}</span>`:'';
+          const dot=c.online?'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-inline-end:4px"></span>':'';
+          return `<button class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2" onclick="adminOpenThread('${c.otherId}',${JSON.stringify(c.otherName).replace(/'/g,'&#39;')})">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px;background:#e2f0ee;color:#0f7b6c;font-weight:700">${(c.otherName||'?').charAt(0).toUpperCase()}</div>
+            <div class="flex-grow-1 text-start" style="min-width:0">
+              <div class="d-flex justify-content-between"><span class="fw-600 small">${dot}${admEsc(c.otherName)}${unread}</span><span class="text-muted" style="font-size:.72rem">${admTime(c.lastMessage.createdAt)}</span></div>
+              <div class="text-muted text-truncate" style="font-size:.8rem">${admEsc(preview)}</div>
+            </div></button>`;
+        }).join('');
+      }
+    }
+    adminUpdateBadge(list.reduce((s,c)=>s+c.unread,0));
+  }catch{}
+}
+function adminUpdateBadge(n){const b=document.getElementById('adminMsgBadge');if(!b)return;if(n>0){b.textContent=n;b.style.display='';}else b.style.display='none';}
+async function adminOpenThread(otherId,otherName){
+  ADMIN_ACTIVE_OTHER=otherId;
+  document.getElementById('adminThreadName').textContent=otherName;
+  document.getElementById('adminThreadTyping').style.display='none';
+  document.getElementById('adminConvoView').style.display='none';
+  document.getElementById('adminThreadView').style.display='';
+  await adminLoadThread();
+}
+function adminShowConvoList(){ADMIN_ACTIVE_OTHER=null;document.getElementById('adminThreadView').style.display='none';document.getElementById('adminConvoView').style.display='';adminLoadConvos();}
+async function adminLoadThread(){
+  if(!ADMIN_ACTIVE_OTHER)return;
+  try{
+    const r=await fetch('/api/messages/thread/'+ADMIN_ACTIVE_OTHER,{credentials:'include'});
+    const d=await r.json();
+    adminRenderThread(d.messages||[]);
+    const dot=document.getElementById('adminThreadOnline');if(dot)dot.style.display=d.online?'':'none';
+    adminLoadConvos();
+  }catch{}
+}
+function adminRenderThread(msgs){
+  const el=document.getElementById('adminThreadMessages');const me=window.CURRENT_USER_ID;
+  const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<60;
+  if(!msgs.length){el.innerHTML='<div class="text-center text-muted small mt-auto pt-4">No messages.</div>';return;}
+  el.innerHTML=msgs.map(m=>{
+    const mine=m.fromId===me;
+    const align=mine?'align-self:flex-end;background:#0f7b6c;color:#fff':'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
+    let body='';
+    if(m.attachmentUrl&&m.attachmentType==='image')body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" style="max-width:180px;border-radius:8px;display:block;margin-bottom:${m.content?'4px':'0'}"></a>`;
+    else if(m.attachmentUrl)body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${admEsc(m.attachmentName||'file')}</a>`;
+    if(m.content)body+=`<div style="font-size:.9rem">${admEsc(m.content)}</div>`;
+    const tick=mine?`<span style="margin-inline-start:5px;${m.isRead?'color:#bfe3ff':''}">${m.isRead?'✓✓':'✓'}</span>`:'';
+    return `<div style="max-width:78%;padding:7px 11px;border-radius:14px;${align}">${body}<div style="font-size:.7rem;opacity:.7;margin-top:2px;text-align:${mine?'right':'left'}">${admTime(m.createdAt)}${tick}</div></div>`;
+  }).join('');
+  if(wasBottom)el.scrollTop=el.scrollHeight;
+}
+async function adminSendMsg(){
+  const inp=document.getElementById('adminMsgInput');const content=(inp.value||'').trim();
+  if(!content||!ADMIN_ACTIVE_OTHER)return;inp.value='';
+  try{
+    const r=await fetch('/api/messages',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({toId:ADMIN_ACTIVE_OTHER,content})});
+    if(!r.ok)throw new Error();
+    await adminLoadThread();
+  }catch{toast('Send failed','error');}
+}
+function adminTyping(){
+  if(!ADMIN_ACTIVE_OTHER)return;const now=Date.now();if(now-ADMIN_TYPING_TS<2500)return;ADMIN_TYPING_TS=now;
+  fetch('/api/messages/typing',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({toId:ADMIN_ACTIVE_OTHER,isTyping:true})}).catch(()=>{});
+}
+function adminConnectSSE(){
+  if(ADMIN_SSE||!('EventSource'in window))return;
+  try{
+    ADMIN_SSE=new EventSource('/api/messages/stream',{withCredentials:true});
+    ADMIN_SSE.addEventListener('message',e=>{
+      let m;try{m=JSON.parse(e.data);}catch{return;}
+      const other=m.fromId===window.CURRENT_USER_ID?m.toId:m.fromId;
+      if(ADMIN_ACTIVE_OTHER&&other===ADMIN_ACTIVE_OTHER)adminLoadThread();
+      else adminLoadConvos();
+    });
+    ADMIN_SSE.addEventListener('typing',e=>{let t;try{t=JSON.parse(e.data);}catch{return;}if(ADMIN_ACTIVE_OTHER&&t.fromId===ADMIN_ACTIVE_OTHER){const el=document.getElementById('adminThreadTyping');if(!el)return;clearTimeout(ADMIN_TYPING_HIDE);if(t.isTyping){el.textContent='typing…';el.style.display='';ADMIN_TYPING_HIDE=setTimeout(()=>el.style.display='none',4000);}else el.style.display='none';}});
+  }catch{}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement?.id==='adminMsgInput')adminSendMsg();});
 
 checkAuth();
 </script>

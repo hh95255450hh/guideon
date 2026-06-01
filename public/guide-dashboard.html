@@ -103,6 +103,9 @@
           <span class="badge bg-danger" id="guideMsgBadge" style="display:none"></span>
         </div>
         <div id="guideMsgConvoView">
+          <div class="p-2 border-bottom">
+            <button class="btn btn-sm btn-teal w-100" onclick="guideContactSupport()" data-i18n="contact_support">🛟 Contact Guideon Support</button>
+          </div>
           <div id="guideMsgConvoList" class="list-group list-group-flush">
             <div class="text-center py-3 text-muted small" data-i18n="msg_loading">Loading messages...</div>
           </div>
@@ -1128,6 +1131,16 @@ function guideUpdateBadge() {
   const badge = document.getElementById('guideMsgBadge');
   if (total > 0) { badge.textContent = total; badge.style.display = ''; }
   else badge.style.display = 'none';
+}
+
+async function guideContactSupport() {
+  try {
+    const r = await fetch('/api/messages/support-agent', { credentials: 'include' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'Support unavailable');
+    const name = (window.I18N && I18N.lang === 'ar') ? (d.agent.nameAr || d.agent.name) : d.agent.name;
+    guideOpenThread(d.agent.id, name);
+  } catch (e) { toast(e.message || 'Could not reach support', 'error'); }
 }
 
 async function guideOpenThread(otherId, otherName) {
