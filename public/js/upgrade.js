@@ -29,5 +29,10 @@
 
     // Failsafe: never leave anything hidden
     setTimeout(() => document.querySelectorAll('.reveal:not(.in)').forEach(el => el.classList.add('in')), 4000);
+
+    // Stripe-style alternating aurora glow on content sections
+    document.querySelectorAll('section.py-5').forEach((s, i) => {
+      if (i % 2 === 0) s.classList.add('gd-aurora');
+    });
   });
 })();
