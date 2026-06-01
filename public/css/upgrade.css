@@ -85,6 +85,40 @@ h1, h2, h3, h4, h5, .section-title, .navbar-brand, .fw-800, .fw-700 { font-famil
 /* ─── NAVBAR — glass on scroll feel ───────────────────────────────────── */
 .navbar.sticky-top { backdrop-filter: blur(10px); }
 
+/* ─── NAVBAR — Visit-Oman style: flat dark teal + icon nav + bright CTA ─── */
+.navbar.sticky-top {
+  background: #0b3b38 !important;            /* deep teal-green */
+  box-shadow: 0 1px 0 rgba(255,255,255,.06), 0 6px 24px rgba(8,30,28,.35);
+  padding-top: 6px; padding-bottom: 6px;
+}
+body.dark-mode .navbar.sticky-top { background: #07302e !important; }
+
+.navbar .nav-link {
+  position: relative; font-weight: 600; font-size: .94rem; padding: 8px 14px !important;
+  display: inline-flex; align-items: center; gap: 7px; border-radius: 8px;
+}
+.navbar .nav-link .nav-ic { font-size: 1.05rem; line-height: 1; opacity: .9; }
+.navbar .nav-link::after {
+  content: ''; position: absolute; left: 14px; right: 14px; bottom: 3px; height: 2px;
+  background: var(--gold); border-radius: 2px; transform: scaleX(0); transform-origin: center;
+  transition: transform .22s cubic-bezier(.22,1,.36,1);
+}
+.navbar .nav-link:hover { background: rgba(255,255,255,.07); }
+.navbar .nav-link:hover::after, .navbar .nav-link.active::after { transform: scaleX(1); }
+
+/* bright teal CTA pill (like "احجز الآن") */
+.navbar .btn-cta {
+  background: #15b8a6 !important; color: #06302c !important; border: none !important;
+  font-weight: 800; border-radius: 10px; padding: 8px 20px !important;
+  box-shadow: 0 6px 18px rgba(21,184,166,.4); letter-spacing: .2px;
+}
+.navbar .btn-cta:hover { background: #19cbb7 !important; transform: translateY(-1px); }
+
+/* outline utility buttons — softer */
+.navbar .btn-outline-light { border-color: rgba(255,255,255,.35); font-weight: 600; }
+.navbar .btn-outline-light:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.6); }
+.navbar .currency-selector { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.25); border-radius: 8px; }
+
 /* Respect reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .hero > .container { animation: none; }

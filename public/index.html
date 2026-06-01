@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css?v=40">
-<link rel="stylesheet" href="/css/upgrade.css?v=1">
+<link rel="stylesheet" href="/css/upgrade.css?v=2">
 </head>
 <body>
 
@@ -32,11 +32,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-3">
-        <li class="nav-item"><a class="nav-link active" href="/" data-i18n="nav_home">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/search.html" data-i18n="nav_find">Find a Guide</a></li>
-        <li class="nav-item"><a class="nav-link" href="/how-it-works.html" data-i18n="nav_howitworks">How it works</a></li>
-        <li class="nav-item"><a class="nav-link" href="/faq.html" data-i18n="nav_help">Help</a></li>
-        <li class="nav-item"><a class="nav-link" href="/contact.html" data-i18n="nav_contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/"><span class="nav-ic">🏠</span><span data-i18n="nav_home">Home</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="/search.html"><span class="nav-ic">🧭</span><span data-i18n="nav_find">Find a Guide</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="/how-it-works.html"><span class="nav-ic">⚙️</span><span data-i18n="nav_howitworks">How it works</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="/faq.html"><span class="nav-ic">💬</span><span data-i18n="nav_help">Help</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="/contact.html"><span class="nav-ic">✉️</span><span data-i18n="nav_contact">Contact</span></a></li>
       </ul>
       <div class="navbar-controls ms-auto">
         <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
@@ -48,7 +48,7 @@
           <option value="GBP">GBP</option>
         </select>
         <a href="/qr.html" class="btn btn-sm btn-outline-light fw-600" title="QR" data-i18n="qr_link">📱 QR</a>
-        <a href="/plan-trip.html" class="btn btn-sm btn-outline-light fw-600" data-i18n="plan_trip_btn">✈️ Plan Trip</a>
+        <a href="/plan-trip.html" class="btn btn-sm btn-cta" data-i18n="plan_trip_btn">✈️ Plan Trip</a>
         <div id="navAuth" class="d-flex gap-2">
           <a href="/login.html" class="btn btn-outline-light btn-sm fw-600" data-i18n="nav_login">Log In</a>
           <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
