@@ -43,6 +43,7 @@ app.use(helmet({
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc:      ["'self'", "https:", "'unsafe-inline'"],
       imgSrc:        ["'self'", "data:", "https:", "https://upload.wikimedia.org"],
+      mediaSrc:      ["'self'", "https:", "data:", "blob:"],
       connectSrc:    ["'self'", "https://api.qrserver.com"],
       fontSrc:       ["'self'", "https:", "data:"],
       objectSrc:     ["'none'"],

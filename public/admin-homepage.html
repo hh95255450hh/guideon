@@ -283,12 +283,17 @@ function renderSlides() {
       </div>
 
       <div class="row g-3">
-        <!-- Image -->
+        <!-- Media: image or video -->
         <div class="col-md-3">
-          <label class="form-label small fw-700">📸 ${T('hp_image', 'Image')}</label>
-          ${s.image ? `<img class="item-preview d-block mb-2" src="${esc(s.image)}">` : `<div class="item-preview mb-2"></div>`}
-          <input type="file" accept="image/*" class="form-control form-control-sm" onchange="uploadSlideImage(${i}, this)">
-          <div class="field-help">${T('hp_image_hint','Recommended size: 1920×500px')}</div>
+          <label class="form-label small fw-700">🖼️ ${T('hp_media', 'Media (image or video)')}</label>
+          ${s.video
+            ? `<video class="item-preview d-block mb-2" src="${esc(s.video)}" muted playsinline ${s.image ? `poster="${esc(s.image)}"` : ''}></video>`
+            : (s.image ? `<img class="item-preview d-block mb-2" src="${esc(s.image)}">` : `<div class="item-preview mb-2"></div>`)}
+          <input type="file" accept="image/*" class="form-control form-control-sm mb-1" onchange="uploadSlideImage(${i}, this)" title="${T('hp_image','Image')}">
+          <input type="file" accept="video/*" class="form-control form-control-sm mb-1" onchange="uploadSlideVideo(${i}, this)" title="${T('hp_video','Video')}">
+          <input class="form-control form-control-sm" placeholder="${T('hp_video_url','Or paste video URL (YouTube / MP4)')}" value="${esc(s.video||'')}" onchange="SLIDES[${i}].video=this.value.trim()">
+          ${s.video ? `<button class="btn btn-sm btn-link text-danger p-0 mt-1" onclick="SLIDES[${i}].video='';renderSlides()">✕ ${T('hp_remove_video','Remove video')}</button>` : ''}
+          <div class="field-help">${T('hp_media_hint','Image 1920×500px, or a short muted video (≤50 MB). Video takes priority over image.')}</div>
         </div>
 
         <!-- Texts -->
@@ -337,7 +342,7 @@ function renderSlides() {
 }
 
 function addSlide() {
-  SLIDES.push({ image:'', badge_en:'', badge_ar:'', title_en:'', title_ar:'', desc_en:'', desc_ar:'', link:'/search.html', button_text:'' });
+  SLIDES.push({ image:'', video:'', badge_en:'', badge_ar:'', title_en:'', title_ar:'', desc_en:'', desc_ar:'', link:'/search.html', button_text:'' });
   renderSlides();
   setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
 }
@@ -364,6 +369,23 @@ async function uploadSlideImage(i, input) {
     SLIDES[i].image = d.url;
     renderSlides();
     toast('✅ ' + T('hp_image_uploaded', 'Image uploaded'));
+  } catch (e) {
+    toast('❌ ' + e.message);
+  }
+}
+
+async function uploadSlideVideo(i, input) {
+  if (!input.files?.[0]) return;
+  const fd = new FormData();
+  fd.append('video', input.files[0]);
+  toast('⏳ ' + T('hp_uploading', 'Uploading video…'));
+  try {
+    const r = await fetch('/api/upload/video-file', { method:'POST', credentials:'include', body: fd });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    SLIDES[i].video = d.url;
+    renderSlides();
+    toast('✅ ' + T('hp_video_uploaded', 'Video uploaded'));
   } catch (e) {
     toast('❌ ' + e.message);
   }

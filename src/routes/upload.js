@@ -111,6 +111,43 @@ router.post('/image', requireLogin, upload.single('photo'), async (req, res) => 
   }
 });
 
+// Video uploader — larger limit, video mime types only.
+const uploadVid = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    const ok = ['.mp4', '.webm', '.mov', '.m4v', '.ogg'].includes(
+      path.extname(file.originalname).toLowerCase()
+    );
+    cb(null, ok);
+  },
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
+});
+
+// POST /api/upload/video-file — generic video upload (homepage slides, etc.)
+// Returns { success, url }. Use a short, muted, web-optimised clip.
+router.post('/video-file', requireLogin, uploadVid.single('video'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, message: 'No video uploaded (use mp4/webm/mov, max 50 MB).' });
+  try {
+    const { url } = await uploadBuffer({
+      buffer: req.file.buffer,
+      originalName: req.file.originalname,
+      folder: `homepage/${req.session.userId}`,
+      contentType: req.file.mimetype,
+    });
+    res.json({ success: true, url });
+  } catch (e) {
+    console.error('[upload:video-file]', e.message);
+    const msg = String(e.message || '');
+    if (/row-level security|RLS|policy/i.test(msg)) {
+      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016.' });
+    }
+    if (/exceeded|too large|maximum/i.test(msg)) {
+      return res.status(400).json({ success: false, message: 'Video too large — maximum 50 MB.' });
+    }
+    res.status(500).json({ success: false, message: 'Upload failed: ' + msg });
+  }
+});
+
 // POST /api/upload/message-attachment — upload an image to send in chat
 router.post('/message-attachment', requireLogin, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });

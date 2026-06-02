@@ -27,15 +27,17 @@
     if (heroSubtitle  && (h.subtitle_en || h.subtitle_ar))   heroSubtitle.textContent  = T(h.subtitle_en, h.subtitle_ar);
 
     // ─── CAROUSEL ─────────────────────────
-    // Only use admin slides that actually have an image — otherwise keep the
-    // default hardcoded carousel (an empty/half-filled slide must NOT wipe it).
-    const slides = (settings.carousel?.slides || []).filter(s => s && s.image);
+    // Only use admin slides that actually have media (image OR video) — otherwise
+    // keep the default hardcoded carousel (an empty slide must NOT wipe it).
+    const slides = (settings.carousel?.slides || []).filter(s => s && (s.image || s.video));
     const inner = document.querySelector('#omanCarousel .carousel-inner');
     const indicators = document.querySelector('#omanCarousel .carousel-indicators');
     if (slides.length > 0 && inner && indicators) {
+      // A slide with a video should pause auto-advance so the clip can play; we
+      // give video slides a longer interval and let the <video> loop.
       inner.innerHTML = slides.map((s, i) => `
-        <div class="carousel-item ${i === 0 ? 'active' : ''}">
-          ${s.image ? `<img loading="lazy" decoding="async" src="${esc(s.image)}" alt="${esc(T(s.title_en, s.title_ar))}" class="d-block w-100" style="height:500px;object-fit:cover;object-position:center 45%">` : ''}
+        <div class="carousel-item ${i === 0 ? 'active' : ''}" ${s.video ? 'data-bs-interval="12000"' : ''}>
+          ${slideMedia(s, T)}
           <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,rgba(0,0,0,.15) 55%,transparent 100%)"></div>
           <div class="carousel-caption text-start" style="bottom:40px;left:6%;right:40%">
             ${s.badge_en || s.badge_ar ? `<div class="badge mb-2" style="background:var(--gold);color:#000;font-size:.85rem">${esc(T(s.badge_en, s.badge_ar))}</div>` : ''}
@@ -86,5 +88,30 @@
 
   function esc(s) {
     return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Extract a YouTube video id from common URL shapes; returns '' if not YouTube.
+  function youtubeId(url) {
+    const m = String(url||'').match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+    return m ? m[1] : '';
+  }
+
+  // Render the visual layer of a slide: YouTube embed, self-hosted video, or image.
+  function slideMedia(s, T) {
+    const mediaStyle = 'height:500px;object-fit:cover;object-position:center 45%';
+    if (s.video) {
+      const yt = youtubeId(s.video);
+      if (yt) {
+        return `<iframe class="d-block w-100" style="height:500px;border:0;pointer-events:none"
+          src="https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1"
+          allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe>`;
+      }
+      return `<video class="d-block w-100" style="${mediaStyle}" autoplay muted loop playsinline preload="metadata"
+        ${s.image ? `poster="${esc(s.image)}"` : ''} src="${esc(s.video)}"></video>`;
+    }
+    if (s.image) {
+      return `<img loading="lazy" decoding="async" src="${esc(s.image)}" alt="${esc(T(s.title_en, s.title_ar))}" class="d-block w-100" style="${mediaStyle}">`;
+    }
+    return '';
   }
 })();
