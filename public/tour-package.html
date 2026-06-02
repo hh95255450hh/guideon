@@ -173,6 +173,8 @@ function renderPackage() {
   document.getElementById('pkgDestination').textContent = p.destination || '—';
   document.getElementById('pkgDuration').textContent    = fmtDuration(p);
   document.getElementById('pkgMaxGroup').textContent    = p.max_group_size || 10;
+  const ac = document.getElementById('adultCount');
+  if (ac) { ac.max = p.max_group_size || 50; ac.title = `Max ${p.max_group_size || 50} travelers`; }
   document.getElementById('pkgRating').textContent      = p.rating ? (p.rating + ' ★ (' + p.totalReviews + ' reviews)') : 'New';
 
   if (p.cover_image) document.getElementById('pkgHero').style.backgroundImage = `linear-gradient(135deg,rgba(15,28,62,0.6),rgba(15,123,108,0.6)),url('${p.cover_image}')`;
@@ -358,8 +360,14 @@ function escapeHtml(s) {
 function recalcPrice() {
   if (SELECTED_VARIANT === null || !PACKAGE) return;
   const v = PACKAGE._variants[SELECTED_VARIANT];
+  const maxGroup = parseInt(PACKAGE.max_group_size) || 50;
   let people = parseInt(document.getElementById('adultCount').value) || 2;
   if (people < 2) people = 2;
+  if (people > maxGroup) {
+    people = maxGroup;
+    const isAr = window.I18N && I18N.lang === 'ar';
+    if (typeof toast === 'function') toast(isAr ? `الحد الأقصى ${maxGroup} مسافرًا لهذه الرحلة` : `Max ${maxGroup} travelers for this tour`, 'error');
+  }
   document.getElementById('adultCount').value = people;
 
   const base       = v.priceAdult || 0;
@@ -402,8 +410,10 @@ function recalcPrice() {
 async function bookTour() {
   if (SELECTED_VARIANT === null || !SELECTED_DATE) return;
   const v = PACKAGE._variants[SELECTED_VARIANT];
+  const maxGroup = parseInt(PACKAGE.max_group_size) || 50;
   let people = parseInt(document.getElementById('adultCount').value) || 2;
   if (people < 2) people = 2;
+  if (people > maxGroup) people = maxGroup;
   const addons = Array.from(SELECTED_ADDONS).map(i => PACKAGE.addons[i]);
 
   const base     = v.priceAdult || 0;
