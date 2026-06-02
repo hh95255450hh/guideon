@@ -73,14 +73,21 @@ async function notify(opts) {
     let user = null;
     try { user = await users.findById(opts.userId); } catch (_) {}
 
-    // Email channel (only if caller provided payload AND user opted-in)
-    if (user && opts.email && opts.email.subject && opts.email.html) {
+    // Email channel — EVERY notification is also emailed to the user's
+    // registered address (unless they opted out of that channel).
+    if (user && user.email) {
       try {
         const prefs = user.notifPrefs?.email || {};
         const channel = pickEmailChannel(opts.type);
-        const allowed = prefs[channel] !== false;
-        if (allowed && user.email) {
-          emailService.send(user.email, opts.email.subject, opts.email.html).catch(() => {});
+        const allowed = prefs[channel] !== false; // default: send
+        if (allowed) {
+          const icon = opts.icon || pickDefaultIcon(opts.type);
+          const link = opts.link ? (opts.link.startsWith('http') ? opts.link : BASE_URL + opts.link) : BASE_URL;
+          const subject = (opts.email && opts.email.subject) || `${icon} ${opts.titleAr || opts.title}`;
+          const html = (opts.email && opts.email.html) || emailService.notificationEmail({
+            icon, title: opts.title, titleAr: opts.titleAr, body: opts.body, bodyAr: opts.bodyAr, link,
+          });
+          emailService.send(user.email, subject, html).catch(() => {});
         }
       } catch (_) { /* never fail the notify because of email */ }
     }

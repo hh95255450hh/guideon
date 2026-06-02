@@ -589,9 +589,24 @@ async function send(to, subject, html) {
 // ══════════════════════════════════════════════════════════════════════════════
 //  PUBLIC API
 // ══════════════════════════════════════════════════════════════════════════════
+// Generic branded, bilingual email built from any notify() payload —
+// so every in-app notification can also be delivered by email.
+function notificationEmail({ icon = '🔔', title = '', titleAr = '', body = '', bodyAr = '', link = '' }) {
+  const ar = `
+    <h1 style="margin:0 0 10px;font-size:22px;font-weight:800;color:#1a1a1a;">${icon} ${titleAr || title}</h1>
+    <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.85;">${String(bodyAr || body || '').replace(/\n/g,'<br>')}</p>
+    ${link ? btn('فتح في Guideon', link) : ''}`;
+  const en = `
+    <h1 style="margin:0 0 10px;font-size:22px;font-weight:800;color:#1a1a1a;">${icon} ${title}</h1>
+    <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.7;">${String(body || '').replace(/\n/g,'<br>')}</p>
+    ${link ? btn('Open in Guideon', link) : ''}`;
+  return layout(bilingual(ar, en), title);
+}
+
 module.exports = {
   // Low-level — for ad-hoc emails (Q&A, newsletter welcome, etc.)
   send: (to, subject, html) => send(to, subject, html),
+  notificationEmail,
 
   // Tourist
   sendTouristWelcome: (data) =>
