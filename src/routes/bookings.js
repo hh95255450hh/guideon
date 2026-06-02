@@ -7,7 +7,9 @@ const { generateVoucher } = require('../services/voucherService');
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
 
-router.post('/', requireTourist, requireVerifiedEmail, booking.createBooking);
+// Email verification is NOT required to book — bookings still go to the guide
+// for confirmation, and verification emails were unreliable (spam) for new users.
+router.post('/', requireTourist, booking.createBooking);
 router.get('/mine', requireTourist, booking.myBookings);
 router.get('/guide', requireGuide, booking.guideBookings);
 router.get('/all', requireAdmin, booking.allBookings);
