@@ -960,6 +960,7 @@ function renderGuides() {
       <td class="d-flex gap-1 flex-wrap py-2">
         ${!g.isVerified && !g.isSuspended ? `<button class="btn-approve" onclick="verifyGuide('${g.id}','${g.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
         ${!g.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${g.id}','${g.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${g.id}','${g.fullName}')">${I18N.t('reactivate_btn')}</button>`}
+        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
       </td>
     </tr>`).join('')
   : `<tr><td colspan="8" class="text-center text-muted py-4">${I18N.t('no_guides_found')}</td></tr>`;
@@ -1011,6 +1012,7 @@ function renderCompanies() {
       <td class="d-flex gap-1 flex-wrap py-2">
         ${!c.isVerified && !c.isSuspended ? `<button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
         ${!c.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${c.id}','${c.companyName||c.fullName}')">${I18N.t('reactivate_btn')}</button>`}
+        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
       </td>
     </tr>`).join('')
   : `<tr><td colspan="8" class="text-center text-muted py-4">${I18N.t('no_companies')}</td></tr>`;
@@ -1030,6 +1032,7 @@ async function loadTourists() {
         <td>${t.isSuspended ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : `<span class="chip chip-verified">${I18N.t('status_active')}</span>`}</td>
         <td>
           ${!t.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${t.fullName}')">${I18N.t('suspend_btn')}</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${t.id}','${t.fullName}')">${I18N.t('reactivate_btn')}</button>`}
+          <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${t.id}', ${JSON.stringify(t.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
         </td>
       </tr>`).join('') || `<tr><td colspan="6" class="text-center text-muted py-4">${I18N.t('no_tourists_found')}</td></tr>`;
   } catch {}
@@ -1125,6 +1128,24 @@ async function verifyCompany(id, name) {
     toast(d.message, 'success');
     loadStats(); loadPending(); if (ACTIVE_TAB==='companies') loadCompanies();
   } catch(e) { toast(e.message,'error'); }
+}
+
+async function deleteUser(id, name) {
+  const isAr = window.I18N && I18N.lang === 'ar';
+  const warn = isAr
+    ? `⚠️ حذف "${name}" نهائيًا مع كل بياناته (الرحلات، الحجوزات، التقييمات، الرسائل)؟\n\nلا يمكن التراجع عن هذا.`
+    : `⚠️ Permanently delete "${name}" and ALL their data (tours, bookings, reviews, messages)?\n\nThis cannot be undone.`;
+  if (!confirm(warn)) return;
+  try {
+    const r = await fetch(`/api/admin/users/${id}`, { method:'DELETE', credentials:'include' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(d.message, 'success');
+    loadStats(); loadPending();
+    if (ACTIVE_TAB==='guides')    loadGuides();
+    if (ACTIVE_TAB==='companies') loadCompanies();
+    if (ACTIVE_TAB==='tourists')  loadTourists();
+  } catch(e) { toast(e.message, 'error'); }
 }
 
 async function suspendUser(id, name) {

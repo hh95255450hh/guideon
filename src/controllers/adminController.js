@@ -9,6 +9,7 @@ const users    = new SupabaseDB('users');
 const bookings = new SupabaseDB('bookings');
 const reviews  = new SupabaseDB('reviews', 'reviewId');
 const messages    = new SupabaseDB('messages');
+const packages    = new SupabaseDB('tour_packages');
 const auditLog    = new SupabaseDB('admin_audit_log');
 
 // CSV helper: convert array of objects to CSV
@@ -321,9 +322,33 @@ exports.deleteUser = async (req, res) => {
     }
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    if (user.userType === 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin accounts cannot be deleted here.' });
+    }
+
+    // Clean up related data so nothing is left orphaned on the platform.
+    try {
+      if (user.userType === 'guide' || user.userType === 'company') {
+        const pkgs = await packages.findAllByField('providerId', id).catch(() => []);
+        for (const p of (pkgs || [])) await packages.delete(p.id).catch(() => {});
+      }
+      const allBk = await bookings.readAll().catch(() => []);
+      for (const b of (allBk || [])) {
+        if (b.guideId === id || b.touristId === id) await bookings.delete(b.id).catch(() => {});
+      }
+      const allRv = await reviews.readAll().catch(() => []);
+      for (const r of (allRv || [])) {
+        if (r.guideId === id || r.touristId === id) await reviews.delete(r.reviewId).catch(() => {});
+      }
+      const allMsg = await messages.readAll().catch(() => []);
+      for (const m of (allMsg || [])) {
+        if (m.fromId === id || m.toId === id) await messages.delete(m.id).catch(() => {});
+      }
+    } catch (_) { /* best-effort cleanup */ }
+
     await users.delete(id);
-    audit.logAction(req, { action: 'deleteUser', targetType: 'user', targetId: id, details: { name: user.fullName, email: user.email } });
-    res.json({ success: true, message: `${user.fullName} has been permanently deleted.` });
+    audit.logAction(req, { action: 'deleteUser', targetType: 'user', targetId: id, details: { name: user.fullName, email: user.email, userType: user.userType } });
+    res.json({ success: true, message: `${user.fullName} and their data have been permanently deleted.` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
