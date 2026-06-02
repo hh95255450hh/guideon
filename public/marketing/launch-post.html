@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>Guideon — Launch Post</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#222; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; font-family:'Tajawal','Plus Jakarta Sans',sans-serif; }
+  .post {
+    width:1080px; height:1080px; position:relative; overflow:hidden; color:#fff;
+    background:
+      radial-gradient(900px 600px at 12% 6%, rgba(201,168,76,.30), transparent 55%),
+      radial-gradient(900px 650px at 100% 0%, rgba(46,196,176,.42), transparent 55%),
+      radial-gradient(800px 700px at 50% 120%, rgba(15,123,108,.5), transparent 60%),
+      linear-gradient(150deg,#0a1430 0%,#11244b 45%,#0d5b51 110%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+  }
+  .post::after { content:''; position:absolute; inset:0; background-image:radial-gradient(rgba(255,255,255,.06) 1.5px,transparent 1.5px); background-size:34px 34px; mask-image:linear-gradient(#000,transparent 80%); }
+  .inner { position:relative; z-index:2; padding:0 90px; }
+  .logo-chip { background:#fff; display:inline-flex; padding:22px 38px; border-radius:28px; box-shadow:0 20px 50px rgba(0,0,0,.35); margin-bottom:54px; }
+  .logo-chip img { height:96px; display:block; }
+  .badge { display:inline-block; background:rgba(201,168,76,.18); border:1.5px solid rgba(201,168,76,.5); color:#f3d27a; font-weight:800; font-size:30px; padding:12px 30px; border-radius:999px; margin-bottom:40px; backdrop-filter:blur(4px); }
+  h1 { font-size:104px; font-weight:900; line-height:1.12; letter-spacing:-1px; margin-bottom:30px; }
+  h1 .g { background:linear-gradient(90deg,#f6d77c,#c9a84c); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  p.sub { font-size:42px; font-weight:600; line-height:1.55; color:#dbe6f5; max-width:880px; margin:0 auto 56px; }
+  .steps { display:flex; gap:26px; justify-content:center; margin-bottom:64px; }
+  .step { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); border-radius:20px; padding:20px 34px; font-size:34px; font-weight:800; backdrop-filter:blur(6px); }
+  .url { display:inline-flex; align-items:center; gap:14px; font-size:46px; font-weight:800; background:#15b8a6; color:#06302c; padding:20px 48px; border-radius:18px; box-shadow:0 16px 40px rgba(21,184,166,.45); }
+  .flag { position:absolute; bottom:54px; font-size:40px; opacity:.9; z-index:2; }
+</style>
+</head>
+<body>
+  <div class="post">
+    <div class="inner">
+      <div class="logo-chip"><img src="/logo.png" alt="Guideon"></div>
+      <div class="badge">🎉 إطلاق رسمي</div>
+      <h1>وصل <span class="g">Guideon</span><br>إلى عُمان</h1>
+      <p class="sub">منصتك لحجز مرشدين سياحيين معتمدين في كل أنحاء السلطنة</p>
+      <div class="steps">
+        <div class="step">🔍 اكتشف</div>
+        <div class="step">📅 احجز</div>
+        <div class="step">🌿 استمتع</div>
+      </div>
+      <div class="url">🌐 guideon.om</div>
+    </div>
+    <div class="flag">🇴🇲 Discover Oman with a certified local guide</div>
+  </div>
+</body>
+</html>
