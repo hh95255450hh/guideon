@@ -105,7 +105,9 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-600 small" data-i18n="nationality">Nationality</label>
-                <input type="text" class="form-control" id="nationality" data-i18n-ph="nat_ph" placeholder="e.g. British">
+                <select class="form-select" id="nationality">
+                  <option value="" data-i18n="nat_select">— Select your nationality —</option>
+                </select>
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-600 small" data-i18n="pref_lang">Preferred Language</label>
@@ -213,7 +215,26 @@
 // Populate the country code dropdown on page load (default: Oman)
 document.addEventListener('DOMContentLoaded', () => {
   if (window.populateCountryCodes) populateCountryCodes(document.getElementById('phoneCountry'), 'OM');
+  populateNationalities();
 });
+
+// Fill the nationality dropdown from the world country list
+// (Israel is already excluded; Palestine 🇵🇸 is included).
+function populateNationalities() {
+  const sel = document.getElementById('nationality');
+  const list = window.COUNTRY_CODES || [];
+  if (!sel || !list.length) return;
+  const isAr = window.I18N && I18N.lang === 'ar';
+  // sort alphabetically by the display language, keep the placeholder first
+  const sorted = [...list].sort((a, b) =>
+    (isAr ? (a.ar || a.name) : a.name).localeCompare(isAr ? (b.ar || b.name) : b.name, isAr ? 'ar' : 'en'));
+  sorted.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.name; // store the English country name for consistency
+    opt.textContent = `${c.flag || ''} ${isAr ? (c.ar || c.name) : c.name}`.trim();
+    sel.appendChild(opt);
+  });
+}
 
 function switchType(type) {
   document.getElementById('userType').value = type;
