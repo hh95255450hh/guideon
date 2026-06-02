@@ -105,9 +105,8 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-600 small" data-i18n="nationality">Nationality</label>
-                <select class="form-select" id="nationality">
-                  <option value="" data-i18n="nat_select">— Select your nationality —</option>
-                </select>
+                <input class="form-control" id="nationality" list="natList" autocomplete="off" data-i18n-ph="nat_ph" placeholder="Type to search your nationality…">
+                <datalist id="natList"></datalist>
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-600 small" data-i18n="pref_lang">Preferred Language</label>
@@ -221,19 +220,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // Fill the nationality dropdown from the world country list
 // (Israel is already excluded; Palestine 🇵🇸 is included).
 function populateNationalities() {
-  const sel = document.getElementById('nationality');
+  const dl = document.getElementById('natList');
   const list = window.COUNTRY_CODES || [];
-  if (!sel || !list.length) return;
+  if (!dl || !list.length) return;
   const isAr = window.I18N && I18N.lang === 'ar';
-  // sort alphabetically by the display language, keep the placeholder first
+  // No flag emojis (Windows renders them as 2-letter codes). Type to filter.
   const sorted = [...list].sort((a, b) =>
     (isAr ? (a.ar || a.name) : a.name).localeCompare(isAr ? (b.ar || b.name) : b.name, isAr ? 'ar' : 'en'));
-  sorted.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.name; // store the English country name for consistency
-    opt.textContent = `${c.flag || ''} ${isAr ? (c.ar || c.name) : c.name}`.trim();
-    sel.appendChild(opt);
-  });
+  dl.innerHTML = sorted.map(c => `<option value="${isAr ? (c.ar || c.name) : c.name}"></option>`).join('');
 }
 
 function switchType(type) {
