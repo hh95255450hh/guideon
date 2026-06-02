@@ -97,6 +97,14 @@ h1, h2, h3, h4, h5, .section-title, .navbar-brand, .fw-800, .fw-700 { font-famil
 body.dark-mode .navbar.sticky-top {
   background: linear-gradient(110deg, rgba(7,48,46,.82) 0%, rgba(10,92,80,.6) 60%, rgba(18,143,125,.5) 100%) !important;
 }
+.navbar.sticky-top { transition: background .3s ease, backdrop-filter .3s ease, box-shadow .3s ease, border-color .3s ease; }
+/* At the very top of the page the navbar is transparent (no background) and
+   merges with the hero; a glass background fades in once you scroll. */
+body.nav-top .navbar.sticky-top {
+  background: transparent !important;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  box-shadow: none; border-bottom-color: transparent !important;
+}
 
 /* logo restored to original — just a soft shadow for edge definition */
 .navbar-brand img { filter: drop-shadow(0 1px 4px rgba(0,0,0,.35)); }

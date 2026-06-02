@@ -34,5 +34,10 @@
     document.querySelectorAll('section.py-5').forEach((s, i) => {
       if (i % 2 === 0) s.classList.add('gd-aurora');
     });
+
+    // Transparent navbar at the top, glass background after scrolling
+    const setNavTop = () => document.body.classList.toggle('nav-top', window.scrollY < 40);
+    setNavTop();
+    window.addEventListener('scroll', setNavTop, { passive: true });
   });
 })();
