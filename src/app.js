@@ -96,8 +96,14 @@ try {
       pruneSessionInterval: 60 * 60,
     });
     console.log('[Session] Using Postgres session store.');
+  } else if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+    // Persistent sessions via Supabase (no DB connection string needed).
+    // Requires the app_sessions table (migration 025).
+    const SupabaseStore = require('./config/supabaseSessionStore')(session);
+    sessionStore = new SupabaseStore();
+    console.log('[Session] Using Supabase session store.');
   } else {
-    throw new Error('Using in-memory store (set USE_PG_SESSIONS=true to enable Postgres)');
+    throw new Error('Using in-memory store (no session backend configured)');
   }
 } catch (e) {
   console.warn(`[Session] ${e.message}.`);
