@@ -227,7 +227,7 @@ function renderBookings() {
   container.innerHTML = list.map(b => {
     const canCancel = ['pending', 'confirmed'].includes(b.status);
     const tourDatePast = new Date(b.tourDate + 'T23:59:59') < new Date();
-    const canReview = b.status === 'completed' && tourDatePast;
+    const canReview = b.status === 'completed' && tourDatePast && !b.reviewed;
     const statusIcon = { pending: '⏳', confirmed: '✅', completed: '🎉', cancelled: '❌' }[b.status] || '';
     const durationLabel = b.duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
     const pLabel = b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl');
@@ -249,6 +249,7 @@ function renderBookings() {
           <a href="/guide-profile.html?id=${b.guideId}" class="btn btn-sm btn-outline-secondary">${I18N.t('view_guide')}</a>
           ${(b.status === 'confirmed' && window.PAYMENTS_ENABLED) ? `<a href="/checkout.html?booking_id=${b.id}" class="btn btn-sm btn-gold">💳 Pay Now</a>` : ''}
           ${canReview ? `<button class="btn btn-sm btn-teal" onclick="openReview('${b.id}')">${I18N.t('write_review')}</button>` : ''}
+          ${(b.status === 'completed' && b.reviewed) ? `<span class="badge bg-success-subtle text-success align-self-center">${I18N.t('reviewed_done') || '✓ Reviewed'}</span>` : ''}
           ${canCancel ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${b.id}')">${I18N.t('cancel_bk')}</button>` : ''}
         </div>
       </div>

@@ -6,6 +6,7 @@ const { notify } = require('../services/notificationService');
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
 const packages = new SupabaseDB('tour_packages');
+const reviews  = new SupabaseDB('reviews');
 
 // Columns added by migration 021 that may not exist yet on older deployments.
 // We strip them and retry so the booking flow keeps working before the migration runs.
@@ -186,7 +187,10 @@ exports.myBookings = async (req, res) => {
 
     const enriched = await Promise.all(list.map(async b => {
       const guide = await users.findById(b.guideId);
-      return { ...b, guideName: guide ? guide.fullName : 'Unknown', guideRating: guide ? guide.rating : 0 };
+      // Has this booking already been reviewed? Used to hide the "Write Review" button.
+      let reviewed = false;
+      try { reviewed = !!(await reviews.findByField('bookingId', b.id)); } catch (_) {}
+      return { ...b, guideName: guide ? guide.fullName : 'Unknown', guideRating: guide ? guide.rating : 0, reviewed };
     }));
     res.json({ success: true, bookings: enriched });
   } catch (err) {
