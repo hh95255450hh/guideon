@@ -688,7 +688,14 @@ exports.createStaff = async (req, res) => {
       createdAt: new Date().toISOString(),
     };
 
-    await users.insert(record);
+    try {
+      await users.insert(record);
+    } catch (insErr) {
+      // Strip any column the schema doesn't have yet (e.g. createdBy) and retry.
+      const m = String(insErr?.message || '').match(/Could not find the '([^']+)' column/);
+      if (m) { delete record[m[1]]; await users.insert(record); }
+      else throw insErr;
+    }
     audit.logAction(req, {
       action: 'createStaff', targetType: 'user', targetId: record.id,
       details: { name: fullName, email: staffEmail, role: role || 'custom', permissions },
