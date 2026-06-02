@@ -98,6 +98,20 @@ h1, h2, h3, h4, h5, .section-title, .navbar-brand, .fw-800, .fw-700 { font-famil
 }
 /* the hero now spans the full top; pad its content below the floating navbar */
 .hero { padding-top: 118px !important; }
+
+/* On mobile the navbar wraps to several rows, so keep it in normal flow
+   (sticky, not fixed) to avoid overlapping the hero, and keep a solid glass
+   background so it stays readable. */
+@media (max-width: 991px) {
+  .navbar.sticky-top { position: sticky !important; top: 0; }
+  .hero { padding-top: 36px !important; }
+  body.nav-top .navbar.sticky-top {
+    background: linear-gradient(110deg, rgba(10,58,55,.95), rgba(15,123,108,.88) 60%, rgba(46,196,176,.82)) !important;
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    box-shadow: 0 6px 20px rgba(8,30,28,.30);
+    border-bottom-color: rgba(255,255,255,.15) !important;
+  }
+}
 body.dark-mode .navbar.sticky-top {
   background: linear-gradient(110deg, rgba(7,48,46,.82) 0%, rgba(10,92,80,.6) 60%, rgba(18,143,125,.5) 100%) !important;
 }
