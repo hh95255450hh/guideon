@@ -731,7 +731,7 @@ async function checkAuth() {
   try {
     const r = await fetch('/api/auth/me',{credentials:'include'});
     const d = await r.json();
-    if (!d.success || d.user.userType !== 'admin') { window.location.href='/login.html'; return; }
+    if (!d.success || (d.user.userType !== 'admin' && d.user.userType !== 'staff')) { window.location.href='/login.html'; return; }
     window.CURRENT_USER_ID = d.user.id;
     loadStats();
     loadPending();
