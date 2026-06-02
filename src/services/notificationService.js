@@ -73,9 +73,12 @@ async function notify(opts) {
     let user = null;
     try { user = await users.findById(opts.userId); } catch (_) {}
 
-    // Email channel — EVERY notification is also emailed to the user's
-    // registered address (unless they opted out of that channel).
-    if (user && user.email) {
+    // Email channel — important notifications are emailed to the user's
+    // registered address (unless they opted out). High-frequency, low-value
+    // types (chat messages) are NOT emailed, to protect domain reputation /
+    // deliverability — they still get in-app + push instantly.
+    const EMAIL_SKIP_TYPES = ['message'];
+    if (user && user.email && !EMAIL_SKIP_TYPES.includes(opts.type)) {
       try {
         const prefs = user.notifPrefs?.email || {};
         const channel = pickEmailChannel(opts.type);
