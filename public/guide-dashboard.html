@@ -181,6 +181,13 @@
 
                 <!-- BASICS -->
                 <div id="tt-basics" class="tour-tab row g-3">
+                  <div class="col-12">
+                    <label class="form-label small fw-600">📷 <span data-i18n="tour_cover">Tour Cover Photo</span></label>
+                    <div id="tourImgPreview" style="height:170px;border-radius:12px;background:#eef1f3;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:#9aa3ab;font-size:2rem;margin-bottom:8px">🗺️</div>
+                    <input type="file" accept="image/*" class="form-control form-control-sm" id="tourImgFile" onchange="uploadTourImage(this)">
+                    <input type="hidden" id="tourCoverUrl">
+                    <div class="small text-muted mt-1" data-i18n="tour_cover_hint">Recommended 1200×600px — shown on your tour card.</div>
+                  </div>
                   <div class="col-md-8">
                     <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
                     <input class="form-control" id="tourTitle" data-i18n-ph="tour_title_ph" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
@@ -662,6 +669,13 @@ function removeItineraryDay(i) { TOUR_ITINERARY.splice(i,1); renderItinerary(); 
 function openTourModal(tour) {
   document.getElementById('tourId').value          = tour?.id || '';
   document.getElementById('tourTitle').value       = tour?.title || '';
+  // Cover photo (existing tour) — load preview, or reset for a new tour
+  const cover = tour?.cover_image || (Array.isArray(tour?.images) && tour.images[0]) || '';
+  document.getElementById('tourCoverUrl').value = cover;
+  const prev = document.getElementById('tourImgPreview');
+  if (cover) { prev.style.backgroundImage = `url('${cover}')`; prev.textContent = ''; }
+  else { prev.style.backgroundImage = ''; prev.textContent = '🗺️'; }
+  const f = document.getElementById('tourImgFile'); if (f) f.value = '';
   // Categories: support both legacy single string and new array
   const tourCats = Array.isArray(tour?.categories) && tour.categories.length
     ? tour.categories
@@ -713,11 +727,30 @@ async function deleteTour(id, name) {
   } catch { toast('Network error', 'error'); }
 }
 
+async function uploadTourImage(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { toast('Max 10 MB', 'error'); input.value=''; return; }
+  toast(I18N.t('uploading') || 'Uploading…');
+  try {
+    const fd = new FormData(); fd.append('photo', file);
+    const r = await fetch('/api/upload/image', { method:'POST', credentials:'include', body: fd });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'Upload failed');
+    document.getElementById('tourCoverUrl').value = d.url;
+    const prev = document.getElementById('tourImgPreview');
+    prev.style.backgroundImage = `url('${d.url}')`; prev.textContent = '';
+    toast('✅ ' + (I18N.t('hp_image_uploaded') || 'Image uploaded'));
+  } catch (e) { toast('❌ ' + (e.message || 'Upload failed'), 'error'); input.value=''; }
+}
+
 async function saveTour() {
   const btn = document.getElementById('saveTourBtn');
   const id  = document.getElementById('tourId').value;
   const body = {
     title:          document.getElementById('tourTitle').value.trim(),
+    cover_image:    document.getElementById('tourCoverUrl').value || '',
+    images:         document.getElementById('tourCoverUrl').value ? [document.getElementById('tourCoverUrl').value] : [],
     categories:     Array.from(document.querySelectorAll('#tourCategoryChips input:checked')).map(i => i.value),
     category:       (document.querySelector('#tourCategoryChips input:checked') || {}).value || 'Cultural', // legacy single field for back-compat
     destination:    document.getElementById('tourDestination').value.trim(),
