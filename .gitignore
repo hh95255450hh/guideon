@@ -12,3 +12,8 @@ Tempcookie*.txt
 new-credentials.json
 GUIDEON_Credentials.docx
 .admin-credentials.txt
+
+# App build artifacts (do not commit)
+app/*.zip
+*.aab
+*.apk
