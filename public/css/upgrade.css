@@ -86,42 +86,16 @@ h1, h2, h3, h4, h5, .section-title, .navbar-brand, .fw-800, .fw-700 { font-famil
 .navbar.sticky-top { backdrop-filter: blur(10px); }
 
 /* ─── NAVBAR — Visit-Oman style: flat dark teal + icon nav + bright CTA ─── */
+/* Solid teal gradient navbar — always on, all devices (no transparency). */
 .navbar.sticky-top {
-  /* float OVER the hero so the blue gradient reaches the very top of the page */
-  position: fixed !important; top: 0; left: 0; right: 0; z-index: 1031;
-  background: linear-gradient(110deg, rgba(10,58,55,.78) 0%, rgba(15,123,108,.62) 58%, rgba(46,196,176,.52) 100%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  backdrop-filter: blur(18px) saturate(150%);
-  border-bottom: 1px solid rgba(255,255,255,.20);
-  box-shadow: 0 10px 34px rgba(8,30,28,.38), inset 0 1px 0 rgba(255,255,255,.28);
+  background: linear-gradient(110deg, #0a3a37 0%, #0f7b6c 60%, #2ec4b0 100%) !important;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,.15);
+  box-shadow: 0 6px 22px rgba(8,30,28,.32), inset 0 1px 0 rgba(255,255,255,.22);
   padding-top: 6px; padding-bottom: 6px;
 }
-/* the hero now spans the full top; pad its content below the floating navbar */
-.hero { padding-top: 118px !important; }
-
-/* On mobile the navbar wraps to several rows, so keep it in normal flow
-   (sticky, not fixed) to avoid overlapping the hero, and keep a solid glass
-   background so it stays readable. */
-@media (max-width: 991px) {
-  .navbar.sticky-top { position: sticky !important; top: 0; }
-  .hero { padding-top: 36px !important; }
-  body.nav-top .navbar.sticky-top {
-    background: linear-gradient(110deg, rgba(10,58,55,.95), rgba(15,123,108,.88) 60%, rgba(46,196,176,.82)) !important;
-    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    box-shadow: 0 6px 20px rgba(8,30,28,.30);
-    border-bottom-color: rgba(255,255,255,.15) !important;
-  }
-}
 body.dark-mode .navbar.sticky-top {
-  background: linear-gradient(110deg, rgba(7,48,46,.82) 0%, rgba(10,92,80,.6) 60%, rgba(18,143,125,.5) 100%) !important;
-}
-.navbar.sticky-top { transition: background .3s ease, backdrop-filter .3s ease, box-shadow .3s ease, border-color .3s ease; }
-/* At the very top of the page the navbar is transparent (no background) and
-   merges with the hero; a glass background fades in once you scroll. */
-body.nav-top .navbar.sticky-top {
-  background: transparent !important;
-  -webkit-backdrop-filter: none; backdrop-filter: none;
-  box-shadow: none; border-bottom-color: transparent !important;
+  background: linear-gradient(110deg, #07302e 0%, #0a5c50 60%, #128f7d 100%) !important;
 }
 
 /* logo restored to original — just a soft shadow for edge definition */
