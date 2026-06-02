@@ -928,11 +928,17 @@ function toggleWishlist(id) {
   });
 }
 
+function isNewGuide(g) {
+  // "New" applies only for the first 7 days after the guide joined.
+  if (!g.createdAt) return false;
+  const days = (Date.now() - new Date(g.createdAt).getTime()) / 86400000;
+  return days >= 0 && days <= 7;
+}
 function getBadge(g) {
   if (g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2) return `<div class="super-guide-medal">${I18N.t('super_guide')}</div>`;
   if (g.totalReviews >= 3 && g.rating >= 4.8) return `<div class="guest-fav-badge">${I18N.t('guest_fav')}</div>`;
   if (g.rating >= 4.5) return `<div class="top-rated-badge">${I18N.t('top_rated')}</div>`;
-  if (!g.totalReviews || g.totalReviews === 0) return `<div class="new-guide-badge">${I18N.t('new_guide')}</div>`;
+  if (isNewGuide(g)) return `<div class="new-guide-badge">${I18N.t('new_guide')}</div>`;
   return '';
 }
 
@@ -960,15 +966,9 @@ async function loadFeatured() {
               : `<div class="big-avatar">${initials(g.fullName)}</div>`}
           </div>
           <div class="p-3">
-            <div class="d-flex align-items-start justify-content-between mb-1">
-              <div>
-                <h6 class="mb-0 fw-700">${g.fullName}</h6>
-                ${g.isVerified ? `<span class="verified-badge">✓ ${I18N.t('status_verified')}</span>` : ''}
-              </div>
-              <div class="text-end">
-                <div class="fw-800" style="color:var(--teal)">${convertPrice(g.pricePerDay)}</div>
-                <div class="text-muted" style="font-size:0.75rem" data-i18n="per_day">/day</div>
-              </div>
+            <div class="mb-1">
+              <h6 class="mb-0 fw-700">${g.fullName}</h6>
+              ${g.isVerified ? `<span class="verified-badge">✓ ${I18N.t('status_verified')}</span>` : ''}
             </div>
             <div class="rating small mb-1">${stars(Math.round(g.rating))} <span class="text-muted">${g.rating} · ${I18N.t('reviews_count', g.totalReviews)}</span></div>
             <div class="mb-2">${g.languages.map(l=>`<span class="lang-badge me-1">${l}</span>`).join('')}</div>
