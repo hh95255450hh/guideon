@@ -186,14 +186,6 @@
                 <input type="text" class="form-control" id="companyRegNo" data-i18n-ph="company_reg_ph" placeholder="CR-XXXXXX">
               </div>
               <div class="col-12">
-                <label class="form-label fw-600 small" data-i18n="company_services_lbl">Services Offered *</label>
-                <input type="text" class="form-control" id="companyServices" data-i18n-ph="company_services_ph" placeholder="Desert Safaris, Dhow Cruises, City Tours">
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-600 small" data-i18n="company_dests_lbl">Destinations Covered *</label>
-                <input type="text" class="form-control" id="companyDestinations" data-i18n-ph="company_dests_ph" placeholder="Muscat, Wahiba Sands, Musandam">
-              </div>
-              <div class="col-12">
                 <label class="form-label fw-600 small" data-i18n="company_desc_lbl">Company Description *</label>
                 <textarea class="form-control" id="companyDescription" rows="3" data-i18n-ph="company_desc_ph" placeholder="Tell tourists about your company..."></textarea>
               </div>
@@ -328,10 +320,8 @@ async function doRegister(e) {
   } else if (type === 'company') {
     body.companyName        = document.getElementById('companyName').value;
     body.companyRegNo       = document.getElementById('companyRegNo').value;
-    body.companyServices    = document.getElementById('companyServices').value;
-    body.companyDestinations= document.getElementById('companyDestinations').value;
     body.companyDescription = document.getElementById('companyDescription').value;
-    if (!body.companyName || !body.companyServices || !body.companyDescription) {
+    if (!body.companyName || !body.companyDescription) {
       err.textContent = I18N.t('guide_note');
       err.classList.remove('d-none');
       btn.disabled = false; btn.textContent = I18N.t('reg_btn');

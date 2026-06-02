@@ -166,16 +166,6 @@
               <input type="url" class="form-control" id="eVideoUrl" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=...">
             </div>
             <div class="col-12">
-              <label class="form-label fw-600 small" data-i18n="company_services_lbl">Services Offered *</label>
-              <input type="text" class="form-control" id="eServices" data-i18n-ph="company_services_ph" placeholder="Desert Safaris, Dhow Cruises, City Tours">
-              <div class="form-text" data-i18n="co_sep_commas">Separate with commas</div>
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-600 small" data-i18n="company_dests_lbl">Destinations Covered *</label>
-              <input type="text" class="form-control" id="eDestinations" data-i18n-ph="company_dests_ph" placeholder="Muscat, Wahiba Sands, Musandam">
-              <div class="form-text" data-i18n="co_sep_commas">Separate with commas</div>
-            </div>
-            <div class="col-12">
               <label class="form-label fw-600 small" data-i18n="company_desc_lbl">Company Description *</label>
               <textarea class="form-control" id="eDescription" rows="4" data-i18n-ph="company_desc_ph" placeholder="Tell tourists about your company, experience, and what makes you unique..."></textarea>
             </div>
@@ -333,10 +323,10 @@ function render() {
   document.getElementById('statusDescription').textContent = statusDesc;
   if (!isVerified && !isSuspended) document.getElementById('pendingNotice').classList.remove('d-none');
 
-  // Stats
-  const svcs = COMPANY.companyServices || [];
-  const dsts  = COMPANY.companyDestinations || [];
-  document.getElementById('statServices').textContent = svcs.length + PACKAGES.length;
+  // Stats — derived from the company's actual tours (no fixed services/destinations)
+  const svcs = [];
+  const dsts = [...new Set((PACKAGES || []).map(p => (p.destination || '').trim()).filter(Boolean))];
+  document.getElementById('statServices').textContent = (PACKAGES || []).length;
   document.getElementById('statDests').textContent    = dsts.length;
   document.getElementById('statViews').textContent    = '—';
   document.getElementById('statSince').textContent    = COMPANY.createdAt
@@ -421,8 +411,6 @@ function toggleEdit() {
     document.getElementById('eRegNo').value        = COMPANY.companyRegNo || '';
     document.getElementById('ePhone').value        = COMPANY.phone        || '';
     document.getElementById('eVideoUrl').value     = COMPANY.videoUrl     || '';
-    document.getElementById('eServices').value     = (COMPANY.companyServices     || []).join(', ');
-    document.getElementById('eDestinations').value = (COMPANY.companyDestinations || []).join(', ');
     document.getElementById('eDescription').value  = COMPANY.companyDescription || '';
     view.classList.add('d-none');
     edit.classList.remove('d-none');
@@ -435,16 +423,12 @@ async function saveProfile() {
   const companyName = document.getElementById('eCompanyName').value.trim();
   if (!companyName) { errEl.textContent = I18N.t('co_name_required'); errEl.classList.remove('d-none'); return; }
 
-  const svcRaw  = document.getElementById('eServices').value;
-  const dstRaw  = document.getElementById('eDestinations').value;
   const changes = {
     companyName,
     companyRegNo:       document.getElementById('eRegNo').value.trim(),
     phone:              document.getElementById('ePhone').value.trim(),
     videoUrl:           document.getElementById('eVideoUrl').value.trim(),
     companyDescription: document.getElementById('eDescription').value.trim(),
-    companyServices:    svcRaw  ? svcRaw.split(',').map(s => s.trim()).filter(Boolean)  : [],
-    companyDestinations:dstRaw  ? dstRaw.split(',').map(s => s.trim()).filter(Boolean)  : [],
   };
 
   try {
