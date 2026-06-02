@@ -92,8 +92,20 @@
     .gd-bell-footer a { color: #0f7b6c; font-size: .82rem; font-weight: 600; text-decoration: none; }
 
     @media (max-width: 576px) {
-      .gd-bell-panel { width: 92vw; right: -8px; }
-      html[dir="rtl"] .gd-bell-panel { left: -8px; right: auto; }
+      /* On phones, anchor the panel to the viewport (centered) so it never
+         overflows off the edge regardless of where the bell sits. */
+      .gd-bell-panel,
+      html[dir="rtl"] .gd-bell-panel {
+        position: fixed;
+        top: 66px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: 94vw;
+        max-width: 94vw;
+        max-height: 75vh;
+        animation: none;
+      }
     }
   `;
   const style = document.createElement('style');
