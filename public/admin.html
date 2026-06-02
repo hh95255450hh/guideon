@@ -104,13 +104,13 @@
     <div class="col-md-6">
       <div class="guide-card p-3">
         <h6 class="fw-700 mb-3">📊 Bookings by Status</h6>
-        <div style="height:240px;position:relative"><canvas id="chartStatus"></canvas></div>
+        <div id="chartStatus" style="min-height:200px;padding:8px 4px"></div>
       </div>
     </div>
     <div class="col-md-6">
       <div class="guide-card p-3">
         <h6 class="fw-700 mb-3">⭐ Guide Ratings Distribution</h6>
-        <div style="height:240px;position:relative"><canvas id="chartRatings"></canvas></div>
+        <div id="chartRatings" style="min-height:200px;padding:8px 4px"></div>
       </div>
     </div>
   </div>
@@ -806,27 +806,49 @@ async function loadStats() {
   } catch {}
 }
 
+// Dependency-free CSS bar charts — always render regardless of Chart.js.
+function _barRow(label, n, max, color) {
+  const pct = max > 0 ? Math.round((n / max) * 100) : 0;
+  return `<div style="margin-bottom:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:.85rem;margin-bottom:5px;color:#334">
+      <span>${label}</span><strong style="font-size:.95rem">${n}</strong></div>
+    <div style="background:#eef1f3;border-radius:8px;height:16px;overflow:hidden">
+      <div style="width:${pct}%;height:100%;background:${color};border-radius:8px;transition:width .6s ease;min-width:${n>0?'6px':'0'}"></div>
+    </div></div>`;
+}
 function renderCharts(s) {
-  if (typeof Chart === 'undefined' || !s) return;
-  const teal='#0f7b6c',gold='#c9a84c',red='#ef4444',blue='#3b82f6';
-  try {
-    if (_chartStatus) _chartStatus.destroy();
-    _chartStatus = new Chart(document.getElementById('chartStatus'),{
-      type:'doughnut',
-      data:{labels:['Pending','Confirmed','Completed','Cancelled'],datasets:[{data:[s.pendingBookings||0,s.confirmedBookings||0,s.completedBookings||0,s.cancelledBookings||0],backgroundColor:[gold,blue,teal,red],borderWidth:2}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}
-    });
-  } catch(e) { console.warn('chartStatus', e.message); }
-  try {
-    if (_chartRatings) _chartRatings.destroy();
-    const rb=[0,0,0,0,0];
-    (s.guideRatings||[]).forEach(r=>{ const i=Math.min(Math.round(r)-1,4); if(i>=0) rb[i]++; });
-    _chartRatings = new Chart(document.getElementById('chartRatings'),{
-      type:'bar',
-      data:{labels:['1★','2★','3★','4★','5★'],datasets:[{label:'Guides',data:rb,backgroundColor:[red,gold,blue,teal,'#10b981'],borderRadius:6}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
-    });
-  } catch(e) { console.warn('chartRatings', e.message); }
+  if (!s) return;
+  const isAr = window.I18N && I18N.lang === 'ar';
+  const teal='#0f7b6c',gold='#c9a84c',red='#ef4444',blue='#3b82f6',green='#10b981';
+
+  // ── Bookings by status ──
+  const statusEl = document.getElementById('chartStatus');
+  if (statusEl) {
+    const sd = [
+      { l: isAr?'قيد الانتظار':'Pending',   n: s.pendingBookings||0,   c: gold },
+      { l: isAr?'مؤكدة':'Confirmed',         n: s.confirmedBookings||0, c: blue },
+      { l: isAr?'مكتملة':'Completed',        n: s.completedBookings||0, c: teal },
+      { l: isAr?'ملغاة':'Cancelled',         n: s.cancelledBookings||0, c: red  },
+    ];
+    const maxS = Math.max(1, ...sd.map(x => x.n));
+    const total = sd.reduce((a,x)=>a+x.n,0);
+    statusEl.innerHTML = total === 0
+      ? `<div class="text-muted text-center py-4">${isAr?'لا توجد حجوزات بعد':'No bookings yet'}</div>`
+      : sd.map(x => _barRow(x.l, x.n, maxS, x.c)).join('');
+  }
+
+  // ── Guide ratings distribution ──
+  const ratingsEl = document.getElementById('chartRatings');
+  if (ratingsEl) {
+    const rb = [0,0,0,0,0];
+    (s.guideRatings||[]).forEach(r => { const i = Math.min(Math.round(r)-1, 4); if (i >= 0) rb[i]++; });
+    const maxR = Math.max(1, ...rb);
+    const total = rb.reduce((a,n)=>a+n,0);
+    const colors = [red, gold, blue, teal, green];
+    ratingsEl.innerHTML = total === 0
+      ? `<div class="text-muted text-center py-4">${isAr?'لا توجد تقييمات بعد — يحتاج المرشدون لمراجعات':'No ratings yet — guides need reviews'}</div>`
+      : rb.map((n,i) => _barRow('★'.repeat(i+1), n, maxR, colors[i])).join('');
+  }
 }
 
 // ── Pending Approvals ─────────────────────────────────────────
