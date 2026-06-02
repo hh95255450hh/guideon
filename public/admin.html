@@ -280,7 +280,7 @@
         <div class="col-md-2"><input class="form-control" id="stPhone" data-i18n-ph="staff_phone_ph" placeholder="Phone (optional)"></div>
         <div class="col-md-2"><input class="form-control" id="stPassword" type="text" data-i18n-ph="staff_pwd_ph" placeholder="Password (8+ chars)" minlength="8" required></div>
         <div class="col-md-2">
-          <select class="form-select" id="stRole" required>
+          <select class="form-select" id="stRole" required onchange="toggleStaffPerms()">
             <option value="" data-i18n="staff_select_role">Select role...</option>
             <option value="support" data-i18n="role_support">🎧 Customer Support</option>
             <option value="moderator" data-i18n="role_moderator">🛡️ Content Moderator</option>
@@ -288,7 +288,12 @@
             <option value="marketing" data-i18n="role_marketing">📣 Marketing</option>
             <option value="finance" data-i18n="role_finance">💰 Finance</option>
             <option value="manager" data-i18n="role_manager">👨‍💼 Operations Manager</option>
+            <option value="custom" data-i18n="role_custom">🔧 Custom (pick permissions)</option>
           </select>
+        </div>
+        <div class="col-12 mt-1 d-none" id="stPermsWrap">
+          <label class="form-label fw-700 small mb-2">🔐 <span data-i18n="staff_custom_perms">Custom Permissions — pick what this staff member can do</span></label>
+          <div id="stPermsBox" class="d-flex flex-wrap gap-2"></div>
         </div>
         <div class="col-12 mt-2">
           <button class="btn btn-primary" type="submit" data-i18n="staff_add_btn">➕ Add Staff Member</button>
@@ -546,16 +551,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const msg = document.getElementById('stMsg');
     msg.innerHTML = '<div class="text-muted mt-2">Creating…</div>';
     try {
+      const role = document.getElementById('stRole').value;
+      const payload = {
+        fullName: document.getElementById('stName').value,
+        email:    document.getElementById('stEmail').value,
+        phone:    document.getElementById('stPhone').value,
+        password: document.getElementById('stPassword').value,
+        role,
+      };
+      if (role === 'custom') {
+        payload.customPermissions = [...document.querySelectorAll('#stPermsBox input:checked')].map(i => i.value);
+        if (!payload.customPermissions.length) {
+          msg.innerHTML = '<div class="alert alert-warning mt-2 small">Pick at least one permission.</div>';
+          return;
+        }
+      }
       const r = await fetch('/api/admin/staff', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: document.getElementById('stName').value,
-          email:    document.getElementById('stEmail').value,
-          phone:    document.getElementById('stPhone').value,
-          password: document.getElementById('stPassword').value,
-          role:     document.getElementById('stRole').value,
-        }),
+        body: JSON.stringify(payload),
       });
       const j = await r.json();
       msg.innerHTML = `<div class="alert alert-${j.success ? 'success' : 'danger'} mt-2 small">${j.message}</div>`;
@@ -565,6 +579,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// ── Staff custom permissions ─────────────────────────────────
+const STAFF_PERMS = [
+  { v:'view_users',        en:'View users',        ar:'عرض المستخدمين' },
+  { v:'edit_users',        en:'Edit users',        ar:'تعديل المستخدمين' },
+  { v:'suspend_users',     en:'Suspend users',     ar:'تعليق المستخدمين' },
+  { v:'delete_users',      en:'Delete users',      ar:'حذف المستخدمين' },
+  { v:'reset_passwords',   en:'Reset passwords',   ar:'إعادة كلمات المرور' },
+  { v:'verify_guides',     en:'Verify guides',     ar:'توثيق المرشدين' },
+  { v:'verify_companies',  en:'Verify companies',  ar:'توثيق الشركات' },
+  { v:'view_bookings',     en:'View bookings',     ar:'عرض الحجوزات' },
+  { v:'cancel_bookings',   en:'Cancel bookings',   ar:'إلغاء الحجوزات' },
+  { v:'complete_bookings', en:'Complete bookings', ar:'إكمال الحجوزات' },
+  { v:'delete_reviews',    en:'Delete reviews',    ar:'حذف التقييمات' },
+  { v:'delete_messages',   en:'Delete messages',   ar:'حذف الرسائل' },
+  { v:'broadcast_email',   en:'Broadcast email',   ar:'إرسال بريد جماعي' },
+  { v:'view_audit_log',    en:'View audit log',    ar:'عرض سجل العمليات' },
+  { v:'export_data',       en:'Export data',       ar:'تصدير البيانات' },
+  { v:'view_analytics',    en:'View analytics',    ar:'عرض التحليلات' },
+  { v:'manage_staff',      en:'Manage staff',      ar:'إدارة الموظفين' },
+];
+function populateStaffPerms() {
+  const box = document.getElementById('stPermsBox');
+  if (!box) return;
+  const isAr = window.I18N && I18N.lang === 'ar';
+  box.innerHTML = STAFF_PERMS.map(p => `
+    <label class="border rounded px-2 py-1 small d-inline-flex align-items-center gap-1" style="cursor:pointer">
+      <input type="checkbox" value="${p.v}"> ${isAr ? p.ar : p.en}
+    </label>`).join('');
+}
+function toggleStaffPerms() {
+  const wrap = document.getElementById('stPermsWrap');
+  if (wrap) wrap.classList.toggle('d-none', document.getElementById('stRole').value !== 'custom');
+}
 
 // ── Analytics ────────────────────────────────────────────────
 let _chartRevenue = null;
@@ -737,6 +785,7 @@ async function checkAuth() {
     loadPending();
     adminConnectSSE();
     adminLoadConvos();
+    populateStaffPerms();
   } catch { window.location.href='/login.html'; }
 }
 
