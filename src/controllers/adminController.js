@@ -80,6 +80,27 @@ exports.recentActivity = async (req, res) => {
   }
 };
 
+// GET /api/admin/email-test?to=you@example.com — sends a branded test email
+// to the given address (or the admin alert recipient) and returns the result.
+exports.emailTest = async (req, res) => {
+  try {
+    const cfg = email.emailConfig();
+    const to = (req.query.to && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(req.query.to))
+      ? req.query.to.trim()
+      : (cfg.alertRecipients[0] || 'hh92hh@guideon.om');
+    const html = email.notificationEmail({
+      icon: '✅', title: 'Guideon test email', titleAr: 'رسالة تجريبية من Guideon',
+      body: 'This is a test email — your Guideon email delivery is working correctly.',
+      bodyAr: 'هذه رسالة تجريبية — نظام البريد في Guideon يعمل بنجاح. 🎉',
+      link: '/admin.html',
+    });
+    const result = await email.sendVerbose(to, '[Guideon] ✅ رسالة تجريبية', html);
+    res.json({ success: true, sentTo: to, from: cfg.from, result });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // CSV helper: convert array of objects to CSV
 function toCSV(rows, columns) {
   if (!rows?.length) return '';
