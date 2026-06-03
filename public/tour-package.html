@@ -86,9 +86,17 @@
 
     <div class="col-lg-4">
       <div class="price-card">
+        <div class="d-flex justify-content-end mb-2">
+          <select class="form-select form-select-sm" style="width:auto" id="currencySelect" onchange="setCurrency(this.value)" title="Currency">
+            <option value="OMR">🇴🇲 OMR</option>
+            <option value="USD">🇺🇸 USD $</option>
+            <option value="EUR">🇪🇺 EUR €</option>
+            <option value="GBP">🇬🇧 GBP £</option>
+          </select>
+        </div>
         <div class="text-center mb-3">
           <div class="text-muted small" data-i18n="starting_from">Starting from</div>
-          <div style="font-size:2rem;font-weight:800;color:var(--teal)" id="basePrice">— OMR</div>
+          <div style="font-size:2rem;font-weight:800;color:var(--teal)" id="basePrice">—</div>
           <div class="small text-muted" data-i18n="for_2_people">for 2 people</div>
         </div>
         <hr>
@@ -127,6 +135,29 @@ let PACKAGE = null;
 let SELECTED_VARIANT = null;
 let SELECTED_DATE    = null;
 let SELECTED_ADDONS  = new Set();
+
+// ── Currency (display only — bookings are always stored in OMR) ──
+const RATES = { OMR:1, USD:2.60, EUR:2.40, GBP:2.05 };
+const SYM   = { OMR:'OMR', USD:'$', EUR:'€', GBP:'£' };
+function getCurrency() { return localStorage.getItem('gd_currency') || 'OMR'; }
+function money(omr) {
+  const c = getCurrency();
+  const val = Number((omr || 0) * RATES[c]).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return c === 'OMR' ? `${val} OMR` : `${SYM[c]}${val}`;
+}
+function setCurrency(cur) {
+  if (!RATES[cur]) return;
+  localStorage.setItem('gd_currency', cur);
+  const sel = document.getElementById('currencySelect'); if (sel) sel.value = cur;
+  if (PACKAGE) {
+    const sv = SELECTED_VARIANT, sd = SELECTED_DATE, sa = new Set(SELECTED_ADDONS);
+    renderPackage();
+    if (sv != null) selectVariant(sv);
+    sa.forEach(i => { const cb = document.getElementById('addon-' + i); if (cb) { cb.checked = true; SELECTED_ADDONS.add(i); } });
+    if (sd) { SELECTED_DATE = sd; document.querySelectorAll('.date-btn').forEach(b => { if (b.textContent.trim() === formatDate(sd)) b.classList.add('selected'); }); }
+    recalcPrice();
+  }
+}
 
 // Format tour duration → "1d 4h 30m" / "4h" / "30m"
 function fmtDuration(t) {
@@ -223,7 +254,7 @@ function renderPackage() {
           ${v.description ? `<div class="small text-muted mt-1">${v.description}</div>` : ''}
         </div>
         <div class="text-end" style="min-width:130px">
-          <div class="variant-price">${(v.priceAdult || 0).toFixed(2)} OMR</div>
+          <div class="variant-price">${money(v.priceAdult || 0)}</div>
           <div class="small text-muted">${(window.I18N && I18N.t('for_2_people')) || 'for 2 people'}${v.priceChild ? ` · +${v.priceChild} ${(window.I18N && I18N.t('per_extra')) || 'per extra'}` : ''}</div>
         </div>
       </div>
@@ -241,7 +272,7 @@ function renderPackage() {
           <strong>${a.name}</strong>
           ${a.description ? `<div class="small text-muted">${a.description}</div>` : ''}
         </div>
-        <div class="text-end fw-700" style="color:var(--teal)">+${(a.price || 0).toFixed(2)} OMR</div>
+        <div class="text-end fw-700" style="color:var(--teal)">+${money(a.price || 0)}</div>
       </label>`).join('');
   }
 
@@ -266,7 +297,8 @@ function renderPackage() {
       </div>`;
   }
 
-  document.getElementById('basePrice').textContent = (Math.min(...variants.map(v => v.priceAdult || Infinity))).toFixed(2) + ' OMR';
+  document.getElementById('basePrice').textContent = money(Math.min(...variants.map(v => v.priceAdult || Infinity)));
+  const cs = document.getElementById('currencySelect'); if (cs) cs.value = getCurrency();
 
   const cp = p.cancellation_policy || 'flexible';
   document.getElementById('cancelPolicy').textContent =
@@ -390,13 +422,13 @@ function recalcPrice() {
   const baseLbl  = (window.I18N && I18N.t('base_for_2'))   || 'base (2 people)';
   const extraLbl = (window.I18N && I18N.t('extra_persons'))|| 'extra persons';
 
-  let html = `<div class="price-line"><span>${v.name} — ${baseLbl}</span><span>${base.toFixed(2)} OMR</span></div>`;
+  let html = `<div class="price-line"><span>${v.name} — ${baseLbl}</span><span>${money(base)}</span></div>`;
   if (extras > 0) {
-    html += `<div class="price-line"><span>+ ${extras} ${extraLbl} × ${perExtra.toFixed(2)}</span><span>${(perExtra*extras).toFixed(2)} OMR</span></div>`;
+    html += `<div class="price-line"><span>+ ${extras} ${extraLbl} × ${money(perExtra)}</span><span>${money(perExtra*extras)}</span></div>`;
   }
-  addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${a.name}</span><span>${a.price.toFixed(2)} OMR</span></div>`; });
-  if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 Discount (${discount}%)</span><span>−${discountAmount.toFixed(2)} OMR</span></div>`;
-  html += `<div class="price-line price-total"><span>Total (${people} ${(window.I18N && I18N.t('people')) || 'people'})</span><span style="color:var(--teal)">${total.toFixed(2)} OMR</span></div>`;
+  addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${a.name}</span><span>${money(a.price)}</span></div>`; });
+  if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 Discount (${discount}%)</span><span>−${money(discountAmount)}</span></div>`;
+  html += `<div class="price-line price-total"><span>Total (${people} ${(window.I18N && I18N.t('people')) || 'people'})</span><span style="color:var(--teal)">${money(total)}</span></div>`;
   document.getElementById('priceBreakdown').innerHTML = html;
 
   const ready = SELECTED_DATE && people >= 2;
