@@ -854,18 +854,24 @@ async function checkAuth() {
 // ── Stats ─────────────────────────────────────────────────────
 let _chartStatus=null, _chartRatings=null;
 async function loadStats() {
+  let s = null, errMsg = '';
   try {
     const r = await fetch('/api/admin/stats',{credentials:'include'});
     const d = await r.json();
-    const s = d.stats;
-    document.getElementById('statGuides').textContent    = s.totalGuides + ' (' + s.verifiedGuides + ' ✓)';
-    document.getElementById('statCompanies').textContent = s.totalCompanies + ' (' + s.verifiedCompanies + ' ✓)';
-    document.getElementById('statTourists').textContent  = s.totalTourists;
-    document.getElementById('statBookings').textContent  = s.totalBookings;
-    document.getElementById('statRevenue').textContent   = s.totalRevenue.toFixed(0);
-    document.getElementById('pendingBadge').textContent  = (s.pendingGuides||0) + (s.pendingCompanies||0);
-    renderCharts(s);
-  } catch {}
+    if (!d.success) errMsg = d.message || 'stats error';
+    s = d.stats || null;
+  } catch (e) { errMsg = e.message || 'network error'; }
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  if (s) {
+    set('statGuides',    (s.totalGuides||0) + ' (' + (s.verifiedGuides||0) + ' ✓)');
+    set('statCompanies', (s.totalCompanies||0) + ' (' + (s.verifiedCompanies||0) + ' ✓)');
+    set('statTourists',  s.totalTourists||0);
+    set('statBookings',  s.totalBookings||0);
+    set('statRevenue',   Number(s.totalRevenue||0).toFixed(0));
+    set('pendingBadge',  (s.pendingGuides||0) + (s.pendingCompanies||0));
+  }
+  // Always attempt to render the charts, isolated so a failure can't blank them.
+  try { renderCharts(s, errMsg); } catch (e) { console.error('renderCharts', e); }
 }
 
 // Dependency-free CSS bar charts — always render regardless of Chart.js.
@@ -878,10 +884,20 @@ function _barRow(label, n, max, color) {
       <div style="width:${pct}%;height:100%;background:${color};border-radius:8px;transition:width .6s ease;min-width:${n>0?'6px':'0'}"></div>
     </div></div>`;
 }
-function renderCharts(s) {
-  if (!s) return;
+function renderCharts(s, errMsg) {
   const isAr = window.I18N && I18N.lang === 'ar';
   const teal='#0f7b6c',gold='#c9a84c',red='#ef4444',blue='#3b82f6',green='#10b981';
+  const statusEl0 = document.getElementById('chartStatus');
+  const ratingsEl0 = document.getElementById('chartRatings');
+  if (!s) {
+    const msg = errMsg
+      ? (isAr?'تعذّر تحميل البيانات: ':'Could not load data: ') + errMsg
+      : (isAr?'لا توجد بيانات':'No data');
+    const box = `<div class="text-muted text-center py-4">${msg}</div>`;
+    if (statusEl0) statusEl0.innerHTML = box;
+    if (ratingsEl0) ratingsEl0.innerHTML = box;
+    return;
+  }
 
   // ── Bookings by status ──
   const statusEl = document.getElementById('chartStatus');
