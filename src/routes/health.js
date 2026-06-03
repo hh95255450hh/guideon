@@ -34,21 +34,6 @@ router.get('/metrics', (req, res) => {
   });
 });
 
-// Key diagnostic — confirms WHICH Supabase key the server is configured with,
-// without ever revealing the key itself (only presence + a short, safe prefix).
-router.get('/keycheck', (req, res) => {
-  const svc  = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-  const anon = process.env.SUPABASE_ANON_KEY || '';
-  const active = svc || anon;
-  res.json({
-    serviceRoleKeyPresent: !!svc,
-    serviceRolePrefix: svc ? svc.slice(0, 10) : null,   // e.g. "sb_secret_"
-    anonKeyPresent: !!anon,
-    usingKey: svc ? 'service_role' : (anon ? 'anon' : 'none'),
-    activeKeyPrefix: active ? active.slice(0, 10) : null,
-  });
-});
-
 // Legacy /health endpoint kept for compatibility
 router.get('/', (req, res) => {
   res.json({ status: 'ok', app: 'Guideon', timestamp: new Date().toISOString() });
