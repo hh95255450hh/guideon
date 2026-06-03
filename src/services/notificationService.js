@@ -95,6 +95,29 @@ async function notify(opts) {
       } catch (_) { /* never fail the notify because of email */ }
     }
 
+    // ── Admin alert channel — email the platform owner about EVERY event ──
+    // The owner asked to be notified of all platform activity by email.
+    // Chat messages are skipped to protect inbox/deliverability; everything else
+    // (bookings, registrations, reviews, trip lifecycle, payouts, system) is sent.
+    try {
+      const ADMIN_ALERT = process.env.ADMIN_ALERT_EMAIL || process.env.ADMIN_EMAIL || 'hh92hh@guideon.om';
+      const ADMIN_ALERT_SKIP = ['message'];
+      const enabled = process.env.ADMIN_ALERTS_ENABLED !== 'false';
+      if (enabled && ADMIN_ALERT && !ADMIN_ALERT_SKIP.includes(opts.type)) {
+        const icon = opts.icon || pickDefaultIcon(opts.type);
+        const who  = user ? (user.fullName || user.companyName || user.email || opts.userId) : opts.userId;
+        const link = opts.link ? (opts.link.startsWith('http') ? opts.link : BASE_URL + opts.link) : BASE_URL;
+        const subject = `[Guideon] ${icon} ${opts.titleAr || opts.title}`;
+        const html = emailService.notificationEmail({
+          icon,
+          title:   `${opts.title} — for ${who}`,
+          titleAr: `${opts.titleAr || opts.title} — للمستخدم: ${who}`,
+          body:    opts.body, bodyAr: opts.bodyAr, link,
+        });
+        emailService.send(ADMIN_ALERT, subject, html).catch(() => {});
+      }
+    } catch (_) { /* never fail notify because of the admin alert */ }
+
     // WhatsApp channel — fires for every notification if user has a phone +
     // hasn't disabled WhatsApp in their preferences. No-op if WHATSAPP_ENABLED!=true.
     if (user && user.phone && whatsapp.isEnabled()) {
