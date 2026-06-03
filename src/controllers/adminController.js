@@ -80,25 +80,6 @@ exports.recentActivity = async (req, res) => {
   }
 };
 
-// GET /api/admin/email-test — verifies email config and sends a real test
-// email to the first admin-alert recipient, returning the exact Resend result.
-exports.emailTest = async (req, res) => {
-  try {
-    const cfg = email.emailConfig();
-    const to = (cfg.alertRecipients[0]) || 'hh92hh@guideon.om';
-    const html = email.notificationEmail({
-      icon: '✅', title: 'Guideon email test', titleAr: 'اختبار بريد Guideon',
-      body: 'If you received this, admin email alerts are working.',
-      bodyAr: 'إن وصلتك هذه الرسالة، فإن تنبيهات البريد الإدارية تعمل بنجاح.',
-      link: '/admin.html',
-    });
-    const result = await email.sendVerbose(to, '[Guideon] ✅ Email test', html);
-    res.json({ success: true, config: cfg, sentTo: to, result });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
 // CSV helper: convert array of objects to CSV
 function toCSV(rows, columns) {
   if (!rows?.length) return '';
