@@ -206,7 +206,12 @@
 const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
 function getCurrency() { return localStorage.getItem('gd_currency') || 'OMR'; }
 function setCurrency(cur) { localStorage.setItem('gd_currency', cur); renderGuides(SHOWING_WISHLIST ? ALL_GUIDES.filter(g => isWishlisted(g.id)) : ALL_GUIDES); }
-function convertPrice(omr) { const c = getCurrency(); return (omr * RATES[c]).toFixed(2) + ' ' + c; }
+function convertPrice(omr) {
+  const c = getCurrency();
+  const v = Number((omr || 0) * RATES[c]).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const SYM = { OMR: 'OMR', USD: '$', EUR: '€', GBP: '£' };
+  return c === 'OMR' ? `${v} OMR` : `${SYM[c]}${v}`;
+}
 document.addEventListener('DOMContentLoaded', () => { const s = document.getElementById('currencySelect'); if (s) s.value = getCurrency(); });
 
 /* ── WISHLIST stored in localStorage ── */

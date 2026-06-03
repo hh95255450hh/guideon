@@ -907,8 +907,13 @@ document.addEventListener('DOMContentLoaded', loadStats);
 /* ── CURRENCY (TourHQ) ── */
 const RATES = { OMR: 1, USD: 2.60, EUR: 2.40, GBP: 2.05 };
 function getCurrency() { return localStorage.getItem('gd_currency') || 'OMR'; }
-function setCurrency(cur) { localStorage.setItem('gd_currency', cur); loadFeatured(); }
-function convertPrice(omr) { const c = getCurrency(); return (omr * RATES[c]).toFixed(2) + ' ' + c; }
+function setCurrency(cur) { localStorage.setItem('gd_currency', cur); loadFeatured(); loadPopularTours(); }
+function convertPrice(omr) {
+  const c = getCurrency();
+  const v = Number((omr || 0) * RATES[c]).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const SYM = { OMR: 'OMR', USD: '$', EUR: '€', GBP: '£' };
+  return c === 'OMR' ? `${v} OMR` : `${SYM[c]}${v}`;
+}
 document.addEventListener('DOMContentLoaded', () => {
   const sel = document.getElementById('currencySelect');
   if (sel) sel.value = getCurrency();
@@ -1033,7 +1038,7 @@ async function loadPopularTours() {
             <div class="tour-title">${esc(t.title)}</div>
             <div class="tour-meta">📍 ${esc(t.destination || '')}${t.providerName ? ' · ' + esc(t.providerName) : ''}</div>
             <div class="d-flex justify-content-between align-items-center mt-1">
-              <div><span class="tour-price">OMR ${price}</span> <span class="tour-meta">${perLbl}</span></div>
+              <div><span class="tour-price">${convertPrice(price)}</span> <span class="tour-meta">${perLbl}</span></div>
               ${t.rating ? `<span class="tour-meta">⭐ ${t.rating}</span>` : ''}
             </div>
             <button class="tour-btn w-100">${viewLbl} →</button>
