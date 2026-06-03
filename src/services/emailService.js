@@ -11,7 +11,9 @@ function getResend() {
   return _resend;
 }
 
-const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.om>';
+// Sender MUST be a domain verified in Resend. guideon.guide is the verified
+// (free-tier) domain; replies still go to the business inbox via REPLY_TO.
+const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.guide>';
 const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'hh92hh@guideon.om';
 const APP_URL   = process.env.APP_URL         || 'https://guideon.om';
 const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://guideon.om';
@@ -613,11 +615,35 @@ function notifyAdmins(subject, html) {
   return Promise.all(list.map(to => send(to, subject, html).catch(() => {})));
 }
 
+// Diagnostics — returns the actual Resend result/error instead of swallowing it.
+async function sendVerbose(to, subject, html) {
+  const resend = getResend();
+  if (!resend) return { ok: false, reason: 'RESEND_API_KEY not configured', from: FROM };
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM, to, subject, html, text: htmlToText(html), reply_to: REPLY_TO,
+    });
+    if (error) return { ok: false, reason: error.message || String(error), from: FROM };
+    return { ok: true, id: data?.id, from: FROM };
+  } catch (e) { return { ok: false, reason: e.message, from: FROM }; }
+}
+function emailConfig() {
+  return {
+    from: FROM, replyTo: REPLY_TO,
+    hasApiKey: !!getResend(),
+    adminEmail: ADMIN_EMAIL,
+    alertRecipients: (process.env.ADMIN_ALERT_EMAIL || ADMIN_EMAIL || '').split(',').map(s => s.trim()).filter(Boolean),
+    alertsEnabled: process.env.ADMIN_ALERTS_ENABLED !== 'false',
+  };
+}
+
 module.exports = {
   // Low-level — for ad-hoc emails (Q&A, newsletter welcome, etc.)
   send: (to, subject, html) => send(to, subject, html),
   notificationEmail,
   notifyAdmins,
+  sendVerbose,
+  emailConfig,
 
   // Tourist
   sendTouristWelcome: (data) =>
