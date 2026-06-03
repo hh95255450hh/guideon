@@ -19,6 +19,7 @@ const logger = pino({
       '*.RESEND_API_KEY',
       '*.OPENAI_API_KEY',
       '*.SUPABASE_ANON_KEY',
+      '*.SUPABASE_SERVICE_ROLE_KEY',
     ],
     censor: '[REDACTED]',
   },

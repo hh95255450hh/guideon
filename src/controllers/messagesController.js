@@ -4,7 +4,7 @@ const sse = require('../services/sseHub');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
 );
 
 // Attachment columns may be missing until migration 023 runs — strip & retry.

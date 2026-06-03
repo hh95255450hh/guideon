@@ -10,7 +10,9 @@ const { createClient } = require('@supabase/supabase-js');
 
 module.exports = function (session) {
   const Store = session.Store;
-  const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+  // Use the service-role key (bypasses RLS) when available so sessions keep
+  // working after RLS is enabled; fall back to anon for local/dev.
+  const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY);
   const TABLE = 'app_sessions';
   const DEFAULT_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 

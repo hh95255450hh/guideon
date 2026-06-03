@@ -1,7 +1,12 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+// Prefer the service-role key (bypasses Row-Level Security so the trusted
+// server can read/write), falling back to the anon key for local/dev setups.
+// IMPORTANT: the service-role key must NEVER be exposed to the browser — it is
+// only used here on the server. Once RLS is enabled on the tables, the anon key
+// alone can no longer access data, which is exactly what protects the database.
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 let supabase;
 
