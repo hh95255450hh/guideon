@@ -266,6 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initGoogle();
   if (window.populateCountryCodes) populateCountryCodes(document.getElementById('phoneCountry'), 'OM');
   populateNationalities();
+  // Pre-select the account type from ?type=guide|company|tourist (direct links).
+  const t = new URLSearchParams(location.search).get('type');
+  if (['tourist','guide','company'].includes(t)) switchType(t);
 });
 
 // Fill the nationality dropdown from the world country list

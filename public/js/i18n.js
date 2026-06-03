@@ -2359,7 +2359,13 @@ const I18N = {
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
       const t   = TRANSLATIONS[this.lang][key] || TRANSLATIONS['en'][key];
-      if (t && typeof t === 'string') el.textContent = t;
+      if (t && typeof t === 'string') {
+        // Translations are trusted developer constants. When a string contains
+        // HTML (e.g. links in FAQ answers), render it so the markup is live
+        // instead of showing raw <a>/<strong> tags as text.
+        if (/<[a-z][\s\S]*>/i.test(t)) el.innerHTML = t;
+        else el.textContent = t;
+      }
     });
 
     // Translate placeholders
