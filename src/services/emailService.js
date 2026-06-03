@@ -603,10 +603,21 @@ function notificationEmail({ icon = '🔔', title = '', titleAr = '', body = '',
   return layout(bilingual(ar, en), title);
 }
 
+// Send an alert to the platform owner + any responsible staff. Recipients come
+// from ADMIN_ALERT_EMAIL (comma-separated, for adding staff later), falling back
+// to ADMIN_EMAIL. Disabled entirely with ADMIN_ALERTS_ENABLED=false.
+function notifyAdmins(subject, html) {
+  if (process.env.ADMIN_ALERTS_ENABLED === 'false') return Promise.resolve();
+  const list = (process.env.ADMIN_ALERT_EMAIL || process.env.ADMIN_EMAIL || 'hh92hh@guideon.om')
+    .split(',').map(s => s.trim()).filter(Boolean);
+  return Promise.all(list.map(to => send(to, subject, html).catch(() => {})));
+}
+
 module.exports = {
   // Low-level — for ad-hoc emails (Q&A, newsletter welcome, etc.)
   send: (to, subject, html) => send(to, subject, html),
   notificationEmail,
+  notifyAdmins,
 
   // Tourist
   sendTouristWelcome: (data) =>
@@ -662,8 +673,8 @@ module.exports = {
 
   // Admin
   sendAdminNewGuide: (data) =>
-    send(ADMIN_EMAIL, `New guide registration — ${data.guideName}`, adminNewGuide(data)),
+    notifyAdmins(`New guide registration — ${data.guideName}`, adminNewGuide(data)),
 
   sendAdminNewCompany: (data) =>
-    send(ADMIN_EMAIL, `New company registration — ${data.companyName}`, adminNewCompany(data)),
+    notifyAdmins(`New company registration — ${data.companyName}`, adminNewCompany(data)),
 };

@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
+const emailService = require('../services/emailService');
 
 const packages = new SupabaseDB('tour_packages');
 const users    = new SupabaseDB('users');
@@ -145,6 +146,21 @@ exports.create = async (req, res) => {
     };
 
     const inserted = await packages.insert(pkg);
+
+    // Alert the owner/staff of a new tour (a key "addition" to manage).
+    try {
+      const prov = await users.findById(pkg.providerId);
+      const who  = prov ? (prov.fullName || prov.companyName || prov.email) : pkg.providerId;
+      emailService.notifyAdmins(`[Guideon] 🗺️ New tour: ${pkg.title}`, emailService.notificationEmail({
+        icon: '🗺️',
+        title:   `New tour added: "${pkg.title}" by ${who}`,
+        titleAr: `رحلة جديدة: "${pkg.title}" بواسطة ${who}`,
+        body:    `Region: ${pkg.destination || '-'} · Price: ${pkg.price_adult || '-'} OMR`,
+        bodyAr:  `المنطقة: ${pkg.destination || '-'} · السعر: ${pkg.price_adult || '-'} ريال`,
+        link: '/admin.html',
+      }));
+    } catch (_) {}
+
     res.status(201).json({ success: true, message: 'Package created. Publish it when ready.', package: inserted });
   } catch (err) {
     console.error('[packageController.create] FAILED:', err?.message || err, err?.code || '');
