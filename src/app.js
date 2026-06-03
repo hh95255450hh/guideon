@@ -39,15 +39,15 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc:    ["'self'"],
-      scriptSrc:     ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      scriptSrc:     ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://accounts.google.com/gsi/client"],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc:      ["'self'", "https:", "'unsafe-inline'"],
       imgSrc:        ["'self'", "data:", "https:", "https://upload.wikimedia.org"],
       mediaSrc:      ["'self'", "https:", "data:", "blob:"],
-      connectSrc:    ["'self'", "https://api.qrserver.com"],
+      connectSrc:    ["'self'", "https://api.qrserver.com", "https://accounts.google.com"],
       fontSrc:       ["'self'", "https:", "data:"],
       objectSrc:     ["'none'"],
-      frameSrc:      ["'self'", "https://www.youtube.com"],
+      frameSrc:      ["'self'", "https://www.youtube.com", "https://accounts.google.com"],
       frameAncestors:["'self'"],
     },
   },

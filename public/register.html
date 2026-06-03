@@ -197,6 +197,15 @@
           <button type="submit" class="btn-teal btn w-100 py-2 mt-4" id="submitBtn" data-i18n="reg_btn">Create Account</button>
         </form>
 
+        <!-- Google Sign-Up (tourists only, shown when configured) -->
+        <div id="googleAuthWrap" class="d-none">
+          <div class="d-flex align-items-center my-3">
+            <hr class="flex-grow-1 m-0"><span class="px-2 small text-muted" data-i18n="or_lbl">or</span><hr class="flex-grow-1 m-0">
+          </div>
+          <div id="googleBtn" class="d-flex justify-content-center"></div>
+          <p class="text-center text-muted mt-2" style="font-size:.75rem" data-i18n="google_tourist_note">Quick sign-up for travelers — creates a tourist account.</p>
+        </div>
+
         <p class="text-center small text-muted mt-4">
           <span data-i18n="have_account">Already have an account?</span>
           <a href="/login.html" class="fw-600" style="color:var(--teal)" data-i18n="signin_link">Sign In</a>
@@ -208,12 +217,53 @@
 
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=38"></script>
+<script src="/js/i18n.js?v=39"></script>
 <script src="/js/country-codes.js?v=1"></script>
 <script src="/js/chatbot.js?v=13"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
+// ── Google Sign-Up (tourists only) ──────────────────────────────
+let _googleClientId = '';
+async function initGoogle() {
+  try {
+    const r = await fetch('/api/auth/google-config');
+    const { clientId } = await r.json();
+    if (!clientId) return;
+    _googleClientId = clientId;
+    const start = () => {
+      if (!window.google || !google.accounts) { setTimeout(start, 300); return; }
+      google.accounts.id.initialize({ client_id: clientId, callback: onGoogleCredential });
+      google.accounts.id.renderButton(document.getElementById('googleBtn'),
+        { theme: 'outline', size: 'large', shape: 'pill', text: 'signup_with', width: 300 });
+      toggleGoogleWrap();
+    };
+    start();
+  } catch (_) {}
+}
+function toggleGoogleWrap() {
+  const show = _googleClientId && document.getElementById('userType').value === 'tourist';
+  const w = document.getElementById('googleAuthWrap');
+  if (w) w.classList.toggle('d-none', !show);
+}
+async function onGoogleCredential(resp) {
+  try {
+    const r = await fetch('/api/auth/google', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: resp.credential }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    window.location.href = '/tourist-dashboard.html';
+  } catch (e) {
+    if (typeof toast === 'function') toast(e.message || 'Google sign-in failed.', 'error');
+    else alert(e.message || 'Google sign-in failed.');
+  }
+}
+
 // Populate the country code dropdown on page load (default: Oman)
 document.addEventListener('DOMContentLoaded', () => {
+  initGoogle();
   if (window.populateCountryCodes) populateCountryCodes(document.getElementById('phoneCountry'), 'OM');
   populateNationalities();
 });
@@ -240,6 +290,7 @@ function switchType(type) {
     document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === type);
     document.getElementById(t + 'Fields').classList.toggle('d-none', t !== type);
   });
+  if (typeof toggleGoogleWrap === 'function') toggleGoogleWrap();
 }
 
 function setMinistry(hasLicence) {

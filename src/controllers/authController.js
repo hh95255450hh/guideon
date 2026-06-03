@@ -244,6 +244,96 @@ exports.logout = (req, res) => {
   });
 };
 
+// ── Sign in with Google (tourists) ────────────────────────────────────────────
+// The frontend uses Google Identity Services to obtain an ID token (credential)
+// and posts it here. We verify it against our GOOGLE_CLIENT_ID, then log the
+// user in — creating a tourist account on first sign-in. No password needed.
+let _googleClient = null;
+function getGoogleClient() {
+  if (!process.env.GOOGLE_CLIENT_ID) return null;
+  if (!_googleClient) {
+    const { OAuth2Client } = require('google-auth-library');
+    _googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  }
+  return _googleClient;
+}
+
+exports.googleAuth = async (req, res) => {
+  try {
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res.status(503).json({ success: false, message: 'Google sign-in is not configured.' });
+    }
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ success: false, message: 'Missing Google credential.' });
+
+    // Verify the ID token with Google.
+    let payload;
+    try {
+      const ticket = await getGoogleClient().verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch (e) {
+      return res.status(401).json({ success: false, message: 'Invalid Google sign-in. Please try again.' });
+    }
+
+    const email = (payload.email || '').toLowerCase();
+    if (!email || !payload.email_verified) {
+      return res.status(400).json({ success: false, message: 'A verified Google email is required.' });
+    }
+    const fullName = payload.name || email.split('@')[0];
+    const picture  = payload.picture || '';
+
+    // Find existing user by email, or create a new tourist.
+    let user = await users.findByField('email', email);
+
+    if (user) {
+      if (user.isSuspended) {
+        return res.status(403).json({ success: false, message: 'This account has been suspended.' });
+      }
+      // Backfill Google linkage / verified email on existing accounts.
+      const patch = {};
+      if (!user.googleId) patch.googleId = payload.sub;
+      if (!user.emailVerified) patch.emailVerified = true;
+      if (!user.photo && picture) patch.photo = picture;
+      if (Object.keys(patch).length) { try { await users.update(user.id, patch); } catch (_) {} user = { ...user, ...patch }; }
+    } else {
+      // New tourist account — random unusable password (login is via Google).
+      const randomPwd = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10);
+      const record = {
+        id: 'tourist-' + uuidv4().slice(0, 8),
+        fullName, email, password: randomPwd,
+        phone: '', userType: 'tourist',
+        nationality: '', preferredLanguage: 'English',
+        createdAt: new Date().toISOString(), isSuspended: false,
+        emailVerified: true,
+        googleId: payload.sub,
+        photo: picture,
+      };
+      try {
+        await users.insert(record);
+      } catch (insertErr) {
+        const m = String(insertErr?.message || '').match(/Could not find the '([^']+)' column/);
+        if (m) { delete record[m[1]]; await users.insert(record); }
+        else throw insertErr;
+      }
+      user = record;
+      emailService.sendTouristWelcome({ email, name: fullName }).catch(() => {});
+    }
+
+    req.session.userId = user.id;
+    req.session.userType = user.userType;
+
+    const safe = { ...user };
+    delete safe.password;
+    res.json({ success: true, message: 'Signed in with Google.', user: safe });
+  } catch (err) {
+    console.error('[googleAuth]', err.message);
+    res.status(500).json({ success: false, message: 'Server error during Google sign-in.' });
+  }
+};
+
 exports.updateProfile = async (req, res) => {
   try {
     if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });

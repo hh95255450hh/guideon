@@ -52,6 +52,8 @@ router.post('/login', loginLimiter, validateLogin, auth.login);
 router.post('/logout', auth.logout);
 router.get('/me', requireLogin, auth.me);
 router.put('/profile', requireLogin, auth.updateProfile);
+router.post('/google', loginLimiter, auth.googleAuth);
+router.get('/google-config', (req, res) => res.json({ clientId: process.env.GOOGLE_CLIENT_ID || '' }));
 router.put('/change-password', requireLogin, validateChangePassword, auth.changePassword);
 router.post('/upload-photo', requireLogin, upload.single('photo'), auth.uploadPhoto);
 router.post('/fcm-token', requireLogin, auth.saveFcmToken);
