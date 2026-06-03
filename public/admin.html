@@ -114,13 +114,13 @@
   <div class="row g-3 mb-4">
     <div class="col-md-6">
       <div class="guide-card p-3">
-        <h6 class="fw-700 mb-3">📊 Bookings by Status</h6>
+        <h6 class="fw-700 mb-3" data-i18n="chart_bookings_status">📊 Bookings by Status</h6>
         <div id="chartStatus" style="min-height:200px;padding:8px 4px"></div>
       </div>
     </div>
     <div class="col-md-6">
       <div class="guide-card p-3">
-        <h6 class="fw-700 mb-3">⭐ Guide Ratings Distribution</h6>
+        <h6 class="fw-700 mb-3" data-i18n="chart_guide_ratings">⭐ Guide Ratings Distribution</h6>
         <div id="chartRatings" style="min-height:200px;padding:8px 4px"></div>
       </div>
     </div>
@@ -870,6 +870,8 @@ async function loadStats() {
     set('statRevenue',   Number(s.totalRevenue||0).toFixed(0));
     set('pendingBadge',  (s.pendingGuides||0) + (s.pendingCompanies||0));
   }
+  // Cache so the charts can be re-rendered on language change.
+  window._lastStats = s; window._lastStatsErr = errMsg;
   // Always attempt to render the charts, isolated so a failure can't blank them.
   try { renderCharts(s, errMsg); } catch (e) { console.error('renderCharts', e); }
 }
@@ -1290,6 +1292,9 @@ async function markComplete(id) {
 
 window.onLangChange = () => {
   loadPending();
+  // Re-render the dashboard charts in the new language.
+  if (window._lastStats !== undefined) { try { renderCharts(window._lastStats, window._lastStatsErr); } catch {} }
+  if (ACTIVE_TAB === 'activity')   loadActivity();
   if (ACTIVE_TAB === 'guides')     renderGuides();
   if (ACTIVE_TAB === 'companies')  renderCompanies();
   if (ACTIVE_TAB === 'tourists')   loadTourists();
