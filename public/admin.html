@@ -440,7 +440,7 @@
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="/js/i18n.js?v=38"></script>
+<script src="/js/i18n.js?v=39"></script>
 <script src="/js/chatbot.js?v=13"></script>
 <script>
 // ── Helpers ──────────────────────────────────────────────────
@@ -981,6 +981,7 @@ function renderGuides() {
       </td>
       <td class="d-flex gap-1 flex-wrap py-2">
         ${!g.isVerified && !g.isSuspended ? `<button class="btn-approve" onclick="verifyGuide('${g.id}','${g.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
+        <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}">💬</button>
         ${!g.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${g.id}','${g.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${g.id}','${g.fullName}')">${I18N.t('reactivate_btn')}</button>`}
         <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
       </td>
@@ -1033,6 +1034,7 @@ function renderCompanies() {
       </td>
       <td class="d-flex gap-1 flex-wrap py-2">
         ${!c.isVerified && !c.isSuspended ? `<button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
+        <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}">💬</button>
         ${!c.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${c.id}','${c.companyName||c.fullName}')">${I18N.t('reactivate_btn')}</button>`}
         <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
       </td>
@@ -1053,6 +1055,7 @@ async function loadTourists() {
         <td class="small">${fdate(t.createdAt)}</td>
         <td>${t.isSuspended ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : `<span class="chip chip-verified">${I18N.t('status_active')}</span>`}</td>
         <td>
+          <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${t.id}', ${JSON.stringify(t.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}">💬</button>
           ${!t.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${t.fullName}')">${I18N.t('suspend_btn')}</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${t.id}','${t.fullName}')">${I18N.t('reactivate_btn')}</button>`}
           <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${t.id}', ${JSON.stringify(t.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
         </td>
@@ -1246,6 +1249,13 @@ async function adminLoadConvos(){
   }catch{}
 }
 function adminUpdateBadge(n){const b=document.getElementById('adminMsgBadge');if(!b)return;if(n>0){b.textContent=n;b.style.display='';}else b.style.display='none';}
+// Open a direct conversation with any user straight from their table row.
+function messageUser(id,name){
+  const btn=document.querySelector('.admin-tab[onclick*="\'messages\'"]');
+  if(btn) showTab('messages',btn);
+  // Wait for the messages tab + conversation list to render, then open the thread.
+  setTimeout(()=>adminOpenThread(id,name),250);
+}
 async function adminOpenThread(otherId,otherName){
   ADMIN_ACTIVE_OTHER=otherId;
   document.getElementById('adminThreadName').textContent=otherName;
