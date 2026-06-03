@@ -10,6 +10,7 @@ const TRANSLATIONS = {
     nav_signup:       'Sign Up',
     nav_dashboard:    'My Dashboard',
     nav_signout:      'Sign Out',
+    nav_handbook:     '📖 User Guide',
 
     /* ── HOMEPAGE ── */
     hero_badge:       'Certified Ministry-Licensed Guides',
@@ -1171,6 +1172,7 @@ const TRANSLATIONS = {
     nav_signup:       'إنشاء حساب',
     nav_dashboard:    'لوحة التحكم',
     nav_signout:      'تسجيل الخروج',
+    nav_handbook:     '📖 دليل الاستخدام',
 
     /* ── HOMEPAGE ── */
     hero_badge:       'مرشدون معتمدون من وزارة التراث والسياحة',
