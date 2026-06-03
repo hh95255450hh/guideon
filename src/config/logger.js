@@ -18,6 +18,8 @@ const logger = pino({
       '*.STRIPE_SECRET_KEY',
       '*.RESEND_API_KEY',
       '*.OPENAI_API_KEY',
+      '*.GROQ_API_KEY',
+      '*.OPENROUTER_API_KEY',
       '*.SUPABASE_ANON_KEY',
       '*.SUPABASE_SERVICE_ROLE_KEY',
     ],

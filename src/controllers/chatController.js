@@ -1,23 +1,47 @@
 ﻿const OpenAI = require('openai');
 const { getPlatformContext } = require('../services/platformContext');
 
-// Lazy-init so missing key at startup doesn't crash the server
+// Lazy-init so a missing key at startup doesn't crash the server
 let _openai = null;
 
+// ── AI provider resolution ────────────────────────────────────────────────────
+// The bot works with any OpenAI-compatible provider. It auto-detects, in order:
+//   1) Groq      (GROQ_API_KEY)      — free & fast, https://api.groq.com/openai/v1
+//   2) OpenRouter(OPENROUTER_API_KEY)— https://openrouter.ai/api/v1
+//   3) OpenAI    (OPENAI_API_KEY)    — default https://api.openai.com/v1
+// Override the model per-provider with *_MODEL env vars.
+function resolveProvider() {
+  const valid = (k) => k && !k.includes('REPLACE');
+  if (valid(process.env.GROQ_API_KEY)) {
+    return { key: process.env.GROQ_API_KEY, baseURL: 'https://api.groq.com/openai/v1',
+             model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile', name: 'groq' };
+  }
+  if (valid(process.env.OPENROUTER_API_KEY)) {
+    return { key: process.env.OPENROUTER_API_KEY, baseURL: 'https://openrouter.ai/api/v1',
+             model: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free', name: 'openrouter' };
+  }
+  if (valid(process.env.OPENAI_API_KEY) && process.env.OPENAI_API_KEY.startsWith('sk-')) {
+    return { key: process.env.OPENAI_API_KEY, baseURL: undefined,
+             model: process.env.OPENAI_MODEL || 'gpt-4o-mini', name: 'openai' };
+  }
+  return null;
+}
+
 function isApiKeyConfigured() {
-  return process.env.OPENAI_API_KEY &&
-    !process.env.OPENAI_API_KEY.includes('REPLACE') &&
-    process.env.OPENAI_API_KEY.startsWith('sk-');
+  return !!resolveProvider();
 }
 
 function getOpenAI() {
   if (!_openai) {
-    if (!isApiKeyConfigured()) {
-      throw new Error('OPENAI_API_KEY is not configured');
-    }
-    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const p = resolveProvider();
+    if (!p) throw new Error('No AI provider configured (set GROQ_API_KEY, OPENROUTER_API_KEY or OPENAI_API_KEY)');
+    _openai = new OpenAI({ apiKey: p.key, baseURL: p.baseURL });
   }
   return _openai;
+}
+
+function aiModel() {
+  return (resolveProvider() || {}).model || 'gpt-4o-mini';
 }
 
 // ── System prompt ─────────────────────────────────────────────────────────────
@@ -275,7 +299,7 @@ const chat = async (req, res, next) => {
 
     const liveData = await getPlatformContext();
     const completion = await getOpenAI().chat.completions.create({
-      model:       'gpt-4o-mini',
+      model:       aiModel(),
       max_tokens:  500,
       temperature: 0.7,
       messages: [
@@ -347,7 +371,7 @@ const chatStream = async (req, res) => {
   try {
     const liveData = await getPlatformContext();
     const stream = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: aiModel(),
       max_tokens: 500,
       temperature: 0.7,
       stream: true,
