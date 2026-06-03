@@ -1,4 +1,5 @@
 ﻿const OpenAI = require('openai');
+const { getPlatformContext } = require('../services/platformContext');
 
 // Lazy-init so missing key at startup doesn't crash the server
 let _openai = null;
@@ -60,13 +61,25 @@ Difficulty: Easy | Moderate | Hard
 - Must-tries: shuwa (slow-cooked lamb), halwa, kahwa (cardamom coffee), dates
 
 ## What You Can Do
-- Recommend tours based on interests, budget, duration, difficulty
+- Recommend tours and guides based on interests, budget, duration, difficulty
 - Describe attractions, regions, and experiences in detail
-- Give practical travel advice (packing, transport, health)
-- Help users understand the booking process on Guideon
-- Answer questions about Omani culture and customs
+- Give practical travel advice (visa, packing, transport, SIM/internet, money, safety, family travel, health)
+- Help users understand and complete the booking process on Guideon
+- Answer questions about Omani culture, customs, food, history and language
+- Answer general travel and trip-planning questions, building itineraries day-by-day
 
-When recommending tours, be specific and reference the platform. Keep responses under 150 words unless the user asks for detail. Use emojis sparingly to be friendly. Never invent prices — tell users to check the platform for current pricing.`;
+## How booking works on Guideon (explain when asked)
+1. Browse guides ("Find a Guide") or tours, filter by region, language, date and budget.
+2. Open a guide/tour, pick a date and number of travelers (cannot exceed the guide's max group size).
+3. Confirm the booking — the guide accepts, then on the day starts the tour and marks it complete.
+4. After the tour, leave a verified review. Support: hh92hh@guideon.om · Instagram @guideonoman.
+
+## Answering style
+- Be genuinely helpful and try to answer EVERY question. Only decline content that is unsafe or unrelated to helping a traveler.
+- If a question is outside Oman tourism (e.g. general knowledge), still give a brief helpful answer, then gently steer back to planning their Oman trip.
+- Prefer recommending REAL guides/tours from the live platform data below when present.
+- Keep responses concise (under ~160 words) unless asked for detail. Use emojis sparingly.
+- Never invent exact prices beyond what the live data shows — point users to the platform for current pricing and availability.`;
 
 // ── Local knowledge-base fallback (used when OpenAI key is not configured) ──
 // Each entry has: en (English regex patterns), ar (Arabic keyword strings), and responses
@@ -138,6 +151,66 @@ const LOCAL_KB = [
     reply_ar: "رأس الجنز هو أحد أهم مواقع تعشيش السلاحف البحرية في العالم! 🐢 جولات ليلية سحرية متاحة."
   },
   {
+    en: /visa|passport|entry|e-?visa/i,
+    ar: ['تأشيرة', 'فيزا', 'جواز', 'دخول'],
+    reply_en: "Entry to Oman 🛂 Most nationalities get an **e-visa** (apply online at evisa.rop.gov.om) or visa on arrival. A 10-day tourist e-visa is common; longer options exist. Passport valid 6+ months. Check your nationality's rules before travel.",
+    reply_ar: "الدخول إلى عُمان 🛂 معظم الجنسيات تحصل على **تأشيرة إلكترونية** (عبر evisa.rop.gov.om) أو تأشيرة عند الوصول. التأشيرة السياحية لـ10 أيام شائعة. يجب أن يكون الجواز صالحاً 6 أشهر+. تحقق من قواعد جنسيتك قبل السفر."
+  },
+  {
+    en: /sim|internet|data|wifi|esim|phone/i,
+    ar: ['شريحة', 'انترنت', 'إنترنت', 'بيانات', 'واي فاي'],
+    reply_en: "Staying connected 📱 Buy a local SIM from **Omantel** or **Ooredoo** at the airport or malls (passport needed). Tourist data bundles are cheap. eSIMs also work. WiFi is common in hotels & cafés.",
+    reply_ar: "البقاء على اتصال 📱 اشترِ شريحة محلية من **عمانتل** أو **أوريدو** من المطار أو المولات (تحتاج جواز السفر). باقات بيانات السياح رخيصة. شرائح eSIM تعمل أيضاً. الواي فاي متوفر في الفنادق والمقاهي."
+  },
+  {
+    en: /transport|car|rent|drive|taxi|getting around|airport/i,
+    ar: ['نقل', 'سيارة', 'تأجير', 'قيادة', 'تاكسي', 'مطار', 'مواصلات'],
+    reply_en: "Getting around Oman 🚗 **Renting a car** is the best way to explore (roads are excellent; a 4x4 for desert/wadis). Taxis & apps work in cities. Or book a **Guideon guide with a vehicle** for a stress-free trip!",
+    reply_ar: "التنقل في عُمان 🚗 **استئجار سيارة** هو أفضل طريقة للاستكشاف (الطرق ممتازة؛ ودفع رباعي للصحراء والوديان). التاكسي والتطبيقات متاحة في المدن. أو احجز **مرشداً مع سيارة على Guideon** لرحلة مريحة!"
+  },
+  {
+    en: /safe|safety|danger|crime|solo|woman|alone/i,
+    ar: ['آمن', 'أمان', 'خطر', 'بمفرد', 'لوحد', 'امرأة'],
+    reply_en: "Is Oman safe? ✅ Yes — Oman is one of the **safest countries** in the world, very welcoming, with low crime. Great for solo and family travel. Just dress modestly, respect customs, and carry water in remote areas.",
+    reply_ar: "هل عُمان آمنة؟ ✅ نعم — عُمان من **أكثر دول العالم أماناً**، شعبها مرحّب ومعدل الجريمة منخفض. ممتازة للسفر الفردي والعائلي. فقط احترم العادات والبس بحشمة واحمل الماء في المناطق النائية."
+  },
+  {
+    en: /family|kid|child|baby|honeymoon|couple/i,
+    ar: ['عائلة', 'أطفال', 'طفل', 'عائلي', 'شهر العسل', 'عوائل'],
+    reply_en: "Oman is fantastic for families & couples! 👨‍👩‍👧 Gentle options: dolphin watching, turtle reserves, wadis, beaches and forts. Many guides offer family-friendly, easy-difficulty tours. Filter by 'Easy' on Guideon.",
+    reply_ar: "عُمان رائعة للعائلات والأزواج! 👨‍👩‍👧 خيارات مناسبة: مشاهدة الدلافين، محميات السلاحف، الوديان، الشواطئ والقلاع. كثير من المرشدين يقدمون جولات عائلية سهلة. صفِّ حسب 'سهل' على Guideon."
+  },
+  {
+    en: /wadi|wadis|swim|pool|water/i,
+    ar: ['وادي', 'وديان', 'سباحة', 'مسبح'],
+    reply_en: "Oman's wadis are stunning! 💧 Top picks: **Wadi Shab** (hike + swim to a hidden cave), **Wadi Bani Khalid**, **Wadi Tiwi**. Bring water shoes. Our coastal & adventure guides run wadi trips.",
+    reply_ar: "وديان عُمان خلابة! 💧 أفضلها: **وادي شاب** (مشي + سباحة لكهف مخفي)، **وادي بني خالد**، **وادي تيوي**. أحضر حذاء ماء. مرشدو المغامرة والساحل ينظمون جولات الوديان."
+  },
+  {
+    en: /diving|snorkel|scuba|marine|reef|sea|beach/i,
+    ar: ['غوص', 'سنوركل', 'بحر', 'شعاب', 'شاطئ', 'بحرية'],
+    reply_en: "Marine adventures 🐠 Oman has rich waters — **Daymaniyat Islands** (snorkel/dive), Musandam fjords, and Bandar Khayran. Expect turtles, rays and colourful reefs. Book a coastal guide on Guideon!",
+    reply_ar: "المغامرات البحرية 🐠 مياه عُمان غنية — **جزر الديمانيات** (سنوركل/غوص)، خوران مسندم، وبندر الخيران. ستشاهد السلاحف والشعاب الملونة. احجز مرشداً ساحلياً على Guideon!"
+  },
+  {
+    en: /itinerary|days|plan|week|trip plan|schedule/i,
+    ar: ['برنامج', 'خطة', 'جدول', 'أيام', 'رحلة'],
+    reply_en: "Sample 5-day Oman trip 🗺️\n**Day 1-2:** Muscat (mosque, Muttrah, opera)\n**Day 3:** Nizwa fort & souq → Jebel Akhdar\n**Day 4:** Wahiba Sands desert + Wadi Bani Khalid\n**Day 5:** Sur & Ras al-Jinz turtles\nA Guideon guide can build & run this for you!",
+    reply_ar: "برنامج 5 أيام في عُمان 🗺️\n**يوم 1-2:** مسقط (المسجد، مطرح، الأوبرا)\n**يوم 3:** قلعة نزوى والسوق ← جبل الأخضر\n**يوم 4:** صحراء الوهيبة + وادي بني خالد\n**يوم 5:** صور ورأس الجنز للسلاحف\nمرشد Guideon يمكنه إعداد وتنفيذ هذا لك!"
+  },
+  {
+    en: /become a guide|register|join|work|sign up|how to be/i,
+    ar: ['أصبح مرشد', 'تسجيل', 'انضمام', 'عمل', 'كيف أكون مرشد'],
+    reply_en: "Want to become a guide? 🧭 Sign up on Guideon as a guide, complete your profile (licence, languages, regions, photos), and once verified you can publish tours and accept bookings. Go to the Register page to start!",
+    reply_ar: "تريد أن تصبح مرشداً؟ 🧭 سجّل على Guideon كمرشد، أكمل ملفك (الترخيص، اللغات، المناطق، الصور)، وبعد التوثيق يمكنك نشر الرحلات وقبول الحجوزات. اذهب لصفحة التسجيل للبدء!"
+  },
+  {
+    en: /contact|support|help|email|whatsapp|reach/i,
+    ar: ['تواصل', 'دعم', 'مساعدة', 'ايميل', 'إيميل', 'واتساب'],
+    reply_en: "Need help? 💬 Reach the Guideon team at **hh92hh@guideon.om** or via Instagram **@guideonoman**. For booking issues, use the in-app chat with your guide or the support inbox.",
+    reply_ar: "تحتاج مساعدة؟ 💬 تواصل مع فريق Guideon عبر **hh92hh@guideon.om** أو إنستغرام **@guideonoman**. لمشاكل الحجز، استخدم المحادثة داخل التطبيق مع مرشدك أو صندوق الدعم."
+  },
+  {
     en: /best|top|recommend|destination|place/i,
     ar: ['أفضل', 'وجهة', 'مكان', 'أين'],
     reply_en: "Oman's top destinations 🇴🇲\n1. **Muscat** — capital, culture & coast\n2. **Nizwa** — ancient forts & souqs\n3. **Wahiba Sands** — epic desert\n4. **Salalah** — lush khareef season\n5. **Musandam** — dramatic fjords\n\nBrowse our guides for each region on Guideon!",
@@ -200,12 +273,13 @@ const chat = async (req, res, next) => {
       return res.json({ success: true, data: { reply, usage: null } });
     }
 
+    const liveData = await getPlatformContext();
     const completion = await getOpenAI().chat.completions.create({
       model:       'gpt-4o-mini',
-      max_tokens:  400,
+      max_tokens:  500,
       temperature: 0.7,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: SYSTEM_PROMPT + (liveData ? '\n\n' + liveData : '') },
         ...history,
       ],
     });
@@ -271,12 +345,13 @@ const chatStream = async (req, res) => {
   }
 
   try {
+    const liveData = await getPlatformContext();
     const stream = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
-      max_tokens: 400,
+      max_tokens: 500,
       temperature: 0.7,
       stream: true,
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
+      messages: [{ role: 'system', content: SYSTEM_PROMPT + (liveData ? '\n\n' + liveData : '') }, ...history],
     });
     for await (const chunk of stream) {
       const delta = chunk.choices?.[0]?.delta?.content || '';
