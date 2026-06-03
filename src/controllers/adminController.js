@@ -12,6 +12,74 @@ const messages    = new SupabaseDB('messages');
 const packages    = new SupabaseDB('tour_packages');
 const auditLog    = new SupabaseDB('admin_audit_log');
 
+// ── Recent activity feed ──────────────────────────────────────────────────────
+// Aggregates real events from existing tables (registrations, new tours,
+// bookings, status changes, reviews) into a single time-sorted timeline.
+// Read-only — no extra logging required.
+exports.recentActivity = async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 40, 100);
+    const [allUsers, allPackages, allBookings, allReviews] = await Promise.all([
+      users.findAll().catch(() => []),
+      packages.findAll().catch(() => []),
+      bookings.findAll().catch(() => []),
+      reviews.findAll().catch(() => []),
+    ]);
+
+    const nameById = {};
+    (allUsers || []).forEach(u => { nameById[u.id] = u.companyName || u.fullName || u.email || u.id; });
+    const events = [];
+    const push = (at, type, icon, actor, actorType, en, ar) => {
+      if (!at) return;
+      events.push({ at, type, icon, actor, actorType, text_en: en, text_ar: ar });
+    };
+
+    // Registrations (guides & companies emphasised; tourists included)
+    (allUsers || []).forEach(u => {
+      if (u.userType === 'admin' || u.userType === 'staff') return;
+      const who = u.companyName || u.fullName || u.email;
+      const label = u.userType === 'guide' ? ['Guide', 'مرشد'] : u.userType === 'company' ? ['Company', 'شركة'] : ['Tourist', 'سائح'];
+      push(u.createdAt, 'register', u.userType === 'company' ? '🏢' : u.userType === 'guide' ? '🎒' : '👤', who, u.userType,
+        `${label[0]} "${who}" joined the platform`, `انضم ${label[1]} "${who}" إلى المنصة`);
+    });
+
+    // New tours published
+    (allPackages || []).forEach(p => {
+      const who = p.providerName || nameById[p.providerId] || 'A provider';
+      push(p.createdAt, 'tour', '🗺️', who, 'guide',
+        `${who} added a tour "${p.title}"`, `أضاف ${who} رحلة "${p.title}"`);
+    });
+
+    // Bookings: created + key status changes
+    (allBookings || []).forEach(b => {
+      const guide = nameById[b.guideId] || 'a guide';
+      const tourist = nameById[b.touristId] || 'a tourist';
+      push(b.createdAt, 'booking', '📅', tourist, 'tourist',
+        `${tourist} booked ${b.destination || 'a tour'} with ${guide}`, `حجز ${tourist} رحلة ${b.destination || ''} مع ${guide}`);
+      if (b.status === 'confirmed') push(b.updatedAt || b.confirmedAt, 'confirm', '✅', guide, 'guide',
+        `${guide} confirmed a booking with ${tourist}`, `أكّد ${guide} حجزاً مع ${tourist}`);
+      if (b.startedAt) push(b.startedAt, 'trip_start', '🚐', guide, 'guide',
+        `${guide} started the ${b.destination || ''} tour`, `بدأ ${guide} رحلة ${b.destination || ''}`);
+      if (b.completedAt) push(b.completedAt, 'trip_end', '🏁', guide, 'guide',
+        `${guide} completed the ${b.destination || ''} tour`, `أنهى ${guide} رحلة ${b.destination || ''}`);
+    });
+
+    // Reviews
+    (allReviews || []).forEach(r => {
+      const who = r.touristName || nameById[r.touristId] || 'A traveler';
+      const guide = nameById[r.guideId] || 'a guide';
+      push(r.createdAt, 'review', '⭐', who, 'tourist',
+        `${who} left a ${r.rating}★ review for ${guide}`, `ترك ${who} تقييماً ${r.rating}★ للمرشد ${guide}`);
+    });
+
+    events.sort((a, b) => new Date(b.at) - new Date(a.at));
+    res.json({ success: true, activity: events.slice(0, limit) });
+  } catch (err) {
+    console.error('[recentActivity]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 // CSV helper: convert array of objects to CSV
 function toCSV(rows, columns) {
   if (!rows?.length) return '';

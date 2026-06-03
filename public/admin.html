@@ -61,6 +61,17 @@
 .btn-approve:hover { background:#0a5c50; }
 .btn-suspend-sm { background:#fff0f0; color:#c0392b; border:1px solid #f5c6c6; border-radius:8px; padding:6px 14px; font-size:.82rem; font-weight:700; cursor:pointer; }
 .btn-unsuspend-sm { background:#f0f0f0; color:#555; border:1px solid #ccc; border-radius:8px; padding:6px 14px; font-size:.82rem; font-weight:700; cursor:pointer; }
+/* Activity timeline */
+.tl-day { display:inline-block; background:#eef2f7; color:#5a6b85; font-weight:700; font-size:.8rem; padding:5px 16px; border-radius:20px; margin:18px 0 10px; }
+.tl-item { display:flex; gap:14px; padding:0 0 6px; position:relative; }
+.tl-line { position:relative; display:flex; flex-direction:column; align-items:center; }
+.tl-dot { width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; color:#fff; flex-shrink:0; box-shadow:0 2px 8px rgba(15,28,62,.18); z-index:1; }
+.tl-stem { width:2px; flex:1; background:#e3e8f0; margin:2px 0; min-height:14px; }
+.tl-body { flex:1; background:#f7f9fc; border:1px solid #eaeef4; border-radius:12px; padding:10px 14px; margin-bottom:10px; }
+.tl-text { color:#243049; font-size:.92rem; font-weight:600; }
+.tl-meta { color:#8a98ad; font-size:.78rem; margin-top:2px; }
+.tl-c-register{background:#7c3aed} .tl-c-tour{background:#0f7b6c} .tl-c-booking{background:#2563eb}
+.tl-c-confirm{background:#16a34a} .tl-c-trip_start{background:#0891b2} .tl-c-trip_end{background:#475569} .tl-c-review{background:#d97706}
 </style>
 </head>
 <body>
@@ -120,6 +131,7 @@
     <button class="admin-tab active" onclick="showTab('pending',this)" data-i18n="tab_pending_g">
       ⏳ Pending Approvals <span class="badge bg-danger ms-1" id="pendingBadge" style="font-size:.7rem">0</span>
     </button>
+    <button class="admin-tab" onclick="showTab('activity',this)" data-i18n="tab_activity">📋 Activity</button>
     <button class="admin-tab" onclick="showTab('guides',this)" data-i18n="tab_guides">🎒 All Guides</button>
     <button class="admin-tab" onclick="showTab('companies',this)" data-i18n="tab_companies">🏢 Companies</button>
     <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">👤 Tourists</button>
@@ -131,6 +143,18 @@
     <button class="admin-tab" onclick="showTab('analytics',this)" data-i18n="tab_analytics">📈 Analytics</button>
     <button class="admin-tab" onclick="showTab('audit',this)" data-i18n="tab_audit">🔍 Audit Log</button>
     <button class="admin-tab" onclick="showTab('export',this)" data-i18n="tab_export">📥 Export</button>
+  </div>
+
+  <!-- ════════════════ ACTIVITY TIMELINE ════════════════ -->
+  <div id="tab-activity" class="d-none">
+    <div class="card p-3 p-md-4 shadow-sm" style="border-radius:14px">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-700 mb-0" data-i18n="activity_title">📋 Recent Activity</h6>
+        <button class="btn btn-sm btn-outline-secondary" onclick="loadActivity()" data-i18n="refresh_btn">Refresh</button>
+      </div>
+      <p class="text-muted small mb-3" data-i18n="activity_desc">Latest actions by guides, companies and tourists across the platform.</p>
+      <div id="activityFeed"><div class="text-center text-muted py-5" data-i18n="loading">Loading…</div></div>
+    </div>
   </div>
 
   <!-- ════════════════ PENDING APPROVALS ════════════════ -->
@@ -461,13 +485,14 @@ function doLogout() {
 
 // ── Tab switch ───────────────────────────────────────────────
 let ACTIVE_TAB = 'pending';
-const TABS = ['pending','guides','companies','tourists','bookings','admins','staff','messages','broadcast','analytics','audit','export'];
+const TABS = ['activity','pending','guides','companies','tourists','bookings','admins','staff','messages','broadcast','analytics','audit','export'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
   document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if      (name==='guides')    loadGuides();
+  if      (name==='activity')  loadActivity();
+  else if (name==='guides')    loadGuides();
   else if (name==='companies') loadCompanies();
   else if (name==='tourists')  loadTourists();
   else if (name==='bookings')  loadAllBookings();
@@ -477,6 +502,43 @@ function showTab(name, btn) {
   else if (name==='staff')     loadStaff();
   else if (name==='messages')  adminLoadConvos();
 }
+
+// ── Recent Activity timeline ──────────────────────────────────
+async function loadActivity() {
+  const el = document.getElementById('activityFeed');
+  el.innerHTML = '<div class="text-center text-muted py-5">' + (I18N.t('loading')||'Loading…') + '</div>';
+  try {
+    const r = await fetch('/api/admin/activity?limit=60', { credentials:'include' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    const isAr = window.I18N && I18N.lang === 'ar';
+    const items = d.activity || [];
+    if (!items.length) { el.innerHTML = '<div class="text-center text-muted py-5">'+(isAr?'لا يوجد نشاط بعد':'No activity yet')+'</div>'; return; }
+
+    const now = new Date();
+    const dayKey = (dt) => { const x=new Date(dt); return x.getFullYear()+'-'+x.getMonth()+'-'+x.getDate(); };
+    const todayK = dayKey(now); const yK = dayKey(new Date(now.getTime()-864e5));
+    const labelFor = (dt) => { const k=dayKey(dt); if(k===todayK) return isAr?'اليوم':'Today'; if(k===yK) return isAr?'الأمس':'Yesterday';
+      return new Date(dt).toLocaleDateString(isAr?'ar-OM':'en-GB',{day:'numeric',month:'short',year:'numeric'}); };
+    const timeFor = (dt) => new Date(dt).toLocaleTimeString(isAr?'ar-OM':'en-GB',{hour:'2-digit',minute:'2-digit'});
+
+    let html = ''; let lastDay = null;
+    items.forEach((ev, i) => {
+      const lbl = labelFor(ev.at);
+      if (lbl !== lastDay) { html += `<div class="tl-day">${lbl}</div>`; lastDay = lbl; }
+      const text = isAr ? ev.text_ar : ev.text_en;
+      const last = i === items.length - 1;
+      html += `<div class="tl-item">
+        <div class="tl-line"><div class="tl-dot tl-c-${ev.type}">${ev.icon||'•'}</div>${last?'':'<div class="tl-stem"></div>'}</div>
+        <div class="tl-body"><div class="tl-text">${escapeHtml(text)}</div><div class="tl-meta">${timeFor(ev.at)} · ${escapeHtml(ev.actor||'')}</div></div>
+      </div>`;
+    });
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<div class="text-center text-danger py-4">'+ (e.message||'Error') +'</div>';
+  }
+}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 // ── Staff Management ──────────────────────────────────────────
 let STAFF_ROLES = {};
