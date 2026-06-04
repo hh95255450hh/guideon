@@ -1041,8 +1041,8 @@ function renderGuides() {
   document.getElementById('guidesTable').innerHTML = list.length ? list.map(g => `
     <tr>
       <td>
-        <div class="fw-700">${g.fullName}</div>
-        <div class="small text-muted">${g.email}</div>
+        <div class="fw-700"><a href="/guide-profile.html?id=${g.id}" target="_blank" style="color:var(--teal);text-decoration:none">${g.fullName} ↗</a></div>
+        ${contactLinks(g)}
         <div class="small text-muted">${fdate(g.createdAt)}</div>
       </td>
       <td>
@@ -1100,8 +1100,7 @@ function renderCompanies() {
       </td>
       <td>
         <div class="small fw-600">${c.fullName}</div>
-        <div class="small text-muted">${c.email}</div>
-        ${c.phone ? `<div class="small text-muted">${c.phone}</div>` : ''}
+        ${contactLinks(c)}
       </td>
       <td><code class="small">${c.companyRegNo || '—'}</code></td>
       <td class="small">${(c.companyServices||[]).slice(0,3).join(', ') || '—'}</td>
@@ -1130,7 +1129,7 @@ async function loadTourists() {
     document.getElementById('touristsTable').innerHTML = (d.tourists||[]).map(t=>`
       <tr>
         <td class="fw-700">${t.fullName}</td>
-        <td>${t.email}</td>
+        <td>${contactLinks(t)}</td>
         <td>${t.nationality||'—'}</td>
         <td class="small">${fdate(t.createdAt)}</td>
         <td>${t.isSuspended ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : `<span class="chip chip-verified">${I18N.t('status_active')}</span>`}</td>
@@ -1332,6 +1331,13 @@ async function adminLoadConvos(){
   }catch{}
 }
 function adminUpdateBadge(n){const b=document.getElementById('adminMsgBadge');if(!b)return;if(n>0){b.textContent=n;b.style.display='';}else b.style.display='none';}
+// Build clickable contact links (email → mailto, phone → call / WhatsApp / SMS).
+function waNum(p){ let n=String(p||'').replace(/[^0-9]/g,''); if(n.length===8) n='968'+n; return n; }
+function contactLinks(u){
+  const email = u.email ? `<div class="small mb-1"><a href="mailto:${u.email}" style="color:#0f7b6c;text-decoration:none">✉️ ${u.email}</a></div>` : '';
+  const phone = u.phone ? `<div class="small mb-1">📞 <a href="tel:${u.phone}" style="color:#444;text-decoration:none">${u.phone}</a> · <a href="https://wa.me/${waNum(u.phone)}" target="_blank" style="color:#25D366;text-decoration:none;font-weight:600">WhatsApp</a> · <a href="sms:${u.phone}" style="color:#444;text-decoration:none">SMS</a></div>` : '';
+  return email + phone;
+}
 // Open a direct conversation with any user straight from their table row.
 function messageUser(id,name){
   const btn=document.querySelector('.admin-tab[onclick*="\'messages\'"]');
