@@ -254,6 +254,8 @@ const TRANSLATIONS = {
     col_ip:           'IP',
     // Staff
     staff_add_title:  '👔 Add New Staff Member',
+    role_custom:      '🔧 Custom (pick permissions)',
+    staff_custom_perms: 'Custom Permissions — pick what this staff member can do',
     staff_add_desc:   'Create accounts for team members with specific permissions.',
     staff_name_ph:    'Full name',
     staff_email_ph:   'Email',
@@ -1420,6 +1422,8 @@ const TRANSLATIONS = {
     col_ip:           'IP',
     // Staff (Arabic)
     staff_add_title:  '👔 إضافة موظف جديد',
+    role_custom:      '🔧 مخصّص (اختر الصلاحيات)',
+    staff_custom_perms: 'صلاحيات مخصّصة — اختر ما يمكن لهذا الموظف فعله',
     staff_add_desc:   'أنشئ حسابات لأعضاء الفريق بصلاحيات محددة.',
     staff_name_ph:    'الاسم الكامل',
     staff_email_ph:   'البريد الإلكتروني',
