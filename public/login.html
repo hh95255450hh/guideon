@@ -116,17 +116,34 @@ async function initGoogle() {
 }
 async function onGoogleCredential(resp) {
   const err = document.getElementById('errMsg');
+  const btn = document.getElementById('submitBtn');
+
+  // Show loading
+  err.textContent = I18N.lang === 'ar' ? '⏳ جاري تسجيل الدخول...' : '⏳ Signing in...';
+  err.className = 'alert alert-info small';
+  err.classList.remove('d-none');
+
   try {
     const r = await fetch('/api/auth/google', {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ credential: resp.credential }),
     });
-    const d = await r.json();
+
+    let d;
+    try { d = await r.json(); }
+    catch { throw new Error('Server error. Please try again.'); }
+
     if (!d.success) throw new Error(d.message);
-    window.location.href = DASH_MAP[d.user.userType] || '/';
+
+    // Success — redirect
+    err.textContent = I18N.lang === 'ar' ? '✅ تم الدخول! جاري التحويل...' : '✅ Success! Redirecting...';
+    err.className = 'alert alert-success small';
+    setTimeout(() => {
+      window.location.href = DASH_MAP[d.user.userType] || '/';
+    }, 800);
   } catch (e) {
-    err.textContent = e.message || 'Google sign-in failed.';
+    err.textContent = e.message || 'Google sign-in failed. Please try again.';
     err.className = 'alert alert-danger small';
     err.classList.remove('d-none');
   }
