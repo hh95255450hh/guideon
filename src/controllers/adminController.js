@@ -101,6 +101,19 @@ exports.emailTest = async (req, res) => {
   }
 };
 
+// GET /api/admin/whatsapp-test?to=96895255450 — sends a test WhatsApp message
+// and returns the exact result so the integration can be verified.
+exports.whatsappTest = async (req, res) => {
+  try {
+    const whatsapp = require('../services/whatsappService');
+    const to = req.query.to || '96895255450';
+    const result = await whatsapp.sendTextVerbose(to, '✅ Guideon WhatsApp test — تكامل الواتساب يعمل بنجاح! 🎉');
+    res.json({ success: true, config: whatsapp.config(), sentTo: to, result });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // CSV helper: convert array of objects to CSV
 function toCSV(rows, columns) {
   if (!rows?.length) return '';

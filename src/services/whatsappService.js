@@ -127,10 +127,30 @@ async function sendTemplate(to, templateName, langCode = 'en', params = []) {
   }
 }
 
+// Verbose send for diagnostics — returns the exact Graph API result/error.
+async function sendTextVerbose(to, text) {
+  if (!ENABLED) return { ok: false, error: 'WHATSAPP_ENABLED is not true' };
+  if (!TOKEN)   return { ok: false, error: 'WHATSAPP_ACCESS_TOKEN missing' };
+  if (!PHONE_ID) return { ok: false, error: 'WHATSAPP_PHONE_NUMBER_ID missing' };
+  const phone = normalizePhone(to);
+  if (!phone) return { ok: false, error: 'Invalid recipient number: ' + to };
+  try {
+    const res = await fetch(`https://graph.facebook.com/${API_VER}/${PHONE_ID}/messages`, {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to: phone, type: 'text', text: { body: String(text).slice(0, 4096) } }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data?.error?.message || res.statusText, to: phone, details: data?.error };
+    return { ok: true, id: data?.messages?.[0]?.id, to: phone };
+  } catch (e) { return { ok: false, error: e.message }; }
+}
+
+function config() { return { enabled: ENABLED, hasToken: !!TOKEN, phoneNumberId: PHONE_ID || null }; }
 function isEnabled() { return ENABLED && !!TOKEN && !!PHONE_ID; }
 
 if (!ENABLED) {
   console.log('[whatsapp] disabled — set WHATSAPP_ENABLED=true + tokens in env to enable.');
 }
 
-module.exports = { sendText, sendTemplate, isEnabled, normalizePhone };
+module.exports = { sendText, sendTemplate, sendTextVerbose, config, isEnabled, normalizePhone };
