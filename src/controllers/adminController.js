@@ -167,10 +167,10 @@ exports.extendedStats = async (req, res) => {
       monthly[key] = 0;
     }
     for (const b of allBookings) {
-      if (b.status === 'cancelled' || !b.createdAt) continue;
+      if (!b.isPaid || !b.createdAt) continue;
       const d = new Date(b.createdAt);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      if (key in monthly) monthly[key] += (b.totalAmount || 0);
+      if (key in monthly) monthly[key] += (parseFloat(b.totalAmount) || 0);
     }
     const revenueByMonth = Object.entries(monthly).reverse().map(([month, revenue]) => ({ month, revenue: Math.round(revenue * 100) / 100 }));
 
@@ -213,8 +213,8 @@ exports.stats = async (req, res) => {
     const tourists  = allUsers.filter(u => u.userType === 'tourist');
     const companies = allUsers.filter(u => u.userType === 'company');
     const revenue   = allBookings
-      .filter(b => b.status !== 'cancelled')
-      .reduce((s, b) => s + (b.totalAmount || 0), 0);
+      .filter(b => b.isPaid === true)
+      .reduce((s, b) => s + (parseFloat(b.totalAmount) || 0), 0);
 
     res.json({
       success: true, stats: {
