@@ -413,6 +413,55 @@
   </div>
 </div>
 
+<!-- ════════════════════ مميزاتي ════════════════════ -->
+<div class="container py-4">
+  <div class="info-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-700 mb-0">🚗 مميزاتي — ما أملكه لخدمتك</h5>
+      <span class="small text-muted">أضف سياراتك، قوارب، يخوت، مخيمات... مع صور وشرح</span>
+    </div>
+
+    <!-- نموذج إضافة ميزة -->
+    <div style="background:#f8fffe;border:1px solid #d0ede8;border-radius:12px;padding:18px;margin-bottom:20px">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label small fw-600 mb-1">النوع</label>
+          <select id="assetType" class="form-select form-select-sm">
+            <option value="car">🚗 سيارة</option>
+            <option value="boat">⛵ قارب</option>
+            <option value="yacht">🛥️ يخت</option>
+            <option value="camp">⛺ مخيم</option>
+            <option value="bike">🏍️ دراجة</option>
+            <option value="other">✨ أخرى</option>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label small fw-600 mb-1">الاسم / النوع</label>
+          <input type="text" id="assetTitle" class="form-control form-control-sm" placeholder="مثال: لاند كروزر 2024 · 7 مقاعد">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-600 mb-1">الصور (حتى 5)</label>
+          <input type="file" id="assetPhotosInput" class="form-control form-control-sm" accept="image/*" multiple>
+        </div>
+        <div class="col-12">
+          <label class="form-label small fw-600 mb-1">الوصف</label>
+          <textarea id="assetDesc" class="form-control form-control-sm" rows="2" placeholder="مثال: سيارة مكيفة 4×4 مناسبة للجبال والوديان، تتسع لـ 7 أشخاص مع حقائبهم..."></textarea>
+        </div>
+        <div class="col-12">
+          <div id="assetPhotosPreviews" class="d-flex gap-2 flex-wrap mb-2"></div>
+          <button class="btn btn-sm btn-teal fw-700" onclick="addAsset()">+ إضافة</button>
+          <span id="assetUploadStatus" class="small text-muted ms-2"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- قائمة المميزات -->
+    <div id="assetsList"></div>
+
+    <button class="btn btn-teal w-100 fw-700 mt-3" onclick="saveAssets()">💾 حفظ المميزات</button>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="/js/i18n.js?v=38"></script>
@@ -453,7 +502,9 @@ async function checkAuth() {
     }
     GUIDE = d.user;
     AVAILABILITY = [...(GUIDE.availability || [])];
-    SLOTS = Array.isArray(GUIDE.availabilitySlots) ? GUIDE.availabilitySlots.filter(s => s.date >= new Date().toISOString().slice(0,10)) : [];
+    SLOTS  = Array.isArray(GUIDE.availabilitySlots) ? GUIDE.availabilitySlots.filter(s => s.date >= new Date().toISOString().slice(0,10)) : [];
+    ASSETS = Array.isArray(GUIDE.guideAssets) ? GUIDE.guideAssets : [];
+    renderAssets();
     renderGuideHeader();
     buildCalendar();
     loadBookings();
@@ -1097,6 +1148,98 @@ async function loadTripRequests() {
         </div>
       </div>`).join('');
   } catch {}
+}
+
+// ── مميزاتي (Guide Assets) ────────────────────────────────────
+let ASSETS = [];
+let ASSET_PENDING_PHOTOS = []; // { file, previewUrl } before upload
+
+const ASSET_ICONS = { car:'🚗', boat:'⛵', yacht:'🛥️', camp:'⛺', bike:'🏍️', other:'✨' };
+const ASSET_LABELS = { car:'سيارة', boat:'قارب', yacht:'يخت', camp:'مخيم', bike:'دراجة', other:'أخرى' };
+
+document.getElementById('assetPhotosInput').addEventListener('change', function() {
+  ASSET_PENDING_PHOTOS = [];
+  const prev = document.getElementById('assetPhotosPreviews');
+  prev.innerHTML = '';
+  Array.from(this.files).slice(0, 5).forEach(file => {
+    const url = URL.createObjectURL(file);
+    ASSET_PENDING_PHOTOS.push({ file, previewUrl: url });
+    const img = document.createElement('img');
+    img.src = url;
+    img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8';
+    prev.appendChild(img);
+  });
+});
+
+async function addAsset() {
+  const type  = document.getElementById('assetType').value;
+  const title = document.getElementById('assetTitle').value.trim();
+  const desc  = document.getElementById('assetDesc').value.trim();
+  if (!title) return toast('أدخل اسم الميزة', 'error');
+
+  const statusEl = document.getElementById('assetUploadStatus');
+  statusEl.textContent = 'جاري رفع الصور...';
+
+  const photos = [];
+  for (const { file } of ASSET_PENDING_PHOTOS) {
+    try {
+      const fd = new FormData();
+      fd.append('photo', file);
+      const r = await fetch('/api/upload/image', { method: 'POST', credentials: 'include', body: fd });
+      const d = await r.json();
+      if (d.success) photos.push(d.url);
+    } catch {}
+  }
+
+  ASSETS.push({ id: Date.now().toString(36), type, title, description: desc, photos });
+  renderAssets();
+
+  document.getElementById('assetTitle').value = '';
+  document.getElementById('assetDesc').value  = '';
+  document.getElementById('assetPhotosInput').value = '';
+  document.getElementById('assetPhotosPreviews').innerHTML = '';
+  ASSET_PENDING_PHOTOS = [];
+  statusEl.textContent = '';
+  toast('✓ تمت الإضافة — اضغط "حفظ المميزات"', 'success');
+}
+
+function removeAsset(id) {
+  ASSETS = ASSETS.filter(a => a.id !== id);
+  renderAssets();
+}
+
+function renderAssets() {
+  const list = document.getElementById('assetsList');
+  if (!ASSETS.length) {
+    list.innerHTML = '<div class="text-muted small text-center py-3">لم تُضف أي ميزة بعد</div>';
+    return;
+  }
+  list.innerHTML = ASSETS.map(a => `
+    <div style="background:#fff;border:1px solid #d0ede8;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-size:2.2rem;line-height:1">${ASSET_ICONS[a.type]||'✨'}</div>
+      <div style="flex:1">
+        <div class="fw-700 mb-1">${ASSET_LABELS[a.type]||a.type} — ${a.title}</div>
+        ${a.description ? `<div class="small text-muted mb-2">${a.description}</div>` : ''}
+        ${a.photos && a.photos.length ? `
+          <div class="d-flex gap-2 flex-wrap">
+            ${a.photos.map(u=>`<img src="${u}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #e0e0e0">`).join('')}
+          </div>` : '<div class="small text-muted">بدون صور</div>'}
+      </div>
+      <button onclick="removeAsset('${a.id}')" class="btn btn-sm btn-outline-danger">✕</button>
+    </div>`).join('');
+}
+
+async function saveAssets() {
+  try {
+    const r = await fetch('/api/guides/me/assets', {
+      method: 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ guideAssets: ASSETS }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast('✓ تم حفظ المميزات', 'success');
+  } catch (e) { toast(e.message, 'error'); }
 }
 
 window.onLangChange = () => {

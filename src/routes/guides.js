@@ -7,5 +7,6 @@ router.get('/top', guide.topGuides);
 router.get('/:id', guide.getGuide);
 router.put('/me/availability', requireGuide, guide.updateAvailability);
 router.put('/me/profile', requireGuide, guide.updateProfile);
+router.put('/me/assets', requireGuide, guide.updateAssets);
 
 module.exports = router;

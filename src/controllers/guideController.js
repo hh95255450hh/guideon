@@ -137,6 +137,26 @@ exports.updateAvailability = async (req, res) => {
   }
 };
 
+exports.updateAssets = async (req, res) => {
+  try {
+    const guideId = req.session.userId;
+    const { guideAssets } = req.body;
+    if (!Array.isArray(guideAssets)) {
+      return res.status(400).json({ success: false, message: 'guideAssets must be an array.' });
+    }
+    for (const a of guideAssets) {
+      if (!a.id || !a.type || !a.title) {
+        return res.status(400).json({ success: false, message: 'Each asset must have id, type, title.' });
+      }
+    }
+    await users.update(guideId, { guideAssets });
+    res.json({ success: true, message: 'Assets updated.', guideAssets });
+  } catch (err) {
+    console.error('[updateAssets]', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 exports.updateProfile = async (req, res) => {
   try {
     const guideId = req.session.userId;
