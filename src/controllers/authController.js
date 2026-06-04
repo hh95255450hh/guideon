@@ -322,8 +322,17 @@ exports.googleAuth = async (req, res) => {
       emailService.sendTouristWelcome({ email, name: fullName }).catch(() => {});
     }
 
-    req.session.userId = user.id;
+    // Regenerate session to prevent fixation & ensure it's saved to the store
+    await new Promise((resolve, reject) => {
+      req.session.regenerate(err => err ? reject(err) : resolve());
+    });
+    req.session.userId   = user.id;
     req.session.userType = user.userType;
+
+    // Force-save the session before sending response
+    await new Promise((resolve, reject) => {
+      req.session.save(err => err ? reject(err) : resolve());
+    });
 
     const safe = { ...user };
     delete safe.password;
