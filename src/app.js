@@ -111,6 +111,11 @@ try {
   sessionStore = new MemoryStore({ checkPeriod: 86400000 });
 }
 
+// Session secret MUST be set in production. A known default would let anyone
+// forge signed session cookies (account/admin takeover).
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  console.error('[SECURITY] ⚠️  SESSION_SECRET is not set! Sessions are signed with a public default — set a strong random SESSION_SECRET in your host env immediately.');
+}
 app.use(session({
   store: sessionStore,
   secret: process.env.SESSION_SECRET || 'Guideon-secret-2025',

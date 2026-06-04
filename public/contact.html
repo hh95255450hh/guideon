@@ -517,7 +517,7 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
     });
     const d = await r.json();
     if (!d.success) throw new Error(d.message || 'Failed');
-    alertBox.innerHTML = `<div class="alert alert-success">✅ ${isAr ? 'تم إرسال رسالتك! ستصلك رسالة تأكيد على بريدك الإلكتروني، وسنرد خلال 24 ساعة.' : 'Your message has been sent! Check your inbox for a confirmation. We\\'ll reply within 24 hours.'}</div>`;
+    alertBox.innerHTML = `<div class="alert alert-success">✅ ${isAr ? 'تم إرسال رسالتك! ستصلك رسالة تأكيد على بريدك الإلكتروني، وسنرد خلال 24 ساعة.' : 'Your message has been sent! Check your inbox for a confirmation. We will reply within 24 hours.'}</div>`;
     e.target.reset();
     document.getElementById('charCount').textContent = '0';
   } catch (err) {
