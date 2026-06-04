@@ -277,12 +277,6 @@
           </div>
         </div>
 
-        <!-- Specialisations -->
-        <div class="info-card">
-          <h5>🎯 <span data-i18n="specialisations">Specialisations</span></h5>
-          <div id="pSpecs"></div>
-        </div>
-
         <!-- Destinations -->
         <div class="info-card">
           <h5>📍 <span data-i18n="gp_dests">Destinations Covered</span></h5>
@@ -663,10 +657,6 @@ function renderAll() {
   } else {
     videoCard.classList.add('d-none');
   }
-
-  // Specialisations
-  document.getElementById('pSpecs').innerHTML = (g.specialisations||[]).map(s =>
-    `<span class="tag tag-gold">${s}</span>`).join('') || '<span class="text-muted small">Not specified.</span>';
 
   // Destinations
   document.getElementById('pDestinations').innerHTML = (g.destinations||[]).map(d =>

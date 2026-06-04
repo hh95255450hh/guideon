@@ -164,10 +164,6 @@
                 <label class="form-label fw-600 small" data-i18n="dests_covered">Destinations Covered *</label>
                 <input type="text" class="form-control" id="destinations" data-i18n-ph="dests_ph" placeholder="Muscat, Nizwa, Bahla">
               </div>
-              <div class="col-md-6">
-                <label class="form-label fw-600 small" data-i18n="specs_lbl">Specialisations *</label>
-                <input type="text" class="form-control" id="specialisations" data-i18n-ph="specs_ph" placeholder="Historical Sites, Desert Safaris">
-              </div>
               <div class="col-12">
                 <label class="form-label fw-600 small" data-i18n="bio_lbl">Professional Bio</label>
                 <textarea class="form-control" id="bio" rows="3" data-i18n-ph="bio_ph" placeholder="Tell tourists about your experience..."></textarea>
@@ -387,7 +383,7 @@ async function doRegister(e) {
     body.licenceNumber      = document.getElementById('licenceNumber').value;
     body.pricePerDay        = 0; // Deprecated — guides set per-tour prices instead
     body.languages          = document.getElementById('languages').value;
-    body.specialisations    = document.getElementById('specialisations').value;
+    body.specialisations    = ''; // Tour type is now set per-tour, not on the guide
     body.destinations       = document.getElementById('destinations').value;
     body.bio                = document.getElementById('bio').value;
   } else if (type === 'company') {
