@@ -940,6 +940,13 @@ async function updateStatus(id, status) {
   } catch (e) { toast(e.message, 'error'); }
 }
 
+function hasSlot(dateStr, slot) {
+  if (AVAILABILITY.includes(dateStr + '_' + slot)) return true;
+  if (slot !== 'full_day' && AVAILABILITY.includes(dateStr + '_full_day')) return true;
+  if (AVAILABILITY.includes(dateStr)) return true; // legacy
+  return false;
+}
+
 function buildCalendar() {
   const grid = document.getElementById('calGrid');
   grid.innerHTML = '';
@@ -950,21 +957,55 @@ function buildCalendar() {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     const dateStr = d.toISOString().slice(0, 10);
-    const isOn = AVAILABILITY.includes(dateStr);
+    const mOn = hasSlot(dateStr, 'morning');
+    const aOn = hasSlot(dateStr, 'afternoon');
 
     const el = document.createElement('div');
-    el.className = 'cal-day' + (isOn ? ' on' : '');
-    el.innerHTML = `<span class="cal-date">${d.getDate()}</span><span>${d.toLocaleDateString(locale,{month:'short'})}</span>`;
-    el.addEventListener('click', () => toggleDay(dateStr, el));
+    el.className = 'cal-day' + (mOn || aOn ? ' on' : '');
+    el.innerHTML = `
+      <span class="cal-date">${d.getDate()}</span>
+      <span style="font-size:.65rem">${d.toLocaleDateString(locale,{month:'short'})}</span>
+      <div style="display:flex;gap:2px;margin-top:2px">
+        <span class="slot-tag${mOn?' active':''}" data-date="${dateStr}" data-slot="morning" title="${I18N.lang==='ar'?'صباح':'Morning'}">🌅</span>
+        <span class="slot-tag${aOn?' active':''}" data-date="${dateStr}" data-slot="afternoon" title="${I18N.lang==='ar'?'مساء':'Afternoon'}">🌇</span>
+      </div>`;
     grid.appendChild(el);
   }
+
+  grid.querySelectorAll('.slot-tag').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSlot(btn.dataset.date, btn.dataset.slot, btn);
+    });
+  });
 }
 
-function toggleDay(dateStr, el) {
-  const idx = AVAILABILITY.indexOf(dateStr);
-  if (idx === -1) { AVAILABILITY.push(dateStr); el.classList.add('on'); }
-  else { AVAILABILITY.splice(idx, 1); el.classList.remove('on'); }
-  document.getElementById('calStatus').textContent = AVAILABILITY.length + (I18N.lang === 'ar' ? ' تاريخ متاح' : ' available date(s) selected');
+function toggleSlot(dateStr, slot, el) {
+  // Migrate legacy plain-date entry → keep the other slot
+  const legacyIdx = AVAILABILITY.indexOf(dateStr);
+  if (legacyIdx !== -1) {
+    AVAILABILITY.splice(legacyIdx, 1);
+    const other = slot === 'morning' ? 'afternoon' : 'morning';
+    if (!AVAILABILITY.includes(dateStr + '_' + other)) AVAILABILITY.push(dateStr + '_' + other);
+  }
+
+  const key = dateStr + '_' + slot;
+  const idx = AVAILABILITY.indexOf(key);
+  if (idx === -1) {
+    AVAILABILITY.push(key);
+    el.classList.add('active');
+    el.closest('.cal-day').classList.add('on');
+  } else {
+    AVAILABILITY.splice(idx, 1);
+    el.classList.remove('active');
+    const otherSlot = slot === 'morning' ? 'afternoon' : 'morning';
+    if (!AVAILABILITY.includes(dateStr + '_' + otherSlot)) {
+      el.closest('.cal-day').classList.remove('on');
+    }
+  }
+
+  const uniqueDates = new Set(AVAILABILITY.map(a => a.split('_')[0]));
+  document.getElementById('calStatus').textContent = uniqueDates.size + (I18N.lang === 'ar' ? ' تاريخ متاح' : ' date(s) selected');
 }
 
 async function saveAvailability() {

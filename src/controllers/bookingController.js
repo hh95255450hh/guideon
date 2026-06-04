@@ -39,10 +39,46 @@ async function updateBookingSafe(id, data) {
   }
 }
 
+// Returns which slot keys conflict with the requested tourTime
+function conflictingSlots(tourTime) {
+  if (tourTime === 'morning')   return ['morning', 'full_day'];
+  if (tourTime === 'afternoon') return ['afternoon', 'full_day'];
+  return ['morning', 'afternoon', 'full_day']; // full_day conflicts with everything
+}
+
+// Check whether the guide's availability array includes the requested slot
+function guideHasSlot(availability, tourDate, tourTime) {
+  // New format
+  if (availability.includes(`${tourDate}_${tourTime}`)) return true;
+  if (tourTime !== 'full_day') {
+    if (availability.includes(`${tourDate}_full_day`)) return true;
+  }
+  // Old format (plain date = full_day)
+  if (availability.includes(tourDate)) return true;
+  return false;
+}
+
+// Remove booked slot(s) from guide availability
+function removeSlotFromAvailability(availability, tourDate, tourTime) {
+  const toRemove = new Set();
+  if (tourTime === 'morning' || tourTime === 'full_day') {
+    toRemove.add(`${tourDate}_morning`);
+    toRemove.add(tourDate); // legacy full-day entry
+  }
+  if (tourTime === 'afternoon' || tourTime === 'full_day') {
+    toRemove.add(`${tourDate}_afternoon`);
+    toRemove.add(tourDate);
+  }
+  if (tourTime === 'full_day') {
+    toRemove.add(`${tourDate}_full_day`);
+  }
+  return availability.filter(a => !toRemove.has(a));
+}
+
 exports.createBooking = async (req, res) => {
   try {
     const {
-      guideId, tourDate, duration, destination, participants, specialRequests,
+      guideId, tourDate, duration, tourTime: reqTourTime, destination, participants, specialRequests,
       packageId, adultCount, childCount, variantName, variantPrice, addons, totalAmount: clientTotal,
     } = req.body;
     const touristId = req.session.userId;
@@ -62,6 +98,8 @@ exports.createBooking = async (req, res) => {
     // ── PACKAGE-BASED booking (new model) ──
     let packageData = null;
     let totalAmount;
+    let tourTime = reqTourTime || 'full_day';
+    if (!['morning', 'afternoon', 'full_day'].includes(tourTime)) tourTime = 'full_day';
 
     if (packageId) {
       packageData = await packages.findById(packageId);
@@ -91,13 +129,26 @@ exports.createBooking = async (req, res) => {
       totalAmount = subtotal * (1 - discount / 100);
     } else {
       // ── LEGACY day-rate booking (pricePerDay) ──
-      if (!duration) return res.status(400).json({ success: false, message: 'Duration is required for non-package bookings.' });
       const availability = Array.isArray(guide.availability) ? guide.availability : [];
-      if (!availability.includes(tourDate)) {
-        return res.status(400).json({ success: false, message: 'Guide is not available on the selected date.' });
+      if (!guideHasSlot(availability, tourDate, tourTime)) {
+        return res.status(400).json({ success: false, message: 'Guide is not available for the selected date and time slot.' });
       }
+
+      // Check for conflicting existing bookings (application-level race condition guard)
+      const existingBookings = await bookings.findAllByField('guideId', guideId);
+      const conflicts = conflictingSlots(tourTime);
+      const hasConflict = existingBookings.some(b =>
+        b.status !== 'cancelled' &&
+        b.tourDate === tourDate &&
+        conflicts.includes(b.tourTime || 'full_day')
+      );
+      if (hasConflict) {
+        return res.status(409).json({ success: false, message: 'This time slot was just booked. Please choose another.' });
+      }
+
+      const resolvedDuration = tourTime === 'full_day' ? 'full' : 'half';
       const pricePerDay = parseFloat(guide.pricePerDay) || 0;
-      totalAmount = duration === 'half' ? pricePerDay * 0.6 : pricePerDay;
+      totalAmount = resolvedDuration === 'half' ? pricePerDay * 0.6 : pricePerDay;
     }
 
     const participantCount = packageId
@@ -108,7 +159,8 @@ exports.createBooking = async (req, res) => {
       id: 'bk-' + uuidv4().slice(0, 8),
       touristId, guideId,
       tourDate, destination,
-      duration: duration || (packageData?.duration_days === 1 ? 'full' : 'multi'),
+      tourTime,
+      duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
       participants: participantCount,
       totalAmount: Math.round(totalAmount * 100) / 100,
       status: 'pending',
@@ -306,11 +358,12 @@ exports.updateStatus = async (req, res) => {
         metadata: { bookingId: id },
       });
 
-      // Block the date in guide availability
+      // Remove the booked slot from guide availability
       if (guide) {
         const avail = Array.isArray(guide.availability) ? guide.availability : [];
-        if (avail.includes(booking.tourDate)) {
-          await users.update(booking.guideId, { availability: avail.filter(d => d !== booking.tourDate) });
+        const newAvail = removeSlotFromAvailability(avail, booking.tourDate, booking.tourTime || 'full_day');
+        if (newAvail.length !== avail.length) {
+          await users.update(booking.guideId, { availability: newAvail });
         }
       }
     } else if (status === 'cancelled') {
@@ -338,11 +391,13 @@ exports.updateStatus = async (req, res) => {
         metadata: { bookingId: id },
       });
 
-      // Restore the date to guide availability (the email promises this)
+      // Restore the slot to guide availability
       if (guide) {
         const avail = Array.isArray(guide.availability) ? guide.availability : [];
-        if (!avail.includes(booking.tourDate)) {
-          await users.update(booking.guideId, { availability: [...avail, booking.tourDate] });
+        const slot = booking.tourTime || 'full_day';
+        const key = `${booking.tourDate}_${slot}`;
+        if (!avail.includes(key) && !avail.includes(booking.tourDate)) {
+          await users.update(booking.guideId, { availability: [...avail, key] });
         }
       }
     } else if (status === 'in_progress') {

@@ -1157,7 +1157,10 @@ async function loadAllBookings() {
         <td class="small">${b.tourDate ? new Date(b.tourDate+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—'}</td>
         <td class="small">${b.duration==='half'?I18N.t('half_day_lbl'):I18N.t('full_day_lbl')}</td>
         <td class="fw-700">OMR ${b.totalAmount}</td>
-        <td><span class="chip ${b.status==='confirmed'?'chip-verified':b.status==='completed'?'chip-verified':b.status==='cancelled'?'chip-suspended':'chip-pending'}">${I18N.t('status_'+b.status)||b.status}</span></td>
+        <td>
+          <span class="chip ${b.status==='confirmed'?'chip-verified':b.status==='completed'?'chip-verified':b.status==='cancelled'?'chip-suspended':'chip-pending'}">${I18N.t('status_'+b.status)||b.status}</span>
+          ${b.tourTime?`<div class="small text-muted">${b.tourTime==='morning'?'🌅 صباح':b.tourTime==='afternoon'?'🌇 مساء':'☀️ يوم كامل'}</div>`:''}
+        </td>
         <td class="d-flex gap-1">
           <button class="btn btn-sm btn-outline-secondary" onclick="viewBookingDetails('${b.id}')">👁 ${I18N.t('details_btn')||'Details'}</button>
           ${b.status==='confirmed'?`<button class="btn-approve" onclick="markComplete('${b.id}')">${I18N.t('complete_btn')}</button>`:''}

@@ -180,8 +180,11 @@ body.dark-mode .nav-tabs .nav-link.active {
 .cal-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .cal-day { width: 110px; padding: 10px 8px; border-radius: 10px; text-align: center; cursor: pointer; border: 2px solid var(--border); background: var(--white); font-size: 0.82rem; font-weight: 600; transition: all .15s; }
 .cal-day:hover { border-color: var(--teal); }
-.cal-day.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+.cal-day.on { background: #e8f7f5; border-color: var(--teal); }
 .cal-day .cal-date { font-size: 1.1rem; font-weight: 800; display: block; }
+.slot-tag { display:inline-block; font-size:.9rem; cursor:pointer; opacity:.35; border-radius:4px; padding:1px 3px; transition:opacity .15s,transform .15s; user-select:none; }
+.slot-tag:hover { opacity:.7; transform:scale(1.15); }
+.slot-tag.active { opacity:1; transform:scale(1.1); }
 
 /* ── REVIEW ── */
 .review-card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px; }

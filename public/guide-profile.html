@@ -341,19 +341,10 @@
           <!-- Selected date display -->
           <div class="bp-selected-date" id="selectedDateDisplay">📅 <span id="selectedDateText"></span></div>
 
-          <!-- Duration -->
-          <div class="mb-3">
-            <label class="form-label fw-600 small" data-i18n="duration">Duration *</label>
-            <div class="d-flex gap-2">
-              <div class="dur-btn active" id="durFull" onclick="setDuration('full')">
-                <div class="fw-700" data-i18n="full_day">Full Day</div>
-                <div style="font-size:.75rem;color:#888">100%</div>
-              </div>
-              <div class="dur-btn" id="durHalf" onclick="setDuration('half')">
-                <div class="fw-700" data-i18n="gp_half_day">Half Day</div>
-                <div style="font-size:.75rem;color:#888">60%</div>
-              </div>
-            </div>
+          <!-- Time Slot -->
+          <div class="mb-3" id="timeSlotRow" style="display:none">
+            <label class="form-label fw-600 small">🕐 ${I18N?.t('time_slot')||'الفترة الزمنية'} *</label>
+            <div class="d-flex gap-2 flex-wrap" id="slotBtns"></div>
           </div>
 
           <!-- Destination -->
@@ -448,6 +439,7 @@ const REVIEWS_PER_PAGE = 4;
 let calYear, calMonth;
 const today = new Date();
 today.setHours(0,0,0,0);
+let TOUR_TIME = '';
 
 // ═══════════════════════════════════════════════════════════
 //  Init
@@ -747,12 +739,44 @@ function calNext() {
   renderCalendar();
 }
 
+function getAvailableSlots(ds) {
+  const slots = [];
+  const hasMorning   = AVAIL.includes(ds+'_morning')   || AVAIL.includes(ds+'_full_day') || AVAIL.includes(ds);
+  const hasAfternoon = AVAIL.includes(ds+'_afternoon')  || AVAIL.includes(ds+'_full_day') || AVAIL.includes(ds);
+  const hasFullDay   = AVAIL.includes(ds+'_full_day')   || AVAIL.includes(ds);
+  if (hasMorning)   slots.push({ key:'morning',   label: I18N.lang==='ar'?'🌅 صباح (6ص - 1ظ)':'🌅 Morning (6am–1pm)',   price:0.6 });
+  if (hasAfternoon) slots.push({ key:'afternoon', label: I18N.lang==='ar'?'🌇 مساء (1ظ - 7م)':'🌇 Afternoon (1pm–7pm)', price:0.6 });
+  if (hasFullDay)   slots.push({ key:'full_day',  label: I18N.lang==='ar'?'☀️ يوم كامل (6ص - 7م)':'☀️ Full Day (6am–7pm)', price:1.0 });
+  return slots;
+}
+
 function selectDate(ds) {
   SELECTED_DATE = ds;
+  TOUR_TIME = '';
   renderCalendar();
-  const disp = document.getElementById('selectedDateDisplay');
   document.getElementById('selectedDateText').textContent = new Date(ds+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  disp.style.display = 'block';
+  document.getElementById('selectedDateDisplay').style.display = 'block';
+
+  const slots = getAvailableSlots(ds);
+  const row = document.getElementById('timeSlotRow');
+  const btns = document.getElementById('slotBtns');
+  if (slots.length) {
+    btns.innerHTML = slots.map(s => `
+      <div class="dur-btn" id="slot_${s.key}" onclick="setTourTime('${s.key}')">
+        <div class="fw-700" style="font-size:.8rem">${s.label}</div>
+      </div>`).join('');
+    row.style.display = 'block';
+  } else {
+    row.style.display = 'none';
+  }
+  updatePrice();
+}
+
+function setTourTime(t) {
+  TOUR_TIME = t;
+  document.querySelectorAll('#slotBtns .dur-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('slot_' + t);
+  if (el) el.classList.add('active');
   updatePrice();
 }
 
@@ -801,7 +825,8 @@ function setCurrency(cur) {
 
 function updatePrice() {
   if (!GUIDE) return;
-  const rate   = DURATION==='half' ? GUIDE.pricePerDay*0.6 : GUIDE.pricePerDay;
+  const multiplier = TOUR_TIME === 'full_day' ? 1.0 : 0.6;
+  const rate   = GUIDE.pricePerDay * multiplier;
   const total  = rate * PAX;
   const payNow = total * DEPOSIT/100;
 
@@ -810,10 +835,13 @@ function updatePrice() {
   document.getElementById('dep100').textContent = conv(total);
 
   const bd = document.getElementById('priceBreakdown');
-  if (SELECTED_DATE) {
+  if (SELECTED_DATE && TOUR_TIME) {
     bd.style.display = '';
+    const slotLabel = TOUR_TIME === 'full_day' ? (I18N.lang==='ar'?'يوم كامل':'Full Day') :
+                      TOUR_TIME === 'morning'  ? (I18N.lang==='ar'?'صباح':'Morning') :
+                                                 (I18N.lang==='ar'?'مساء':'Afternoon');
     document.getElementById('pbRate').textContent  = conv(GUIDE.pricePerDay) + I18N.t('per_day');
-    document.getElementById('pbDur').textContent   = (DURATION==='half' ? I18N.t('gp_half_day') + ' (×0.6)' : I18N.t('full_day')) + (PAX>1?' × '+PAX+' pax':'');
+    document.getElementById('pbDur').textContent   = slotLabel + (PAX>1?' × '+PAX+' pax':'');
     document.getElementById('pbTotal').textContent = conv(payNow) + ' (' + DEPOSIT + '%)';
   } else {
     bd.style.display = 'none';
@@ -898,6 +926,7 @@ function loadMoreReviews() {
 // ═══════════════════════════════════════════════════════════
 async function submitBooking() {
   if (!SELECTED_DATE) { toast(I18N.t('gp_select_date'),'error'); return; }
+  if (!TOUR_TIME) { toast(I18N.lang==='ar'?'الرجاء اختيار الفترة الزمنية':'Please select a time slot','error'); return; }
   const dest = document.getElementById('bDest').value;
   if (!dest) { toast(I18N.t('gp_select_dest'),'error'); return; }
 
@@ -909,7 +938,7 @@ async function submitBooking() {
       method:'POST', credentials:'include',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        guideId:GUIDE.id, tourDate:SELECTED_DATE, duration:DURATION,
+        guideId:GUIDE.id, tourDate:SELECTED_DATE, tourTime:TOUR_TIME,
         destination:dest, participants:PAX,
         specialRequests:document.getElementById('bSpecial').value,
       }),
