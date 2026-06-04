@@ -99,12 +99,38 @@ exports.getGuide = async (req, res) => {
 exports.updateAvailability = async (req, res) => {
   try {
     const guideId = req.session.userId;
-    const { availability } = req.body;
-    if (!Array.isArray(availability)) {
-      return res.status(400).json({ success: false, message: 'Availability must be an array of dates.' });
+    const { availability, availabilitySlots } = req.body;
+
+    const patch = {};
+
+    // New time-slot system
+    if (availabilitySlots !== undefined) {
+      if (!Array.isArray(availabilitySlots)) {
+        return res.status(400).json({ success: false, message: 'availabilitySlots must be an array.' });
+      }
+      // Validate each slot has required fields
+      for (const s of availabilitySlots) {
+        if (!s.date || !s.startTime || !s.endTime || s.price == null) {
+          return res.status(400).json({ success: false, message: 'Each slot must have date, startTime, endTime, price.' });
+        }
+      }
+      patch.availabilitySlots = availabilitySlots;
     }
-    await users.update(guideId, { availability });
-    res.json({ success: true, message: 'Availability updated.', availability });
+
+    // Legacy date-array system (keep for backward compat)
+    if (availability !== undefined) {
+      if (!Array.isArray(availability)) {
+        return res.status(400).json({ success: false, message: 'Availability must be an array.' });
+      }
+      patch.availability = availability;
+    }
+
+    if (!Object.keys(patch).length) {
+      return res.status(400).json({ success: false, message: 'Nothing to update.' });
+    }
+
+    await users.update(guideId, patch);
+    res.json({ success: true, message: 'Availability updated.', ...patch });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });

@@ -366,13 +366,47 @@
       </div>
     </div>
 
-    <!-- RIGHT: Availability -->
+    <!-- RIGHT: Availability Slots -->
     <div class="col-lg-4">
       <div class="info-card sticky-top" style="top:80px">
-        <h5 class="fw-700 mb-1" data-i18n="manage_avail">📅 Manage Availability</h5>
-        <p class="text-muted small mb-3" data-i18n="avail_note">Click dates to toggle availability for the next 60 days.</p>
-        <div class="cal-grid" id="calGrid"></div>
-        <button class="btn-teal btn w-100 mt-3" onclick="saveAvailability()" data-i18n="save_avail">Save Availability</button>
+        <h5 class="fw-700 mb-2">📅 إدارة المواعيد</h5>
+
+        <!-- Add slot form -->
+        <div style="background:#f8fffe;border:1px solid #d0ede8;border-radius:10px;padding:14px;margin-bottom:14px">
+          <div class="mb-2">
+            <label class="form-label small fw-600 mb-1">📆 التاريخ</label>
+            <input type="date" id="slotDate" class="form-control form-control-sm">
+          </div>
+          <div class="d-flex gap-2 mb-2">
+            <div style="flex:1">
+              <label class="form-label small fw-600 mb-1">🕐 وقت البداية</label>
+              <input type="time" id="slotStart" class="form-control form-control-sm" value="09:00">
+            </div>
+            <div style="flex:1">
+              <label class="form-label small fw-600 mb-1">⏱ المدة</label>
+              <select id="slotDuration" class="form-select form-select-sm">
+                <option value="20">20 دقيقة</option>
+                <option value="30">30 دقيقة</option>
+                <option value="40">40 دقيقة</option>
+                <option value="60" selected>ساعة</option>
+                <option value="90">1.5 ساعة</option>
+                <option value="120">ساعتان</option>
+                <option value="210">نصف يوم</option>
+                <option value="390">يوم كامل</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-600 mb-1">💰 السعر (OMR)</label>
+            <input type="number" id="slotPrice" class="form-control form-control-sm" min="1" step="0.5" placeholder="مثال: 5">
+          </div>
+          <button class="btn btn-sm btn-teal w-100 fw-700" onclick="addSlot()">+ إضافة موعد</button>
+        </div>
+
+        <!-- Slots list -->
+        <div id="slotsList" style="max-height:280px;overflow-y:auto"></div>
+
+        <button class="btn-teal btn w-100 mt-3 fw-700" onclick="saveSlots()">💾 حفظ المواعيد</button>
         <div class="small text-muted mt-2 text-center" id="calStatus"></div>
       </div>
     </div>
@@ -419,6 +453,7 @@ async function checkAuth() {
     }
     GUIDE = d.user;
     AVAILABILITY = [...(GUIDE.availability || [])];
+    SLOTS = Array.isArray(GUIDE.availabilitySlots) ? GUIDE.availabilitySlots.filter(s => s.date >= new Date().toISOString().slice(0,10)) : [];
     renderGuideHeader();
     buildCalendar();
     loadBookings();
@@ -940,86 +975,94 @@ async function updateStatus(id, status) {
   } catch (e) { toast(e.message, 'error'); }
 }
 
-function hasSlot(dateStr, slot) {
-  if (AVAILABILITY.includes(dateStr + '_' + slot)) return true;
-  if (slot !== 'full_day' && AVAILABILITY.includes(dateStr + '_full_day')) return true;
-  if (AVAILABILITY.includes(dateStr)) return true; // legacy
-  return false;
+// ── Time Slot Management ──────────────────────────────────────
+let SLOTS = []; // array of { id, date, startTime, endTime, price }
+
+function timeAdd(hhmm, minutes) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const total = h * 60 + m + minutes;
+  return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
 }
 
-function buildCalendar() {
-  const grid = document.getElementById('calGrid');
-  grid.innerHTML = '';
-  const today = new Date();
-  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
-
-  for (let i = 0; i < 60; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    const dateStr = d.toISOString().slice(0, 10);
-    const mOn = hasSlot(dateStr, 'morning');
-    const aOn = hasSlot(dateStr, 'afternoon');
-
-    const el = document.createElement('div');
-    el.className = 'cal-day' + (mOn || aOn ? ' on' : '');
-    el.innerHTML = `
-      <span class="cal-date">${d.getDate()}</span>
-      <span style="font-size:.65rem">${d.toLocaleDateString(locale,{month:'short'})}</span>
-      <div style="display:flex;gap:2px;margin-top:2px">
-        <span class="slot-tag${mOn?' active':''}" data-date="${dateStr}" data-slot="morning" title="${I18N.lang==='ar'?'صباح':'Morning'}">🌅</span>
-        <span class="slot-tag${aOn?' active':''}" data-date="${dateStr}" data-slot="afternoon" title="${I18N.lang==='ar'?'مساء':'Afternoon'}">🌇</span>
-      </div>`;
-    grid.appendChild(el);
-  }
-
-  grid.querySelectorAll('.slot-tag').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleSlot(btn.dataset.date, btn.dataset.slot, btn);
-    });
-  });
+function fmtDuration(min) {
+  if (min < 60) return min + ' دقيقة';
+  const h = Math.floor(min / 60), m = min % 60;
+  return h + ' ساعة' + (m ? ' و' + m + ' د' : '');
 }
 
-function toggleSlot(dateStr, slot, el) {
-  // Migrate legacy plain-date entry → keep the other slot
-  const legacyIdx = AVAILABILITY.indexOf(dateStr);
-  if (legacyIdx !== -1) {
-    AVAILABILITY.splice(legacyIdx, 1);
-    const other = slot === 'morning' ? 'afternoon' : 'morning';
-    if (!AVAILABILITY.includes(dateStr + '_' + other)) AVAILABILITY.push(dateStr + '_' + other);
-  }
+function addSlot() {
+  const date  = document.getElementById('slotDate').value;
+  const start = document.getElementById('slotStart').value;
+  const dur   = parseInt(document.getElementById('slotDuration').value);
+  const price = parseFloat(document.getElementById('slotPrice').value);
 
-  const key = dateStr + '_' + slot;
-  const idx = AVAILABILITY.indexOf(key);
-  if (idx === -1) {
-    AVAILABILITY.push(key);
-    el.classList.add('active');
-    el.closest('.cal-day').classList.add('on');
-  } else {
-    AVAILABILITY.splice(idx, 1);
-    el.classList.remove('active');
-    const otherSlot = slot === 'morning' ? 'afternoon' : 'morning';
-    if (!AVAILABILITY.includes(dateStr + '_' + otherSlot)) {
-      el.closest('.cal-day').classList.remove('on');
-    }
-  }
+  if (!date)          return toast('اختر التاريخ', 'error');
+  if (!start)         return toast('اختر وقت البداية', 'error');
+  if (!price || price <= 0) return toast('أدخل السعر', 'error');
 
-  const uniqueDates = new Set(AVAILABILITY.map(a => a.split('_')[0]));
-  document.getElementById('calStatus').textContent = uniqueDates.size + (I18N.lang === 'ar' ? ' تاريخ متاح' : ' date(s) selected');
+  const end = timeAdd(start, dur);
+  // Prevent overlap with existing slots on same date
+  const conflict = SLOTS.find(s =>
+    s.date === date && start < s.endTime && end > s.startTime
+  );
+  if (conflict) return toast(`يتعارض مع موعد ${conflict.startTime}–${conflict.endTime}`, 'error');
+
+  SLOTS.push({ id: Date.now().toString(36), date, startTime: start, endTime: end, durationMin: dur, price });
+  SLOTS.sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
+  renderSlots();
 }
 
-async function saveAvailability() {
+function removeSlot(id) {
+  SLOTS = SLOTS.filter(s => s.id !== id);
+  renderSlots();
+}
+
+function renderSlots() {
+  const list = document.getElementById('slotsList');
+  if (!SLOTS.length) {
+    list.innerHTML = '<div class="text-muted small text-center py-3">لا توجد مواعيد بعد</div>';
+    document.getElementById('calStatus').textContent = '';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  SLOTS.forEach(s => { (byDate[s.date] = byDate[s.date] || []).push(s); });
+
+  list.innerHTML = Object.entries(byDate).map(([date, slots]) => {
+    const dateLabel = new Date(date + 'T00:00:00').toLocaleDateString('ar-OM', { weekday:'short', day:'numeric', month:'short' });
+    const rows = slots.map(s => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f0f0f0">
+        <span class="small fw-600">${s.startTime} – ${s.endTime} <span class="text-muted">(${fmtDuration(s.durationMin)})</span></span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span class="small fw-700" style="color:var(--teal)">OMR ${s.price}</span>
+          <button onclick="removeSlot('${s.id}')" style="background:none;border:none;color:#e55;font-size:1rem;cursor:pointer;padding:0">✕</button>
+        </span>
+      </div>`).join('');
+    return `<div style="margin-bottom:10px">
+      <div class="small fw-700 mb-1" style="color:#444">📅 ${dateLabel}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  document.getElementById('calStatus').textContent = SLOTS.length + ' موعد متاح';
+}
+
+async function saveSlots() {
   try {
     const r = await fetch('/api/guides/me/availability', {
       method: 'PUT', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ availability: AVAILABILITY }),
+      body: JSON.stringify({ availabilitySlots: SLOTS }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
-    toast(I18N.t('save_avail') + ' ✓', 'success');
+    toast('✓ تم حفظ المواعيد', 'success');
   } catch (e) { toast(e.message, 'error'); }
 }
+
+// Keep legacy buildCalendar as no-op (UI replaced)
+function buildCalendar() { renderSlots(); }
 
 async function loadTripRequests() {
   try {

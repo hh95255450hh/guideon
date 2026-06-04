@@ -128,27 +128,52 @@ exports.createBooking = async (req, res) => {
       const discount = packageData.discountPercent || 0;
       totalAmount = subtotal * (1 - discount / 100);
     } else {
-      // ── LEGACY day-rate booking (pricePerDay) ──
-      const availability = Array.isArray(guide.availability) ? guide.availability : [];
-      if (!guideHasSlot(availability, tourDate, tourTime)) {
-        return res.status(400).json({ success: false, message: 'Guide is not available for the selected date and time slot.' });
-      }
+      const { startTime: reqStartTime } = req.body;
 
-      // Check for conflicting existing bookings (application-level race condition guard)
-      const existingBookings = await bookings.findAllByField('guideId', guideId);
-      const conflicts = conflictingSlots(tourTime);
-      const hasConflict = existingBookings.some(b =>
-        b.status !== 'cancelled' &&
-        b.tourDate === tourDate &&
-        conflicts.includes(b.tourTime || 'full_day')
-      );
-      if (hasConflict) {
-        return res.status(409).json({ success: false, message: 'This time slot was just booked. Please choose another.' });
-      }
+      // ── NEW: time-slot based booking ──
+      const slots = Array.isArray(guide.availabilitySlots) ? guide.availabilitySlots : [];
+      if (slots.length && reqStartTime) {
+        const matchSlot = slots.find(s => s.date === tourDate && s.startTime === reqStartTime);
+        if (!matchSlot) {
+          return res.status(400).json({ success: false, message: 'Selected time slot is not available.' });
+        }
 
-      const resolvedDuration = tourTime === 'full_day' ? 'full' : 'half';
-      const pricePerDay = parseFloat(guide.pricePerDay) || 0;
-      totalAmount = resolvedDuration === 'half' ? pricePerDay * 0.6 : pricePerDay;
+        // Check time overlap with existing bookings
+        const existingBookings = await bookings.findAllByField('guideId', guideId);
+        const hasOverlap = existingBookings.some(b =>
+          b.status !== 'cancelled' &&
+          b.tourDate === tourDate &&
+          b.startTime && b.endTime &&
+          reqStartTime < b.endTime && matchSlot.endTime > b.startTime
+        );
+        if (hasOverlap) {
+          return res.status(409).json({ success: false, message: 'This time slot was just booked. Please choose another.' });
+        }
+
+        totalAmount = parseFloat(matchSlot.price) || 0;
+        req._slotData = { startTime: matchSlot.startTime, endTime: matchSlot.endTime, durationMin: matchSlot.durationMin };
+      } else {
+        // ── LEGACY day-rate booking ──
+        const availability = Array.isArray(guide.availability) ? guide.availability : [];
+        if (!guideHasSlot(availability, tourDate, tourTime)) {
+          return res.status(400).json({ success: false, message: 'Guide is not available for the selected date and time slot.' });
+        }
+
+        const existingBookings = await bookings.findAllByField('guideId', guideId);
+        const conflicts = conflictingSlots(tourTime);
+        const hasConflict = existingBookings.some(b =>
+          b.status !== 'cancelled' &&
+          b.tourDate === tourDate &&
+          conflicts.includes(b.tourTime || 'full_day')
+        );
+        if (hasConflict) {
+          return res.status(409).json({ success: false, message: 'This time slot was just booked. Please choose another.' });
+        }
+
+        const resolvedDuration = tourTime === 'full_day' ? 'full' : 'half';
+        const pricePerDay = parseFloat(guide.pricePerDay) || 0;
+        totalAmount = resolvedDuration === 'half' ? pricePerDay * 0.6 : pricePerDay;
+      }
     }
 
     const participantCount = packageId
@@ -160,6 +185,7 @@ exports.createBooking = async (req, res) => {
       touristId, guideId,
       tourDate, destination,
       tourTime,
+      ...(req._slotData || {}),
       duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
       participants: participantCount,
       totalAmount: Math.round(totalAmount * 100) / 100,
@@ -358,13 +384,20 @@ exports.updateStatus = async (req, res) => {
         metadata: { bookingId: id },
       });
 
-      // Remove the booked slot from guide availability
+      // Remove booked slot from guide availability
       if (guide) {
+        const patch = {};
+        // New slot system
+        if (booking.startTime && Array.isArray(guide.availabilitySlots)) {
+          patch.availabilitySlots = guide.availabilitySlots.filter(s =>
+            !(s.date === booking.tourDate && s.startTime === booking.startTime)
+          );
+        }
+        // Legacy system
         const avail = Array.isArray(guide.availability) ? guide.availability : [];
         const newAvail = removeSlotFromAvailability(avail, booking.tourDate, booking.tourTime || 'full_day');
-        if (newAvail.length !== avail.length) {
-          await users.update(booking.guideId, { availability: newAvail });
-        }
+        if (newAvail.length !== avail.length) patch.availability = newAvail;
+        if (Object.keys(patch).length) await users.update(booking.guideId, patch);
       }
     } else if (status === 'cancelled') {
       if (tourist) email.sendTouristBookingCancelled({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});

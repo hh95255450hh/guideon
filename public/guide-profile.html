@@ -460,6 +460,9 @@ async function init() {
   GUIDE   = pd.guide;
   REVIEWS = pd.reviews || [];
   AVAIL   = (GUIDE.availability || []).filter(d => d >= fmtDate(today)).sort();
+  // Add dates from new slot system into AVAIL set for calendar highlighting
+  const slotDates = (GUIDE.availabilitySlots || []).filter(s => s.date >= fmtDate(today)).map(s => s.date);
+  slotDates.forEach(d => { if (!AVAIL.includes(d)) AVAIL.push(d); });
 
   if (meRes.status==='fulfilled') {
     const md = await meRes.value.json();
@@ -739,41 +742,67 @@ function calNext() {
   renderCalendar();
 }
 
+let SELECTED_SLOT = null; // { startTime, endTime, price, durationMin }
+
 function getAvailableSlots(ds) {
-  const slots = [];
+  // New time-slot system
+  const guideSlots = Array.isArray(GUIDE.availabilitySlots) ? GUIDE.availabilitySlots : [];
+  const timeSlots = guideSlots.filter(s => s.date === ds);
+  if (timeSlots.length) return { type: 'time', slots: timeSlots };
+
+  // Legacy morning/afternoon system
   const hasMorning   = AVAIL.includes(ds+'_morning')   || AVAIL.includes(ds+'_full_day') || AVAIL.includes(ds);
   const hasAfternoon = AVAIL.includes(ds+'_afternoon')  || AVAIL.includes(ds+'_full_day') || AVAIL.includes(ds);
   const hasFullDay   = AVAIL.includes(ds+'_full_day')   || AVAIL.includes(ds);
-  if (hasMorning)   slots.push({ key:'morning',   label: I18N.lang==='ar'?'🌅 صباح (6ص - 1ظ)':'🌅 Morning (6am–1pm)',   price:0.6 });
-  if (hasAfternoon) slots.push({ key:'afternoon', label: I18N.lang==='ar'?'🌇 مساء (1ظ - 7م)':'🌇 Afternoon (1pm–7pm)', price:0.6 });
-  if (hasFullDay)   slots.push({ key:'full_day',  label: I18N.lang==='ar'?'☀️ يوم كامل (6ص - 7م)':'☀️ Full Day (6am–7pm)', price:1.0 });
-  return slots;
+  const legacy = [];
+  if (hasMorning)   legacy.push({ key:'morning',   label: I18N.lang==='ar'?'🌅 صباح (6ص–1ظ)':'🌅 Morning (6am–1pm)' });
+  if (hasAfternoon) legacy.push({ key:'afternoon', label: I18N.lang==='ar'?'🌇 مساء (1ظ–7م)':'🌇 Afternoon (1pm–7pm)' });
+  if (hasFullDay)   legacy.push({ key:'full_day',  label: I18N.lang==='ar'?'☀️ يوم كامل':'☀️ Full Day' });
+  return { type: 'legacy', slots: legacy };
 }
 
 function selectDate(ds) {
   SELECTED_DATE = ds;
   TOUR_TIME = '';
+  SELECTED_SLOT = null;
   renderCalendar();
   document.getElementById('selectedDateText').textContent = new Date(ds+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('selectedDateDisplay').style.display = 'block';
 
-  const slots = getAvailableSlots(ds);
+  const { type, slots } = getAvailableSlots(ds);
   const row = document.getElementById('timeSlotRow');
   const btns = document.getElementById('slotBtns');
-  if (slots.length) {
+
+  if (!slots.length) { row.style.display = 'none'; updatePrice(); return; }
+
+  if (type === 'time') {
+    btns.innerHTML = slots.map(s => `
+      <div class="dur-btn" id="tslot_${s.startTime.replace(':','')}" onclick="selectTimeSlot(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+        <div class="fw-700" style="font-size:.85rem">🕐 ${s.startTime} – ${s.endTime}</div>
+        <div style="font-size:.72rem;color:#888">${s.durationMin < 60 ? s.durationMin+' دقيقة' : Math.floor(s.durationMin/60)+'س'+(s.durationMin%60?s.durationMin%60+'د':'')} · OMR ${s.price}</div>
+      </div>`).join('');
+  } else {
     btns.innerHTML = slots.map(s => `
       <div class="dur-btn" id="slot_${s.key}" onclick="setTourTime('${s.key}')">
         <div class="fw-700" style="font-size:.8rem">${s.label}</div>
       </div>`).join('');
-    row.style.display = 'block';
-  } else {
-    row.style.display = 'none';
   }
+  row.style.display = 'block';
+  updatePrice();
+}
+
+function selectTimeSlot(slot) {
+  SELECTED_SLOT = slot;
+  TOUR_TIME = 'slot';
+  document.querySelectorAll('#slotBtns .dur-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('tslot_' + slot.startTime.replace(':',''));
+  if (el) el.classList.add('active');
   updatePrice();
 }
 
 function setTourTime(t) {
   TOUR_TIME = t;
+  SELECTED_SLOT = null;
   document.querySelectorAll('#slotBtns .dur-btn').forEach(b => b.classList.remove('active'));
   const el = document.getElementById('slot_' + t);
   if (el) el.classList.add('active');
@@ -825,23 +854,33 @@ function setCurrency(cur) {
 
 function updatePrice() {
   if (!GUIDE) return;
-  const multiplier = TOUR_TIME === 'full_day' ? 1.0 : 0.6;
-  const rate   = GUIDE.pricePerDay * multiplier;
-  const total  = rate * PAX;
-  const payNow = total * DEPOSIT/100;
+  let total;
+  let durLabel = '';
 
-  document.getElementById('dep20').textContent  = conv(total*0.20);
-  document.getElementById('dep50').textContent  = conv(total*0.50);
+  if (SELECTED_SLOT) {
+    // New time-slot pricing (fixed price per slot, no PAX multiplier shown)
+    total = parseFloat(SELECTED_SLOT.price) || 0;
+    const min = SELECTED_SLOT.durationMin;
+    durLabel = `${SELECTED_SLOT.startTime}–${SELECTED_SLOT.endTime} · ${min < 60 ? min+' دقيقة' : Math.floor(min/60)+'س'+(min%60?min%60+'د':'')}`;
+  } else {
+    const multiplier = TOUR_TIME === 'full_day' ? 1.0 : 0.6;
+    total = (GUIDE.pricePerDay || 0) * multiplier * PAX;
+    durLabel = TOUR_TIME === 'full_day' ? (I18N.lang==='ar'?'يوم كامل':'Full Day') :
+               TOUR_TIME === 'morning'  ? (I18N.lang==='ar'?'صباح':'Morning') :
+               TOUR_TIME === 'afternoon'? (I18N.lang==='ar'?'مساء':'Afternoon') : '';
+    if (PAX > 1 && !SELECTED_SLOT) durLabel += ' × ' + PAX + ' pax';
+  }
+
+  const payNow = total * DEPOSIT / 100;
+  document.getElementById('dep20').textContent  = conv(total * 0.20);
+  document.getElementById('dep50').textContent  = conv(total * 0.50);
   document.getElementById('dep100').textContent = conv(total);
 
   const bd = document.getElementById('priceBreakdown');
-  if (SELECTED_DATE && TOUR_TIME) {
+  if (SELECTED_DATE && (TOUR_TIME || SELECTED_SLOT)) {
     bd.style.display = '';
-    const slotLabel = TOUR_TIME === 'full_day' ? (I18N.lang==='ar'?'يوم كامل':'Full Day') :
-                      TOUR_TIME === 'morning'  ? (I18N.lang==='ar'?'صباح':'Morning') :
-                                                 (I18N.lang==='ar'?'مساء':'Afternoon');
-    document.getElementById('pbRate').textContent  = conv(GUIDE.pricePerDay) + I18N.t('per_day');
-    document.getElementById('pbDur').textContent   = slotLabel + (PAX>1?' × '+PAX+' pax':'');
+    document.getElementById('pbRate').textContent  = SELECTED_SLOT ? 'OMR ' + SELECTED_SLOT.price : conv(GUIDE.pricePerDay) + I18N.t('per_day');
+    document.getElementById('pbDur').textContent   = durLabel;
     document.getElementById('pbTotal').textContent = conv(payNow) + ' (' + DEPOSIT + '%)';
   } else {
     bd.style.display = 'none';
@@ -926,7 +965,7 @@ function loadMoreReviews() {
 // ═══════════════════════════════════════════════════════════
 async function submitBooking() {
   if (!SELECTED_DATE) { toast(I18N.t('gp_select_date'),'error'); return; }
-  if (!TOUR_TIME) { toast(I18N.lang==='ar'?'الرجاء اختيار الفترة الزمنية':'Please select a time slot','error'); return; }
+  if (!TOUR_TIME && !SELECTED_SLOT) { toast(I18N.lang==='ar'?'الرجاء اختيار الفترة الزمنية':'Please select a time slot','error'); return; }
   const dest = document.getElementById('bDest').value;
   if (!dest) { toast(I18N.t('gp_select_dest'),'error'); return; }
 
@@ -938,7 +977,9 @@ async function submitBooking() {
       method:'POST', credentials:'include',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        guideId:GUIDE.id, tourDate:SELECTED_DATE, tourTime:TOUR_TIME,
+        guideId:GUIDE.id, tourDate:SELECTED_DATE,
+        tourTime: SELECTED_SLOT ? 'slot' : TOUR_TIME,
+        startTime: SELECTED_SLOT ? SELECTED_SLOT.startTime : undefined,
         destination:dest, participants:PAX,
         specialRequests:document.getElementById('bSpecial').value,
       }),
