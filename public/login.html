@@ -103,12 +103,24 @@ async function initGoogle() {
   try {
     const r = await fetch('/api/auth/google-config');
     const { clientId } = await r.json();
-    if (!clientId) return; // not configured → keep email/password only
+    if (!clientId) return;
+
     const start = () => {
       if (!window.google || !google.accounts) { setTimeout(start, 300); return; }
-      google.accounts.id.initialize({ client_id: clientId, callback: onGoogleCredential });
-      google.accounts.id.renderButton(document.getElementById('googleBtn'),
-        { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: 300 });
+
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: onGoogleCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        ux_mode: 'popup',
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById('googleBtn'),
+        { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: 300 }
+      );
+
       document.getElementById('googleAuthWrap').classList.remove('d-none');
     };
     start();
