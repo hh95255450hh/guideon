@@ -138,7 +138,19 @@ async function notify(opts) {
             ? `${enBlock}\n\n──────\n\n${arBlock}\n\n🔗 ${link}`
             : `${enBlock}\n\n🔗 ${link}`;
 
-          whatsapp.sendText(user.phone, waBody).catch(() => {});
+          // Try a free-text message first (works inside the 24h window).
+          let sent = null;
+          try { sent = await whatsapp.sendText(user.phone, waBody); } catch (_) {}
+          // Outside the 24h window free-text is rejected → fall back to the
+          // approved template (guideon_alert: {{1}}=title, {{2}}=details+link).
+          if (!sent) {
+            const tplName = process.env.WHATSAPP_TEMPLATE_NAME || 'guideon_alert';
+            const tplLang = process.env.WHATSAPP_TEMPLATE_LANG || 'ar';
+            const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
+            const p1 = clean(opts.titleAr || opts.title).slice(0, 250) || 'Guideon';
+            const p2 = clean(`${opts.bodyAr || opts.body || ''} ${link}`).slice(0, 600) || link;
+            whatsapp.sendTemplate(user.phone, tplName, tplLang, [p1, p2]).catch(() => {});
+          }
         }
       } catch (_) { /* never fail the notify because of whatsapp */ }
     }
