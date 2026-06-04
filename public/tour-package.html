@@ -106,6 +106,12 @@
             <div class="small text-muted">Loading dates...</div>
           </div>
         </div>
+        <!-- Time Slot -->
+        <div class="mb-3" id="timeSlotSection" style="display:none">
+          <label class="form-label small fw-700">🕐 اختر الوقت</label>
+          <div id="pkgSlotBtns" class="d-flex gap-2 flex-wrap"></div>
+        </div>
+
         <div class="mb-3">
           <label class="form-label small fw-700" data-i18n="num_travelers">👥 Number of Travelers</label>
           <input type="number" class="form-control" id="adultCount" value="2" min="2" max="50" onchange="recalcPrice()">
@@ -135,6 +141,7 @@ let PACKAGE = null;
 let SELECTED_VARIANT = null;
 let SELECTED_DATE    = null;
 let SELECTED_ADDONS  = new Set();
+let SELECTED_SLOT    = null; // { startTime, endTime, price, durationMin }
 
 // ── Currency (display only — bookings are always stored in OMR) ──
 const RATES = { OMR:1, USD:2.60, EUR:2.40, GBP:2.05 };
@@ -189,6 +196,12 @@ async function loadPackage() {
     const d = await r.json();
     if (!d.success || !d.package) throw new Error('Not found');
     PACKAGE = d.package;
+    // Load guide's time slots
+    try {
+      const gr = await fetch('/api/guides/' + PACKAGE.providerId);
+      const gd = await gr.json();
+      PACKAGE.providerSlots = Array.isArray(gd.guide?.availabilitySlots) ? gd.guide.availabilitySlots : [];
+    } catch { PACKAGE.providerSlots = []; }
     renderPackage();
   } catch (e) {
     document.body.innerHTML = '<div class="container py-5 text-center"><h3>Tour not found</h3><a href="/search.html" class="btn btn-teal mt-3">Browse tours</a></div>';
@@ -317,16 +330,40 @@ function selectVariant(idx) {
   recalcPrice();
 }
 
+function renderTimeSlots(date) {
+  SELECTED_SLOT = null;
+  const slots = Array.isArray(PACKAGE.providerSlots) ? PACKAGE.providerSlots.filter(s => s.date === date) : [];
+  const section = document.getElementById('timeSlotSection');
+  const btns = document.getElementById('pkgSlotBtns');
+  if (!slots.length) { section.style.display = 'none'; return; }
+  const fmtDur = m => m < 60 ? m + ' دقيقة' : Math.floor(m/60) + 'س' + (m%60 ? m%60+'د' : '');
+  btns.innerHTML = slots.map(s => `
+    <div class="dur-btn" id="pkgslot_${s.startTime.replace(':','')}" onclick="selectSlot(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+      <div class="fw-700" style="font-size:.82rem">🕐 ${s.startTime} – ${s.endTime}</div>
+      <div style="font-size:.72rem;color:#888">${fmtDur(s.durationMin)}</div>
+    </div>`).join('');
+  section.style.display = 'block';
+}
+
+function selectSlot(slot) {
+  SELECTED_SLOT = slot;
+  document.querySelectorAll('#pkgSlotBtns .dur-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('pkgslot_' + slot.startTime.replace(':',''));
+  if (el) el.classList.add('active');
+}
+
 function selectDate(date, btn) {
   SELECTED_DATE = date;
   document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
+  renderTimeSlots(date);
   recalcPrice();
 }
 
 // Free date picker (packages with no preset availableDates)
 function selectFreeDate(date) {
   SELECTED_DATE = date || null;
+  if (date) renderTimeSlots(date);
   recalcPrice();
 }
 
@@ -458,6 +495,8 @@ async function bookTour() {
     guideId:       PACKAGE.providerId,
     packageId:     PACKAGE.id,
     tourDate:      SELECTED_DATE,
+    startTime:     SELECTED_SLOT ? SELECTED_SLOT.startTime : undefined,
+    tourTime:      SELECTED_SLOT ? 'slot' : undefined,
     duration:      (parseInt(PACKAGE.duration_days)||0) >= 1 ? 'multi' : 'full',
     destination:   PACKAGE.destination,
     participants:  people,
