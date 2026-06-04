@@ -1161,6 +1161,7 @@ async function loadAllBookings() {
         <td class="d-flex gap-1">
           <button class="btn btn-sm btn-outline-secondary" onclick="viewBookingDetails('${b.id}')">👁 ${I18N.t('details_btn')||'Details'}</button>
           ${b.status==='confirmed'?`<button class="btn-approve" onclick="markComplete('${b.id}')">${I18N.t('complete_btn')}</button>`:''}
+          ${b.status==='completed'?`<span style="color:#0f7b6c;font-weight:700;font-size:13px;">✅ ${I18N.t('trip_completed')||'تم إنهاء الرحلة'}</span>`:''}
         </td>
       </tr>`).join('') || `<tr><td colspan="8" class="text-center text-muted py-4">${I18N.t('no_bookings_found')}</td></tr>`;
   } catch {}
