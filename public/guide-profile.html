@@ -343,7 +343,7 @@
 
           <!-- Time Slot -->
           <div class="mb-3" id="timeSlotRow" style="display:none">
-            <label class="form-label fw-600 small">🕐 ${I18N?.t('time_slot')||'الفترة الزمنية'} *</label>
+            <label class="form-label fw-600 small">🕐 الوقت <span class="text-muted fw-400">(اختياري)</span></label>
             <div class="d-flex gap-2 flex-wrap" id="slotBtns"></div>
           </div>
 
@@ -965,7 +965,6 @@ function loadMoreReviews() {
 // ═══════════════════════════════════════════════════════════
 async function submitBooking() {
   if (!SELECTED_DATE) { toast(I18N.t('gp_select_date'),'error'); return; }
-  if (!TOUR_TIME && !SELECTED_SLOT) { toast(I18N.lang==='ar'?'الرجاء اختيار الفترة الزمنية':'Please select a time slot','error'); return; }
   const dest = document.getElementById('bDest').value;
   if (!dest) { toast(I18N.t('gp_select_dest'),'error'); return; }
 
