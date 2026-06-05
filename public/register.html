@@ -245,6 +245,21 @@ function toggleGoogleWrap() {
   const w = document.getElementById('googleAuthWrap');
   if (w) w.classList.toggle('d-none', !show);
 }
+async function onGoogleCredential(resp) {
+  try {
+    const r = await fetch('/api/auth/google', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: resp.credential }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    window.location.href = '/tourist-dashboard.html';
+  } catch (e) {
+    if (typeof toast === 'function') toast(e.message || 'Google sign-in failed.', 'error');
+    else alert(e.message || 'Google sign-in failed.');
+  }
+}
 
 // Populate the country code dropdown on page load (default: Oman)
 document.addEventListener('DOMContentLoaded', () => {
