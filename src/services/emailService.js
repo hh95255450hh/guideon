@@ -11,9 +11,9 @@ function getResend() {
   return _resend;
 }
 
-// Sender MUST be a domain verified in Resend. guideon.guide is the verified
-// (free-tier) domain; replies still go to the business inbox via REPLY_TO.
-const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.guide>';
+// Sender MUST be a domain verified in Resend. guideon.om is now the verified
+// sending domain; replies still go to the business inbox via REPLY_TO.
+const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.om>';
 const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'hh92hh@guideon.om';
 const APP_URL   = process.env.APP_URL         || 'https://guideon.om';
 const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://guideon.om';

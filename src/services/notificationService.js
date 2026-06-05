@@ -13,7 +13,7 @@ const notifications = new SupabaseDB('notifications');
 const users         = new SupabaseDB('users');
 
 // Canonical site URL — driven by APP_URL so it follows whatever domain is live.
-const BASE_URL = process.env.APP_URL || 'https://guideon.guide';
+const BASE_URL = process.env.APP_URL || 'https://guideon.om';
 
 /**
  * Create an in-app notification.
