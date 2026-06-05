@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تسجيل الدخول — Guideon</title>
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:linear-gradient(135deg,#0f1c3e,#0f7b6c); font-family:'Segoe UI',sans-serif; }
+  .box { background:#fff; border-radius:16px; padding:40px; text-align:center; max-width:320px; box-shadow:0 8px 32px rgba(0,0,0,.2); }
+  .spinner { width:40px; height:40px; border:4px solid #e0f0ee; border-top-color:#0f7b6c;
+             border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 16px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  h3 { color:#0f1c3e; margin:0 0 8px; }
+  p  { color:#888; font-size:.9rem; margin:0; }
+  .err { color:#dc2626; font-size:.85rem; margin-top:12px; }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="spinner"></div>
+  <h3>جاري تسجيل الدخول...</h3>
+  <p>يرجى الانتظار</p>
+  <div class="err" id="errMsg"></div>
+</div>
+<script>
+(async () => {
+  // Read id_token from URL fragment (#id_token=...)
+  const hash   = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const idToken = params.get('id_token');
+  const error   = params.get('error');
+
+  function fail(msg) {
+    document.getElementById('errMsg').textContent = msg;
+    document.querySelector('h3').textContent = 'فشل تسجيل الدخول';
+    document.querySelector('.spinner').style.display = 'none';
+    setTimeout(() => window.location.href = '/login.html', 3000);
+  }
+
+  if (error) return fail('خطأ من Google: ' + error);
+  if (!idToken) return fail('لم يتم استلام رمز المصادقة');
+
+  try {
+    const r = await fetch('/api/auth/google', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: idToken }),
+    });
+    const d = await r.json();
+    if (!d.success) return fail(d.message || 'فشل تسجيل الدخول');
+
+    const map = {
+      tourist: '/tourist-dashboard.html',
+      guide:   '/guide-dashboard.html',
+      admin:   '/admin.html',
+      company: '/company-dashboard.html',
+    };
+    window.location.href = map[d.user.userType] || '/';
+  } catch (e) {
+    fail('خطأ في الشبكة: ' + e.message);
+  }
+})();
+</script>
+</body>
+</html>
