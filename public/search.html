@@ -433,10 +433,6 @@ function renderGuides(guides) {
                 <h6 class="mb-0 fw-700">${g.fullName}</h6>
                 ${g.isVerified ? `<span class="verified-badge">✓ ${I18N.t('status_verified')}</span>` : ''}
               </div>
-              <div class="text-end">
-                <div class="fw-800" style="color:var(--teal);font-size:1.1rem">${convertPrice(g.pricePerDay)}</div>
-                <div class="text-muted" style="font-size:0.75rem" data-i18n="per_day">/day</div>
-              </div>
             </div>
 
             <div class="rating small mb-1">
