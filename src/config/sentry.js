@@ -1,50 +1,46 @@
 /**
- * Sentry — error tracking.
+ * Sentry — error tracking helpers.
  *
- * Only initialized if SENTRY_DSN is set in env.
- * Get free DSN at https://sentry.io/ (5K errors/month free).
+ * Initialization now happens in src/instrument.js (required first, before
+ * express). This module only wires the Express error handler and exposes
+ * capture helpers.
  *
  * Usage in app.js:
+ *   require('./instrument');                 // FIRST line, before express
+ *   const express = require('express');
+ *   ...
  *   const sentry = require('./config/sentry');
- *   sentry.init(app);                       // before routes
  *   // ... routes ...
- *   sentry.errorHandler(app);               // after routes, before custom error handler
+ *   sentry.setupErrorHandler(app);           // after routes, before custom error handler
  */
 let Sentry = null;
-let initialized = false;
+const enabled = !!process.env.SENTRY_DSN;
 
-function init(app) {
-  if (!process.env.SENTRY_DSN) {
-    console.log('[Sentry] SENTRY_DSN not set — error tracking disabled.');
-    return;
-  }
+if (enabled) {
+  try { Sentry = require('@sentry/node'); } catch (_) { Sentry = null; }
+}
+
+// Kept for backwards compatibility (no-op init — real init is in instrument.js)
+function init(_app) { /* initialization moved to instrument.js */ }
+
+function setupErrorHandler(app) {
+  if (!Sentry || !app) return;
   try {
-    Sentry = require('@sentry/node');
-    Sentry.init({
-      dsn: process.env.SENTRY_DSN,
-      environment: process.env.NODE_ENV || 'development',
-      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-      integrations: [
-        Sentry.httpIntegration(),
-        Sentry.expressIntegration(),
-      ],
-    });
     Sentry.setupExpressErrorHandler(app);
-    initialized = true;
-    console.log('[Sentry] Initialized.');
+    console.log('[Sentry] Express error handler attached.');
   } catch (err) {
-    console.warn('[Sentry] Failed to initialize:', err.message);
+    console.warn('[Sentry] Failed to attach error handler:', err.message);
   }
 }
 
 function captureException(err, context) {
-  if (!initialized || !Sentry) return;
+  if (!Sentry) return;
   Sentry.captureException(err, { extra: context });
 }
 
 function captureMessage(msg, level = 'info') {
-  if (!initialized || !Sentry) return;
+  if (!Sentry) return;
   Sentry.captureMessage(msg, level);
 }
 
-module.exports = { init, captureException, captureMessage };
+module.exports = { init, setupErrorHandler, captureException, captureMessage };

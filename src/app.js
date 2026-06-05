@@ -1,3 +1,5 @@
+// Sentry must be initialized BEFORE express is required (v8 auto-instrumentation).
+require('./instrument');
 require('dotenv').config();
 
 const express = require('express');
@@ -25,7 +27,6 @@ const packageRoutes  = require('./routes/packages');
 
 const app = express();
 const sentry = require('./config/sentry');
-sentry.init(app);
 
 app.set('trust proxy', 1);
 
@@ -193,6 +194,9 @@ app.get('*', (req, res) => {
   }
   res.status(404).sendFile(path.join(__dirname, '..', 'public', '404.html'));
 });
+
+// Sentry Express error handler — must be AFTER routes, BEFORE the custom handler.
+sentry.setupErrorHandler(app);
 
 // Global error handler — must be LAST
 app.use((err, req, res, next) => {
