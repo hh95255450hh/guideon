@@ -179,14 +179,41 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+// Composite "featured" score — prioritizes the most active and best-rated
+// guides. Combines quality (rating), social proof (reviews), activity
+// (bookings) and profile completeness so engaged guides surface on the
+// homepage even before they accumulate reviews.
+function featuredScore(g) {
+  const rating   = Number(g.rating) || 0;
+  const reviews  = Number(g.totalReviews) || 0;
+  const bookings = Number(g.totalBookings) || 0;
+
+  let score = 0;
+  score += (rating / 5) * 40;            // quality        → up to 40
+  score += Math.min(reviews, 15) * 2;    // social proof   → up to 30
+  score += Math.min(bookings, 15) * 2;   // activity       → up to 30
+
+  // Profile completeness — an "active" guide keeps a rich profile.
+  if (g.photo) score += 6;
+  if (g.bio && g.bio.length > 30) score += 4;
+  if (Array.isArray(g.galleryPhotos) && g.galleryPhotos.length) score += 4;
+  if (Array.isArray(g.languages) && g.languages.length) score += 2;
+  if (Array.isArray(g.destinations) && g.destinations.length) score += 2;
+  if (g.videoUrl) score += 2;
+  if (Array.isArray(g.availabilitySlots) && g.availabilitySlots.length) score += 3; // currently bookable
+  if (Array.isArray(g.guideAssets) && g.guideAssets.length) score += 2;
+
+  return score;
+}
+
 exports.topGuides = async (req, res) => {
   try {
     const guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
-    // Best first: rating → reviews → bookings → earliest joined (deterministic)
+    // Best first by composite score; deterministic tie-breakers keep it stable.
     guides.sort((a, b) =>
+      (featuredScore(b) - featuredScore(a)) ||
       ((b.rating || 0) - (a.rating || 0)) ||
       ((b.totalReviews || 0) - (a.totalReviews || 0)) ||
-      ((b.totalBookings || 0) - (a.totalBookings || 0)) ||
       (new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
     );
     const top = guides.slice(0, 10).map(({ password, ...g }) => g);
