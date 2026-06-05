@@ -511,7 +511,9 @@ async function loadActivity() {
     const r = await fetch('/api/admin/activity?limit=60', { credentials:'include' });
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
-    const isAr = window.I18N && I18N.lang === 'ar';
+    // Read language robustly: window.I18N may not be ready on first render,
+    // so fall back to the persisted preference (gd_lang) directly.
+    const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
     const items = d.activity || [];
     if (!items.length) { el.innerHTML = '<div class="text-center text-muted py-5">'+(isAr?'لا يوجد نشاط بعد':'No activity yet')+'</div>'; return; }
 
