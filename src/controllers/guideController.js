@@ -8,7 +8,7 @@ exports.searchGuides = async (req, res) => {
   try {
     const { destination, governorate, language, date, specialisation, minRating, sortBy, minPrice, maxPrice } = req.query;
 
-    let guides = await users.findAll(u => u.userType === 'guide' && u.isVerified && !u.isSuspended);
+    let guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
 
     if (destination) {
       guides = guides.filter(g => (g.destinations || []).some(d => d.toLowerCase().includes(destination.toLowerCase())));
@@ -181,7 +181,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.topGuides = async (req, res) => {
   try {
-    const guides = await users.findAll(u => u.userType === 'guide' && u.isVerified && !u.isSuspended);
+    const guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
     // Best first: rating → reviews → bookings → earliest joined (deterministic)
     guides.sort((a, b) =>
       ((b.rating || 0) - (a.rating || 0)) ||

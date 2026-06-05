@@ -46,6 +46,19 @@ class SupabaseDB {
     return data || [];
   }
 
+  // Fetch rows matching multiple conditions (server-side filtering)
+  // conditions: { field: value, ... }
+  async findAllWhere(conditions) {
+    let query = supabase.from(this.table).select('*');
+    for (const [field, value] of Object.entries(conditions)) {
+      if (value === null) query = query.is(field, null);
+      else query = query.eq(field, value);
+    }
+    const { data, error } = await query;
+    if (error) { console.error(`[DB:${this.table}] findAllWhere:`, error.message); return []; }
+    return data || [];
+  }
+
   // Fetch multiple rows by primary key in a single query
   async findByIds(ids) {
     if (!ids || !ids.length) return [];
