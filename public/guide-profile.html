@@ -334,17 +334,7 @@
       <div class="col-lg-4">
         <div class="booking-panel">
 
-          <!-- Price -->
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <div>
-              <div class="bp-price" id="bPrice">—</div>
-              <div class="bp-sub" data-i18n="gp_per_person">per person / day</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:.85rem;color:#888" id="bRatingSm"></div>
-            </div>
-          </div>
-          <hr class="my-3">
+          <h5 class="fw-800 mb-3" data-i18n="gp_request_booking">طلب حجز</h5>
 
           <!-- Not logged in / not tourist -->
           <div id="notLoggedMsg" class="alert-teal mb-3 small d-none"></div>
@@ -382,30 +372,6 @@
           <div class="mb-3">
             <label class="form-label fw-600 small" data-i18n="special_req">Special Requests (optional)</label>
             <textarea class="form-control" id="bSpecial" rows="2" data-i18n-ph="gp_special_ph" placeholder="Dietary needs, accessibility, language preference…" style="font-size:.85rem"></textarea>
-          </div>
-
-          <!-- Deposit options -->
-          <div class="mb-3">
-            <label class="form-label fw-600 small" data-i18n="gp_pay_now">Pay Now</label>
-            <div class="d-flex gap-2" id="depositRow">
-              <div class="dep-opt active" onclick="setDeposit(this,20)">
-                <div class="dep-pct">20%</div><div class="dep-lbl" data-i18n="gp_deposit_lbl">Deposit</div><div class="dep-amt" id="dep20">—</div>
-              </div>
-              <div class="dep-opt" onclick="setDeposit(this,50)">
-                <div class="dep-pct">50%</div><div class="dep-lbl" data-i18n="gp_deposit_lbl">Deposit</div><div class="dep-amt" id="dep50">—</div>
-              </div>
-              <div class="dep-opt" onclick="setDeposit(this,100)">
-                <div class="dep-pct">100%</div><div class="dep-lbl" data-i18n="gp_full_pay">Full Pay</div><div class="dep-amt" id="dep100">—</div>
-              </div>
-            </div>
-            <div class="small text-muted mt-1" data-i18n="deposit_note">Remaining balance paid on the tour day.</div>
-          </div>
-
-          <!-- Price breakdown -->
-          <div class="price-breakdown mb-3" id="priceBreakdown" style="display:none">
-            <div class="row"><div class="col" data-i18n="gp_guide_rate">Guide rate</div><div class="col-auto fw-600" id="pbRate">—</div></div>
-            <div class="row"><div class="col" data-i18n="gp_duration_lbl">Duration</div><div class="col-auto" id="pbDur">—</div></div>
-            <div class="row total"><div class="col" data-i18n="gp_pay_today">Pay today</div><div class="col-auto fw-700" id="pbTotal">—</div></div>
           </div>
 
           <button class="btn-book-now" id="bBtn" onclick="submitBooking()" data-i18n="book_btn">Request Booking</button>
@@ -690,8 +656,9 @@ function renderAll() {
   document.getElementById('pDestinations').innerHTML = (g.destinations||[]).map(d =>
     `<span class="tag tag-dest">📍 ${d}</span>`).join('') || '<span class="text-muted small">Not specified.</span>';
 
-  // Booking panel header
-  document.getElementById('bRatingSm').innerHTML = g.rating
+  // Booking panel header (rating element removed with the price block)
+  const bRatingEl = document.getElementById('bRatingSm');
+  if (bRatingEl) bRatingEl.innerHTML = g.rating
     ? `${'★'.repeat(Math.round(g.rating))} <span style="color:#888">${Number(g.rating).toFixed(1)}</span>`
     : '';
 
@@ -906,20 +873,9 @@ function updatePrice() {
     if (PAX > 1 && !SELECTED_SLOT) durLabel += ' × ' + PAX + ' pax';
   }
 
-  const payNow = total * DEPOSIT / 100;
-  document.getElementById('dep20').textContent  = conv(total * 0.20);
-  document.getElementById('dep50').textContent  = conv(total * 0.50);
-  document.getElementById('dep100').textContent = conv(total);
-
-  const bd = document.getElementById('priceBreakdown');
-  if (SELECTED_DATE && (TOUR_TIME || SELECTED_SLOT)) {
-    bd.style.display = '';
-    document.getElementById('pbRate').textContent  = SELECTED_SLOT ? 'OMR ' + SELECTED_SLOT.price : conv(GUIDE.pricePerDay) + I18N.t('per_day');
-    document.getElementById('pbDur').textContent   = durLabel;
-    document.getElementById('pbTotal').textContent = conv(payNow) + ' (' + DEPOSIT + '%)';
-  } else {
-    bd.style.display = 'none';
-  }
+  // Price UI removed from the guide booking panel — pricing lives on tour
+  // packages. updatePrice() is kept as a safe no-op so existing callers don't
+  // break; the booking request itself is server-priced.
 }
 
 // ═══════════════════════════════════════════════════════════
