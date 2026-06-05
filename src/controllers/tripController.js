@@ -1,8 +1,40 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
+const { notify } = require('../services/notificationService');
 
 const tripRequests = new SupabaseDB('trip_requests');
 const users        = new SupabaseDB('users');
+
+// Notify verified guides whose area/language matches a new trip request.
+// Fire-and-forget — never blocks the tourist's response. Capped to avoid spam.
+async function notifyMatchingGuides(request) {
+  try {
+    const guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
+    const dest = (request.destination || '').toLowerCase();
+    const lang = (request.language || '').toLowerCase();
+
+    const matched = guides.filter(g => {
+      const destMatch = dest && (g.destinations || []).some(d => (d || '').toLowerCase().includes(dest));
+      const langMatch = lang && (g.languages    || []).some(l => (l || '').toLowerCase().includes(lang));
+      return destMatch || langMatch;
+    }).slice(0, 25); // cap fan-out
+
+    for (const g of matched) {
+      notify({
+        userId: g.id,
+        type: 'trip_request',
+        title:   'New trip request in your area ✈️',
+        titleAr: 'طلب رحلة جديد في منطقتك ✈️',
+        body:   `${request.touristName} wants a ${request.destination} trip on ${request.startDate}${request.groupSize ? ` for ${request.groupSize} people` : ''}. Open your dashboard to respond.`,
+        bodyAr: `يريد ${request.touristName} رحلة إلى ${request.destination} بتاريخ ${request.startDate}${request.groupSize ? ` لـ ${request.groupSize} أشخاص` : ''}. افتح لوحتك للرد.`,
+        link: '/guide-dashboard.html#trips',
+        metadata: { tripRequestId: request.id },
+      });
+    }
+  } catch (e) {
+    console.error('[notifyMatchingGuides]', e.message);
+  }
+}
 
 exports.createRequest = async (req, res) => {
   try {
@@ -33,6 +65,10 @@ exports.createRequest = async (req, res) => {
     };
 
     await tripRequests.insert(request);
+
+    // Proactively alert matching guides (in-app + push + email + WhatsApp).
+    notifyMatchingGuides(request).catch(() => {});
+
     res.status(201).json({ success: true, message: 'Trip request posted.', request });
   } catch (err) {
     console.error(err);

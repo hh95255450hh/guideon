@@ -1205,11 +1205,21 @@ async function loadTripRequests() {
           ${t.budget ? ` · 💰 ${I18N.t('omr_day')} ${t.budget}` : ''}
         </div>
         ${t.notes ? `<div class="small text-muted border-top pt-2 mt-2">${t.notes}</div>` : ''}
-        <div class="border-top pt-2 mt-2">
-          <a href="mailto:${t.touristEmail}" class="btn btn-sm btn-verify">${I18N.t('contact_tourist')}: ${t.touristName}</a>
+        <div class="border-top pt-2 mt-2 d-flex gap-2 flex-wrap">
+          <button class="btn btn-sm btn-verify" onclick="contactTouristInApp('${t.touristId}', ${JSON.stringify(t.touristName).replace(/"/g,'&quot;').replace(/'/g,"&#39;")})">💬 ${I18N.t('contact_tourist')}: ${t.touristName}</button>
+          <a href="mailto:${t.touristEmail}" class="btn btn-sm btn-outline-secondary">✉️</a>
         </div>
       </div>`).join('');
   } catch {}
+}
+
+// Open the in-app chat thread with the tourist who posted a trip request.
+function contactTouristInApp(touristId, touristName) {
+  const section = document.getElementById('guideMsgSection');
+  if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (typeof guideOpenThread === 'function') {
+    guideOpenThread(touristId, touristName);
+  }
 }
 
 // ── مميزاتي (Guide Assets) ────────────────────────────────────
