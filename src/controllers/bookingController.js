@@ -266,13 +266,20 @@ exports.myBookings = async (req, res) => {
     const list = await bookings.findAllByField('touristId', touristId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    const enriched = await Promise.all(list.map(async b => {
-      const guide = await users.findById(b.guideId);
-      // Has this booking already been reviewed? Used to hide the "Write Review" button.
-      let reviewed = false;
-      try { reviewed = !!(await reviews.findByField('bookingId', b.id)); } catch (_) {}
-      return { ...b, guideName: guide ? guide.fullName : 'Unknown', guideRating: guide ? guide.rating : 0, reviewed };
-    }));
+    // Batch-fetch guides and reviews in 2 queries instead of N+N
+    const guideIds    = [...new Set(list.map(b => b.guideId))];
+    const bookingIds  = list.map(b => b.id);
+    const [guideList, reviewList] = await Promise.all([
+      users.findByIds(guideIds),
+      reviews.findAllWhereIn('bookingId', bookingIds),
+    ]);
+    const guideMap  = Object.fromEntries(guideList.map(g => [g.id, g]));
+    const reviewSet = new Set(reviewList.map(r => r.bookingId));
+
+    const enriched = list.map(b => {
+      const guide = guideMap[b.guideId];
+      return { ...b, guideName: guide ? guide.fullName : 'Unknown', guideRating: guide ? guide.rating : 0, reviewed: reviewSet.has(b.id) };
+    });
     res.json({ success: true, bookings: enriched });
   } catch (err) {
     console.error(err);
@@ -286,10 +293,15 @@ exports.guideBookings = async (req, res) => {
     const list = await bookings.findAllByField('guideId', guideId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    const enriched = await Promise.all(list.map(async b => {
-      const tourist = await users.findById(b.touristId);
+    // Batch-fetch tourists in 1 query instead of N
+    const touristIds  = [...new Set(list.map(b => b.touristId))];
+    const touristList = await users.findByIds(touristIds);
+    const touristMap  = Object.fromEntries(touristList.map(t => [t.id, t]));
+
+    const enriched = list.map(b => {
+      const tourist = touristMap[b.touristId];
       return { ...b, touristName: tourist ? tourist.fullName : 'Unknown', touristEmail: tourist ? tourist.email : '' };
-    }));
+    });
     res.json({ success: true, bookings: enriched });
   } catch (err) {
     console.error(err);
@@ -485,15 +497,16 @@ exports.allBookings = async (req, res) => {
     const list = await bookings.readAll();
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    const enriched = await Promise.all(list.map(async b => {
-      const guide   = await users.findById(b.guideId);
-      const tourist = await users.findById(b.touristId);
-      return {
-        ...b,
-        guideName:    guide   ? guide.fullName   : 'Unknown',
-        touristName:  tourist ? tourist.fullName  : 'Unknown',
-        touristEmail: tourist ? tourist.email     : '',
-      };
+    // Batch-fetch all guides + tourists in 2 queries instead of 2N
+    const userIds  = [...new Set([...list.map(b => b.guideId), ...list.map(b => b.touristId)])];
+    const userList = await users.findByIds(userIds);
+    const userMap  = Object.fromEntries(userList.map(u => [u.id, u]));
+
+    const enriched = list.map(b => ({
+      ...b,
+      guideName:    userMap[b.guideId]   ? userMap[b.guideId].fullName   : 'Unknown',
+      touristName:  userMap[b.touristId] ? userMap[b.touristId].fullName  : 'Unknown',
+      touristEmail: userMap[b.touristId] ? userMap[b.touristId].email     : '',
     }));
     res.json({ success: true, bookings: enriched });
   } catch (err) {

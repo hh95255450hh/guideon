@@ -46,6 +46,24 @@ class SupabaseDB {
     return data || [];
   }
 
+  // Fetch multiple rows by primary key in a single query
+  async findByIds(ids) {
+    if (!ids || !ids.length) return [];
+    const { data, error } = await supabase
+      .from(this.table).select('*').in(this.pk, ids);
+    if (error) { console.error(`[DB:${this.table}] findByIds:`, error.message); return []; }
+    return data || [];
+  }
+
+  // Fetch multiple rows where field matches any of the given values
+  async findAllWhereIn(field, values) {
+    if (!values || !values.length) return [];
+    const { data, error } = await supabase
+      .from(this.table).select('*').in(field, values);
+    if (error) { console.error(`[DB:${this.table}] findAllWhereIn(${field}):`, error.message); return []; }
+    return data || [];
+  }
+
   async findOne(predicate) {
     if (typeof predicate === 'object' && predicate !== null) {
       const [field, value] = Object.entries(predicate)[0];
