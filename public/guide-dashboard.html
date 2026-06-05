@@ -449,7 +449,8 @@
         </div>
         <div class="col-12">
           <div id="assetPhotosPreviews" class="d-flex gap-2 flex-wrap mb-2"></div>
-          <button class="btn btn-sm btn-teal fw-700" onclick="addAsset()">+ إضافة</button>
+          <button class="btn btn-sm btn-teal fw-700" id="assetSubmitBtn" onclick="addAsset()">+ إضافة</button>
+          <button class="btn btn-sm btn-outline-secondary fw-700 d-none" id="assetCancelBtn" onclick="cancelEditAsset()">✕ إلغاء</button>
           <span id="assetUploadStatus" class="small text-muted ms-2"></span>
         </div>
       </div>
@@ -1153,58 +1154,142 @@ async function loadTripRequests() {
 // ── مميزاتي (Guide Assets) ────────────────────────────────────
 let ASSETS = [];
 let ASSET_PENDING_PHOTOS = []; // { file, previewUrl } before upload
+let ASSET_EDITING_ID = null;   // ID of asset being edited (null = add mode)
+let ASSET_KEPT_PHOTOS = [];    // existing photo URLs kept during edit
 
-const ASSET_ICONS = { car:'🚗', boat:'⛵', yacht:'🛥️', camp:'⛺', bike:'🏍️', other:'✨' };
+const ASSET_ICONS  = { car:'🚗', boat:'⛵', yacht:'🛥️', camp:'⛺', bike:'🏍️', other:'✨' };
 const ASSET_LABELS = { car:'سيارة', boat:'قارب', yacht:'يخت', camp:'مخيم', bike:'دراجة', other:'أخرى' };
 
 document.getElementById('assetPhotosInput').addEventListener('change', function() {
   ASSET_PENDING_PHOTOS = [];
   const prev = document.getElementById('assetPhotosPreviews');
-  prev.innerHTML = '';
+  // Keep existing-photo previews, only replace new-upload rows
+  prev.querySelectorAll('.new-upload-preview').forEach(el => el.remove());
   Array.from(this.files).slice(0, 5).forEach(file => {
     const url = URL.createObjectURL(file);
     ASSET_PENDING_PHOTOS.push({ file, previewUrl: url });
     const img = document.createElement('img');
     img.src = url;
-    img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8';
+    img.className = 'new-upload-preview';
+    img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #0f7b6c';
     prev.appendChild(img);
   });
 });
 
-async function addAsset() {
-  const type  = document.getElementById('assetType').value;
-  const title = document.getElementById('assetTitle').value.trim();
-  const desc  = document.getElementById('assetDesc').value.trim();
-  if (!title) return toast('أدخل اسم الميزة', 'error');
+function _resetAssetForm() {
+  document.getElementById('assetType').value = 'car';
+  document.getElementById('assetTitle').value = '';
+  document.getElementById('assetDesc').value  = '';
+  document.getElementById('assetPhotosInput').value = '';
+  document.getElementById('assetPhotosPreviews').innerHTML = '';
+  document.getElementById('assetUploadStatus').textContent = '';
+  document.getElementById('assetSubmitBtn').textContent = '+ إضافة';
+  document.getElementById('assetSubmitBtn').onclick = addAsset;
+  document.getElementById('assetCancelBtn').classList.add('d-none');
+  ASSET_PENDING_PHOTOS = [];
+  ASSET_KEPT_PHOTOS    = [];
+  ASSET_EDITING_ID     = null;
+}
 
+function editAsset(id) {
+  const a = ASSETS.find(x => x.id === id);
+  if (!a) return;
+  ASSET_EDITING_ID  = id;
+  ASSET_KEPT_PHOTOS = [...(a.photos || [])];
+  ASSET_PENDING_PHOTOS = [];
+
+  document.getElementById('assetType').value  = a.type  || 'car';
+  document.getElementById('assetTitle').value = a.title || '';
+  document.getElementById('assetDesc').value  = a.description || '';
+  document.getElementById('assetPhotosInput').value = '';
+
+  // Show kept photos with remove buttons
+  const prev = document.getElementById('assetPhotosPreviews');
+  prev.innerHTML = '';
+  ASSET_KEPT_PHOTOS.forEach((url, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:inline-block';
+    wrap.innerHTML = `
+      <img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <button onclick="removeKeptPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1">✕</button>`;
+    prev.appendChild(wrap);
+  });
+
+  const submitBtn = document.getElementById('assetSubmitBtn');
+  submitBtn.textContent = '💾 تحديث';
+  submitBtn.onclick = updateAsset;
+  document.getElementById('assetCancelBtn').classList.remove('d-none');
+
+  // Scroll form into view
+  document.getElementById('assetType').closest('div[style]').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function removeKeptPhoto(index) {
+  ASSET_KEPT_PHOTOS.splice(index, 1);
+  // Re-render kept photos in preview
+  const prev = document.getElementById('assetPhotosPreviews');
+  const newUploads = Array.from(prev.querySelectorAll('.new-upload-preview'));
+  prev.innerHTML = '';
+  ASSET_KEPT_PHOTOS.forEach((url, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:inline-block';
+    wrap.innerHTML = `
+      <img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <button onclick="removeKeptPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1">✕</button>`;
+    prev.appendChild(wrap);
+  });
+  newUploads.forEach(el => prev.appendChild(el));
+}
+
+function cancelEditAsset() { _resetAssetForm(); }
+
+async function _uploadPendingPhotos() {
   const statusEl = document.getElementById('assetUploadStatus');
   statusEl.textContent = 'جاري رفع الصور...';
-
-  const photos = [];
+  const uploaded = [];
   for (const { file } of ASSET_PENDING_PHOTOS) {
     try {
       const fd = new FormData();
       fd.append('photo', file);
       const r = await fetch('/api/upload/image', { method: 'POST', credentials: 'include', body: fd });
       const d = await r.json();
-      if (d.success) photos.push(d.url);
+      if (d.success) uploaded.push(d.url);
     } catch {}
   }
+  statusEl.textContent = '';
+  return uploaded;
+}
 
+async function addAsset() {
+  const type  = document.getElementById('assetType').value;
+  const title = document.getElementById('assetTitle').value.trim();
+  const desc  = document.getElementById('assetDesc').value.trim();
+  if (!title) return toast('أدخل اسم الميزة', 'error');
+  const photos = await _uploadPendingPhotos();
   ASSETS.push({ id: Date.now().toString(36), type, title, description: desc, photos });
   renderAssets();
-
-  document.getElementById('assetTitle').value = '';
-  document.getElementById('assetDesc').value  = '';
-  document.getElementById('assetPhotosInput').value = '';
-  document.getElementById('assetPhotosPreviews').innerHTML = '';
-  ASSET_PENDING_PHOTOS = [];
-  statusEl.textContent = '';
+  _resetAssetForm();
   toast('✓ تمت الإضافة — اضغط "حفظ المميزات"', 'success');
+}
+
+async function updateAsset() {
+  const type  = document.getElementById('assetType').value;
+  const title = document.getElementById('assetTitle').value.trim();
+  const desc  = document.getElementById('assetDesc').value.trim();
+  if (!title) return toast('أدخل اسم الميزة', 'error');
+  const newPhotos = await _uploadPendingPhotos();
+  const photos = [...ASSET_KEPT_PHOTOS, ...newPhotos];
+  ASSETS = ASSETS.map(a => a.id === ASSET_EDITING_ID
+    ? { ...a, type, title, description: desc, photos }
+    : a);
+  renderAssets();
+  _resetAssetForm();
+  toast('✓ تم التعديل — اضغط "حفظ المميزات"', 'success');
 }
 
 function removeAsset(id) {
   ASSETS = ASSETS.filter(a => a.id !== id);
+  if (ASSET_EDITING_ID === id) _resetAssetForm();
   renderAssets();
 }
 
@@ -1215,7 +1300,7 @@ function renderAssets() {
     return;
   }
   list.innerHTML = ASSETS.map(a => `
-    <div style="background:#fff;border:1px solid #d0ede8;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start">
+    <div style="background:#fff;border:1px solid ${ASSET_EDITING_ID===a.id?'#0f7b6c':'#d0ede8'};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start">
       <div style="font-size:2.2rem;line-height:1">${ASSET_ICONS[a.type]||'✨'}</div>
       <div style="flex:1">
         <div class="fw-700 mb-1">${ASSET_LABELS[a.type]||a.type} — ${a.title}</div>
@@ -1225,7 +1310,10 @@ function renderAssets() {
             ${a.photos.map(u=>`<img src="${u}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #e0e0e0">`).join('')}
           </div>` : '<div class="small text-muted">بدون صور</div>'}
       </div>
-      <button onclick="removeAsset('${a.id}')" class="btn btn-sm btn-outline-danger">✕</button>
+      <div class="d-flex flex-column gap-1">
+        <button onclick="editAsset('${a.id}')" class="btn btn-sm btn-outline-primary">✏️</button>
+        <button onclick="removeAsset('${a.id}')" class="btn btn-sm btn-outline-danger">✕</button>
+      </div>
     </div>`).join('');
 }
 
