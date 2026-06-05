@@ -185,7 +185,12 @@
     document.querySelectorAll('input[type="password"]').forEach((input) => {
       if (input.dataset.gdPwd) return;
       input.dataset.gdPwd = '1';
-      if (input.closest('.pwd-wrap')) return; // already wrapped manually
+      if (input.closest('.pwd-wrap')) return;          // already wrapped by us
+      // Skip fields that already have their own show/hide toggle (e.g. the
+      // login & register pages use a .position-relative wrapper + eye button).
+      // Double-enhancing those broke their layout.
+      if (input.closest('.position-relative')) return;
+      if (input.parentElement && input.parentElement.querySelector('button')) return;
 
       const wrap = document.createElement('div');
       wrap.className = 'pwd-wrap';
