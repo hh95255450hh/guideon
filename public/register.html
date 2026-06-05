@@ -60,6 +60,7 @@
         </div>
 
         <div id="errMsg" class="alert alert-danger d-none small"></div>
+        <div id="successMsg" class="alert alert-success d-none small"></div>
 
         <form id="regForm" onsubmit="doRegister(event)">
           <input type="hidden" id="userType" value="tourist">
@@ -411,7 +412,18 @@ async function doRegister(e) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
     const dashMap = { tourist:'/tourist-dashboard.html', guide:'/guide-dashboard.html', company:'/company-dashboard.html', admin:'/admin.html' };
-    window.location.href = dashMap[d.user.userType] || '/';
+    // Tell the user to verify their email, then continue to their dashboard.
+    const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
+    const suc = document.getElementById('successMsg');
+    if (suc) {
+      suc.textContent = isAr
+        ? `✅ تم إنشاء الحساب! أرسلنا رابط تفعيل إلى ${body.email} — يرجى تفعيل بريدك.`
+        : `✅ Account created! We sent a verification link to ${body.email} — please verify your email.`;
+      suc.classList.remove('d-none');
+      err.classList.add('d-none');
+    }
+    setTimeout(() => { window.location.href = dashMap[d.user.userType] || '/'; }, 2200);
+    return;
   } catch(ex) {
     err.textContent = ex.message;
     err.classList.remove('d-none');
@@ -422,7 +434,7 @@ async function doRegister(e) {
 }
 </script>
 <script src="/js/pwa.js?v=14"></script>
-<script src="/js/common-widgets.js?v=4"></script>
+<script src="/js/common-widgets.js?v=5"></script>
 </body>
 </html>
 

@@ -220,12 +220,66 @@
     document.body.appendChild(s);
   }
 
+  // ─── Email verification banner ─────────────────────────────────────────
+  // Gentle, non-blocking reminder for signed-in users whose email isn't
+  // verified, with a one-click resend. Hidden for verified users, Google
+  // sign-ins (auto-verified) and grandfathered accounts (field undefined).
+  async function injectVerifyBanner() {
+    let me;
+    try {
+      const r = await fetch('/api/auth/me', { credentials: 'include' });
+      if (!r.ok) return;
+      const d = await r.json();
+      me = d && d.user;
+    } catch { return; }
+    if (!me || me.emailVerified !== false) return; // only when explicitly false
+    if (sessionStorage.getItem('gd_verify_hidden') === '1') return;
+
+    const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
+    const bar = document.createElement('div');
+    bar.id = 'gd-verify-bar';
+    Object.assign(bar.style, {
+      position: 'sticky', top: '0', zIndex: '9997',
+      background: '#fff8e6', borderBottom: '1px solid #f5d27a', color: '#7a5a00',
+      padding: '10px 14px', fontSize: '.88rem', textAlign: 'center',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap',
+    });
+    const intro = isAr
+      ? 'لم يُفعّل بريدك بعد. افتح الرابط الذي أرسلناه إلى'
+      : "Your email isn't verified yet. Open the link we sent to";
+    bar.innerHTML =
+      '<span>📧 ' + intro + ' <b>' + me.email + '</b></span>' +
+      '<button id="gd-verify-resend" style="background:#0f7b6c;color:#fff;border:none;border-radius:8px;padding:5px 14px;font-weight:700;cursor:pointer">' + (isAr ? 'إعادة الإرسال' : 'Resend') + '</button>' +
+      '<button id="gd-verify-close" style="background:transparent;border:none;color:#7a5a00;font-size:1.1rem;cursor:pointer;line-height:1">×</button>';
+    document.body.prepend(bar);
+
+    document.getElementById('gd-verify-close').onclick = function () {
+      sessionStorage.setItem('gd_verify_hidden', '1');
+      bar.remove();
+    };
+    document.getElementById('gd-verify-resend').onclick = async function (e) {
+      const b = e.currentTarget;
+      b.disabled = true; b.textContent = isAr ? 'جارٍ الإرسال…' : 'Sending…';
+      try {
+        const r = await fetch('/api/auth/resend-verification', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: me.email }),
+        });
+        const d = await r.json();
+        b.textContent = d.success ? (isAr ? '✓ تم الإرسال' : '✓ Sent') : (isAr ? 'حدث خطأ' : 'Error');
+      } catch {
+        b.textContent = isAr ? 'حدث خطأ' : 'Error';
+      }
+    };
+  }
+
   // ─── Boot ──────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); enhancePasswordFields();
+      injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); enhancePasswordFields(); injectVerifyBanner();
     });
   } else {
-    injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications();
+    injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); injectVerifyBanner();
   }
 })();
