@@ -14,7 +14,7 @@ const skip = () => DISABLED;
 
 const loginLimiter = rateLimit({
   windowMs: num('RATE_LIMIT_LOGIN_WINDOW_MIN', 15) * 60 * 1000,
-  max: num('RATE_LIMIT_LOGIN_MAX', 20),
+  max: num('RATE_LIMIT_LOGIN_MAX', 10),
   message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
