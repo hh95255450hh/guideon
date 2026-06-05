@@ -14,6 +14,7 @@ router.get('/mine', requireTourist, booking.myBookings);
 router.get('/guide', requireGuide, booking.guideBookings);
 router.get('/all', requireAdmin, booking.allBookings);
 router.patch('/:id/status', requireLogin, booking.updateStatus);
+router.patch('/:id/quote', requireGuide, booking.setQuote);
 
 // GET /api/bookings/:id/voucher — PDF voucher for confirmed bookings
 router.get('/:id/voucher', requireLogin, async (req, res) => {

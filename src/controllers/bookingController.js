@@ -117,12 +117,20 @@ exports.updateStatus = async (req, res) => {
 
     const allowedTransitions = {
       guide:   ['confirmed', 'cancelled', 'in_progress', 'completed'],
-      tourist: ['cancelled'],
+      tourist: ['cancelled', 'confirmed'], // tourist 'confirmed' = accept the guide's price offer
       admin:   ['confirmed', 'cancelled', 'in_progress', 'completed'],
     };
 
     if (!allowedTransitions[userType]?.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid status transition.' });
+    }
+
+    // Tourist can only CONFIRM (accept) a booking that the guide has quoted.
+    // On acceptance the agreed price becomes the booking total.
+    if (status === 'confirmed' && userType === 'tourist') {
+      if (booking.status !== 'quoted') {
+        return res.status(400).json({ success: false, message: 'You can only accept a price offer from the guide.' });
+      }
     }
 
     // Guide can only START trip from 'confirmed' status, and only on/after tour date
@@ -148,6 +156,10 @@ exports.updateStatus = async (req, res) => {
     const updateData = { status };
     if (status === 'in_progress') updateData.startedAt = new Date().toISOString();
     if (status === 'completed')   updateData.completedAt = new Date().toISOString();
+    // Tourist accepted the offer → the quoted price becomes the booking total.
+    if (status === 'confirmed' && userType === 'tourist' && booking.quotedAmount != null) {
+      updateData.totalAmount = booking.quotedAmount;
+    }
 
     const updated = await updateBookingSafe(id, updateData);
 
@@ -273,6 +285,53 @@ exports.updateStatus = async (req, res) => {
     res.json({ success: true, message: 'Booking updated.', booking: updated });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// Guide proposes a price for a pending custom-trip request.
+// Moves the booking to 'quoted'; the tourist then accepts (confirm) or declines.
+exports.setQuote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const amount = parseFloat(req.body.amount);
+    if (!Number.isFinite(amount) || amount < 0) {
+      return res.status(400).json({ success: false, message: 'Enter a valid price.' });
+    }
+
+    const booking = await bookings.findById(id);
+    if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
+    if (booking.guideId !== req.session.userId) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+    if (!['pending', 'quoted'].includes(booking.status)) {
+      return res.status(400).json({ success: false, message: 'You can only price a pending request.' });
+    }
+
+    const rounded = Math.round(amount * 100) / 100;
+    const updated = await updateBookingSafe(id, { status: 'quoted', quotedAmount: rounded });
+
+    const tourist = await users.findById(booking.touristId);
+    const guide   = await users.findById(booking.guideId);
+    if (tourist) {
+      email.sendTouristBookingPending && email.sendTouristBookingPending({
+        email: tourist.email, name: tourist.fullName,
+        guideName: guide?.fullName, destination: booking.destination,
+        tourDate: booking.tourDate, totalAmount: rounded, bookingId: id,
+      }).catch(() => {});
+      notify({
+        userId: tourist.id, type: 'booking_quoted',
+        title:   'Price offer received 💬',
+        titleAr: 'وصلك عرض سعر 💬',
+        body:   `${guide?.fullName || 'Your guide'} offered OMR ${rounded} for your ${booking.destination} trip on ${booking.tourDate}. Accept to confirm.`,
+        bodyAr: `عرض ${guide?.fullName || 'المرشد'} مبلغ ${rounded} ر.ع لرحلتك إلى ${booking.destination} بتاريخ ${booking.tourDate}. اقبل العرض للتأكيد.`,
+        link: '/tourist-dashboard.html#bookings', metadata: { bookingId: id },
+      });
+    }
+
+    res.json({ success: true, message: 'Price offer sent to the tourist.', booking: updated });
+  } catch (err) {
+    console.error('[setQuote]', err.message);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

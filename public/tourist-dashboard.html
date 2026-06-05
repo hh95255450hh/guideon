@@ -226,13 +226,15 @@ function renderBookings() {
   }
 
   container.innerHTML = list.map(b => {
-    const canCancel = ['pending', 'confirmed'].includes(b.status);
+    const canCancel = ['pending', 'quoted', 'confirmed'].includes(b.status);
     const tourDatePast = new Date(b.tourDate + 'T23:59:59') < new Date();
     const canReview = b.status === 'completed' && tourDatePast && !b.reviewed;
-    const statusIcon = { pending: '⏳', confirmed: '✅', completed: '🎉', cancelled: '❌' }[b.status] || '';
+    const statusIcon = { pending: '⏳', quoted: '💬', confirmed: '✅', completed: '🎉', cancelled: '❌' }[b.status] || '';
     const durationLabel = b.duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
     const pLabel = b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl');
     const statusLabel = I18N.t('status_' + b.status) || b.status;
+    const isQuoted = b.status === 'quoted';
+    const amount = isQuoted ? b.quotedAmount : b.totalAmount;
 
     return `
     <div class="booking-card ${b.status}">
@@ -244,14 +246,17 @@ function renderBookings() {
         <span class="status-badge status-${b.status}">${statusIcon} ${statusLabel}</span>
       </div>
       ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${b.specialRequests}"</div>` : ''}
+      ${isQuoted ? `<div class="alert alert-warning small mb-2 py-2">${I18N.t('quote_received') || 'عرض سعر من المرشد — اقبل لتأكيد الحجز'}</div>` : ''}
+      ${b.status === 'pending' ? `<div class="small text-muted mb-2">${I18N.t('awaiting_quote') || '⏳ بانتظار رد المرشد بتحديد السعر'}</div>` : ''}
       <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
-        <div class="fw-700 fs-5" style="color:var(--teal)">${I18N.t('omr_day')} ${b.totalAmount}</div>
-        <div class="d-flex gap-2">
+        <div class="fw-700 fs-5" style="color:var(--teal)">${amount ? 'OMR ' + amount : ''}</div>
+        <div class="d-flex gap-2 flex-wrap">
           <a href="/guide-profile.html?id=${b.guideId}" class="btn btn-sm btn-outline-secondary">${I18N.t('view_guide')}</a>
+          ${isQuoted ? `<button class="btn btn-sm btn-teal" onclick="acceptOffer('${b.id}')">${I18N.t('accept_offer') || '✅ قبول العرض'}</button>` : ''}
           ${(b.status === 'confirmed' && window.PAYMENTS_ENABLED) ? `<a href="/checkout.html?booking_id=${b.id}" class="btn btn-sm btn-gold">💳 Pay Now</a>` : ''}
           ${canReview ? `<button class="btn btn-sm btn-teal" onclick="openReview('${b.id}')">${I18N.t('write_review')}</button>` : ''}
           ${(b.status === 'completed' && b.reviewed) ? `<span class="badge bg-success-subtle text-success align-self-center">${I18N.t('reviewed_done') || '✓ Reviewed'}</span>` : ''}
-          ${canCancel ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${b.id}')">${I18N.t('cancel_bk')}</button>` : ''}
+          ${canCancel ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${b.id}')">${isQuoted ? (I18N.t('decline_offer') || 'رفض') : I18N.t('cancel_bk')}</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -269,6 +274,21 @@ async function cancelBooking(id) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
     toast(I18N.t('status_cancelled') + '.', 'success');
+    loadBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+// Tourist accepts the guide's price offer → booking becomes confirmed.
+async function acceptOffer(id) {
+  try {
+    const r = await fetch(`/api/bookings/${id}/status`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'confirmed' }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('offer_accepted') || '✅ تم قبول العرض وتأكيد الحجز', 'success');
     loadBookings();
   } catch (e) { toast(e.message, 'error'); }
 }

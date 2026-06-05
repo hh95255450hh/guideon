@@ -918,7 +918,7 @@ async function loadBookings() {
     ALL_BOOKINGS = d.bookings || [];
 
     const today = new Date().toISOString().slice(0, 10);
-    const pending    = ALL_BOOKINGS.filter(b => b.status === 'pending');
+    const pending    = ALL_BOOKINGS.filter(b => b.status === 'pending' || b.status === 'quoted');
     const inProgress = ALL_BOOKINGS.filter(b => b.status === 'in_progress');
     const confirmed  = ALL_BOOKINGS.filter(b => b.status === 'confirmed' && b.tourDate >= today);
     const past       = ALL_BOOKINGS.filter(b => b.status === 'completed' || (b.status === 'confirmed' && b.tourDate < today) || b.status === 'cancelled');
@@ -936,10 +936,11 @@ async function loadBookings() {
   } catch { toast('Error loading bookings.', 'error'); }
 }
 
-function bookingCard(b, actions = '') {
+function bookingCard(b, actions = '', displayAmount) {
   const durationLabel = b.duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
   const pLabel = b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl');
   const statusLabel = I18N.t('status_' + b.status) || b.status;
+  const amount = displayAmount != null ? displayAmount : b.totalAmount;
   return `
   <div class="booking-card ${b.status}">
     <div class="d-flex justify-content-between align-items-start mb-1">
@@ -952,7 +953,7 @@ function bookingCard(b, actions = '') {
     <div class="small text-muted mb-1">📅 ${formatDate(b.tourDate)} &nbsp;·&nbsp; ${durationLabel} &nbsp;·&nbsp; 📍 ${b.destination} &nbsp;·&nbsp; ${b.participants} ${pLabel}</div>
     ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${b.specialRequests}"</div>` : ''}
     <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
-      <div class="fw-700" style="color:var(--teal)">${I18N.t('omr_day')} ${b.totalAmount}</div>
+      <div class="fw-700" style="color:var(--teal)">${amount ? 'OMR ' + amount : ''}</div>
       <div class="d-flex gap-2">${actions}</div>
     </div>
   </div>`;
@@ -964,10 +965,70 @@ function renderPending(list) {
     el.innerHTML = `<div class="empty-state" style="padding:20px"><div class="icon">📭</div><p class="text-muted small">${I18N.t('no_pending')}</p></div>`;
     return;
   }
-  el.innerHTML = list.map(b => bookingCard(b, `
-    <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','confirmed')">${I18N.t('accept_btn')}</button>
-    <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
-  `)).join('');
+  el.innerHTML = list.map(b => {
+    if (b.status === 'quoted') {
+      // Already priced — waiting for the tourist to accept. Guide may re-price.
+      return bookingCard(b, `
+        <span class="badge bg-warning-subtle text-warning align-self-center">${I18N.t('awaiting_tourist') || '⏳ بانتظار قبول السائح'}</span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="quotePrompt('${b.id}', ${b.quotedAmount || 0})">${I18N.t('edit_price') || '✏️ تعديل السعر'}</button>
+        <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
+      `, b.quotedAmount);
+    }
+    // New pending request → guide proposes a price.
+    return `
+      <div class="booking-card ${b.status}">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div>
+            <div class="fw-700">👤 ${b.touristName}</div>
+            <div class="small text-muted">${b.touristEmail}</div>
+          </div>
+          <span class="status-badge status-${b.status}">${I18N.t('status_' + b.status) || b.status}</span>
+        </div>
+        <div class="small text-muted mb-1">📅 ${formatDate(b.tourDate)} &nbsp;·&nbsp; 📍 ${b.destination} &nbsp;·&nbsp; ${b.participants} ${b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl')}</div>
+        ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${b.specialRequests}"</div>` : ''}
+        <div class="border-top pt-2 mt-2">
+          <label class="form-label small fw-600 mb-1">${I18N.t('set_price_lbl') || '💰 حدّد سعر الرحلة (OMR)'}</label>
+          <div class="d-flex gap-2">
+            <input type="number" min="0" step="0.5" class="form-control form-control-sm" id="quote_${b.id}" placeholder="0.00" style="max-width:140px">
+            <button class="btn btn-sm btn-verify" onclick="sendQuote('${b.id}')">${I18N.t('send_offer') || '📤 إرسال العرض'}</button>
+            <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function sendQuote(id) {
+  const input = document.getElementById('quote_' + id);
+  const amount = parseFloat(input?.value);
+  if (!Number.isFinite(amount) || amount < 0) { toast(I18N.t('enter_valid_price') || 'أدخل سعراً صحيحاً', 'error'); return; }
+  try {
+    const r = await fetch(`/api/bookings/${id}/quote`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('offer_sent') || '✓ تم إرسال العرض للسائح', 'success');
+    loadBookings();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function quotePrompt(id, current) {
+  const v = prompt(I18N.t('set_price_lbl') || '💰 حدّد سعر الرحلة (OMR)', current || '');
+  if (v == null) return;
+  const amount = parseFloat(v);
+  if (!Number.isFinite(amount) || amount < 0) { toast(I18N.t('enter_valid_price') || 'أدخل سعراً صحيحاً', 'error'); return; }
+  fetch(`/api/bookings/${id}/quote`, {
+    method: 'PATCH', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount }),
+  }).then(r => r.json()).then(d => {
+    if (!d.success) throw new Error(d.message);
+    toast(I18N.t('offer_sent') || '✓ تم إرسال العرض للسائح', 'success');
+    loadBookings();
+  }).catch(e => toast(e.message, 'error'));
 }
 
 function renderInProgress(list) {
