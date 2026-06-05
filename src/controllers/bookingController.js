@@ -1,30 +1,17 @@
-const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
 const { notify } = require('../services/notificationService');
+const bookingService = require('../services/bookingService');
+const { removeSlotFromAvailability } = require('../domain/bookingRules');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
-const packages = new SupabaseDB('tour_packages');
 const reviews  = new SupabaseDB('reviews');
 
 // Columns added by migration 021 that may not exist yet on older deployments.
 // We strip them and retry so the booking flow keeps working before the migration runs.
 const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons'];
 const isMissingColumnError = (msg) => /Could not find the '\w+' column|schema cache/i.test(msg || '');
-
-async function insertBookingSafe(record) {
-  try {
-    return await bookings.insert(record);
-  } catch (e) {
-    if (isMissingColumnError(e.message)) {
-      const clean = { ...record };
-      OPTIONAL_BOOKING_COLS.forEach(c => delete clean[c]);
-      return await bookings.insert(clean);
-    }
-    throw e; // e.g. duplicate-key — handled by caller
-  }
-}
 
 async function updateBookingSafe(id, data) {
   try {
@@ -39,226 +26,24 @@ async function updateBookingSafe(id, data) {
   }
 }
 
-// Returns which slot keys conflict with the requested tourTime
-function conflictingSlots(tourTime) {
-  if (tourTime === 'morning')   return ['morning', 'full_day'];
-  if (tourTime === 'afternoon') return ['afternoon', 'full_day'];
-  return ['morning', 'afternoon', 'full_day']; // full_day conflicts with everything
-}
-
-// Check whether the guide's availability array includes the requested slot
-function guideHasSlot(availability, tourDate, tourTime) {
-  // New format
-  if (availability.includes(`${tourDate}_${tourTime}`)) return true;
-  if (tourTime !== 'full_day') {
-    if (availability.includes(`${tourDate}_full_day`)) return true;
-  }
-  // Old format (plain date = full_day)
-  if (availability.includes(tourDate)) return true;
-  return false;
-}
-
-// Remove booked slot(s) from guide availability
-function removeSlotFromAvailability(availability, tourDate, tourTime) {
-  const toRemove = new Set();
-  if (tourTime === 'morning' || tourTime === 'full_day') {
-    toRemove.add(`${tourDate}_morning`);
-    toRemove.add(tourDate); // legacy full-day entry
-  }
-  if (tourTime === 'afternoon' || tourTime === 'full_day') {
-    toRemove.add(`${tourDate}_afternoon`);
-    toRemove.add(tourDate);
-  }
-  if (tourTime === 'full_day') {
-    toRemove.add(`${tourDate}_full_day`);
-  }
-  return availability.filter(a => !toRemove.has(a));
-}
-
+// Thin controller: delegate booking creation to the service, map errors to HTTP.
 exports.createBooking = async (req, res) => {
   try {
-    const {
-      guideId, tourDate, duration, tourTime: reqTourTime, destination, participants, specialRequests,
-      packageId, adultCount, childCount, variantName, variantPrice, addons, totalAmount: clientTotal,
-    } = req.body;
-    const touristId = req.session.userId;
-
-    if (!guideId || !tourDate || !destination) {
-      return res.status(400).json({ success: false, message: 'Missing required booking fields.' });
-    }
-
-    const guide = await users.findById(guideId);
-    if (!guide || guide.userType !== 'guide') {
-      return res.status(404).json({ success: false, message: 'Guide not found.' });
-    }
-    if (!guide.isVerified) {
-      return res.status(400).json({ success: false, message: 'Guide is not verified.' });
-    }
-
-    // ── PACKAGE-BASED booking (new model) ──
-    let packageData = null;
-    let totalAmount;
-    let tourTime = reqTourTime || 'full_day';
-    if (!['morning', 'afternoon', 'full_day'].includes(tourTime)) tourTime = 'full_day';
-
-    if (packageId) {
-      packageData = await packages.findById(packageId);
-      if (!packageData) return res.status(404).json({ success: false, message: 'Package not found.' });
-      if (!packageData.isPublished) return res.status(400).json({ success: false, message: 'Package is not available for booking.' });
-
-      // Check date is in package.availableDates (if defined)
-      const pkgDates = Array.isArray(packageData.availableDates) ? packageData.availableDates : [];
-      if (pkgDates.length && !pkgDates.includes(tourDate)) {
-        return res.status(400).json({ success: false, message: 'Selected date is not available for this tour.' });
-      }
-
-      // New pricing model (server-authoritative):
-      //   price_adult = base price for first 2 people (included)
-      //   price_child = price per extra person beyond 2
-      let people = Math.max(2, parseInt(participants) || parseInt(adultCount) || 2);
-      const maxGroup = parseInt(packageData.max_group_size) || 50;
-      if (people > maxGroup) {
-        return res.status(400).json({ success: false, message: `This tour accepts at most ${maxGroup} people.` });
-      }
-      const basePrice  = parseFloat(variantPrice) || packageData.price_adult || 0;
-      const perExtra   = packageData.price_child || 0;
-      const extras     = Math.max(0, people - 2);
-      const addonsTotal = Array.isArray(addons) ? addons.reduce((s, a) => s + (parseFloat(a.price) || 0), 0) : 0;
-      const subtotal = basePrice + (perExtra * extras) + addonsTotal;
-      const discount = packageData.discountPercent || 0;
-      totalAmount = subtotal * (1 - discount / 100);
-    } else {
-      const { startTime: reqStartTime } = req.body;
-
-      // ── NEW: time-slot based booking ──
-      const slots = Array.isArray(guide.availabilitySlots) ? guide.availabilitySlots : [];
-      if (slots.length && reqStartTime) {
-        const matchSlot = slots.find(s => s.date === tourDate && s.startTime === reqStartTime);
-        if (!matchSlot) {
-          return res.status(400).json({ success: false, message: 'Selected time slot is not available.' });
-        }
-
-        // Check time overlap with existing bookings
-        const existingBookings = await bookings.findAllByField('guideId', guideId);
-        const hasOverlap = existingBookings.some(b =>
-          b.status !== 'cancelled' &&
-          b.tourDate === tourDate &&
-          b.startTime && b.endTime &&
-          reqStartTime < b.endTime && matchSlot.endTime > b.startTime
-        );
-        if (hasOverlap) {
-          return res.status(409).json({ success: false, message: 'This time slot was just booked. Please choose another.' });
-        }
-
-        totalAmount = parseFloat(matchSlot.price) || 0;
-        req._slotData = { startTime: matchSlot.startTime, endTime: matchSlot.endTime, durationMin: matchSlot.durationMin };
-      } else {
-        // ── LEGACY day-rate booking ──
-        const availability = Array.isArray(guide.availability) ? guide.availability : [];
-        if (!guideHasSlot(availability, tourDate, tourTime)) {
-          return res.status(400).json({ success: false, message: 'Guide is not available for the selected date and time slot.' });
-        }
-
-        const existingBookings = await bookings.findAllByField('guideId', guideId);
-        const conflicts = conflictingSlots(tourTime);
-        const hasConflict = existingBookings.some(b =>
-          b.status !== 'cancelled' &&
-          b.tourDate === tourDate &&
-          conflicts.includes(b.tourTime || 'full_day')
-        );
-        if (hasConflict) {
-          return res.status(409).json({ success: false, message: 'This time slot was just booked. Please choose another.' });
-        }
-
-        const resolvedDuration = tourTime === 'full_day' ? 'full' : 'half';
-        const pricePerDay = parseFloat(guide.pricePerDay) || 0;
-        totalAmount = resolvedDuration === 'half' ? pricePerDay * 0.6 : pricePerDay;
-      }
-    }
-
-    const participantCount = packageId
-      ? Math.max(2, parseInt(participants) || parseInt(adultCount) || 2)
-      : Math.max(1, parseInt(participants) || 1);
-
-    const booking = {
-      id: 'bk-' + uuidv4().slice(0, 8),
-      touristId, guideId,
-      tourDate, destination,
-      tourTime,
-      ...(req._slotData || {}),
-      duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
-      participants: participantCount,
-      totalAmount: Math.round(totalAmount * 100) / 100,
-      status: 'pending',
-      specialRequests: specialRequests || '',
-      createdAt: new Date().toISOString(),
-      ...(packageId && {
-        packageId,
-        adultCount: parseInt(adultCount) || 1,
-        childCount: parseInt(childCount) || 0,
-        variantName: variantName || null,
-        addons: Array.isArray(addons) ? addons : [],
-      }),
-    };
-
-    try {
-      await insertBookingSafe(booking);
-    } catch (insertErr) {
-      // Unique violation = race condition: another tourist booked the same slot first
-      if (insertErr.message && (
-        insertErr.message.includes('duplicate key') ||
-        insertErr.message.includes('uniq_active_booking')
-      )) {
-        const msg = booking.startTime
-          ? 'This time slot was just booked by someone else. Please choose another slot.'
-          : 'This date was just booked by someone else. Please choose another date.';
-        return res.status(409).json({ success: false, message: msg });
-      }
-      throw insertErr;
-    }
-
-    // Emails: tourist (request sent) + guide (new booking)
-    const tourist = await users.findById(touristId);
-    email.sendTouristBookingPending({
-      email: tourist.email, name: tourist.fullName,
-      guideName: guide.fullName, destination, tourDate,
-      duration, totalAmount: booking.totalAmount, bookingId: booking.id,
-    }).catch(() => {});
-    email.sendGuideNewBooking({
-      email: guide.email, name: guide.fullName,
-      touristName: tourist.fullName, destination, tourDate,
-      duration, participants: participantCount,
-      totalAmount: booking.totalAmount, bookingId: booking.id,
-    }).catch(() => {});
-
-    // In-app notifications (bilingual EN + AR)
-    notify({
-      userId: guide.id,
-      type: 'booking_new',
-      title:   'New booking request',
-      titleAr: 'طلب حجز جديد',
-      body:   `${tourist.fullName} requested a tour to ${destination} on ${tourDate}.`,
-      bodyAr: `طلب ${tourist.fullName} رحلة إلى ${destination} بتاريخ ${tourDate}.`,
-      link: '/guide-dashboard.html#bookings',
-      metadata: { bookingId: booking.id },
+    const booking = await bookingService.createBooking(req.session.userId, req.body);
+    res.status(201).json({
+      success: true,
+      message: 'Booking request sent. Waiting for guide confirmation.',
+      booking,
     });
-    notify({
-      userId: tourist.id,
-      type: 'booking_new',
-      title:   'Booking request sent',
-      titleAr: 'تم إرسال طلب الحجز',
-      body:   `Waiting for ${guide.fullName} to confirm your ${destination} tour on ${tourDate}.`,
-      bodyAr: `في انتظار تأكيد ${guide.fullName} لرحلتك إلى ${destination} بتاريخ ${tourDate}.`,
-      link: '/tourist-dashboard.html#bookings',
-      metadata: { bookingId: booking.id },
-    });
-
-    res.status(201).json({ success: true, message: 'Booking request sent. Waiting for guide confirmation.', booking });
   } catch (err) {
-    console.error(err);
+    if (err instanceof bookingService.BookingError) {
+      return res.status(err.status).json({ success: false, code: err.code, message: err.message });
+    }
+    console.error('[createBooking]', err.message);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
+
 
 exports.myBookings = async (req, res) => {
   try {
