@@ -186,12 +186,8 @@
             </div>
           </div>
 
-          <!-- Price + actions -->
+          <!-- Actions -->
           <div class="col-md-auto text-md-end">
-            <div class="mb-2">
-              <span style="font-size:2.2rem;font-weight:800;color:#c9a84c" id="pPrice">—</span>
-              <span style="font-size:.85rem;opacity:.75" data-i18n="per_day"> / day</span>
-            </div>
             <div class="d-flex gap-2 justify-content-md-end">
               <span class="action-pill" onclick="toggleWishlist()" id="wishlistBtn" data-i18n="gp_btn_save">🤍 Save</span>
               <span class="action-pill" onclick="shareGuide()" data-i18n="gp_btn_share">🔗 Share</span>
@@ -883,8 +879,10 @@ function setCurrency(cur) {
   const sel = document.getElementById('currencySelect');
   if (sel) sel.value = cur;
   if (GUIDE) {
-    document.getElementById('pPrice').textContent = conv(GUIDE.pricePerDay);
-    document.getElementById('bPrice').textContent = conv(GUIDE.pricePerDay);
+    const pp = document.getElementById('pPrice');
+    if (pp) pp.textContent = conv(GUIDE.pricePerDay);
+    const bp = document.getElementById('bPrice');
+    if (bp) bp.textContent = conv(GUIDE.pricePerDay);
     updatePrice();
   }
 }
