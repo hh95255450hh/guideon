@@ -36,6 +36,8 @@ app.post('/api/payments/webhook',
 );
 
 app.use(helmet({
+  // Allow cross-origin popups (e.g. Google Sign-In) to communicate back via postMessage
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
   contentSecurityPolicy: {
     directives: {
       defaultSrc:    ["'self'"],

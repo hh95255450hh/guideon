@@ -230,31 +230,14 @@ async function initGoogle() {
       if (!window.google || !google.accounts) { setTimeout(start, 300); return; }
       google.accounts.id.initialize({
         client_id: clientId,
-        ux_mode: 'redirect',
-        login_uri: '/api/auth/google-redirect',
+        callback: onGoogleCredential,
+        ux_mode: 'popup',
       });
       google.accounts.id.renderButton(document.getElementById('googleBtn'),
         { theme: 'outline', size: 'large', shape: 'pill', text: 'signup_with', width: 300 });
       toggleGoogleWrap();
     };
     start();
-
-    // Show error passed back from redirect endpoint
-    const params = new URLSearchParams(window.location.search);
-    const gErr = params.get('g_error');
-    if (gErr) {
-      const messages = {
-        suspended: 'هذا الحساب موقوف.',
-        invalid_token: 'فشل التحقق من Google. حاول مرة أخرى.',
-        no_credential: 'لم يتم استلام بيانات Google.',
-        server_error: 'خطأ في الخادم. حاول مرة أخرى.',
-        not_configured: 'تسجيل الدخول بـ Google غير متاح حالياً.',
-      };
-      const msg = messages[gErr] || gErr;
-      if (typeof toast === 'function') toast(msg, 'error');
-      else alert(msg);
-      history.replaceState({}, '', '/register.html');
-    }
   } catch (_) {}
 }
 function toggleGoogleWrap() {
