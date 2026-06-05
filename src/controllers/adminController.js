@@ -107,8 +107,22 @@ exports.whatsappTest = async (req, res) => {
   try {
     const whatsapp = require('../services/whatsappService');
     const to = req.query.to || '96895255450';
-    const result = await whatsapp.sendTextVerbose(to, '✅ Guideon WhatsApp test — تكامل الواتساب يعمل بنجاح! 🎉');
-    res.json({ success: true, config: whatsapp.config(), sentTo: to, result });
+    const mode = req.query.mode || 'template'; // template | text
+
+    let result;
+    if (mode === 'text') {
+      result = await whatsapp.sendTextVerbose(to, '✅ Guideon WhatsApp test — تكامل الواتساب يعمل بنجاح! 🎉');
+    } else {
+      // Use approved template (works outside 24h window too)
+      const tplName = process.env.WHATSAPP_TEMPLATE_NAME || 'guideon_alert';
+      const tplLang = process.env.WHATSAPP_TEMPLATE_LANG || 'ar';
+      result = await whatsapp.sendTemplate(to, tplName, tplLang, [
+        'Guideon اختبار',
+        'تكامل الواتساب يعمل بنجاح ✅',
+      ]);
+      result = result ? { ok: true, data: result } : { ok: false, error: 'Template send failed' };
+    }
+    res.json({ success: true, config: whatsapp.config(), sentTo: to, mode, result });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
