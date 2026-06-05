@@ -251,6 +251,22 @@
           <div id="pGallery" class="d-flex flex-wrap gap-2"></div>
         </div>
 
+        <!-- Guide Assets (ما يملكه المرشد) -->
+        <div class="info-card d-none" id="assetsSection">
+          <h5>🚗 <span data-i18n="guide_assets_title">ما يملكه المرشد لخدمتك</span></h5>
+          <p class="text-muted small mb-2" data-i18n="guide_assets_desc">وسائل نقل، معدات، ومرافق يوفرها المرشد لضمان تجربة مميزة</p>
+          <div id="assetsList" class="row g-3 mt-1"></div>
+        </div>
+
+        <!-- Guide's Tours (رحلات هذا المرشد) -->
+        <div class="info-card">
+          <h5>🗺️ <span data-i18n="guide_tours_title">Tours by this Guide</span></h5>
+          <p class="text-muted small mb-2" data-i18n="guide_tours_desc">Choose from these curated tours — each with its own pricing, dates and inclusions.</p>
+          <div id="guideToursList" class="row g-3 mt-1">
+            <div class="col-12 text-center text-muted py-4" data-i18n="loading">Loading...</div>
+          </div>
+        </div>
+
         <!-- Intro Video -->
         <div class="info-card d-none" id="videoCard">
           <h5>🎬 <span data-i18n="video_title">Intro Video</span></h5>
@@ -403,25 +419,6 @@
       </div><!-- /right col -->
     </div>
 
-    <!-- ════════════════════════ GUIDE ASSETS ════════════════════════ -->
-    <div class="row mt-5 d-none" id="assetsSection">
-      <div class="col-12">
-        <h3 class="fw-800 mb-1">🚗 ما يملكه المرشد لخدمتك</h3>
-        <p class="text-muted">وسائل نقل، معدات، ومرافق يوفرها المرشد لضمان تجربة مميزة</p>
-        <div id="assetsList" class="row g-3 mt-2"></div>
-      </div>
-    </div>
-
-    <!-- ════════════════════════ GUIDE'S TOURS ════════════════════════ -->
-    <div class="row mt-5">
-      <div class="col-12">
-        <h3 class="fw-800 mb-1" data-i18n="guide_tours_title">🗺️ Tours by this Guide</h3>
-        <p class="text-muted" data-i18n="guide_tours_desc">Choose from these curated tours — each with its own pricing, dates and inclusions.</p>
-        <div id="guideToursList" class="row g-3 mt-2">
-          <div class="col-12 text-center text-muted py-4" data-i18n="loading">Loading...</div>
-        </div>
-      </div>
-    </div>
   </div>
 </div><!-- /pageContent -->
 
