@@ -142,6 +142,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Inject per-entity SEO meta (OG/Twitter) for shared guide/tour links — must
+// run BEFORE express.static so scrapers get server-rendered tags.
+app.use(require('./middleware/seoMeta'));
+
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   dotfiles: 'allow', // serve /.well-known/assetlinks.json for TWA / Play Store
 }));
