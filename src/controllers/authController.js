@@ -258,81 +258,87 @@ function getGoogleClient() {
   return _googleClient;
 }
 
+// Shared helper: verify Google credential and upsert user
+async function _resolveGoogleUser(credential) {
+  const ticket = await getGoogleClient().verifyIdToken({
+    idToken: credential,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+
+  const email = (payload.email || '').toLowerCase();
+  if (!email || !payload.email_verified) throw Object.assign(new Error('A verified Google email is required.'), { status: 400 });
+  const fullName = payload.name || email.split('@')[0];
+  const picture  = payload.picture || '';
+
+  let user = await users.findByField('email', email);
+  if (user) {
+    if (user.isSuspended) throw Object.assign(new Error('This account has been suspended.'), { status: 403 });
+    const patch = {};
+    if (!user.googleId) patch.googleId = payload.sub;
+    if (!user.emailVerified) patch.emailVerified = true;
+    if (!user.photo && picture) patch.photo = picture;
+    if (Object.keys(patch).length) { try { await users.update(user.id, patch); } catch (_) {} user = { ...user, ...patch }; }
+  } else {
+    const randomPwd = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10);
+    const record = {
+      id: 'tourist-' + uuidv4().slice(0, 8),
+      fullName, email, password: randomPwd,
+      phone: '', userType: 'tourist',
+      nationality: '', preferredLanguage: 'English',
+      createdAt: new Date().toISOString(), isSuspended: false,
+      emailVerified: true,
+      googleId: payload.sub,
+      photo: picture,
+    };
+    try {
+      await users.insert(record);
+    } catch (insertErr) {
+      const m = String(insertErr?.message || '').match(/Could not find the '([^']+)' column/);
+      if (m) { delete record[m[1]]; await users.insert(record); }
+      else throw insertErr;
+    }
+    user = record;
+    emailService.sendTouristWelcome({ email, name: fullName }).catch(() => {});
+  }
+  return user;
+}
+
+async function _saveGoogleSession(req, user) {
+  await new Promise((resolve, reject) => {
+    req.session.regenerate(err => err ? reject(err) : resolve());
+  });
+  req.session.userId   = user.id;
+  req.session.userType = user.userType;
+  await new Promise((resolve, reject) => {
+    req.session.save(err => err ? reject(err) : resolve());
+  });
+}
+
+const GOOGLE_DASH_MAP = {
+  tourist: '/tourist-dashboard.html',
+  guide:   '/guide-dashboard.html',
+  admin:   '/admin.html',
+  staff:   '/admin.html',
+  company: '/company-dashboard.html',
+};
+
+// JSON API (kept for backwards compat / non-redirect browsers)
 exports.googleAuth = async (req, res) => {
   try {
-    if (!process.env.GOOGLE_CLIENT_ID) {
+    if (!process.env.GOOGLE_CLIENT_ID)
       return res.status(503).json({ success: false, message: 'Google sign-in is not configured.' });
-    }
     const { credential } = req.body;
     if (!credential) return res.status(400).json({ success: false, message: 'Missing Google credential.' });
 
-    // Verify the ID token with Google.
-    let payload;
+    let user;
     try {
-      const ticket = await getGoogleClient().verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
-      payload = ticket.getPayload();
+      user = await _resolveGoogleUser(credential);
     } catch (e) {
-      return res.status(401).json({ success: false, message: 'Invalid Google sign-in. Please try again.' });
+      return res.status(e.status || 401).json({ success: false, message: e.message || 'Invalid Google sign-in. Please try again.' });
     }
 
-    const email = (payload.email || '').toLowerCase();
-    if (!email || !payload.email_verified) {
-      return res.status(400).json({ success: false, message: 'A verified Google email is required.' });
-    }
-    const fullName = payload.name || email.split('@')[0];
-    const picture  = payload.picture || '';
-
-    // Find existing user by email, or create a new tourist.
-    let user = await users.findByField('email', email);
-
-    if (user) {
-      if (user.isSuspended) {
-        return res.status(403).json({ success: false, message: 'This account has been suspended.' });
-      }
-      // Backfill Google linkage / verified email on existing accounts.
-      const patch = {};
-      if (!user.googleId) patch.googleId = payload.sub;
-      if (!user.emailVerified) patch.emailVerified = true;
-      if (!user.photo && picture) patch.photo = picture;
-      if (Object.keys(patch).length) { try { await users.update(user.id, patch); } catch (_) {} user = { ...user, ...patch }; }
-    } else {
-      // New tourist account — random unusable password (login is via Google).
-      const randomPwd = await bcrypt.hash(crypto.randomBytes(24).toString('hex'), 10);
-      const record = {
-        id: 'tourist-' + uuidv4().slice(0, 8),
-        fullName, email, password: randomPwd,
-        phone: '', userType: 'tourist',
-        nationality: '', preferredLanguage: 'English',
-        createdAt: new Date().toISOString(), isSuspended: false,
-        emailVerified: true,
-        googleId: payload.sub,
-        photo: picture,
-      };
-      try {
-        await users.insert(record);
-      } catch (insertErr) {
-        const m = String(insertErr?.message || '').match(/Could not find the '([^']+)' column/);
-        if (m) { delete record[m[1]]; await users.insert(record); }
-        else throw insertErr;
-      }
-      user = record;
-      emailService.sendTouristWelcome({ email, name: fullName }).catch(() => {});
-    }
-
-    // Regenerate session to prevent fixation & ensure it's saved to the store
-    await new Promise((resolve, reject) => {
-      req.session.regenerate(err => err ? reject(err) : resolve());
-    });
-    req.session.userId   = user.id;
-    req.session.userType = user.userType;
-
-    // Force-save the session before sending response
-    await new Promise((resolve, reject) => {
-      req.session.save(err => err ? reject(err) : resolve());
-    });
+    await _saveGoogleSession(req, user);
 
     const safe = { ...user };
     delete safe.password;
@@ -340,6 +346,31 @@ exports.googleAuth = async (req, res) => {
   } catch (err) {
     console.error('[googleAuth]', err.message);
     res.status(500).json({ success: false, message: 'Server error during Google sign-in.' });
+  }
+};
+
+// Redirect-mode handler: Google POSTs credential here, we redirect to dashboard
+exports.googleRedirect = async (req, res) => {
+  try {
+    if (!process.env.GOOGLE_CLIENT_ID)
+      return res.redirect('/login.html?g_error=not_configured');
+
+    const credential = req.body.credential;
+    if (!credential) return res.redirect('/login.html?g_error=no_credential');
+
+    let user;
+    try {
+      user = await _resolveGoogleUser(credential);
+    } catch (e) {
+      const code = e.status === 403 ? 'suspended' : 'invalid_token';
+      return res.redirect(`/login.html?g_error=${code}`);
+    }
+
+    await _saveGoogleSession(req, user);
+    res.redirect(GOOGLE_DASH_MAP[user.userType] || '/');
+  } catch (err) {
+    console.error('[googleRedirect]', err.message);
+    res.redirect('/login.html?g_error=server_error');
   }
 };
 

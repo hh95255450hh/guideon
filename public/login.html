@@ -98,7 +98,7 @@
 <script src="/js/chatbot.js?v=13"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-// ── Google Sign-In ──────────────────────────────────────────────
+// ── Google Sign-In (redirect mode — no popup) ───────────────────
 async function initGoogle() {
   try {
     const r = await fetch('/api/auth/google-config');
@@ -110,10 +110,8 @@ async function initGoogle() {
 
       google.accounts.id.initialize({
         client_id: clientId,
-        callback: onGoogleCredential,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        ux_mode: 'popup',
+        ux_mode: 'redirect',
+        login_uri: '/api/auth/google-redirect',
       });
 
       google.accounts.id.renderButton(
@@ -124,41 +122,26 @@ async function initGoogle() {
       document.getElementById('googleAuthWrap').classList.remove('d-none');
     };
     start();
+
+    // Show error passed back from redirect endpoint
+    const params = new URLSearchParams(window.location.search);
+    const gErr = params.get('g_error');
+    if (gErr) {
+      const messages = {
+        suspended: I18N.lang === 'ar' ? 'هذا الحساب موقوف.' : 'This account has been suspended.',
+        invalid_token: I18N.lang === 'ar' ? 'فشل التحقق من Google. حاول مرة أخرى.' : 'Google verification failed. Please try again.',
+        no_credential: I18N.lang === 'ar' ? 'لم يتم استلام بيانات Google.' : 'No Google credential received.',
+        server_error: I18N.lang === 'ar' ? 'خطأ في الخادم. حاول مرة أخرى.' : 'Server error. Please try again.',
+        not_configured: I18N.lang === 'ar' ? 'تسجيل الدخول بـ Google غير متاح حالياً.' : 'Google sign-in is not available.',
+      };
+      const err = document.getElementById('errMsg');
+      err.textContent = messages[gErr] || gErr;
+      err.className = 'alert alert-danger small';
+      err.classList.remove('d-none');
+      // Clean up URL
+      history.replaceState({}, '', '/login.html');
+    }
   } catch (_) {}
-}
-async function onGoogleCredential(resp) {
-  const err = document.getElementById('errMsg');
-  const btn = document.getElementById('submitBtn');
-
-  // Show loading
-  err.textContent = I18N.lang === 'ar' ? '⏳ جاري تسجيل الدخول...' : '⏳ Signing in...';
-  err.className = 'alert alert-info small';
-  err.classList.remove('d-none');
-
-  try {
-    const r = await fetch('/api/auth/google', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ credential: resp.credential }),
-    });
-
-    let d;
-    try { d = await r.json(); }
-    catch { throw new Error('Server error. Please try again.'); }
-
-    if (!d.success) throw new Error(d.message);
-
-    // Success — redirect
-    err.textContent = I18N.lang === 'ar' ? '✅ تم الدخول! جاري التحويل...' : '✅ Success! Redirecting...';
-    err.className = 'alert alert-success small';
-    setTimeout(() => {
-      window.location.href = DASH_MAP[d.user.userType] || '/';
-    }, 800);
-  } catch (e) {
-    err.textContent = e.message || 'Google sign-in failed. Please try again.';
-    err.className = 'alert alert-danger small';
-    err.classList.remove('d-none');
-  }
 }
 document.addEventListener('DOMContentLoaded', initGoogle);
 

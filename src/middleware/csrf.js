@@ -15,6 +15,7 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
 
 const SKIP_PATHS = [
   '/api/payments/webhook',
+  '/api/auth/google-redirect',
 ];
 
 function originAllowed(origin) {

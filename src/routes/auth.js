@@ -53,6 +53,7 @@ router.post('/logout', auth.logout);
 router.get('/me', requireLogin, auth.me);
 router.put('/profile', requireLogin, auth.updateProfile);
 router.post('/google', loginLimiter, auth.googleAuth);
+router.post('/google-redirect', loginLimiter, auth.googleRedirect);
 router.get('/google-config', (req, res) => res.json({ clientId: process.env.GOOGLE_CLIENT_ID || '' }));
 router.put('/change-password', requireLogin, validateChangePassword, auth.changePassword);
 router.post('/upload-photo', requireLogin, upload.single('photo'), auth.uploadPhoto);
