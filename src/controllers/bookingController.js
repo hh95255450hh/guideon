@@ -204,12 +204,15 @@ exports.createBooking = async (req, res) => {
     try {
       await insertBookingSafe(booking);
     } catch (insertErr) {
-      // Unique violation = race condition: another tourist booked the same date first
-      if (insertErr.message && (insertErr.message.includes('duplicate key') || insertErr.message.includes('uniq_active_booking'))) {
-        return res.status(409).json({
-          success: false,
-          message: 'This date was just booked by someone else. Please choose another date.',
-        });
+      // Unique violation = race condition: another tourist booked the same slot first
+      if (insertErr.message && (
+        insertErr.message.includes('duplicate key') ||
+        insertErr.message.includes('uniq_active_booking')
+      )) {
+        const msg = booking.startTime
+          ? 'This time slot was just booked by someone else. Please choose another slot.'
+          : 'This date was just booked by someone else. Please choose another date.';
+        return res.status(409).json({ success: false, message: msg });
       }
       throw insertErr;
     }
