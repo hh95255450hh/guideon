@@ -101,6 +101,142 @@ exports.emailTest = async (req, res) => {
   }
 };
 
+// ─── One-time bulk image compression of existing Storage files ─────────
+// GET /api/admin/compress-storage?dry=1   — preview only
+// GET /api/admin/compress-storage         — actually compress and overwrite
+//
+// Runs the same sharp→WebP pipeline storageService uses for new uploads
+// across every existing image in the bucket. Filenames stay the same so
+// every URL already in the DB keeps working. Safe to re-run.
+let _compressJob = null; // { running, started, done, tally }
+exports.compressStorage = async (req, res) => {
+  if (_compressJob && _compressJob.running) {
+    return res.json({ success: true, alreadyRunning: true, job: publicJob(_compressJob) });
+  }
+  const dry = req.query.dry === '1' || req.query.dry === 'true';
+  _compressJob = { running: true, dry, started: new Date().toISOString(), done: false, tally: blankTally() };
+
+  // Respond immediately so the request doesn't time out; work continues in bg.
+  res.json({ success: true, started: true, dry, message:
+    dry ? 'Dry run started — check /api/admin/compress-storage/status' :
+          'Compression started — check /api/admin/compress-storage/status' });
+
+  runCompression(_compressJob).catch(err => {
+    _compressJob.error = err.message;
+    _compressJob.running = false;
+    _compressJob.done = true;
+    console.error('[compressStorage] FAILED:', err);
+  });
+};
+
+exports.compressStorageStatus = async (req, res) => {
+  if (!_compressJob) return res.json({ success: true, job: null, message: 'No job has been started.' });
+  res.json({ success: true, job: publicJob(_compressJob) });
+};
+
+function blankTally() {
+  return { seen: 0, compressed: 0, wouldCompress: 0,
+    skipTiny: 0, skipNotImage: 0, skipAnimated: 0, skipNoGain: 0,
+    errors: 0, bytesBefore: 0, bytesAfter: 0 };
+}
+function publicJob(j) {
+  const savedBytes = j.tally.bytesBefore - j.tally.bytesAfter;
+  return {
+    running: j.running, dry: j.dry, started: j.started, done: j.done, error: j.error || null,
+    tally: j.tally,
+    savedMB: +(savedBytes / 1024 / 1024).toFixed(2),
+    savedPct: j.tally.bytesBefore ? Math.round((savedBytes / j.tally.bytesBefore) * 100) : 0,
+  };
+}
+
+async function runCompression(job) {
+  const sharp = require('sharp');
+  const path  = require('path');
+  const { createClient } = require('@supabase/supabase-js');
+  const sb = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY,
+  );
+  const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'media';
+
+  const PRESETS = {
+    avatars:  { maxWidth: 512,  maxHeight: 512,  quality: 78, fit: 'cover'  },
+    gallery:  { maxWidth: 1600, maxHeight: 1600, quality: 78, fit: 'inside' },
+    homepage: { maxWidth: 1600, maxHeight: 1600, quality: 78, fit: 'inside' },
+    messages: { maxWidth: 1280, maxHeight: 1280, quality: 75, fit: 'inside' },
+    reviews:  { maxWidth: 1280, maxHeight: 1280, quality: 78, fit: 'inside' },
+    GENERIC:  { maxWidth: 1600, maxHeight: 1600, quality: 78, fit: 'inside' },
+  };
+  const presetFor = (folder) => PRESETS[String(folder || '').split('/')[0].toLowerCase()] || PRESETS.GENERIC;
+  const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.tif', '.tiff', '.heic', '.heif', '.avif']);
+  const SKIP_EXTS  = new Set(['.gif', '.svg', '.mp4', '.webm', '.mov', '.m4v', '.ogg']);
+
+  async function* walk(prefix = '') {
+    let offset = 0;
+    const limit = 1000;
+    while (true) {
+      const { data, error } = await sb.storage.from(BUCKET).list(prefix, {
+        limit, offset, sortBy: { column: 'name', order: 'asc' },
+      });
+      if (error) { console.warn('[compress] list', prefix, error.message); return; }
+      if (!data || !data.length) return;
+      for (const item of data) {
+        const full = prefix ? `${prefix}/${item.name}` : item.name;
+        if (item.id === null || item.metadata === null) yield* walk(full);
+        else yield { path: full, size: item.metadata?.size || 0, mime: item.metadata?.mimetype || '' };
+      }
+      if (data.length < limit) return;
+      offset += data.length;
+    }
+  }
+
+  for await (const file of walk('')) {
+    job.tally.seen++;
+    const ext = path.extname(file.path).toLowerCase();
+    if (SKIP_EXTS.has(ext))                                              { job.tally.skipAnimated++; continue; }
+    if (!IMAGE_EXTS.has(ext) && !(file.mime || '').startsWith('image/')) { job.tally.skipNotImage++; continue; }
+    if (file.size && file.size < 60 * 1024)                              { job.tally.skipTiny++; continue; }
+
+    try {
+      const { data: blob, error: dlErr } = await sb.storage.from(BUCKET).download(file.path);
+      if (dlErr) { job.tally.errors++; continue; }
+      const buf = Buffer.from(await blob.arrayBuffer());
+      if (buf.length < 60 * 1024) { job.tally.skipTiny++; continue; }
+
+      const preset = presetFor(path.dirname(file.path));
+      const img = sharp(buf, { failOn: 'none' }).rotate();
+      const meta = await img.metadata();
+      if (meta.pages && meta.pages > 1) { job.tally.skipAnimated++; continue; }
+
+      const compressed = await img
+        .resize({ width: preset.maxWidth, height: preset.maxHeight, fit: preset.fit, withoutEnlargement: true })
+        .webp({ quality: preset.quality, effort: 4 })
+        .toBuffer();
+
+      if (compressed.length >= buf.length) { job.tally.skipNoGain++; continue; }
+
+      job.tally.bytesBefore += buf.length;
+      job.tally.bytesAfter  += compressed.length;
+
+      if (job.dry) {
+        job.tally.wouldCompress++;
+      } else {
+        const { error: upErr } = await sb.storage.from(BUCKET).upload(file.path, compressed, {
+          contentType: 'image/webp', upsert: true, cacheControl: '31536000',
+        });
+        if (upErr) { job.tally.errors++; continue; }
+        job.tally.compressed++;
+      }
+    } catch (e) {
+      job.tally.errors++;
+      console.warn('[compress] error', file.path, e.message);
+    }
+  }
+  job.running = false;
+  job.done = true;
+  job.finished = new Date().toISOString();
+}
+
 // GET /api/admin/whatsapp-test?to=96895255450 — sends a test WhatsApp message
 // and returns the exact result so the integration can be verified.
 exports.whatsappTest = async (req, res) => {

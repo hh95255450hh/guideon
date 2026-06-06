@@ -14,6 +14,8 @@ router.get('/stats', admin.stats);
 router.get('/activity', admin.recentActivity);
 router.get('/email-test', admin.emailTest);
 router.get('/whatsapp-test', admin.whatsappTest);
+router.get('/compress-storage',        admin.compressStorage);
+router.get('/compress-storage/status', admin.compressStorageStatus);
 router.get('/stats/extended',     requirePermission('view_analytics'), admin.extendedStats);
 router.get('/guides/pending',     requirePermission('view_users'), admin.pendingGuides);
 router.get('/guides',             requirePermission('view_users'), admin.allGuides);
