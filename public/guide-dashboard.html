@@ -985,7 +985,15 @@ function renderPending(list) {
         <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
       `, b.quotedAmount);
     }
-    // New pending request → guide proposes a price.
+    // Ready-made tour package or fixed-slot booking — price is already set on
+    // the listing. Guide just accepts or declines (no quote step).
+    if (b.packageId || b.startTime) {
+      return bookingCard(b, `
+        <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','confirmed')">${I18N.t('accept_btn') || '✅ قبول'}</button>
+        <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
+      `);
+    }
+    // Custom trip request → guide proposes a price.
     return `
       <div class="booking-card ${b.status}">
         <div class="d-flex justify-content-between align-items-start mb-1">

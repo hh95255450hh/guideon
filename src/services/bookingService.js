@@ -121,6 +121,12 @@ async function createBooking(touristId, body) {
     ? Math.max(2, parseInt(participants) || parseInt(adultCount) || 2)
     : Math.max(1, parseInt(participants) || 1);
 
+  // Ready-made tour package bookings have a fixed published price — no quote
+  // step needed. Custom trip requests (no packageId, no preset slot) start as
+  // 'pending' so the guide can send back a price offer.
+  const hasFixedPrice = !!packageId || !!slotData;
+  const initialStatus = hasFixedPrice ? 'confirmed' : 'pending';
+
   const booking = {
     id: 'bk-' + uuidv4().slice(0, 8),
     touristId, guideId, tourDate, destination, tourTime,
@@ -128,7 +134,7 @@ async function createBooking(touristId, body) {
     duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
     participants: participantCount,
     totalAmount: rules.roundMoney(totalAmount),
-    status: 'pending',
+    status: initialStatus,
     specialRequests: specialRequests || '',
     createdAt: new Date().toISOString(),
     ...(packageId && {
@@ -162,6 +168,37 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
   const tourist = await users.findById(touristId);
   if (!tourist) return;
 
+  // A booking with status === 'confirmed' on creation came from a ready-made
+  // tour package (fixed price), so we skip the "pending — guide will respond"
+  // wording and tell both sides the trip is already confirmed.
+  const isInstant = booking.status === 'confirmed';
+
+  if (isInstant) {
+    email.sendGuideNewBooking && email.sendGuideNewBooking({
+      email: guide.email, name: guide.fullName,
+      touristName: tourist.fullName, destination, tourDate,
+      duration, participants: participantCount,
+      totalAmount: booking.totalAmount, bookingId: booking.id,
+    }).catch(() => {});
+
+    notify({
+      userId: guide.id, type: 'booking_accepted',
+      title: 'New confirmed booking ✅', titleAr: 'حجز مؤكد جديد ✅',
+      body: `${tourist.fullName} booked your ${destination} tour on ${tourDate}.`,
+      bodyAr: `حجز ${tourist.fullName} رحلتك إلى ${destination} بتاريخ ${tourDate}.`,
+      link: '/guide-dashboard.html#bookings', metadata: { bookingId: booking.id },
+    });
+    notify({
+      userId: tourist.id, type: 'booking_accepted',
+      title: 'Booking confirmed 🎉', titleAr: 'تم تأكيد الحجز 🎉',
+      body: `Your ${destination} tour on ${tourDate} with ${guide.fullName} is confirmed.`,
+      bodyAr: `تم تأكيد رحلتك إلى ${destination} بتاريخ ${tourDate} مع ${guide.fullName}.`,
+      link: '/tourist-dashboard.html#bookings', metadata: { bookingId: booking.id },
+    });
+    return;
+  }
+
+  // Custom trip request — guide responds with a price.
   email.sendTouristBookingPending({
     email: tourist.email, name: tourist.fullName,
     guideName: guide.fullName, destination, tourDate,
@@ -176,16 +213,16 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
 
   notify({
     userId: guide.id, type: 'booking_new',
-    title: 'New booking request', titleAr: 'طلب حجز جديد',
+    title: 'New trip request — please send a price', titleAr: 'طلب رحلة جديد — يرجى تحديد السعر',
     body: `${tourist.fullName} requested a tour to ${destination} on ${tourDate}.`,
     bodyAr: `طلب ${tourist.fullName} رحلة إلى ${destination} بتاريخ ${tourDate}.`,
     link: '/guide-dashboard.html#bookings', metadata: { bookingId: booking.id },
   });
   notify({
     userId: tourist.id, type: 'booking_new',
-    title: 'Booking request sent', titleAr: 'تم إرسال طلب الحجز',
-    body: `Waiting for ${guide.fullName} to confirm your ${destination} tour on ${tourDate}.`,
-    bodyAr: `في انتظار تأكيد ${guide.fullName} لرحلتك إلى ${destination} بتاريخ ${tourDate}.`,
+    title: 'Trip request sent', titleAr: 'تم إرسال طلب الرحلة',
+    body: `Waiting for ${guide.fullName} to send a price for your ${destination} trip on ${tourDate}.`,
+    bodyAr: `في انتظار ${guide.fullName} لإرسال السعر لرحلتك إلى ${destination} بتاريخ ${tourDate}.`,
     link: '/tourist-dashboard.html#bookings', metadata: { bookingId: booking.id },
   });
 }
