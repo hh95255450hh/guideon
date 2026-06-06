@@ -937,7 +937,7 @@ function renderReviews() {
           <div style="font-size:.75rem;color:#aaa">${new Date(r.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
           ${r.guideReply ? `
             <div style="margin-top:10px;background:#f4f8f7;border-left:3px solid #0f7b6c;border-radius:8px;padding:10px 12px">
-              <div class="fw-700 small" style="color:#0f7b6c">↩️ ${I18N.t('guide_reply_label')||'Guide\\'s reply'}</div>
+              <div class="fw-700 small" style="color:#0f7b6c">↩️ ${I18N.t('guide_reply_label')||"Guide's reply"}</div>
               <p class="mb-0 small" style="line-height:1.6;color:#444">${r.guideReply}</p>
             </div>` : ''}
         </div>
