@@ -348,29 +348,63 @@
 
   <!-- ═════════════════════════ MESSAGES (support inbox) ═════════════════════════ -->
   <div id="tab-messages" class="d-none">
-    <div class="t-card p-0" style="max-width:760px">
-      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-        <h5 class="fw-700 mb-0">💬 Support Inbox</h5>
-        <span class="text-muted small">Messages from guides & tourists</span>
+    <style>
+      .gd-chat { border-radius:16px; overflow:hidden; background:#fff; box-shadow:0 4px 24px rgba(0,0,0,.06); }
+      .gd-chat-header { background:linear-gradient(135deg,#0f1c3e,#0f7b6c); color:#fff; padding:14px 18px; display:flex; align-items:center; gap:10px; }
+      .gd-chat-header .avatar { width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.95rem; }
+      .gd-chat-header .meta { flex:1 }
+      .gd-chat-header .name { font-weight:700; font-size:1rem; line-height:1.2 }
+      .gd-chat-header .sub  { font-size:.75rem; opacity:.8 }
+      .gd-chat-header .back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; border-radius:8px; padding:5px 12px; font-size:.82rem; cursor:pointer }
+      .gd-chat-header .back:hover { background:rgba(255,255,255,.25) }
+      .gd-chat-body { height:440px; overflow-y:auto; padding:18px; background:#f4f6f9; background-image:radial-gradient(#dde3ec 1px,transparent 1px); background-size:18px 18px; display:flex; flex-direction:column; gap:6px; }
+      .gd-chat-empty { margin:auto; text-align:center; color:#9aa3b2; }
+      .gd-chat-empty .ic { font-size:3rem; opacity:.4; margin-bottom:8px; }
+      .gd-bubble { max-width:75%; padding:9px 14px; border-radius:16px; word-break:break-word; box-shadow:0 1px 2px rgba(0,0,0,.06); position:relative; }
+      .gd-bubble.mine  { align-self:flex-end;   background:#dcf8c6; color:#1a1a2e; border-bottom-right-radius:4px; }
+      .gd-bubble.theirs{ align-self:flex-start; background:#fff;    color:#1a1a2e; border-bottom-left-radius:4px;  }
+      html[dir="rtl"] .gd-bubble.mine   { border-bottom-right-radius:16px; border-bottom-left-radius:4px; }
+      html[dir="rtl"] .gd-bubble.theirs { border-bottom-left-radius:16px;  border-bottom-right-radius:4px; }
+      .gd-bubble .txt  { font-size:.92rem; line-height:1.45 }
+      .gd-bubble .meta { font-size:.68rem; opacity:.55; margin-top:3px; text-align:end; display:flex; gap:4px; justify-content:flex-end; align-items:center; }
+      .gd-bubble.theirs .meta { justify-content:flex-start; }
+      .gd-bubble .tick { color:#34b7f1; font-weight:700 }
+      .gd-chat-input { padding:12px 14px; background:#fff; border-top:1px solid #eef0f4; display:flex; gap:10px; align-items:center; }
+      .gd-chat-input input { flex:1; border:1px solid #dee2e6; border-radius:24px; padding:10px 18px; font-size:.92rem; outline:none; transition:.15s; }
+      .gd-chat-input input:focus { border-color:#0f7b6c; box-shadow:0 0 0 3px rgba(15,123,108,.12); }
+      .gd-chat-input .send { background:#0f7b6c; color:#fff; border:none; border-radius:50%; width:42px; height:42px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:.15s; }
+      .gd-chat-input .send:hover { background:#0a5c50; transform:scale(1.05); }
+      .gd-chat-input .send:disabled { background:#cdd3da; cursor:not-allowed; transform:none; }
+    </style>
+    <div class="gd-chat" style="max-width:760px">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center" id="adminConvoHeader">
+        <h5 class="fw-700 mb-0" id="adminInboxTitle">💬 صندوق الدعم</h5>
+        <span class="text-muted small" id="adminInboxSub">رسائل من المرشدين والسياح</span>
       </div>
       <!-- conversation list -->
       <div id="adminConvoView">
         <div id="adminConvoList" class="list-group list-group-flush" style="max-height:520px;overflow-y:auto">
-          <div class="text-center py-4 text-muted small">Loading…</div>
+          <div class="text-center py-4 text-muted small" id="adminConvoLoading">جارٍ التحميل…</div>
         </div>
       </div>
       <!-- thread -->
       <div id="adminThreadView" style="display:none">
-        <div class="p-2 border-bottom d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-outline-secondary" onclick="adminShowConvoList()">← Back</button>
-          <strong id="adminThreadName" class="ms-1"></strong>
-          <span id="adminThreadOnline" class="rounded-circle" style="display:none;width:9px;height:9px;background:#22c55e"></span>
+        <div class="gd-chat-header">
+          <button class="back" onclick="adminShowConvoList()" id="adminBackBtn">← رجوع</button>
+          <div class="avatar" id="adminThreadAvatar">?</div>
+          <div class="meta">
+            <div class="name" id="adminThreadName">—</div>
+            <div class="sub" id="adminThreadStatus"></div>
+          </div>
+          <span id="adminThreadOnline" class="rounded-circle" style="display:none;width:10px;height:10px;background:#22c55e;border:2px solid #fff"></span>
         </div>
-        <div id="adminThreadMessages" style="height:360px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f8f9fa"></div>
-        <div id="adminThreadTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic">…</div>
-        <div class="p-2 border-top d-flex gap-2 align-items-center">
-          <input class="form-control form-control-sm" id="adminMsgInput" placeholder="Type a reply…" oninput="adminTyping()">
-          <button class="btn btn-sm btn-teal" onclick="adminSendMsg()" style="flex-shrink:0">Send</button>
+        <div id="adminThreadMessages" class="gd-chat-body"></div>
+        <div id="adminThreadTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic;background:#f4f6f9">…</div>
+        <div class="gd-chat-input">
+          <input id="adminMsgInput" placeholder="اكتب رداً…" oninput="adminTyping()" onkeydown="if(event.key==='Enter')adminSendMsg()">
+          <button class="send" onclick="adminSendMsg()" aria-label="Send" title="إرسال">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -1295,6 +1329,17 @@ async function markComplete(id) {
   } catch(e) { toast(e.message,'error'); }
 }
 
+function localizeAdminChrome() {
+  const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
+  const set = (id, en, ar) => { const el = document.getElementById(id); if (el) el.textContent = isAr ? ar : en; };
+  set('adminInboxTitle',  '💬 Support Inbox',                 '💬 صندوق الدعم');
+  set('adminInboxSub',    'Messages from guides & tourists', 'رسائل من المرشدين والسياح');
+  set('adminBackBtn',     '← Back',                           '→ رجوع');
+  set('adminConvoLoading','Loading…',                         'جارٍ التحميل…');
+  const inp = document.getElementById('adminMsgInput');
+  if (inp) inp.placeholder = isAr ? 'اكتب رداً…' : 'Type a reply…';
+}
+
 window.onLangChange = () => {
   loadPending();
   // Re-render the dashboard charts in the new language.
@@ -1304,7 +1349,11 @@ window.onLangChange = () => {
   if (ACTIVE_TAB === 'companies')  renderCompanies();
   if (ACTIVE_TAB === 'tourists')   loadTourists();
   if (ACTIVE_TAB === 'bookings')   loadAllBookings();
+  localizeAdminChrome();
 };
+
+// Run on first load too (after I18N is ready).
+document.addEventListener('DOMContentLoaded', () => setTimeout(localizeAdminChrome, 100));
 
 /* ── ADMIN SUPPORT INBOX ── */
 let ADMIN_ACTIVE_OTHER=null, ADMIN_SSE=null, ADMIN_TYPING_TS=0, ADMIN_TYPING_HIDE=null;
@@ -1353,13 +1402,18 @@ function messageUser(id,name){
 }
 async function adminOpenThread(otherId,otherName){
   ADMIN_ACTIVE_OTHER=otherId;
-  document.getElementById('adminThreadName').textContent=otherName;
+  document.getElementById('adminThreadName').textContent=otherName||'—';
+  const av=document.getElementById('adminThreadAvatar');
+  if(av){const initials=(otherName||'?').trim().split(/\s+/).slice(0,2).map(s=>s[0]||'').join('').toUpperCase();av.textContent=initials||'?';}
+  const st=document.getElementById('adminThreadStatus');
+  if(st){const isAr=(window.I18N&&I18N.lang)?I18N.lang==='ar':(localStorage.getItem('gd_lang')==='ar');st.textContent=isAr?'متصل':'online';}
+  document.getElementById('adminConvoHeader').style.display='none';
   document.getElementById('adminThreadTyping').style.display='none';
   document.getElementById('adminConvoView').style.display='none';
   document.getElementById('adminThreadView').style.display='';
   await adminLoadThread();
 }
-function adminShowConvoList(){ADMIN_ACTIVE_OTHER=null;document.getElementById('adminThreadView').style.display='none';document.getElementById('adminConvoView').style.display='';adminLoadConvos();}
+function adminShowConvoList(){ADMIN_ACTIVE_OTHER=null;document.getElementById('adminThreadView').style.display='none';document.getElementById('adminConvoHeader').style.display='';document.getElementById('adminConvoView').style.display='';adminLoadConvos();}
 async function adminLoadThread(){
   if(!ADMIN_ACTIVE_OTHER)return;
   try{
@@ -1373,16 +1427,19 @@ async function adminLoadThread(){
 function adminRenderThread(msgs){
   const el=document.getElementById('adminThreadMessages');const me=window.CURRENT_USER_ID;
   const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<60;
-  if(!msgs.length){el.innerHTML='<div class="text-center text-muted small mt-auto pt-4">No messages.</div>';return;}
+  const isAr=(window.I18N&&I18N.lang)?I18N.lang==='ar':(localStorage.getItem('gd_lang')==='ar');
+  if(!msgs.length){
+    el.innerHTML=`<div class="gd-chat-empty"><div class="ic">💬</div><div>${isAr?'لا توجد رسائل بعد':'No messages yet'}</div></div>`;
+    return;
+  }
   el.innerHTML=msgs.map(m=>{
     const mine=m.fromId===me;
-    const align=mine?'align-self:flex-end;background:#0f7b6c;color:#fff':'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
     let body='';
-    if(m.attachmentUrl&&m.attachmentType==='image')body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" style="max-width:180px;border-radius:8px;display:block;margin-bottom:${m.content?'4px':'0'}"></a>`;
+    if(m.attachmentUrl&&m.attachmentType==='image')body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" style="max-width:200px;border-radius:10px;display:block;margin-bottom:${m.content?'6px':'0'}"></a>`;
     else if(m.attachmentUrl)body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${admEsc(m.attachmentName||'file')}</a>`;
-    if(m.content)body+=`<div style="font-size:.9rem">${admEsc(m.content)}</div>`;
-    const tick=mine?`<span style="margin-inline-start:5px;${m.isRead?'color:#bfe3ff':''}">${m.isRead?'✓✓':'✓'}</span>`:'';
-    return `<div style="max-width:78%;padding:7px 11px;border-radius:14px;${align}">${body}<div style="font-size:.7rem;opacity:.7;margin-top:2px;text-align:${mine?'right':'left'}">${admTime(m.createdAt)}${tick}</div></div>`;
+    if(m.content)body+=`<div class="txt">${admEsc(m.content)}</div>`;
+    const tick=mine?`<span class="tick">${m.isRead?'✓✓':'✓'}</span>`:'';
+    return `<div class="gd-bubble ${mine?'mine':'theirs'}">${body}<div class="meta"><span>${admTime(m.createdAt)}</span>${tick}</div></div>`;
   }).join('');
   if(wasBottom)el.scrollTop=el.scrollHeight;
 }
