@@ -932,6 +932,7 @@ function renderReviews() {
             <span class="fw-700 small">${r.touristName||'Tourist'}</span>
             <span>${starsHtml(r.rating,'0.9rem')}</span>
           </div>
+          ${r.verified ? `<div style="margin-bottom:5px"><span style="display:inline-flex;align-items:center;gap:4px;background:#e8f5f0;color:#0a5c50;border-radius:20px;padding:2px 10px;font-size:.72rem;font-weight:700">✓ ${I18N.t('verified_trip')||'Verified trip'}${r.destination?` · ${r.destination}`:''}</span></div>` : ''}
           <p class="mb-1 small" style="line-height:1.7;color:#444">${r.comment||''}</p>
           <div style="font-size:.75rem;color:#aaa">${new Date(r.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
           ${r.guideReply ? `

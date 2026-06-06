@@ -96,7 +96,18 @@ exports.guideReviews = async (req, res) => {
     const { guideId } = req.params;
     const list = await reviews.findAllByField('guideId', guideId);
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    res.json({ success: true, reviews: list });
+
+    // Every review is tied to a COMPLETED booking, so mark it as a verified
+    // trip and attach the destination (batch-fetched, no N+1).
+    const bookingIds = [...new Set(list.map(r => r.bookingId).filter(Boolean))];
+    const bookingList = await bookings.findByIds(bookingIds);
+    const bookingMap = Object.fromEntries(bookingList.map(b => [b.id, b]));
+    const enriched = list.map(r => {
+      const bk = bookingMap[r.bookingId];
+      return { ...r, verified: !!bk, destination: bk ? bk.destination : null, tourDate: bk ? bk.tourDate : null };
+    });
+
+    res.json({ success: true, reviews: enriched });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
