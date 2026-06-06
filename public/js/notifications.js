@@ -72,14 +72,25 @@
     .gd-bell-item:last-child { border-bottom: none; }
     .gd-bell-item.unread { background: #f0faf8; }
     .gd-bell-item.unread:hover { background: #e8f5f0; }
-    .gd-bell-icon { font-size: 1.4rem; flex-shrink: 0; line-height: 1.4; }
+    .gd-bell-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #e8f5f0; font-size: 1.05rem; flex-shrink: 0;
+    }
+    .gd-bell-item.unread .gd-bell-icon { background: #d3ebe2; }
     .gd-bell-content { flex: 1; min-width: 0; }
-    .gd-bell-title { font-weight: 700; font-size: .9rem; color: #1a1a2e; margin-bottom: 2px; }
-    .gd-bell-body { font-size: .82rem; color: #555; line-height: 1.45;
+    .gd-bell-title {
+      font-weight: 700; font-size: .9rem; color: #1a1a2e; margin-bottom: 3px;
+      line-height: 1.35; word-break: break-word;
+    }
+    .gd-bell-body {
+      font-size: .82rem; color: #555; line-height: 1.5; word-break: break-word;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      overflow: hidden; }
-    .gd-bell-time { font-size: .72rem; color: #999; margin-top: 4px; }
-    .gd-bell-dot { width: 8px; height: 8px; background: #0f7b6c; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+      overflow: hidden;
+    }
+    .gd-bell-time { font-size: .72rem; color: #999; margin-top: 5px; }
+    .gd-bell-dot { width: 8px; height: 8px; background: #0f7b6c; border-radius: 50%; flex-shrink: 0; margin-top: 14px; }
+    a.gd-bell-item, a.gd-bell-item:hover { text-decoration: none; color: inherit; }
     .gd-bell-empty {
       text-align: center; padding: 40px 20px; color: #888; font-size: .9rem;
     }
@@ -165,7 +176,7 @@
       e.stopPropagation();
       isOpen = !isOpen;
       panel.style.display = isOpen ? 'flex' : 'none';
-      if (isOpen) loadList();
+      if (isOpen) { localizeChrome(); loadList(); }
     });
 
     document.addEventListener('click', (e) => {
@@ -210,30 +221,28 @@
   // ─── Load full list when panel opens ───────────────────────────────────
   async function loadList() {
     const list = document.getElementById('gdBellList');
-    list.innerHTML = '<div class="gd-bell-empty"><div class="ico">⏳</div>Loading…</div>';
+    list.innerHTML = emptyState('⏳', 'loading');
     try {
       const r = await fetch('/api/notifications', { credentials: 'include' });
-      if (!r.ok) {
-        list.innerHTML = '<div class="gd-bell-empty"><div class="ico">🔒</div>Sign in to see notifications</div>';
-        return;
-      }
+      if (!r.ok) { list.innerHTML = emptyState('🔒', 'signin'); return; }
       const d = await r.json();
       const items = d.notifications || [];
-      if (items.length === 0) {
-        list.innerHTML = '<div class="gd-bell-empty"><div class="ico">📭</div>No notifications yet</div>';
-        return;
-      }
-      list.innerHTML = items.map(n => `
-        <a class="gd-bell-item ${n.isRead ? '' : 'unread'}" href="${n.link || '#'}" data-id="${n.id}">
+      if (items.length === 0) { list.innerHTML = emptyState('📭', 'empty'); return; }
+      const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
+      list.innerHTML = items.map(n => {
+        const title = pickLang(n.title, isAr);
+        const body  = pickLang(n.body, isAr);
+        return `
+        <a class="gd-bell-item ${n.isRead ? '' : 'unread'}" href="${n.link || '#'}" data-id="${n.id}" ${isAr ? 'dir="rtl"' : ''}>
           <span class="gd-bell-icon">${escapeHtml(n.icon || '🔔')}</span>
           <div class="gd-bell-content">
-            <div class="gd-bell-title">${escapeHtml(n.title || '')}</div>
-            <div class="gd-bell-body">${escapeHtml(n.body || '')}</div>
-            <div class="gd-bell-time">${timeAgo(n.createdAt)}</div>
+            <div class="gd-bell-title">${escapeHtml(title)}</div>
+            ${body ? `<div class="gd-bell-body">${escapeHtml(body)}</div>` : ''}
+            <div class="gd-bell-time">${timeAgo(n.createdAt, isAr)}</div>
           </div>
           ${n.isRead ? '' : '<div class="gd-bell-dot"></div>'}
-        </a>
-      `).join('');
+        </a>`;
+      }).join('');
 
       // Mark item as read when clicked
       list.querySelectorAll('.gd-bell-item').forEach(item => {
@@ -246,26 +255,73 @@
 
       updateBadge(d.unread || 0);
     } catch (e) {
-      list.innerHTML = '<div class="gd-bell-empty"><div class="ico">⚠️</div>Failed to load</div>';
+      list.innerHTML = emptyState('⚠️', 'failed');
     }
   }
 
   function escapeHtml(s) {
     return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
-  function timeAgo(ts) {
+
+  // Translate the panel's static chrome (title, "mark all read") to the
+  // current language. Called every time the panel opens.
+  function localizeChrome() {
+    const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
+    const panel = document.getElementById('gdBellPanel');
+    if (panel) panel.setAttribute('dir', isAr ? 'rtl' : 'ltr');
+    const h = document.getElementById('gdBellHeading');
+    if (h) h.textContent = isAr ? 'الإشعارات' : 'Notifications';
+    const m = document.getElementById('gdMarkAll');
+    if (m) m.textContent = isAr ? 'تعليم الكل كمقروء' : 'Mark all read';
+    const btn = document.getElementById('gdBellBtn');
+    if (btn) {
+      const lbl = isAr ? 'الإشعارات' : 'Notifications';
+      btn.setAttribute('title', lbl);
+      btn.setAttribute('aria-label', lbl);
+    }
+  }
+
+  // Localized empty/error states
+  function emptyState(ico, key) {
+    const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
+    const msgs = {
+      loading:  isAr ? 'جارٍ التحميل…' : 'Loading…',
+      signin:   isAr ? 'سجّل الدخول لرؤية الإشعارات' : 'Sign in to see notifications',
+      empty:    isAr ? 'لا توجد إشعارات بعد' : 'No notifications yet',
+      failed:   isAr ? 'تعذّر التحميل' : 'Failed to load',
+    };
+    return `<div class="gd-bell-empty"><div class="ico">${ico}</div>${escapeHtml(msgs[key] || '')}</div>`;
+  }
+
+  // The backend stores some notifications as bilingual blobs:
+  //   "English text\n\n──────\n\nArabic text"
+  // Split on the divider and pick the half matching the user's language.
+  // If only one language is present, return it as-is.
+  function pickLang(str, isAr) {
+    if (!str) return '';
+    const parts = String(str).split(/\s*─{3,}\s*/);
+    if (parts.length < 2) return str.trim();
+    const en = (parts[0] || '').trim();
+    const ar = (parts[1] || '').trim();
+    return isAr ? (ar || en) : (en || ar);
+  }
+
+  function timeAgo(ts, isAr) {
     if (!ts) return '';
     const t = new Date(ts).getTime();
     const diff = Date.now() - t;
     const s = Math.floor(diff / 1000);
-    if (s < 60) return 'just now';
+    const L = isAr
+      ? { now:'الآن', m:'د', h:'س', d:'ي' }
+      : { now:'just now', m:'m ago', h:'h ago', d:'d ago' };
+    if (s < 60) return L.now;
     const m = Math.floor(s / 60);
-    if (m < 60) return m + 'm ago';
+    if (m < 60) return isAr ? `قبل ${m} ${L.m}` : `${m}${L.m}`;
     const h = Math.floor(m / 60);
-    if (h < 24) return h + 'h ago';
+    if (h < 24) return isAr ? `قبل ${h} ${L.h}` : `${h}${L.h}`;
     const d = Math.floor(h / 24);
-    if (d < 7) return d + 'd ago';
-    return new Date(ts).toLocaleDateString();
+    if (d < 7)  return isAr ? `قبل ${d} ${L.d}` : `${d}${L.d}`;
+    return new Date(ts).toLocaleDateString(isAr ? 'ar-OM' : 'en-GB');
   }
 
   // ─── Real-time bell via SSE (instant updates; polling stays as backup) ──
