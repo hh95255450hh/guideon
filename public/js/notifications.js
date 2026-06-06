@@ -141,6 +141,9 @@
         <div class="gd-bell-list" id="gdBellList">
           <div class="gd-bell-empty"><div class="ico">⏳</div>Loading…</div>
         </div>
+        <div class="gd-bell-footer">
+          <a href="/notifications.html" id="gdBellViewAll">View all notifications →</a>
+        </div>
       </div>
     `;
     return wrap;
@@ -244,12 +247,30 @@
         </a>`;
       }).join('');
 
-      // Mark item as read when clicked
+      // Mark item as read when clicked, then navigate to the linked page.
+      // Important: don't await the read-mark before navigating — that races
+      // with the browser's link follow and sometimes left the user on the
+      // dropdown. We fire the request with keepalive so it survives the
+      // page transition, and we navigate ourselves (single source of truth).
       list.querySelectorAll('.gd-bell-item').forEach(item => {
-        item.addEventListener('click', async (e) => {
-          const id = item.dataset.id;
-          if (!item.classList.contains('unread')) return;
-          try { await fetch('/api/notifications/' + id + '/read', { method: 'POST', credentials: 'include' }); } catch (e) {}
+        item.addEventListener('click', (e) => {
+          const id   = item.dataset.id;
+          const href = item.getAttribute('href');
+          // Always handle navigation manually so the read-mark + nav order
+          // is deterministic.
+          e.preventDefault();
+          if (item.classList.contains('unread')) {
+            try {
+              fetch('/api/notifications/' + id + '/read', {
+                method: 'POST', credentials: 'include', keepalive: true,
+              });
+            } catch (_) {}
+          }
+          if (href && href !== '#') {
+            window.location.href = href;
+          }
+          // If there's no deep link we just close the dropdown and let the
+          // user decide where to go — better than guessing the wrong page.
         });
       });
 
@@ -273,6 +294,8 @@
     if (h) h.textContent = isAr ? 'الإشعارات' : 'Notifications';
     const m = document.getElementById('gdMarkAll');
     if (m) m.textContent = isAr ? 'تعليم الكل كمقروء' : 'Mark all read';
+    const v = document.getElementById('gdBellViewAll');
+    if (v) v.textContent = isAr ? 'عرض كل الإشعارات ←' : 'View all notifications →';
     const btn = document.getElementById('gdBellBtn');
     if (btn) {
       const lbl = isAr ? 'الإشعارات' : 'Notifications';

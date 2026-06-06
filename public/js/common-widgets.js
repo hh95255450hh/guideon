@@ -219,7 +219,7 @@
   function loadNotifications() {
     if (document.querySelector('script[data-gd-notif]')) return;
     const s = document.createElement('script');
-    s.src = '/js/notifications.js?v=2';
+    s.src = '/js/notifications.js?v=3';
     s.async = true;
     s.dataset.gdNotif = '1';
     document.body.appendChild(s);

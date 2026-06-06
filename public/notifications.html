@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f7b6c">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<title>Notifications — Guideon</title>
+<link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
+<link rel="stylesheet" href="/css/style.css?v=40">
+<style>
+  .notif-card { background:#fff; border:1px solid #eef0f4; border-radius:14px; padding:16px 18px; margin-bottom:10px; display:flex; gap:14px; transition:.15s; }
+  .notif-card.unread { background:#f4f8f7; border-color:#d0ede8; }
+  .notif-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.06); transform:translateY(-1px); cursor:pointer; }
+  .notif-icon { width:42px; height:42px; border-radius:50%; background:#e8f5f0; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+  .notif-card.unread .notif-icon { background:#d3ebe2; }
+  .notif-title { font-weight:700; color:#1a1a2e; font-size:.95rem; line-height:1.4; margin-bottom:3px; }
+  .notif-body  { font-size:.85rem; color:#555; line-height:1.55; }
+  .notif-time  { font-size:.72rem; color:#999; margin-top:5px; }
+  .notif-dot   { width:8px; height:8px; background:#0f7b6c; border-radius:50%; flex-shrink:0; margin-top:18px; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="ms-auto d-flex gap-2 align-items-center">
+      <button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()">🌐 عربي</button>
+      <a href="javascript:history.back()" class="btn btn-sm btn-outline-light" data-i18n="back_btn">← Back</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-4" style="max-width:780px">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-800 mb-0" id="pageTitle">Notifications</h4>
+    <button class="btn btn-sm btn-outline-secondary" id="markAllBtn" onclick="markAllRead()">Mark all read</button>
+  </div>
+
+  <div id="notifList">
+    <div class="text-center text-muted py-5" id="loadingState">Loading…</div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=39"></script>
+<script>
+const isAr = () => (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
+
+function pickLang(str) {
+  if (!str) return '';
+  const parts = String(str).split(/\s*─{3,}\s*/);
+  if (parts.length < 2) return str.trim();
+  const en = (parts[0] || '').trim();
+  const ar = (parts[1] || '').trim();
+  return isAr() ? (ar || en) : (en || ar);
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  const s = Math.floor(diff / 1000);
+  const ar = isAr();
+  if (s < 60) return ar ? 'الآن' : 'just now';
+  const m = Math.floor(s / 60);
+  if (m < 60) return ar ? `قبل ${m} د` : `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return ar ? `قبل ${h} س` : `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return ar ? `قبل ${d} ي` : `${d}d ago`;
+  return new Date(ts).toLocaleDateString(ar ? 'ar-OM' : 'en-GB', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function applyLabels() {
+  const ar = isAr();
+  document.documentElement.lang = ar ? 'ar' : 'en';
+  document.documentElement.dir  = ar ? 'rtl' : 'ltr';
+  document.getElementById('bs-rtl').media = ar ? 'all' : 'not all';
+  document.getElementById('bs-ltr').media = ar ? 'not all' : 'all';
+  document.getElementById('pageTitle').textContent = ar ? '🔔 الإشعارات' : '🔔 Notifications';
+  document.getElementById('markAllBtn').textContent = ar ? 'تعليم الكل كمقروء' : 'Mark all read';
+  document.title = ar ? 'الإشعارات — Guideon' : 'Notifications — Guideon';
+}
+
+async function load() {
+  applyLabels();
+  try {
+    const r = await fetch('/api/notifications', { credentials:'include' });
+    if (!r.ok) { window.location.href = '/login.html'; return; }
+    const d = await r.json();
+    const items = d.notifications || [];
+    const el = document.getElementById('notifList');
+    if (!items.length) {
+      el.innerHTML = `<div class="text-center text-muted py-5"><div style="font-size:3rem;opacity:.4">📭</div><div class="mt-2">${isAr() ? 'لا توجد إشعارات بعد' : 'No notifications yet'}</div></div>`;
+      return;
+    }
+    el.innerHTML = items.map(n => {
+      const title = pickLang(n.title);
+      const body  = pickLang(n.body);
+      const link  = n.link || '';
+      return `
+        <div class="notif-card ${n.isRead ? '' : 'unread'}" data-id="${esc(n.id)}" data-link="${esc(link)}" onclick="onClickNotif(this)">
+          <div class="notif-icon">${esc(n.icon || '🔔')}</div>
+          <div style="flex:1;min-width:0">
+            <div class="notif-title">${esc(title)}</div>
+            ${body ? `<div class="notif-body">${esc(body)}</div>` : ''}
+            <div class="notif-time">${timeAgo(n.createdAt)}</div>
+          </div>
+          ${n.isRead ? '' : '<div class="notif-dot"></div>'}
+        </div>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('notifList').innerHTML = `<div class="text-center text-danger py-5">${isAr() ? 'تعذّر التحميل' : 'Failed to load'}</div>`;
+  }
+}
+
+function onClickNotif(el) {
+  const id   = el.dataset.id;
+  const link = el.dataset.link;
+  if (el.classList.contains('unread')) {
+    try { fetch(`/api/notifications/${id}/read`, { method:'POST', credentials:'include', keepalive:true }); } catch (_) {}
+  }
+  if (link) window.location.href = link;
+}
+
+async function markAllRead() {
+  try {
+    await fetch('/api/notifications/read-all', { method:'POST', credentials:'include' });
+    load();
+  } catch (_) {}
+}
+
+window.onLangChange = () => { applyLabels(); load(); };
+
+load();
+</script>
+<script src="/js/common-widgets.js?v=7"></script>
+</body>
+</html>
