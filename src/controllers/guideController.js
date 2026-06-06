@@ -80,6 +80,21 @@ exports.searchGuides = async (req, res) => {
   }
 };
 
+// GET /api/companies/:id — public company profile + their tour packages
+exports.getCompany = async (req, res) => {
+  try {
+    const company = await users.findById(req.params.id);
+    if (!company || company.userType !== 'company') {
+      return res.status(404).json({ success: false, message: 'Company not found.' });
+    }
+    const { password, ...safe } = company;
+    res.json({ success: true, company: safe });
+  } catch (err) {
+    console.error('[getCompany]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 exports.getGuide = async (req, res) => {
   try {
     const guide = await users.findById(req.params.id);

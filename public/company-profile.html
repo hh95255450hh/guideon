@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f7b6c">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<title>Company Profile — Guideon</title>
+<link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css" media="not all">
+<link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css">
+<link rel="stylesheet" href="/css/style.css?v=40">
+<style>
+  .co-hero { background:linear-gradient(140deg,#0f1c3e 0%,#1a2c5b 45%,#0f7b6c 100%); color:#fff; padding:48px 0 28px; }
+  .co-avatar { width:108px; height:108px; border-radius:18px; border:4px solid rgba(255,255,255,.35); background:rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:2.4rem; font-weight:800; color:#fff; overflow:hidden; }
+  .co-avatar img { width:100%; height:100%; object-fit:cover; border-radius:14px; }
+  .info-card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.07); margin-bottom:20px; border:1px solid #eef0f4; }
+  .info-card h5 { font-weight:800; font-size:1.05rem; color:#1a1a2e; margin-bottom:14px; }
+  .pkg-card { background:#fff; border:1px solid #e8eef0; border-radius:14px; padding:18px; transition:.2s; }
+  .pkg-card:hover { box-shadow:0 6px 22px rgba(0,0,0,.08); transform:translateY(-2px); }
+  .pkg-price { font-weight:800; color:#0f7b6c; font-size:1.4rem; }
+  .badge-verified { background:rgba(34,197,94,.18); border:1px solid rgba(34,197,94,.5); color:#bbf7d0; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; }
+  .badge-pending { background:rgba(234,179,8,.15); border:1px solid rgba(234,179,8,.45); color:#fef08a; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="52"></a>
+    <div class="ms-auto d-flex gap-2 align-items-center">
+      <button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()">🌐 EN</button>
+      <a href="/search.html" class="btn btn-sm btn-outline-light">← العودة للبحث</a>
+    </div>
+  </div>
+</nav>
+
+<div id="loadingState" class="text-center py-5 text-muted">
+  <div class="spinner-border" role="status"></div>
+  <div class="mt-3">جارٍ تحميل ملف الشركة…</div>
+</div>
+
+<div id="errorState" class="d-none text-center py-5">
+  <h2>⚠️</h2>
+  <p>تعذّر العثور على هذه الشركة.</p>
+  <a href="/search.html" class="btn btn-teal btn">عودة للبحث</a>
+</div>
+
+<div id="pageContent" class="d-none">
+  <div class="co-hero">
+    <div class="container">
+      <div class="row align-items-center gy-3">
+        <div class="col-md-auto">
+          <div class="co-avatar" id="cAvatar">🏢</div>
+        </div>
+        <div class="col-md">
+          <h1 class="fw-800 mb-2" id="cName" style="font-size:1.8rem">—</h1>
+          <div class="d-flex flex-wrap gap-2 mb-2" id="cBadges"></div>
+          <div class="small" style="opacity:.85" id="cRegNo"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="info-card">
+          <h5>🏢 <span>عن الشركة</span></h5>
+          <p id="cDescription" class="text-muted mb-0" style="line-height:1.8">—</p>
+        </div>
+
+        <div class="info-card">
+          <h5>🗺️ <span>الرحلات المتاحة</span></h5>
+          <div id="cPackages">
+            <div class="text-center py-4 text-muted small">جارٍ التحميل…</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="info-card">
+          <h5>📞 <span>التواصل</span></h5>
+          <div id="cContact"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/i18n.js?v=39"></script>
+<script>
+let COMPANY = null;
+
+async function init() {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { showError(); return; }
+  try {
+    const [coRes, pkgRes] = await Promise.all([
+      fetch('/api/companies/' + id, { credentials: 'include' }),
+      fetch('/api/packages?providerId=' + encodeURIComponent(id), { credentials: 'include' }),
+    ]);
+    if (!coRes.ok) { showError(); return; }
+    const co = await coRes.json();
+    if (!co.success) { showError(); return; }
+    COMPANY = co.company;
+
+    let packages = [];
+    try { const pkg = await pkgRes.json(); packages = pkg.packages || []; } catch {}
+
+    render(packages);
+    document.getElementById('loadingState').classList.add('d-none');
+    document.getElementById('pageContent').classList.remove('d-none');
+  } catch (e) {
+    console.error(e);
+    showError();
+  }
+}
+
+function showError() {
+  document.getElementById('loadingState').classList.add('d-none');
+  document.getElementById('errorState').classList.remove('d-none');
+}
+
+function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function render(packages) {
+  document.title = (COMPANY.companyName || 'Company') + ' — Guideon';
+  document.getElementById('cName').textContent = COMPANY.companyName || COMPANY.fullName || '—';
+  if (COMPANY.photo) {
+    document.getElementById('cAvatar').innerHTML = `<img src="${COMPANY.photo}" alt="logo">`;
+  }
+  const badges = document.getElementById('cBadges');
+  if (COMPANY.isVerified) badges.innerHTML += '<span class="badge-verified">✓ شركة موثّقة</span>';
+  else badges.innerHTML += '<span class="badge-pending">قيد المراجعة</span>';
+
+  document.getElementById('cRegNo').textContent =
+    COMPANY.companyRegNo ? 'سجل تجاري: ' + COMPANY.companyRegNo : '';
+  document.getElementById('cDescription').textContent =
+    COMPANY.companyDescription || 'لم يقم هذا الشريك بإضافة وصف بعد.';
+
+  // Contact card
+  const contact = document.getElementById('cContact');
+  const items = [];
+  if (COMPANY.phone) items.push(`<div class="mb-2"><strong>📞 الهاتف:</strong><br><a href="tel:${COMPANY.phone}">${COMPANY.phone}</a></div>`);
+  if (COMPANY.email) items.push(`<div class="mb-2"><strong>✉️ البريد:</strong><br>${COMPANY.email}</div>`);
+  if (COMPANY.phone) items.push(`<a class="btn btn-success w-100 mt-2" href="https://wa.me/${COMPANY.phone.replace(/[^0-9]/g,'')}" target="_blank">💬 تواصل عبر واتساب</a>`);
+  contact.innerHTML = items.join('') || '<div class="text-muted small">لا توجد معلومات تواصل عامة.</div>';
+
+  // Packages
+  const pkgEl = document.getElementById('cPackages');
+  if (!packages.length) {
+    pkgEl.innerHTML = '<div class="text-center py-4 text-muted small">لا توجد رحلات منشورة حالياً.</div>';
+    return;
+  }
+  pkgEl.innerHTML = packages.map(p => `
+    <div class="pkg-card mb-3">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div style="flex:1">
+          <div class="fw-800 mb-1" style="font-size:1.05rem">${esc(p.title)}</div>
+          <div class="small text-muted mb-2">📍 ${esc(p.destination || '—')}</div>
+        </div>
+        <div class="pkg-price">OMR ${p.price_adult || '—'}</div>
+      </div>
+      ${p.description ? `<p class="small text-muted mb-2" style="line-height:1.6">${esc(p.description).slice(0, 200)}${p.description.length > 200 ? '…' : ''}</p>` : ''}
+      ${Array.isArray(p.includes) && p.includes.length ? `<div class="small mb-2"><strong style="color:#0f7b6c">يشمل:</strong> ${p.includes.map(esc).join(' · ')}</div>` : ''}
+      <a class="btn btn-teal btn-sm w-100" href="/tour-package.html?id=${p.id}">عرض التفاصيل والحجز ←</a>
+    </div>
+  `).join('');
+}
+
+init();
+</script>
+<script src="/js/pwa.js?v=14"></script>
+<script src="/js/common-widgets.js?v=7"></script>
+</body>
+</html>

@@ -161,6 +161,7 @@ app.use('/api/chat', chatLimiter);
 app.use('/api/auth',     authRoutes);
 app.use('/api/2fa',      require('./routes/twoFactor'));
 app.use('/api/guides',   guideRoutes);
+app.use('/api/companies', require('./routes/companies'));
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/reviews',  reviewRoutes);
 app.use('/api/admin',    adminRoutes);

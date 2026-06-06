@@ -295,10 +295,29 @@ async function init() {
   COMPANY = d.user;
   pkgModal = new bootstrap.Modal(document.getElementById('packageModal'));
 
-  // Load stored packages from company object
-  PACKAGES = COMPANY.packages || [];
-
+  // Load packages from the canonical tour_packages table (same as guides).
+  await loadCompanyPackages();
   render();
+}
+
+async function loadCompanyPackages() {
+  try {
+    const r = await fetch('/api/packages?providerId=' + encodeURIComponent(COMPANY.id), { credentials: 'include' });
+    const d = await r.json();
+    PACKAGES = (d.packages || []).map(p => ({
+      id:          p.id,
+      name:        p.title || '',
+      price:       p.price_adult,
+      duration:    p.duration_days ? p.duration_days + ' أيام' : '',
+      destination: p.destination || '',
+      includes:    Array.isArray(p.includes) ? p.includes.join(', ') : (p.includes || ''),
+      description: p.description || '',
+      isPublished: !!p.isPublished,
+    }));
+  } catch (e) {
+    PACKAGES = [];
+    console.warn('[loadCompanyPackages]', e.message);
+  }
 }
 
 function render() {
@@ -379,20 +398,20 @@ function renderPackages() {
     container.innerHTML = `<div class="text-center py-4 text-muted small" id="noPackages"><div style="font-size:2rem;margin-bottom:8px;">📦</div>${I18N.t('co_no_packages')}</div>`;
     return;
   }
-  container.innerHTML = PACKAGES.map((pkg, i) => `
+  container.innerHTML = PACKAGES.map((pkg) => `
     <div class="service-card mb-3">
       <div class="d-flex justify-content-between align-items-start">
         <div style="flex:1">
           <div class="fw-800 mb-1">${pkg.name}</div>
           <div class="small text-muted mb-2">📍 ${pkg.destination || '—'} ${pkg.duration ? '· ⏱ ' + pkg.duration : ''}</div>
           ${pkg.description ? `<div class="small text-muted mb-2" style="line-height:1.5">${pkg.description}</div>` : ''}
-          ${pkg.includes ? `<div class="small mb-1"><span style="color:#0f7b6c;font-weight:600">${I18N.t('pkg_includes_short')}</span> ${pkg.includes}</div>` : ''}
+          ${pkg.includes ? `<div class="small mb-1"><span style="color:#0f7b6c;font-weight:600">${I18N.t('pkg_includes_short') || 'يشمل:'}</span> ${pkg.includes}</div>` : ''}
         </div>
         <div style="text-align:right;flex-shrink:0;margin-left:16px">
           <div class="fw-800" style="color:var(--teal);font-size:1.1rem">${pkg.price ? 'OMR ' + parseFloat(pkg.price).toFixed(0) : '—'}</div>
           <div class="mt-2 d-flex gap-1 justify-content-end">
-            <button class="btn btn-sm btn-outline-secondary" onclick="editPackage(${i})">✏️</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deletePackage(${i})">🗑</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="editPackage('${pkg.id}')">✏️</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deletePackage('${pkg.id}')">🗑</button>
           </div>
         </div>
       </div>
@@ -460,10 +479,11 @@ function openAddPackage() {
   pkgModal.show();
 }
 
-function editPackage(i) {
-  const pkg = PACKAGES[i];
-  document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_edit_title');
-  document.getElementById('pkgEditIndex').value = i;
+function editPackage(id) {
+  const pkg = PACKAGES.find(p => p.id === id);
+  if (!pkg) return;
+  document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_edit_title') || 'تعديل الحزمة';
+  document.getElementById('pkgEditIndex').value = pkg.id;
   document.getElementById('pkgName').value        = pkg.name        || '';
   document.getElementById('pkgPrice').value       = pkg.price       || '';
   document.getElementById('pkgDuration').value    = pkg.duration    || '';
@@ -478,62 +498,66 @@ async function savePackage() {
   const errEl = document.getElementById('pkgErrMsg');
   errEl.classList.add('d-none');
   const name  = document.getElementById('pkgName').value.trim();
-  const price = document.getElementById('pkgPrice').value.trim();
+  const price = parseFloat(document.getElementById('pkgPrice').value);
   const dest  = document.getElementById('pkgDestination').value.trim();
-  if (!name || !price || !dest) {
-    errEl.textContent = I18N.t('co_pkg_required');
+  if (!name || !(price > 0) || !dest) {
+    errEl.textContent = I18N.t('co_pkg_required') || 'الاسم والسعر والوجهة مطلوبة.';
     errEl.classList.remove('d-none');
     return;
   }
 
-  const pkg = {
-    name, price,
-    duration:    document.getElementById('pkgDuration').value.trim(),
-    destination: dest,
-    includes:    document.getElementById('pkgIncludes').value.trim(),
-    description: document.getElementById('pkgDescription').value.trim(),
+  const includesStr = document.getElementById('pkgIncludes').value.trim();
+  const durationStr = document.getElementById('pkgDuration').value.trim();
+  // Parse "3 days" / "٣ أيام" etc. into duration_days; fallback to 1.
+  const daysMatch = durationStr.match(/(\d+)/);
+  const days = daysMatch ? Math.max(1, parseInt(daysMatch[1])) : 1;
+
+  const body = {
+    title:         name,
+    description:   document.getElementById('pkgDescription').value.trim() || name,
+    destination:   dest,
+    price_adult:   price,
+    duration_days: days,
+    includes:      includesStr ? includesStr.split(',').map(s => s.trim()).filter(Boolean) : [],
+    isPublished:   true, // Company tours are public by default
+    category:      'Cultural',
   };
 
-  const idx = document.getElementById('pkgEditIndex').value;
-  if (idx !== '') {
-    PACKAGES[parseInt(idx)] = pkg;
-  } else {
-    PACKAGES.push(pkg);
-  }
+  const editId = document.getElementById('pkgEditIndex').value;
+  const url    = editId ? `/api/packages/${editId}` : '/api/packages';
+  const method = editId ? 'PUT' : 'POST';
 
-  // Persist to server
   try {
-    const r = await fetch('/api/auth/profile', {
-      method: 'PUT', credentials: 'include',
+    const r = await fetch(url, {
+      method, credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packages: PACKAGES }),
+      body: JSON.stringify(body),
     });
-    if (!r.ok) { const d = await r.json(); throw new Error(d.message); }
-    Object.assign(COMPANY, { packages: PACKAGES });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message || 'فشل الحفظ');
     pkgModal.hide();
+    await loadCompanyPackages();
     renderPackages();
-    document.getElementById('statServices').textContent = (COMPANY.companyServices || []).length + PACKAGES.length;
-    showToast(I18N.t(idx !== '' ? 'pkg_updated' : 'pkg_added'), 'success');
+    document.getElementById('statServices').textContent = PACKAGES.length;
+    showToast(editId ? (I18N.t('pkg_updated') || '✓ تم التحديث') : (I18N.t('pkg_added') || '✓ تمت الإضافة'), 'success');
   } catch (ex) {
     errEl.textContent = ex.message;
     errEl.classList.remove('d-none');
   }
 }
 
-async function deletePackage(i) {
-  if (!confirm(I18N.t('remove_pkg'))) return;
-  PACKAGES.splice(i, 1);
+async function deletePackage(id) {
+  if (!confirm(I18N.t('remove_pkg') || 'حذف هذه الحزمة؟')) return;
   try {
-    await fetch('/api/auth/profile', {
-      method: 'PUT', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packages: PACKAGES }),
-    });
-    Object.assign(COMPANY, { packages: PACKAGES });
+    const r = await fetch('/api/packages/' + id, { method: 'DELETE', credentials: 'include' });
+    if (!r.ok) { const d = await r.json(); throw new Error(d.message); }
+    await loadCompanyPackages();
     renderPackages();
-    document.getElementById('statServices').textContent = (COMPANY.companyServices || []).length + PACKAGES.length;
-    showToast(I18N.t('pkg_removed'), 'success');
-  } catch { showToast(I18N.t('co_remove_fail'), 'danger'); }
+    document.getElementById('statServices').textContent = PACKAGES.length;
+    showToast(I18N.t('pkg_removed') || '✓ تم الحذف', 'success');
+  } catch (e) {
+    showToast(e.message || I18N.t('co_remove_fail') || 'فشل الحذف', 'danger');
+  }
 }
 
 function getYouTubeEmbedUrl(url) {
