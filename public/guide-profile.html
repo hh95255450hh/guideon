@@ -461,23 +461,33 @@ async function loadGuideTours() {
       return;
     }
 
-    // If the guide has published tour packages, hide the legacy daily-rate booking panel
+    // Guides may have published tours AND still accept custom trip requests.
+    // Prepend a "From OMR X" summary above the booking panel that links to the
+    // tours list, but keep the custom-trip request form visible underneath so
+    // tourists who want a tailored experience can still negotiate a price.
     const bp = document.querySelector('.booking-panel');
-    if (bp) {
+    if (bp && !document.getElementById('toursTeaser')) {
       const cheapest = tours.reduce((min, t) => {
         const p = t.price_adult || t.priceAdult || t.price || Infinity;
         return p < min ? p : min;
       }, Infinity);
-      bp.innerHTML = `
-        <div class="text-center">
-          <div class="text-muted small mb-1">${I18N.t('from') || 'From'}</div>
-          <div class="fw-800 mb-2" style="color:var(--teal);font-size:2rem;">OMR ${isFinite(cheapest) ? cheapest : '—'}</div>
-          <div class="text-muted small mb-3">${tours.length} ${I18N.t('packages') || 'packages'} ${I18N.t('available') || 'available'}</div>
-          <button class="btn btn-success w-100 fw-700" onclick="document.getElementById('guideToursList').scrollIntoView({behavior:'smooth'})">
-            ${I18N.t('view_tours_btn') || '🗺️ View Tours Below'}
-          </button>
-          <div class="small text-muted mt-2">${I18N.t('gp_confirm_note') || 'Guide confirms within 24 hours · Free cancellation'}</div>
-        </div>`;
+      const teaser = document.createElement('div');
+      teaser.id = 'toursTeaser';
+      teaser.style.cssText = 'border:1px solid #d0ede8;background:#f8fffe;border-radius:12px;padding:14px;margin-bottom:16px;text-align:center';
+      teaser.innerHTML = `
+        <div class="text-muted small mb-1">${I18N.t('from') || 'From'}</div>
+        <div class="fw-800 mb-1" style="color:var(--teal);font-size:1.5rem;">OMR ${isFinite(cheapest) ? cheapest : '—'}</div>
+        <div class="text-muted small mb-2">${tours.length} ${I18N.t('packages') || 'packages'} ${I18N.t('available') || 'available'}</div>
+        <button class="btn btn-outline-success btn-sm w-100 fw-700" onclick="document.getElementById('guideToursList').scrollIntoView({behavior:'smooth'})">
+          ${I18N.t('view_tours_btn') || '🗺️ عرض الرحلات الجاهزة'}
+        </button>
+        <div class="d-flex align-items-center my-2">
+          <hr class="flex-grow-1 m-0">
+          <span class="px-2 small text-muted">${I18N.t('or_lbl') || 'أو'}</span>
+          <hr class="flex-grow-1 m-0">
+        </div>
+        <div class="small fw-700" style="color:#0f1c3e">${I18N.t('request_custom_trip') || '✨ اطلب رحلة مخصصة بمتطلباتك'}</div>`;
+      bp.prepend(teaser);
     }
 
     // ONLY real uploaded images — no stock/fake fallback.
