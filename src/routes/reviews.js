@@ -2,7 +2,7 @@ const router = require('express').Router();
 const multer = require('multer');
 const path   = require('path');
 const review = require('../controllers/reviewController');
-const { requireTourist, requireLogin } = require('../middleware/auth');
+const { requireTourist, requireLogin, requireGuide } = require('../middleware/auth');
 const { uploadBuffer } = require('../services/storageService');
 
 const upload = multer({
@@ -17,6 +17,7 @@ const upload = multer({
 });
 
 router.post('/', requireTourist, review.submitReview);
+router.patch('/:reviewId/reply', requireGuide, review.replyToReview);
 router.get('/guide/:guideId',     review.guideReviews);
 router.get('/package/:packageId', review.packageReviews);
 

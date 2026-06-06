@@ -463,6 +463,16 @@
   </div>
 </div>
 
+<!-- ════════════════════ MY REVIEWS ════════════════════ -->
+<div class="container py-4">
+  <div class="info-card">
+    <h5 class="fw-700 mb-3">⭐ <span data-i18n="my_reviews_title">تقييمات السياح</span></h5>
+    <div id="guideReviewsList">
+      <div class="text-muted small text-center py-3" data-i18n="loading">Loading…</div>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 <script src="/js/bootstrap.bundle.min.js"></script>
 <script src="/js/i18n.js?v=38"></script>
@@ -521,6 +531,7 @@ async function checkAuth() {
       });
     });
     loadTripRequests();
+    loadGuideReviews();
     renderGallery();
     if (GUIDE.videoUrl) document.getElementById('videoUrlInput').value = GUIDE.videoUrl;
     guideLoadConvos();
@@ -1222,6 +1233,67 @@ function contactTouristInApp(touristId, touristName) {
   }
 }
 
+// ── My Reviews (with guide reply) ─────────────────────────────
+let GUIDE_REVIEWS = [];
+async function loadGuideReviews() {
+  if (!GUIDE) return;
+  const el = document.getElementById('guideReviewsList');
+  try {
+    const r = await fetch('/api/reviews/guide/' + GUIDE.id, { credentials: 'include' });
+    const d = await r.json();
+    GUIDE_REVIEWS = d.reviews || [];
+    renderGuideReviews();
+  } catch { if (el) el.innerHTML = '<div class="text-muted small text-center py-3">—</div>'; }
+}
+
+function starRow(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+
+function renderGuideReviews() {
+  const el = document.getElementById('guideReviewsList');
+  if (!el) return;
+  if (!GUIDE_REVIEWS.length) {
+    el.innerHTML = `<div class="text-muted small text-center py-3">${I18N.t('no_reviews_yet') || 'لا توجد تقييمات بعد'}</div>`;
+    return;
+  }
+  const locale = I18N.lang === 'ar' ? 'ar-OM' : 'en-GB';
+  el.innerHTML = GUIDE_REVIEWS.map(r => `
+    <div style="border:1px solid #eef0f4;border-radius:12px;padding:14px;margin-bottom:10px">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="fw-700">${r.touristName || 'سائح'}</span>
+        <span style="color:#f59e0b">${starRow(r.rating)}</span>
+      </div>
+      ${r.comment ? `<p class="small text-muted mb-1" style="line-height:1.6">${r.comment}</p>` : ''}
+      <div style="font-size:.72rem;color:#aaa">${new Date(r.createdAt).toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}</div>
+      ${r.guideReply ? `
+        <div style="margin-top:8px;background:#f4f8f7;border-left:3px solid #0f7b6c;border-radius:8px;padding:8px 10px">
+          <div class="fw-700 small" style="color:#0f7b6c">↩️ ${I18N.t('your_reply') || 'ردّك'}</div>
+          <p class="mb-0 small" style="line-height:1.5">${r.guideReply}</p>
+        </div>`
+      : `
+        <div class="mt-2 d-flex gap-2">
+          <input class="form-control form-control-sm" id="reply_${r.reviewId}" placeholder="${I18N.t('write_reply') || 'اكتب رداً مهذباً…'}">
+          <button class="btn btn-sm btn-teal" onclick="submitGuideReply('${r.reviewId}')">${I18N.t('reply_btn') || 'رد'}</button>
+        </div>`}
+    </div>`).join('');
+}
+
+async function submitGuideReply(reviewId) {
+  const input = document.getElementById('reply_' + reviewId);
+  const reply = (input?.value || '').trim();
+  if (!reply) { toast(I18N.t('reply_empty') || 'اكتب رداً أولاً', 'error'); return; }
+  try {
+    const r = await fetch(`/api/reviews/${reviewId}/reply`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reply }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.message);
+    toast(I18N.t('reply_posted') || '✓ تم نشر ردّك', 'success');
+    loadGuideReviews();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
 // ── مميزاتي (Guide Assets) ────────────────────────────────────
 let ASSETS = [];
 let ASSET_PENDING_PHOTOS = []; // { file, previewUrl } before upload
@@ -1407,6 +1479,7 @@ window.onLangChange = () => {
     buildCalendar();
     loadBookings();
     loadTripRequests();
+    loadGuideReviews();
     renderGallery();
     guideRenderConvos();
   }

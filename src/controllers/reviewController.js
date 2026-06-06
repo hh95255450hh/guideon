@@ -103,6 +103,43 @@ exports.guideReviews = async (req, res) => {
   }
 };
 
+// PATCH /api/reviews/:reviewId/reply — guide replies to a review on them.
+exports.replyToReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const reply = (req.body.reply || '').trim();
+    if (!reply) return res.status(400).json({ success: false, message: 'Reply cannot be empty.' });
+
+    const review = await reviews.findById(reviewId);
+    if (!review) return res.status(404).json({ success: false, message: 'Review not found.' });
+    if (review.guideId !== req.session.userId) {
+      return res.status(403).json({ success: false, message: 'You can only reply to reviews about you.' });
+    }
+
+    const updated = await reviews.update(reviewId, {
+      guideReply: reply.slice(0, 1000),
+      guideReplyAt: new Date().toISOString(),
+    });
+
+    // Notify the tourist that the guide responded.
+    notify({
+      userId: review.touristId,
+      type: 'review_reply',
+      title:   'The guide replied to your review 💬',
+      titleAr: 'ردّ المرشد على تقييمك 💬',
+      body:   reply.slice(0, 160),
+      bodyAr: reply.slice(0, 160),
+      link: '/tourist-dashboard.html#bookings',
+      metadata: { reviewId },
+    });
+
+    res.json({ success: true, message: 'Reply posted.', review: updated });
+  } catch (err) {
+    console.error('[replyToReview]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 // GET /api/reviews/package/:packageId — reviews for a specific tour package
 exports.packageReviews = async (req, res) => {
   try {
