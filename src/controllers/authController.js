@@ -114,21 +114,32 @@ exports.register = async (req, res) => {
       record = base;
     }
 
-    try {
-      await users.insert(record);
-    } catch (insertErr) {
-      // Defensive: if a column the schema doesn't have yet was added (e.g. isMinistryLicensed
-      // before migration 012 has been run), drop it and retry so signup isn't blocked.
-      const msg = String(insertErr?.message || '');
-      const m = msg.match(/Could not find the '([^']+)' column/);
-      if (m) {
-        const col = m[1];
-        console.warn('[register] Stripping missing column "' + col + '" and retrying');
-        delete record[col];
+    // Defensive: if the schema is behind the app code (a column the app sends
+    // doesn't exist yet), strip the offending column and retry — repeatedly —
+    // until the insert succeeds or a non-column error surfaces. This prevents
+    // signup from getting permanently blocked when multiple migrations are
+    // outstanding (rather than failing on the first missing column).
+    const droppedCols = [];
+    let attempts = 0;
+    while (true) {
+      try {
         await users.insert(record);
-      } else {
+        break;
+      } catch (insertErr) {
+        attempts++;
+        const m = String(insertErr?.message || '').match(/Could not find the '([^']+)' column|column "([^"]+)" of relation/);
+        const col = m && (m[1] || m[2]);
+        if (col && record[col] !== undefined && attempts < 15) {
+          console.warn('[register] Stripping missing column "' + col + '" and retrying');
+          droppedCols.push(col);
+          delete record[col];
+          continue;
+        }
         throw insertErr;
       }
+    }
+    if (droppedCols.length) {
+      console.warn('[register] Signup succeeded after dropping columns:', droppedCols.join(', '));
     }
     req.session.userId = record.id;
     req.session.userType = record.userType;
