@@ -10,9 +10,15 @@ exports.list = async (req, res) => {
   try {
     const { destination, category, difficulty, minPrice, maxPrice, minDays, maxDays, sortBy, providerId } = req.query;
 
-    let pkgs = await packages.findAllByField('isPublished', true);
-
-    if (providerId)   pkgs = pkgs.filter(p => p.providerId === providerId);
+    // Push provider filter to the DB (was: load ALL packages then filter in JS,
+    // which got slow as the catalog grew — felt like the site was hanging
+    // when opening guide profiles).
+    let pkgs;
+    if (providerId) {
+      pkgs = await packages.findAllWhere({ isPublished: true, providerId });
+    } else {
+      pkgs = await packages.findAllByField('isPublished', true);
+    }
     if (destination)  pkgs = pkgs.filter(p => (p.destination || '').toLowerCase().includes(destination.toLowerCase()));
     if (category) {
       // Match either the legacy single category field OR any item in the new categories array

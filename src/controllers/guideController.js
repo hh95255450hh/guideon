@@ -206,10 +206,17 @@ function featuredScore(g) {
   return score;
 }
 
+// Cache the homepage top-guides list for a short window. Same result for
+// every visitor for 60s, but a guide newly added/edited still surfaces fast.
+let _topCache = { at: 0, data: null };
+const TOP_CACHE_MS = 60 * 1000;
+
 exports.topGuides = async (req, res) => {
   try {
+    if (_topCache.data && Date.now() - _topCache.at < TOP_CACHE_MS) {
+      return res.json({ success: true, cached: true, guides: _topCache.data });
+    }
     const guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
-    // Best first by composite score; deterministic tie-breakers keep it stable.
     guides.sort((a, b) =>
       (featuredScore(b) - featuredScore(a)) ||
       ((b.rating || 0) - (a.rating || 0)) ||
@@ -217,7 +224,8 @@ exports.topGuides = async (req, res) => {
       (new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
     );
     const top = guides.slice(0, 10).map(({ password, ...g }) => g);
-    res.json({ success: true, guides: top });
+    _topCache = { at: Date.now(), data: top };
+    res.json({ success: true, cached: false, guides: top });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });

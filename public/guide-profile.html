@@ -1102,8 +1102,14 @@ function setupMsgCard() {
   document.getElementById('msgTouristArea').style.display = '';
   gpLoadThread();
   clearInterval(GP_POLL);
-  GP_POLL = setInterval(gpLoadThread, 10000);
+  // Poll less aggressively (was 10s — too chatty for a profile page that
+  // most visitors don't interact with). Pause completely when the tab is
+  // hidden so background tabs don't keep hammering the server.
+  GP_POLL = setInterval(() => { if (!document.hidden) gpLoadThread(); }, 25000);
 }
+
+// Stop polling when the user leaves the page entirely.
+window.addEventListener('beforeunload', () => { clearInterval(GP_POLL); });
 
 async function gpLoadThread() {
   if (!GP_GUIDE_ID) return;
