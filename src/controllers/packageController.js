@@ -151,7 +151,34 @@ exports.create = async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    const inserted = await packages.insert(pkg);
+    // Resilient insert: strip any column that doesn't yet exist in the DB and
+    // retry, the same way authController handles outstanding user-table
+    // migrations. Companies were unable to add a package because the schema
+    // was behind several migrations; this unblocks them while we run the
+    // catch-up migration.
+    let inserted;
+    const droppedCols = [];
+    let attempts = 0;
+    while (true) {
+      try {
+        inserted = await packages.insert(pkg);
+        break;
+      } catch (insErr) {
+        attempts++;
+        const m = String(insErr?.message || '').match(/Could not find the '([^']+)' column|column "([^"]+)" of relation/);
+        const col = m && (m[1] || m[2]);
+        if (col && pkg[col] !== undefined && attempts < 20) {
+          console.warn('[packages.create] Stripping missing column "' + col + '" and retrying');
+          droppedCols.push(col);
+          delete pkg[col];
+          continue;
+        }
+        throw insErr;
+      }
+    }
+    if (droppedCols.length) {
+      console.warn('[packages.create] Saved after dropping columns:', droppedCols.join(', '));
+    }
 
     // Alert the owner/staff of a new tour (a key "addition" to manage).
     try {

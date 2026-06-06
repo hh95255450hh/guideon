@@ -406,13 +406,48 @@ exports.updateProfile = async (req, res) => {
     if (packages !== undefined)           changes.packages = packages;
     if (videoUrl !== undefined)           changes.videoUrl = videoUrl;
 
-    const updated = await users.update(req.session.userId, changes);
+    // Resilient update: drop any field the DB doesn't have a column for and
+    // retry, so an outstanding migration on one new field (e.g. `packages`)
+    // doesn't take the whole profile-save offline.
+    let updated;
+    const droppedCols = [];
+    let attempts = 0;
+    while (true) {
+      try {
+        updated = await users.update(req.session.userId, changes);
+        break;
+      } catch (e) {
+        attempts++;
+        const m = String(e?.message || '').match(/Could not find the '([^']+)' column|column "([^"]+)" of relation/);
+        const col = m && (m[1] || m[2]);
+        if (col && changes[col] !== undefined && attempts < 15) {
+          console.warn('[updateProfile] Stripping missing column "' + col + '" and retrying');
+          droppedCols.push(col);
+          delete changes[col];
+          continue;
+        }
+        throw e;
+      }
+    }
     if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });
     const { password, ...safe } = updated;
-    res.json({ success: true, message: 'Profile updated.', user: safe });
+    res.json({
+      success: true,
+      message: droppedCols.length
+        ? `Profile updated. (Note: ${droppedCols.join(', ')} not yet supported in DB — run migration 034.)`
+        : 'Profile updated.',
+      user: safe,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+    console.error('[updateProfile]', err.message);
+    const msg = String(err.message || '');
+    if (/Could not find the '\w+' column|column \S+ does not exist|schema cache/i.test(msg)) {
+      return res.status(500).json({
+        success: false,
+        message: 'الحفظ فشل: عمود في قاعدة البيانات مفقود — يرجى تشغيل migration 034. (Schema cache issue: ' + msg + ')',
+      });
+    }
+    res.status(500).json({ success: false, message: 'لم نتمكن من حفظ التعديلات. Server error: ' + msg });
   }
 };
 
