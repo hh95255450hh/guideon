@@ -95,6 +95,50 @@ exports.getCompany = async (req, res) => {
   }
 };
 
+// Companies featured carousel cache (matches the guides one).
+let _topCompaniesCache = { at: 0, data: null };
+const TOP_COMPANIES_CACHE_MS = 60 * 1000;
+
+// Score companies the same way we score guides: quality (rating), social
+// proof (reviews), activity (bookings), profile completeness.
+function companyFeaturedScore(c) {
+  const rating   = Number(c.rating) || 0;
+  const reviews  = Number(c.totalReviews) || 0;
+  const bookings = Number(c.totalBookings) || 0;
+  let score = 0;
+  score += (rating / 5) * 40;
+  score += Math.min(reviews, 15) * 2;
+  score += Math.min(bookings, 15) * 2;
+  if (c.photo) score += 6;
+  if (c.companyDescription && c.companyDescription.length > 30) score += 4;
+  if (Array.isArray(c.galleryPhotos) && c.galleryPhotos.length) score += 4;
+  if (Array.isArray(c.companyDestinations) && c.companyDestinations.length) score += 3;
+  if (Array.isArray(c.companyServices) && c.companyServices.length) score += 2;
+  return score;
+}
+
+// GET /api/companies/top — verified, non-suspended companies, ranked.
+exports.topCompanies = async (req, res) => {
+  try {
+    if (_topCompaniesCache.data && Date.now() - _topCompaniesCache.at < TOP_COMPANIES_CACHE_MS) {
+      return res.json({ success: true, cached: true, companies: _topCompaniesCache.data });
+    }
+    const companies = await users.findAllWhere({ userType: 'company', isVerified: true, isSuspended: false });
+    companies.sort((a, b) =>
+      (companyFeaturedScore(b) - companyFeaturedScore(a)) ||
+      ((b.rating || 0) - (a.rating || 0)) ||
+      ((b.totalReviews || 0) - (a.totalReviews || 0)) ||
+      (new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+    );
+    const top = companies.slice(0, 10).map(({ password, ...c }) => c);
+    _topCompaniesCache = { at: Date.now(), data: top };
+    res.json({ success: true, cached: false, companies: top });
+  } catch (err) {
+    console.error('[topCompanies]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 exports.getGuide = async (req, res) => {
   try {
     const guide = await users.findById(req.params.id);
