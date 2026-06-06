@@ -149,11 +149,25 @@ exports.updateAssets = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Each asset must have id, type, title.' });
       }
     }
-    await users.update(guideId, { guideAssets });
+    try {
+      await users.update(guideId, { guideAssets });
+    } catch (e) {
+      // Surface schema problems instead of failing silently — the saved data
+      // would otherwise look successful in the UI but never reach the guide
+      // profile that tourists see.
+      const msg = String(e?.message || '');
+      if (/Could not find the '\w+' column|column \S+ does not exist|schema cache/i.test(msg)) {
+        return res.status(500).json({
+          success: false,
+          message: 'Database is missing the guideAssets column — run migration 032 in Supabase.',
+        });
+      }
+      throw e;
+    }
     res.json({ success: true, message: 'Assets updated.', guideAssets });
   } catch (err) {
-    console.error('[updateAssets]', err);
-    res.status(500).json({ success: false, message: 'Server error.' });
+    console.error('[updateAssets]', err.message);
+    res.status(500).json({ success: false, message: 'Server error: ' + err.message });
   }
 };
 
