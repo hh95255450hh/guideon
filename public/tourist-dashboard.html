@@ -227,8 +227,10 @@ function renderBookings() {
 
   container.innerHTML = list.map(b => {
     const canCancel = ['pending', 'quoted', 'confirmed'].includes(b.status);
-    const tourDatePast = new Date(b.tourDate + 'T23:59:59') < new Date();
-    const canReview = b.status === 'completed' && tourDatePast && !b.reviewed;
+    // Status 'completed' is set by the guide only after the trip actually
+    // ended — no need to also wait for the calendar to pass tourDate. The old
+    // tourDatePast gate hid the review button on the same day the trip ended.
+    const canReview = b.status === 'completed' && !b.reviewed;
     const statusIcon = { pending: '⏳', quoted: '💬', confirmed: '✅', completed: '🎉', cancelled: '❌' }[b.status] || '';
     const durationLabel = b.duration === 'half' ? I18N.t('half_day_lbl') : I18N.t('full_day_lbl');
     const pLabel = b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl');
