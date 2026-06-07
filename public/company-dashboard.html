@@ -166,9 +166,19 @@
               <label class="form-label fw-600 small" data-i18n="video_url_lbl">YouTube Video URL</label>
               <input type="url" class="form-control" id="eVideoUrl" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=...">
             </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600 small">الخدمات المقدمة</label>
+              <input type="text" class="form-control" id="eServices" placeholder="مثال: جولات ثقافية، رحلات صحراء، تخييم">
+              <div class="form-text">افصل بفواصل ،</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600 small">الوجهات المغطاة</label>
+              <input type="text" class="form-control" id="eDestinations" placeholder="مثال: مسقط، نزوى، صلالة">
+              <div class="form-text">افصل بفواصل ،</div>
+            </div>
             <div class="col-12">
-              <label class="form-label fw-600 small" data-i18n="company_desc_lbl">Company Description *</label>
-              <textarea class="form-control" id="eDescription" rows="4" data-i18n-ph="company_desc_ph" placeholder="Tell tourists about your company, experience, and what makes you unique..."></textarea>
+              <label class="form-label fw-600 small" data-i18n="company_desc_lbl">وصف الشركة *</label>
+              <textarea class="form-control" id="eDescription" rows="4" data-i18n-ph="company_desc_ph" placeholder="حدّث السياح عن شركتك وخبرتك وما يميزك..."></textarea>
             </div>
           </div>
           <div class="d-flex gap-2 mt-3">
@@ -260,13 +270,20 @@
           <input type="text" class="form-control" id="pkgDestination" placeholder="Wahiba Sands">
         </div>
         <div class="mb-3">
-          <label class="form-label fw-600 small" data-i18n="pkg_includes_lbl">What's Included</label>
-          <input type="text" class="form-control" id="pkgIncludes" data-i18n-ph="pkg_includes_ph" placeholder="Transport, Camping, Meals">
-          <div class="form-text" data-i18n="co_sep_commas">Separate with commas</div>
+          <label class="form-label fw-600 small" data-i18n="pkg_includes_lbl">ما تشمله الرحلة</label>
+          <input type="text" class="form-control" id="pkgIncludes" data-i18n-ph="pkg_includes_ph" placeholder="نقل، تخييم، وجبات">
+          <div class="form-text">افصل بفواصل ،</div>
         </div>
         <div class="mb-3">
-          <label class="form-label fw-600 small" data-i18n="pkg_desc_lbl">Description</label>
-          <textarea class="form-control" id="pkgDescription" rows="3" data-i18n-ph="pkg_desc_ph" placeholder="Describe this package for tourists..."></textarea>
+          <label class="form-label fw-600 small">صور الرحلة (حتى 10)</label>
+          <input type="file" class="form-control form-control-sm mb-2" id="pkgPhotosInput" accept="image/*" multiple onchange="onPkgPhotosSelected(this)">
+          <div id="pkgPhotosPreview" class="d-flex flex-wrap gap-2"></div>
+          <div class="form-text">انقر للحذف. الصورة الأولى ستكون الغلاف.</div>
+          <div id="pkgUploadStatus" class="small text-muted mt-1"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-600 small" data-i18n="pkg_desc_lbl">الوصف</label>
+          <textarea class="form-control" id="pkgDescription" rows="3" placeholder="صف هذه الرحلة للسياح..."></textarea>
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">
@@ -302,22 +319,80 @@ async function init() {
 
 async function loadCompanyPackages() {
   try {
-    const r = await fetch('/api/packages?providerId=' + encodeURIComponent(COMPANY.id), { credentials: 'include' });
+    // Cache-bust so we never re-read a stale list right after creating one
+    // (which was producing the "duplicate" appearance — the freshly created
+    // package was being merged with an in-flight cached response).
+    const r = await fetch('/api/packages?providerId=' + encodeURIComponent(COMPANY.id) + '&_=' + Date.now(), {
+      credentials: 'include', cache: 'no-store',
+    });
     const d = await r.json();
-    PACKAGES = (d.packages || []).map(p => ({
-      id:          p.id,
-      name:        p.title || '',
-      price:       p.price_adult,
-      duration:    p.duration_days ? p.duration_days + ' أيام' : '',
-      destination: p.destination || '',
-      includes:    Array.isArray(p.includes) ? p.includes.join(', ') : (p.includes || ''),
-      description: p.description || '',
-      isPublished: !!p.isPublished,
-    }));
+    // De-dupe by id defensively (in case the API ever returns dupes).
+    const seen = new Set();
+    PACKAGES = (d.packages || [])
+      .filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; })
+      .map(p => ({
+        id:          p.id,
+        name:        p.title || '',
+        price:       p.price_adult,
+        duration:    p.duration_days ? p.duration_days + ' أيام' : '',
+        destination: p.destination || '',
+        includes:    Array.isArray(p.includes) ? p.includes.join(', ') : (p.includes || ''),
+        description: p.description || '',
+        images:      Array.isArray(p.images) ? p.images : [],
+        cover_image: p.cover_image || (Array.isArray(p.images) && p.images[0]) || '',
+        isPublished: !!p.isPublished,
+      }));
   } catch (e) {
     PACKAGES = [];
     console.warn('[loadCompanyPackages]', e.message);
   }
+}
+
+// ─── Package photo handling ─────────────────────────────────────────────
+let PKG_KEPT_PHOTOS = [];      // existing photo URLs preserved during edit
+let PKG_PENDING_FILES = [];    // new files staged for upload
+
+function renderPkgPhotoStrip() {
+  const wrap = document.getElementById('pkgPhotosPreview');
+  if (!wrap) return;
+  const kept = PKG_KEPT_PHOTOS.map((url, i) => `
+    <div style="position:relative">
+      <img src="${url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <button type="button" onclick="removeKeptPkgPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+  const pending = PKG_PENDING_FILES.map((f, i) => `
+    <div style="position:relative">
+      <img src="${URL.createObjectURL(f)}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #0f7b6c">
+      <button type="button" onclick="removePendingPkgPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+  wrap.innerHTML = kept + pending || '<span class="small text-muted">لم تُضف صور بعد</span>';
+}
+function onPkgPhotosSelected(input) {
+  const remaining = Math.max(0, 10 - PKG_KEPT_PHOTOS.length - PKG_PENDING_FILES.length);
+  const newOnes = Array.from(input.files).slice(0, remaining);
+  PKG_PENDING_FILES = PKG_PENDING_FILES.concat(newOnes);
+  input.value = '';
+  renderPkgPhotoStrip();
+}
+function removeKeptPkgPhoto(i) { PKG_KEPT_PHOTOS.splice(i, 1); renderPkgPhotoStrip(); }
+function removePendingPkgPhoto(i) { PKG_PENDING_FILES.splice(i, 1); renderPkgPhotoStrip(); }
+
+async function uploadPendingPkgPhotos() {
+  const statusEl = document.getElementById('pkgUploadStatus');
+  if (!PKG_PENDING_FILES.length) return [];
+  const out = [];
+  for (let i = 0; i < PKG_PENDING_FILES.length; i++) {
+    statusEl.textContent = `جاري رفع الصور… ${i + 1}/${PKG_PENDING_FILES.length}`;
+    const fd = new FormData();
+    fd.append('photo', PKG_PENDING_FILES[i]);
+    try {
+      const r = await fetch('/api/upload/image', { method: 'POST', credentials: 'include', body: fd });
+      const d = await r.json();
+      if (d.success && d.url) out.push(d.url);
+    } catch (_) { /* keep going */ }
+  }
+  statusEl.textContent = '';
+  return out;
 }
 
 function render() {
@@ -344,7 +419,8 @@ function render() {
   if (!isVerified && !isSuspended) document.getElementById('pendingNotice').classList.remove('d-none');
 
   // Stats — derived from the company's actual tours (no fixed services/destinations)
-  const svcs = [];
+  // Read services from the saved profile (was hardcoded to []).
+  const svcs = Array.isArray(COMPANY.companyServices) ? COMPANY.companyServices.filter(Boolean) : [];
   const dsts = [...new Set((PACKAGES || []).map(p => (p.destination || '').trim()).filter(Boolean))];
   document.getElementById('statServices').textContent = (PACKAGES || []).length;
   document.getElementById('statDests').textContent    = dsts.length;
@@ -400,18 +476,27 @@ function renderPackages() {
   }
   container.innerHTML = PACKAGES.map((pkg) => `
     <div class="service-card mb-3">
-      <div class="d-flex justify-content-between align-items-start">
+      <div class="d-flex gap-3 align-items-start">
+        ${pkg.cover_image
+          ? `<img src="${pkg.cover_image}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0">`
+          : `<div style="width:90px;height:90px;background:#eef0f4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">📦</div>`}
         <div style="flex:1">
-          <div class="fw-800 mb-1">${pkg.name}</div>
-          <div class="small text-muted mb-2">📍 ${pkg.destination || '—'} ${pkg.duration ? '· ⏱ ' + pkg.duration : ''}</div>
-          ${pkg.description ? `<div class="small text-muted mb-2" style="line-height:1.5">${pkg.description}</div>` : ''}
-          ${pkg.includes ? `<div class="small mb-1"><span style="color:#0f7b6c;font-weight:600">${I18N.t('pkg_includes_short') || 'يشمل:'}</span> ${pkg.includes}</div>` : ''}
-        </div>
-        <div style="text-align:right;flex-shrink:0;margin-left:16px">
-          <div class="fw-800" style="color:var(--teal);font-size:1.1rem">${pkg.price ? 'OMR ' + parseFloat(pkg.price).toFixed(0) : '—'}</div>
-          <div class="mt-2 d-flex gap-1 justify-content-end">
-            <button class="btn btn-sm btn-outline-secondary" onclick="editPackage('${pkg.id}')">✏️</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deletePackage('${pkg.id}')">🗑</button>
+          <div class="d-flex justify-content-between align-items-start">
+            <div style="flex:1">
+              <div class="fw-800 mb-1">${pkg.name}</div>
+              <div class="small text-muted mb-2">📍 ${pkg.destination || '—'} ${pkg.duration ? '· ⏱ ' + pkg.duration : ''}</div>
+            </div>
+            <div style="text-align:left;flex-shrink:0;margin-left:10px">
+              <div class="fw-800" style="color:var(--teal);font-size:1.1rem">${pkg.price ? 'OMR ' + parseFloat(pkg.price).toFixed(0) : '—'}</div>
+            </div>
+          </div>
+          ${pkg.description ? `<div class="small text-muted mb-2" style="line-height:1.5">${pkg.description.slice(0,140)}${pkg.description.length>140?'…':''}</div>` : ''}
+          ${pkg.includes ? `<div class="small mb-2"><span style="color:#0f7b6c;font-weight:600">يشمل:</span> ${pkg.includes}</div>` : ''}
+          ${(pkg.images||[]).length > 1 ? `<div class="small text-muted mb-2">📷 ${pkg.images.length} صور</div>` : ''}
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="editPackage('${pkg.id}')">✏️ تعديل</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deletePackage('${pkg.id}')">🗑 حذف</button>
+            <a class="btn btn-sm btn-outline-success" href="/tour-package.html?id=${pkg.id}" target="_blank">👁 معاينة</a>
           </div>
         </div>
       </div>
@@ -432,6 +517,8 @@ function toggleEdit() {
     document.getElementById('ePhone').value        = COMPANY.phone        || '';
     document.getElementById('eVideoUrl').value     = COMPANY.videoUrl     || '';
     document.getElementById('eDescription').value  = COMPANY.companyDescription || '';
+    document.getElementById('eServices').value     = (COMPANY.companyServices     || []).join(', ');
+    document.getElementById('eDestinations').value = (COMPANY.companyDestinations || []).join(', ');
     view.classList.add('d-none');
     edit.classList.remove('d-none');
   }
@@ -443,12 +530,15 @@ async function saveProfile() {
   const companyName = document.getElementById('eCompanyName').value.trim();
   if (!companyName) { errEl.textContent = I18N.t('co_name_required'); errEl.classList.remove('d-none'); return; }
 
+  const split = (s) => s ? s.split(/[,،]/).map(x => x.trim()).filter(Boolean) : [];
   const changes = {
     companyName,
-    companyRegNo:       document.getElementById('eRegNo').value.trim(),
-    phone:              document.getElementById('ePhone').value.trim(),
-    videoUrl:           document.getElementById('eVideoUrl').value.trim(),
-    companyDescription: document.getElementById('eDescription').value.trim(),
+    companyRegNo:        document.getElementById('eRegNo').value.trim(),
+    phone:               document.getElementById('ePhone').value.trim(),
+    videoUrl:            document.getElementById('eVideoUrl').value.trim(),
+    companyDescription:  document.getElementById('eDescription').value.trim(),
+    companyServices:     split(document.getElementById('eServices').value),
+    companyDestinations: split(document.getElementById('eDestinations').value),
   };
 
   try {
@@ -470,11 +560,16 @@ async function saveProfile() {
 }
 
 function openAddPackage() {
-  document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_add_title');
+  document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_add_title') || 'إضافة حزمة سياحية';
   document.getElementById('pkgEditIndex').value = '';
   ['pkgName','pkgPrice','pkgDuration','pkgDestination','pkgIncludes','pkgDescription'].forEach(id => {
     document.getElementById(id).value = '';
   });
+  PKG_KEPT_PHOTOS    = [];
+  PKG_PENDING_FILES  = [];
+  document.getElementById('pkgPhotosInput').value = '';
+  document.getElementById('pkgUploadStatus').textContent = '';
+  renderPkgPhotoStrip();
   document.getElementById('pkgErrMsg').classList.add('d-none');
   pkgModal.show();
 }
@@ -490,11 +585,22 @@ function editPackage(id) {
   document.getElementById('pkgDestination').value = pkg.destination || '';
   document.getElementById('pkgIncludes').value    = pkg.includes    || '';
   document.getElementById('pkgDescription').value = pkg.description || '';
+  PKG_KEPT_PHOTOS    = (pkg.images || []).slice();
+  PKG_PENDING_FILES  = [];
+  document.getElementById('pkgPhotosInput').value = '';
+  document.getElementById('pkgUploadStatus').textContent = '';
+  renderPkgPhotoStrip();
   document.getElementById('pkgErrMsg').classList.add('d-none');
   pkgModal.show();
 }
 
+// Track in-flight save so a double-click on "حفظ" can't fire twice and
+// create the same package twice (this is the real cause of "duplicated"
+// packages the user reported).
+let _pkgSaving = false;
+
 async function savePackage() {
+  if (_pkgSaving) return; // ignore re-entries from a double-click
   const errEl = document.getElementById('pkgErrMsg');
   errEl.classList.add('d-none');
   const name  = document.getElementById('pkgName').value.trim();
@@ -508,26 +614,39 @@ async function savePackage() {
 
   const includesStr = document.getElementById('pkgIncludes').value.trim();
   const durationStr = document.getElementById('pkgDuration').value.trim();
-  // Parse "3 days" / "٣ أيام" etc. into duration_days; fallback to 1.
   const daysMatch = durationStr.match(/(\d+)/);
   const days = daysMatch ? Math.max(1, parseInt(daysMatch[1])) : 1;
-
-  const body = {
-    title:         name,
-    description:   document.getElementById('pkgDescription').value.trim() || name,
-    destination:   dest,
-    price_adult:   price,
-    duration_days: days,
-    includes:      includesStr ? includesStr.split(',').map(s => s.trim()).filter(Boolean) : [],
-    isPublished:   true, // Company tours are public by default
-    category:      'Cultural',
-  };
 
   const editId = document.getElementById('pkgEditIndex').value;
   const url    = editId ? `/api/packages/${editId}` : '/api/packages';
   const method = editId ? 'PUT' : 'POST';
 
+  // Disable the save button while we work so it can't be clicked twice.
+  const saveBtn = document.querySelector('#packageModal .modal-footer .btn-teal');
+  _pkgSaving = true;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'جاري الحفظ…'; }
+
   try {
+    // 1. Upload any pending images first so they get into the package's
+    //    images array on save (avoids creating the row first, then PUTting
+    //    images — which was where doubles could sneak in if the user got
+    //    impatient and re-clicked).
+    const newUrls = await uploadPendingPkgPhotos();
+    const images  = [...PKG_KEPT_PHOTOS, ...newUrls];
+
+    const body = {
+      title:         name,
+      description:   document.getElementById('pkgDescription').value.trim() || name,
+      destination:   dest,
+      price_adult:   price,
+      duration_days: days,
+      includes:      includesStr ? includesStr.split(',').map(s => s.trim()).filter(Boolean) : [],
+      isPublished:   true,
+      category:      'Cultural',
+      images,
+      cover_image:   images[0] || '',
+    };
+
     const r = await fetch(url, {
       method, credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -536,13 +655,18 @@ async function savePackage() {
     const d = await r.json();
     if (!r.ok) throw new Error(d.message || 'فشل الحفظ');
     pkgModal.hide();
+    PKG_KEPT_PHOTOS = [];
+    PKG_PENDING_FILES = [];
     await loadCompanyPackages();
     renderPackages();
     document.getElementById('statServices').textContent = PACKAGES.length;
-    showToast(editId ? (I18N.t('pkg_updated') || '✓ تم التحديث') : (I18N.t('pkg_added') || '✓ تمت الإضافة'), 'success');
+    showToast(editId ? '✓ تم التحديث' : '✓ تمت الإضافة', 'success');
   } catch (ex) {
     errEl.textContent = ex.message;
     errEl.classList.remove('d-none');
+  } finally {
+    _pkgSaving = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = I18N.t('pkg_save_btn') || 'حفظ الحزمة'; }
   }
 }
 

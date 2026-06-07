@@ -183,11 +183,17 @@
                 <!-- BASICS -->
                 <div id="tt-basics" class="tour-tab row g-3">
                   <div class="col-12">
-                    <label class="form-label small fw-600">📷 <span data-i18n="tour_cover">Tour Cover Photo</span></label>
+                    <label class="form-label small fw-600">📷 <span data-i18n="tour_cover">صورة الغلاف</span></label>
                     <div id="tourImgPreview" style="height:170px;border-radius:12px;background:#eef1f3;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:#9aa3ab;font-size:2rem;margin-bottom:8px">🗺️</div>
                     <input type="file" accept="image/*" class="form-control form-control-sm" id="tourImgFile" onchange="uploadTourImage(this)">
                     <input type="hidden" id="tourCoverUrl">
-                    <div class="small text-muted mt-1" data-i18n="tour_cover_hint">Recommended 1200×600px — shown on your tour card.</div>
+                    <div class="small text-muted mt-1">يُنصح بـ 1200×600 — تظهر على بطاقة الرحلة.</div>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-600">🖼️ صور إضافية للرحلة (حتى 12 صورة)</label>
+                    <div id="tourGalleryPreview" class="d-flex flex-wrap gap-2 mb-2"></div>
+                    <input type="file" accept="image/*" multiple class="form-control form-control-sm" id="tourGalleryInput" onchange="onTourGallerySelected(this)">
+                    <div class="small text-muted mt-1" id="tourGalleryStatus">انقر على ✕ لحذف صورة. تظهر للسياح في صفحة الرحلة.</div>
                   </div>
                   <div class="col-md-8">
                     <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
@@ -765,6 +771,10 @@ function renderItinerary() {
 function addItineraryDay() { TOUR_ITINERARY.push({ title:'', description:'' }); renderItinerary(); }
 function removeItineraryDay(i) { TOUR_ITINERARY.splice(i,1); renderItinerary(); }
 
+// State for tour gallery (kept URLs + freshly-staged files)
+let TOUR_GALLERY_KEPT = [];
+let TOUR_GALLERY_PENDING = [];
+
 function openTourModal(tour) {
   document.getElementById('tourId').value          = tour?.id || '';
   document.getElementById('tourTitle').value       = tour?.title || '';
@@ -775,6 +785,12 @@ function openTourModal(tour) {
   if (cover) { prev.style.backgroundImage = `url('${cover}')`; prev.textContent = ''; }
   else { prev.style.backgroundImage = ''; prev.textContent = '🗺️'; }
   const f = document.getElementById('tourImgFile'); if (f) f.value = '';
+  // Gallery: load existing images (excluding the cover), reset pending uploads.
+  const allImgs = Array.isArray(tour?.images) ? tour.images : [];
+  TOUR_GALLERY_KEPT    = allImgs.filter(u => u && u !== cover);
+  TOUR_GALLERY_PENDING = [];
+  const gi = document.getElementById('tourGalleryInput'); if (gi) gi.value = '';
+  renderTourGalleryStrip();
   // Categories: support both legacy single string and new array
   const tourCats = Array.isArray(tour?.categories) && tour.categories.length
     ? tour.categories
@@ -843,13 +859,65 @@ async function uploadTourImage(input) {
   } catch (e) { toast('❌ ' + (e.message || 'Upload failed'), 'error'); input.value=''; }
 }
 
+// ── Tour gallery (extra images per tour) ─────────────────────────────
+function renderTourGalleryStrip() {
+  const wrap = document.getElementById('tourGalleryPreview');
+  if (!wrap) return;
+  const kept = TOUR_GALLERY_KEPT.map((url, i) => `
+    <div style="position:relative">
+      <img src="${url}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <button type="button" onclick="removeKeptTourPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+  const pending = TOUR_GALLERY_PENDING.map((f, i) => `
+    <div style="position:relative">
+      <img src="${URL.createObjectURL(f)}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #0f7b6c">
+      <button type="button" onclick="removePendingTourPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
+    </div>`).join('');
+  wrap.innerHTML = kept + pending || '<span class="small text-muted">لم تُضف صور إضافية</span>';
+}
+function onTourGallerySelected(input) {
+  const remaining = Math.max(0, 12 - TOUR_GALLERY_KEPT.length - TOUR_GALLERY_PENDING.length);
+  TOUR_GALLERY_PENDING = TOUR_GALLERY_PENDING.concat(Array.from(input.files).slice(0, remaining));
+  input.value = '';
+  renderTourGalleryStrip();
+}
+function removeKeptTourPhoto(i) { TOUR_GALLERY_KEPT.splice(i, 1); renderTourGalleryStrip(); }
+function removePendingTourPhoto(i) { TOUR_GALLERY_PENDING.splice(i, 1); renderTourGalleryStrip(); }
+async function uploadPendingTourPhotos() {
+  if (!TOUR_GALLERY_PENDING.length) return [];
+  const statusEl = document.getElementById('tourGalleryStatus');
+  const out = [];
+  for (let i = 0; i < TOUR_GALLERY_PENDING.length; i++) {
+    if (statusEl) statusEl.textContent = `جاري رفع الصور… ${i + 1}/${TOUR_GALLERY_PENDING.length}`;
+    const fd = new FormData(); fd.append('photo', TOUR_GALLERY_PENDING[i]);
+    try {
+      const r = await fetch('/api/upload/image', { method: 'POST', credentials: 'include', body: fd });
+      const d = await r.json();
+      if (d.success && d.url) out.push(d.url);
+    } catch (_) {}
+  }
+  if (statusEl) statusEl.textContent = 'انقر على ✕ لحذف صورة. تظهر للسياح في صفحة الرحلة.';
+  return out;
+}
+
+// Prevent double-submit duplicating tour packages.
+let _saveTourInFlight = false;
+
 async function saveTour() {
+  if (_saveTourInFlight) return;
   const btn = document.getElementById('saveTourBtn');
   const id  = document.getElementById('tourId').value;
+  // Upload any pending gallery photos first so they save with the package.
+  const newGalleryUrls = await uploadPendingTourPhotos();
+  TOUR_GALLERY_KEPT    = TOUR_GALLERY_KEPT.concat(newGalleryUrls);
+  TOUR_GALLERY_PENDING = [];
+  renderTourGalleryStrip();
+  const cover  = document.getElementById('tourCoverUrl').value || TOUR_GALLERY_KEPT[0] || '';
+  const images = [cover, ...TOUR_GALLERY_KEPT.filter(u => u && u !== cover)].filter(Boolean);
   const body = {
     title:          document.getElementById('tourTitle').value.trim(),
-    cover_image:    document.getElementById('tourCoverUrl').value || '',
-    images:         document.getElementById('tourCoverUrl').value ? [document.getElementById('tourCoverUrl').value] : [],
+    cover_image:    cover,
+    images,
     categories:     Array.from(document.querySelectorAll('#tourCategoryChips input:checked')).map(i => i.value),
     category:       (document.querySelector('#tourCategoryChips input:checked') || {}).value || 'Cultural', // legacy single field for back-compat
     destination:    document.getElementById('tourDestination').value.trim(),
@@ -876,6 +944,7 @@ async function saveTour() {
   if (!body.title || !body.destination || !body.price_adult || !body.description) {
     toast('Please fill all required fields', 'error'); return;
   }
+  _saveTourInFlight = true;
   btn.disabled = true; btn.textContent = '...';
   try {
     const r = await fetch(id ? '/api/packages/' + id : '/api/packages', {
@@ -887,12 +956,14 @@ async function saveTour() {
     if (d.success) {
       toast(I18N.t('saved_ok') || 'Saved!', 'success');
       bootstrap.Modal.getInstance(document.getElementById('tourModal')).hide();
+      TOUR_GALLERY_KEPT = [];
+      TOUR_GALLERY_PENDING = [];
       loadMyTours();
     } else {
       toast(d.message || 'Failed', 'error');
     }
   } catch { toast('Network error', 'error'); }
-  finally { btn.disabled = false; btn.textContent = I18N.t('save_tour') || 'Save Tour'; }
+  finally { _saveTourInFlight = false; btn.disabled = false; btn.textContent = I18N.t('save_tour') || 'Save Tour'; }
 }
 
 async function loadAnalytics() {
