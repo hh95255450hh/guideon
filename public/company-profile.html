@@ -229,11 +229,34 @@ function render(packages) {
       <a class="btn btn-outline-secondary btn-sm w-100" href="/plan-trip.html?companyId=${COMPANY.id}">✨ اطلب عرض سعر</a>
     </div>`;
 
-  window.openPlatformChat = function() {
-    const dest = (window.__sessionUser && window.__sessionUser.userType === 'tourist')
-      ? `/tourist-dashboard.html#messages?to=${COMPANY.id}`
-      : `/login.html?next=${encodeURIComponent('/company-profile.html?id='+COMPANY.id)}`;
-    location.href = dest;
+  window.openPlatformChat = async function() {
+    let user = null;
+    try {
+      // Prefer the shared session cache that common-widgets sets up;
+      // fall back to a direct /api/auth/me call so this works even if
+      // common-widgets hasn't finished initializing yet.
+      if (window.gdSession && typeof window.gdSession.get === 'function') {
+        user = await window.gdSession.get();
+      } else {
+        const r = await fetch('/api/auth/me', { credentials: 'include' });
+        const d = await r.json();
+        if (d && d.success) user = d.user;
+      }
+    } catch (_) {}
+
+    const target = `/tourist-dashboard.html#messages?to=${COMPANY.id}`;
+    if (user && user.id) {
+      // Already logged in — go straight to the messages tab. Works for
+      // tourists, guides, companies and admins (they may want to chat too).
+      const base = user.userType === 'guide'   ? '/guide-dashboard.html'
+                 : user.userType === 'company' ? '/company-dashboard.html'
+                 : user.userType === 'admin' || user.userType === 'staff' ? '/admin.html'
+                 : '/tourist-dashboard.html';
+      location.href = `${base}#messages?to=${COMPANY.id}`;
+    } else {
+      // Not logged in — send them through the login page with a return URL.
+      location.href = `/login.html?next=${encodeURIComponent('/company-profile.html?id=' + COMPANY.id)}`;
+    }
   };
 
   // Packages — image-first card grid (much more visual than text list)
