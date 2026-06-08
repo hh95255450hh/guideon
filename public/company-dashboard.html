@@ -210,6 +210,34 @@
     <!-- RIGHT: Quick Info & Tips -->
     <div class="col-lg-4">
 
+      <!-- Messages -->
+      <div class="card-section mb-4" id="coMsgSection" style="padding:0;overflow:hidden">
+        <div class="d-flex justify-content-between align-items-center px-3 py-2" style="background:var(--teal,#0f7b6c);color:#fff;border-radius:14px 14px 0 0">
+          <h6 class="mb-0 fw-700">💬 الرسائل</h6>
+          <span class="badge bg-danger" id="coMsgBadge" style="display:none"></span>
+        </div>
+        <div id="coMsgConvoView">
+          <div id="coMsgConvoList" class="list-group list-group-flush" style="max-height:420px;overflow-y:auto">
+            <div class="text-center py-3 text-muted small">جارٍ تحميل الرسائل…</div>
+          </div>
+        </div>
+        <div id="coMsgThreadView" style="display:none">
+          <div class="p-2 border-bottom d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="coShowConvoList()">← رجوع</button>
+            <strong id="coMsgThreadName" class="ms-1"></strong>
+            <span id="coMsgOnline" class="rounded-circle" style="display:none;width:9px;height:9px;background:#22c55e" title="متصل"></span>
+          </div>
+          <div id="coMsgThreadMessages" style="height:300px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f8f9fa"></div>
+          <div id="coMsgTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic">…</div>
+          <div class="p-2 border-top d-flex gap-2 align-items-center">
+            <input type="file" id="coMsgFile" accept="image/*" style="display:none" onchange="coAttach(this)">
+            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('coMsgFile').click()" title="إرفاق صورة" style="flex-shrink:0">📎</button>
+            <input class="form-control form-control-sm" id="coMsgInput" placeholder="اكتب رداً…" oninput="coTyping()">
+            <button class="btn btn-sm btn-teal" onclick="coSendMsg()" style="flex-shrink:0">إرسال</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Status Card -->
       <div class="card-section mb-4">
         <div class="section-title">📊 <span data-i18n="co_acct_status">Account Status</span></div>
@@ -317,6 +345,23 @@ async function init() {
   // Load packages from the canonical tour_packages table (same as guides).
   await loadCompanyPackages();
   render();
+
+  // Messaging — load conversations + open the real-time channel
+  coLoadConvos();
+  coConnectSSE();
+  // Safety-net poll behind SSE
+  setInterval(() => { if (!CO_ACTIVE_OTHER_ID) coLoadConvos(); }, 15000);
+
+  // If we arrived with #messages?to=<id>, open that thread directly
+  // (used by "ابدأ محادثة" buttons elsewhere on the site).
+  try {
+    const hash = location.hash || '';
+    const m = hash.match(/to=([a-zA-Z0-9_-]+)/);
+    if (m) {
+      document.getElementById('coMsgSection')?.scrollIntoView({ behavior:'smooth' });
+      coOpenThread(m[1], '…');
+    }
+  } catch (_) {}
 }
 
 async function loadCompanyPackages() {
@@ -771,6 +816,177 @@ async function doLogout() {
 }
 
 window.onLangChange = () => { if (COMPANY) render(); };
+
+// ══════════════════════ MESSAGING (company) ══════════════════════
+let CO_CONVOS = [];
+let CO_ACTIVE_OTHER_ID = null;
+let CO_POLL = null;
+let CO_SSE = null;
+let CO_TYPING_TS = 0;
+let CO_TYPING_HIDE = null;
+
+function coEsc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function coFmtTime(iso){
+  const d = new Date(iso), diff = Date.now() - d;
+  if (diff < 60000) return '<1m';
+  if (diff < 3600000) return Math.floor(diff/60000)+'m';
+  if (diff < 86400000) return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString([], {day:'numeric',month:'short'});
+}
+
+function coConnectSSE(){
+  if (CO_SSE) return;
+  try {
+    CO_SSE = new EventSource('/api/messages/stream', { withCredentials:true });
+    CO_SSE.addEventListener('message', (e) => {
+      let m; try { m = JSON.parse(e.data); } catch { return; }
+      const otherId = m.fromId === COMPANY.id ? m.toId : m.fromId;
+      if (CO_ACTIVE_OTHER_ID && otherId === CO_ACTIVE_OTHER_ID) coLoadThread();
+      else coLoadConvos();
+    });
+    CO_SSE.addEventListener('typing', (e) => {
+      let t; try { t = JSON.parse(e.data); } catch { return; }
+      if (CO_ACTIVE_OTHER_ID && t.fromId === CO_ACTIVE_OTHER_ID) coShowTyping(t.isTyping);
+    });
+    CO_SSE.addEventListener('read', () => {
+      document.querySelectorAll('.co-tick').forEach(el => { el.textContent='✓✓'; el.style.color='#bfe3ff'; });
+    });
+  } catch {}
+}
+
+function coShowTyping(on){
+  const el = document.getElementById('coMsgTyping'); if (!el) return;
+  clearTimeout(CO_TYPING_HIDE);
+  if (on){ el.textContent='يكتب…'; el.style.display=''; CO_TYPING_HIDE=setTimeout(()=>el.style.display='none',4000); }
+  else el.style.display='none';
+}
+
+function coTyping(){
+  if (!CO_ACTIVE_OTHER_ID) return;
+  const now = Date.now();
+  if (now - CO_TYPING_TS < 2500) return;
+  CO_TYPING_TS = now;
+  fetch('/api/messages/typing', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ toId:CO_ACTIVE_OTHER_ID, isTyping:true }) }).catch(()=>{});
+}
+
+async function coAttach(inp){
+  const file = inp.files && inp.files[0]; inp.value='';
+  if (!file || !CO_ACTIVE_OTHER_ID) return;
+  if (file.size > 10*1024*1024){ showToast('الحد الأقصى 10 ميغابايت','danger'); return; }
+  try {
+    const fd = new FormData(); fd.append('file', file);
+    const ur = await fetch('/api/upload/message-attachment', { method:'POST', credentials:'include', body:fd });
+    const ud = await ur.json();
+    if (!ur.ok || !ud.success) throw new Error(ud.message||'فشل الرفع');
+    await coSendMsg({ attachmentUrl: ud.url, attachmentType:'image', attachmentName: ud.name });
+  } catch(e){ showToast(e.message||'فشل الرفع','danger'); }
+}
+
+async function coLoadConvos(){
+  try {
+    const r = await fetch('/api/messages/conversations', { credentials:'include' });
+    const d = await r.json();
+    CO_CONVOS = d.conversations || [];
+    coRenderConvos(); coUpdateBadge();
+  } catch {}
+}
+
+function coRenderConvos(){
+  const el = document.getElementById('coMsgConvoList');
+  if (!CO_CONVOS.length){ el.innerHTML = '<div class="text-center py-3 text-muted small">لا توجد محادثات بعد. ستظهر رسائل السياح هنا.</div>'; return; }
+  el.innerHTML = CO_CONVOS.map(c => {
+    const last = c.lastMessage || {};
+    const preview = (last.content||'').length > 46 ? last.content.slice(0,46)+'…' : (last.content || (last.attachmentType?'📷 صورة':''));
+    const time = coFmtTime(last.createdAt);
+    const unread = c.unread > 0 ? `<span class="badge bg-danger ms-1">${c.unread}</span>` : '';
+    const nm = (c.otherName||'؟');
+    return `<button class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2" onclick="coOpenThread('${c.otherId}', ${JSON.stringify(nm).replace(/"/g,'&quot;')})">
+      <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px;background:#e2f0ee;color:var(--teal,#0f7b6c);font-weight:700">${nm.charAt(0).toUpperCase()}</div>
+      <div class="flex-grow-1 text-start" style="min-width:0">
+        <div class="d-flex justify-content-between"><span class="fw-600 small">${coEsc(nm)}${unread}</span><span class="text-muted" style="font-size:.72rem">${time}</span></div>
+        <div class="text-muted text-truncate" style="font-size:.8rem">${coEsc(preview)}</div>
+      </div>
+    </button>`;
+  }).join('');
+}
+
+function coUpdateBadge(){
+  const total = CO_CONVOS.reduce((s,c)=>s+(c.unread||0),0);
+  const b = document.getElementById('coMsgBadge');
+  if (total>0){ b.textContent=total; b.style.display=''; } else b.style.display='none';
+}
+
+async function coOpenThread(otherId, otherName){
+  CO_ACTIVE_OTHER_ID = otherId;
+  document.getElementById('coMsgThreadName').textContent = otherName;
+  document.getElementById('coMsgTyping').style.display = 'none';
+  document.getElementById('coMsgConvoView').style.display = 'none';
+  document.getElementById('coMsgThreadView').style.display = '';
+  await coLoadThread();
+  clearInterval(CO_POLL);
+  CO_POLL = setInterval(coLoadThread, 9000);
+}
+
+function coShowConvoList(){
+  clearInterval(CO_POLL);
+  CO_ACTIVE_OTHER_ID = null;
+  document.getElementById('coMsgThreadView').style.display = 'none';
+  document.getElementById('coMsgConvoView').style.display = '';
+  coLoadConvos();
+}
+
+async function coLoadThread(){
+  if (!CO_ACTIVE_OTHER_ID) return;
+  try {
+    const r = await fetch(`/api/messages/thread/${CO_ACTIVE_OTHER_ID}`, { credentials:'include' });
+    const d = await r.json();
+    coRenderThread(d.messages || []);
+    const dot = document.getElementById('coMsgOnline');
+    if (dot) dot.style.display = d.online ? '' : 'none';
+    // Update header name from the first inbound message if we opened via deep-link
+    if (document.getElementById('coMsgThreadName').textContent === '…') {
+      const inbound = (d.messages||[]).find(m => m.fromId === CO_ACTIVE_OTHER_ID);
+      if (inbound) document.getElementById('coMsgThreadName').textContent = inbound.fromName || 'سائح';
+    }
+    coUpdateBadge();
+  } catch {}
+}
+
+function coRenderThread(msgs){
+  const el = document.getElementById('coMsgThreadMessages');
+  const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+  if (!msgs.length){ el.innerHTML = '<div class="text-center text-muted small mt-auto pt-4">ابدأ المحادثة 👋</div>'; return; }
+  let lastDay = '';
+  el.innerHTML = msgs.map(m => {
+    const isMine = m.fromId !== CO_ACTIVE_OTHER_ID;
+    const align = isMine ? 'align-self:flex-end;background:var(--teal,#0f7b6c);color:#fff' : 'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
+    const day = new Date(m.createdAt).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'});
+    let sep = '';
+    if (day !== lastDay){ lastDay=day; sep = `<div style="align-self:center;font-size:.68rem;color:#9aa3ab;background:#eef1f3;padding:1px 9px;border-radius:10px;margin:4px 0">${day}</div>`; }
+    let body = '';
+    if (m.attachmentUrl && m.attachmentType==='image') body += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" style="max-width:180px;max-height:180px;border-radius:9px;display:block;margin-bottom:${m.content?'4px':'0'}"></a>`;
+    else if (m.attachmentUrl) body += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${coEsc(m.attachmentName||'ملف')}</a>`;
+    if (m.content) body += `<div style="font-size:.9rem">${coEsc(m.content)}</div>`;
+    const tick = isMine ? `<span class="co-tick" style="margin-inline-start:5px;${m.isRead?'color:#bfe3ff':''}">${m.isRead?'✓✓':'✓'}</span>` : '';
+    return `${sep}<div style="max-width:78%;padding:7px 11px;border-radius:14px;${align}">${body}<div style="font-size:.7rem;opacity:.7;margin-top:2px;text-align:${isMine?'right':'left'}">${coFmtTime(m.createdAt)}${tick}</div></div>`;
+  }).join('');
+  if (wasAtBottom) el.scrollTop = el.scrollHeight;
+}
+
+async function coSendMsg(extra){
+  const input = document.getElementById('coMsgInput');
+  const content = (input.value||'').trim();
+  const payload = { toId: CO_ACTIVE_OTHER_ID, content, ...(extra||{}) };
+  if ((!content && !payload.attachmentUrl) || !CO_ACTIVE_OTHER_ID) return;
+  input.value = '';
+  try {
+    const r = await fetch('/api/messages', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if (!r.ok) throw new Error();
+    await coLoadThread();
+  } catch { showToast('تعذّر إرسال الرسالة','danger'); }
+}
+
+document.addEventListener('keydown', e => { if (e.key==='Enter' && document.activeElement?.id==='coMsgInput') coSendMsg(); });
 
 init();
 </script>
