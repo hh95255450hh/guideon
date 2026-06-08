@@ -21,7 +21,7 @@
 
   // ─── Style ────────────────────────────────────────────────────────────
   const css = `
-  :root {
+  html {
     --gd-teal-500: #0f7b6c;
     --gd-teal-600: #0a5c50;
     --gd-gold-500: #c9a84c;
@@ -30,6 +30,7 @@
     --gd-ink-500: #6b7280;
     --gd-ink-100: #eef0f4;
     --gd-ink-50:  #f7f8fa;
+    --gd-danger:  #dc2626;
     --gd-shadow-sm: 0 1px 3px rgba(15,28,62,.08);
     --gd-shadow-lg: 0 12px 32px rgba(15,28,62,.16);
   }
@@ -294,8 +295,10 @@
           ${user ? `
             <div class="gd-drawer-sep"></div>
             <a href="${dashboardFor(user)}">${svg('dashboard')} ${tr('My Dashboard','لوحتي')}</a>
-            <a href="/notifications.html">${svg('bell')} ${tr('Notifications','الإشعارات')}</a>
             <a href="/profile.html">${svg('user')} ${tr('My Profile','ملفي الشخصي')}</a>
+            <a href="/notifications.html">${svg('bell')} ${tr('Notifications','الإشعارات')}</a>
+            ${user.userType === 'tourist' ? `<a href="/wishlist.html"><span style="font-size:18px">❤️</span> ${tr('Saved Guides','المرشدون المحفوظون')}</a>` : ''}
+            <a href="/contact.html"><span style="font-size:18px">💬</span> ${tr('Contact Support','تواصل مع الدعم')}</a>
           ` : ''}
         </nav>
         <div class="gd-drawer-foot">
@@ -352,10 +355,83 @@
     return name.trim().split(/\s+/).slice(0,2).map(s => s[0] || '').join('').toUpperCase();
   }
 
+  // ─── Profile menu (avatar dropdown) ──────────────────────────────────
+  function toggleProfileMenu(user) {
+    const existing = document.getElementById('gdProfileMenu');
+    if (existing) { existing.remove(); return; }
+    const menu = document.createElement('div');
+    menu.id = 'gdProfileMenu';
+    menu.style.cssText = `
+      position: fixed; z-index: 1050;
+      top: 60px; inset-inline-end: 16px;
+      background: #fff; color: var(--gd-ink-900);
+      border-radius: 12px; min-width: 240px;
+      box-shadow: var(--gd-shadow-lg);
+      overflow: hidden; border: 1px solid var(--gd-ink-100);
+      animation: gdMenuFadeIn .15s ease;
+    `;
+    if (!document.getElementById('gdMenuStyle')) {
+      const s = document.createElement('style');
+      s.id = 'gdMenuStyle';
+      s.textContent = `
+        @keyframes gdMenuFadeIn { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:translateY(0) } }
+        #gdProfileMenu a, #gdProfileMenu button {
+          display: flex; align-items: center; gap: 12px;
+          padding: 12px 18px; text-decoration: none;
+          color: var(--gd-ink-900); font-weight: 600; font-size: 14px;
+          width: 100%; text-align: start; border: 0; background: transparent;
+          cursor: pointer; transition: background .15s;
+        }
+        #gdProfileMenu a:hover, #gdProfileMenu button:hover { background: var(--gd-ink-50); }
+        #gdProfileMenu svg { width: 18px; height: 18px; color: var(--gd-ink-500); }
+        #gdProfileMenu .head {
+          padding: 14px 18px; background: var(--gd-ink-50); border-bottom: 1px solid var(--gd-ink-100);
+        }
+        #gdProfileMenu .head .name { font-weight: 700; font-size: 14px; }
+        #gdProfileMenu .head .sub  { font-size: 12px; color: var(--gd-ink-500); margin-top: 2px; }
+        #gdProfileMenu .sep { height: 1px; background: var(--gd-ink-100); margin: 4px 0; }
+        #gdProfileMenu .danger { color: var(--gd-danger, #dc2626); }
+        #gdProfileMenu .danger svg { color: var(--gd-danger, #dc2626); }
+      `;
+      document.head.appendChild(s);
+    }
+    menu.innerHTML = `
+      <div class="head">
+        <div class="name">${escapeHtml(user.fullName || user.companyName || user.email)}</div>
+        <div class="sub">${userTypeLabel(user.userType)}</div>
+      </div>
+      <a href="${dashboardFor(user)}">${svg('dashboard')} ${tr('My Dashboard','لوحتي')}</a>
+      <a href="/profile.html">${svg('user')} ${tr('My Profile','ملفي الشخصي')}</a>
+      <a href="/notifications.html">${svg('bell')} ${tr('Notifications','الإشعارات')}</a>
+      <div class="sep"></div>
+      <button id="gdMenuLogout" class="danger">${svg('logout')} ${tr('Sign Out','تسجيل الخروج')}</button>
+    `;
+    document.body.appendChild(menu);
+    // Close when clicking elsewhere
+    setTimeout(() => {
+      const handler = (ev) => {
+        if (!menu.contains(ev.target) && ev.target.id !== 'gdNavAvatarWrap') {
+          menu.remove();
+          document.removeEventListener('click', handler);
+        }
+      };
+      document.addEventListener('click', handler);
+    }, 0);
+    document.getElementById('gdMenuLogout').addEventListener('click', async () => {
+      try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+      location.href = '/';
+    });
+  }
+
   // ─── Mount ────────────────────────────────────────────────────────────
   async function mount() {
-    // Remove any existing legacy <nav>/.navbar at the top of the page
-    document.querySelectorAll('body > nav, body > .navbar, body > header.navbar').forEach(el => el.remove());
+    // Hide (not remove) legacy navbars so any inline scripts that still
+    // reference their IDs (e.g. navName, navAuth, navUser) keep working,
+    // and any action buttons hidden inside them stay queryable.
+    document.querySelectorAll('body > nav, body > .navbar, body > header.navbar').forEach(el => {
+      el.style.display = 'none';
+      el.setAttribute('aria-hidden', 'true');
+    });
 
     const { nav, bottom } = buildNav();
     document.body.insertBefore(nav, document.body.firstChild);
@@ -395,8 +471,9 @@
     if (user) {
       const av = document.getElementById('gdNavAvatar');
       av.innerHTML = avatarHTML(user);
-      document.getElementById('gdNavAvatarWrap').addEventListener('click', () => {
-        location.href = dashboardFor(user);
+      document.getElementById('gdNavAvatarWrap').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleProfileMenu(user);
       });
     } else {
       document.getElementById('gdNavAvatarWrap').addEventListener('click', () => {
