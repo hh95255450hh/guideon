@@ -8,6 +8,27 @@
   const WHATSAPP_NUMBER = '96895255450';
   const COOKIE_KEY = 'guideon-cookie-consent-v1';
 
+  // ─── Shared session cache ────────────────────────────────────────────
+  // Multiple scripts (navbar, notifications, verify banner) all need to
+  // know if the user is signed in. Without coordination they each fire
+  // GET /api/auth/me on every page load — 3+ duplicate round-trips. This
+  // exposes a single promise everyone reuses.
+  window.gdSession = window.gdSession || (function () {
+    let promise = null;
+    return {
+      get() {
+        if (!promise) {
+          promise = fetch('/api/auth/me', { credentials: 'include' })
+            .then(r => r.ok ? r.json() : null)
+            .then(d => (d && d.user) ? d.user : null)
+            .catch(() => null);
+        }
+        return promise;
+      },
+      invalidate() { promise = null; },
+    };
+  })();
+
   // ─── Inject CSS once ──────────────────────────────────────────────────
   const css = `
     .gd-wa-btn {
@@ -242,12 +263,7 @@
   // sign-ins (auto-verified) and grandfathered accounts (field undefined).
   async function injectVerifyBanner() {
     let me;
-    try {
-      const r = await fetch('/api/auth/me', { credentials: 'include' });
-      if (!r.ok) return;
-      const d = await r.json();
-      me = d && d.user;
-    } catch { return; }
+    try { me = await window.gdSession.get(); } catch { return; }
     if (!me || me.emailVerified !== false) return; // only when explicitly false
     if (sessionStorage.getItem('gd_verify_hidden') === '1') return;
 

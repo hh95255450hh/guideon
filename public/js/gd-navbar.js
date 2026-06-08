@@ -329,7 +329,13 @@
   }
 
   function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function activeAttr(p) { return path.startsWith(p) && p !== '/' || path === p ? 'class="active"' : ''; }
+  // Operator-precedence bug: previously `&&` bound tighter than `||` so '/'
+  // matched every page. Parens make the intent explicit: exact match for the
+  // home page, prefix match for everything else.
+  function activeAttr(p) {
+    const match = (p === '/') ? (path === '/') : path.startsWith(p);
+    return match ? 'class="active"' : '';
+  }
   function userTypeLabel(t) {
     return ({
       tourist:  tr('Tourist','سائح'),
@@ -443,9 +449,14 @@
       if (href && (path === href || path.startsWith(href.replace(/\.html$/, '')))) a.classList.add('active');
     });
 
-    // Language / currency syncing
-    const lang = (localStorage.getItem('gd_lang') || 'en');
-    const cur  = (localStorage.getItem('gd_currency') || 'OMR');
+    // Language / currency syncing — whitelist values so a hand-edited
+    // localStorage entry can never inject arbitrary text into the DOM.
+    const ALLOWED_LANG = new Set(['en', 'ar']);
+    const ALLOWED_CUR  = new Set(['OMR', 'USD', 'EUR', 'GBP']);
+    const rawLang = localStorage.getItem('gd_lang');
+    const rawCur  = localStorage.getItem('gd_currency');
+    const lang = ALLOWED_LANG.has(rawLang) ? rawLang : 'en';
+    const cur  = ALLOWED_CUR.has(rawCur)   ? rawCur  : 'OMR';
     const langSel = document.getElementById('gdNavLang');
     const curSel  = document.getElementById('gdNavCurrency');
     if (langSel) langSel.value = lang;
@@ -461,11 +472,15 @@
       else location.reload();
     });
 
-    // Load session for avatar + drawer state
+    // Load session for avatar + drawer state — reuse the shared session
+    // promise from common-widgets so we don't double-fetch /auth/me.
     let user = null;
     try {
-      const r = await fetch('/api/auth/me', { credentials: 'include' });
-      if (r.ok) { const d = await r.json(); user = d.user || null; }
+      if (window.gdSession) user = await window.gdSession.get();
+      else {
+        const r = await fetch('/api/auth/me', { credentials: 'include' });
+        if (r.ok) { const d = await r.json(); user = d.user || null; }
+      }
     } catch {}
 
     if (user) {

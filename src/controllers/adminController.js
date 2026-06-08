@@ -16,9 +16,20 @@ const auditLog    = new SupabaseDB('admin_audit_log');
 // Aggregates real events from existing tables (registrations, new tours,
 // bookings, status changes, reviews) into a single time-sorted timeline.
 // Read-only — no extra logging required.
+// Cache the heavy 4-table scan that builds the activity feed. Admin opens
+// this every couple of minutes at most — a 30s cache keeps the page snappy
+// AND protects Supabase Egress quota as the dataset grows.
+let _activityCache = { at: 0, data: null, key: null };
+const ACTIVITY_CACHE_MS = 30 * 1000;
+
 exports.recentActivity = async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 40, 100);
+    const cacheKey = String(limit);
+    if (_activityCache.data && _activityCache.key === cacheKey &&
+        Date.now() - _activityCache.at < ACTIVITY_CACHE_MS) {
+      return res.json({ success: true, cached: true, activity: _activityCache.data });
+    }
     const [allUsers, allPackages, allBookings, allReviews] = await Promise.all([
       users.findAll().catch(() => []),
       packages.findAll().catch(() => []),
@@ -73,7 +84,9 @@ exports.recentActivity = async (req, res) => {
     });
 
     events.sort((a, b) => new Date(b.at) - new Date(a.at));
-    res.json({ success: true, activity: events.slice(0, limit) });
+    const sliced = events.slice(0, limit);
+    _activityCache = { at: Date.now(), data: sliced, key: cacheKey };
+    res.json({ success: true, cached: false, activity: sliced });
   } catch (err) {
     console.error('[recentActivity]', err.message);
     res.status(500).json({ success: false, message: 'Server error.' });

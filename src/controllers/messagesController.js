@@ -117,10 +117,18 @@ async function conversations(req, res) {
 }
 
 // GET /api/messages/thread/:otherId
+// Match the id shapes the app actually issues. Block anything else so we
+// never interpolate user input into a PostgREST .or() clause unguarded.
+const ID_PATTERN = /^[a-zA-Z0-9_-]{3,64}$/;
+
 async function thread(req, res) {
   try {
     const userId  = req.session.userId;
     const otherId = req.params.otherId;
+
+    if (!ID_PATTERN.test(otherId)) {
+      return res.status(400).json({ success: false, message: 'Invalid recipient id.' });
+    }
 
     const { data: msgs, error } = await supabase
       .from('messages')

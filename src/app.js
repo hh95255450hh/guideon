@@ -115,13 +115,20 @@ try {
 }
 
 // Session secret MUST be set in production. A known default would let anyone
-// forge signed session cookies (account/admin takeover).
+// forge signed session cookies (account/admin takeover). Fail fast instead
+// of starting with a public fallback that silently puts us at risk.
 if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
-  console.error('[SECURITY] ⚠️  SESSION_SECRET is not set! Sessions are signed with a public default — set a strong random SESSION_SECRET in your host env immediately.');
+  console.error('[SECURITY] FATAL: SESSION_SECRET is not set. Refusing to start in production with a default secret.');
+  process.exit(1);
 }
+// Outside production, generate an ephemeral random secret per boot so we
+// never ship a hardcoded one. Sessions reset on dev restart — acceptable.
+const SESSION_SECRET = process.env.SESSION_SECRET
+  || require('crypto').randomBytes(48).toString('hex');
+
 app.use(session({
   store: sessionStore,
-  secret: process.env.SESSION_SECRET || 'Guideon-secret-2025',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {

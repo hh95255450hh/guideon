@@ -391,8 +391,16 @@
   let _pollTimer = null;
   async function init() {
     try {
-      const r = await fetch('/api/auth/me', { credentials: 'include' });
-      if (!r.ok) return; // not signed in — don't show bell
+      // Reuse the shared session promise so we don't re-fetch /auth/me when
+      // the navbar already asked for it.
+      let user = null;
+      if (window.gdSession) user = await window.gdSession.get();
+      else {
+        const r = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!r.ok) return;
+        user = (await r.json()).user || null;
+      }
+      if (!user) return;
       inject();
       pollUnread();
       _pollTimer = setInterval(() => { if (!document.hidden) pollUnread(); }, POLL_INTERVAL);
