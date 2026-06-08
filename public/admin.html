@@ -142,6 +142,7 @@
     <button class="admin-tab" onclick="showTab('staff',this)" data-i18n="tab_staff">👔 Staff</button>
     <button class="admin-tab" onclick="showTab('messages',this)">💬 Messages <span class="badge bg-danger" id="adminMsgBadge" style="display:none"></span></button>
     <button class="admin-tab" onclick="showTab('chatmod',this); loadAllChats()">🔍 Chat Moderation</button>
+    <button class="admin-tab" onclick="showTab('content',this)">🗺️ المحتوى</button>
     <button class="admin-tab" onclick="showTab('broadcast',this)" data-i18n="tab_broadcast">📢 Broadcast</button>
     <button class="admin-tab" onclick="showTab('analytics',this)" data-i18n="tab_analytics">📈 Analytics</button>
     <button class="admin-tab" onclick="showTab('audit',this)" data-i18n="tab_audit">🔍 Audit Log</button>
@@ -451,6 +452,37 @@
     </div>
   </div>
 
+  <!-- ═════════════════════════ CONTENT MANAGER ═════════════════════════ -->
+  <div id="tab-content" class="d-none">
+    <div class="t-card p-4">
+      <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+        <div>
+          <h5 class="fw-700 mb-1">🗺️ إدارة محتوى الصفحات</h5>
+          <p class="text-muted small mb-0">تحكّم كامل بصور وتفاصيل صفحات المناطق والمسارات. التغييرات تظهر مباشرة على الموقع.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm" id="cmTabRegions" style="background:var(--teal);color:#fff" onclick="cmSwitch('regions')">🏞️ المناطق</button>
+          <button class="btn btn-sm btn-outline-secondary" id="cmTabTrails" onclick="cmSwitch('trails')">🥾 المسارات</button>
+        </div>
+      </div>
+
+      <div class="alert alert-info small d-flex justify-content-between align-items-center">
+        <span>💡 اضغط على أي حقل لتعديله. لتغيير الصورة اضغط "رفع صورة". لا تُنشر التغييرات حتى تضغط <strong>حفظ الكل</strong>.</span>
+        <div class="d-flex gap-2 flex-shrink-0">
+          <button class="btn btn-sm btn-outline-danger" onclick="cmReset()">↺ استعادة الافتراضي</button>
+          <button class="btn btn-sm btn-success" onclick="cmSaveAll()" id="cmSaveBtn">💾 حفظ الكل</button>
+        </div>
+      </div>
+
+      <div id="cmEditor"><div class="text-center py-5 text-muted">جارٍ التحميل…</div></div>
+
+      <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-outline-teal btn-sm" onclick="cmAddItem()">➕ إضافة عنصر جديد</button>
+        <button class="btn btn-success" onclick="cmSaveAll()">💾 حفظ الكل</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ═════════════════════════ BROADCAST ═════════════════════════ -->
   <div id="tab-broadcast" class="d-none">
     <div class="t-card p-4">
@@ -560,7 +592,7 @@ function doLogout() {
 
 // ── Tab switch ───────────────────────────────────────────────
 let ACTIVE_TAB = 'pending';
-const TABS = ['activity','pending','guides','companies','tourists','bookings','admins','staff','messages','chatmod','broadcast','analytics','audit','export'];
+const TABS = ['activity','pending','guides','companies','tourists','bookings','admins','staff','messages','chatmod','content','broadcast','analytics','audit','export'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
@@ -577,6 +609,7 @@ function showTab(name, btn) {
   else if (name==='staff')     loadStaff();
   else if (name==='messages')  adminLoadConvos();
   else if (name==='chatmod')   loadAllChats();
+  else if (name==='content')   loadContentManager();
 }
 
 // ── Recent Activity timeline ──────────────────────────────────
@@ -1514,6 +1547,197 @@ function adminConnectSSE(){
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement?.id==='adminMsgInput')adminSendMsg();});
 
 checkAuth();
+
+// ══════════════════════ CONTENT MANAGER ══════════════════════
+let CM_KIND = 'regions';      // 'regions' | 'trails'
+let CM_DATA = { regions: null, trails: null };
+
+// Field schema per content kind — drives the editor form generation.
+const CM_SCHEMA = {
+  regions: {
+    arrayKey: 'regions',
+    title: 'المناطق',
+    img: 'hero',
+    fields: [
+      { k:'id', label:'المعرّف (id)', type:'text' },
+      { k:'name_ar', label:'الاسم (عربي)', type:'text' },
+      { k:'name_en', label:'الاسم (إنجليزي)', type:'text' },
+      { k:'tagline_ar', label:'وصف مختصر (عربي)', type:'text' },
+      { k:'tagline_en', label:'وصف مختصر (إنجليزي)', type:'text' },
+      { k:'sites', label:'عدد المواقع', type:'number' },
+      { k:'best_time_ar', label:'أفضل وقت (عربي)', type:'text' },
+      { k:'best_time_en', label:'أفضل وقت (إنجليزي)', type:'text' },
+      { k:'intro_ar', label:'مقدمة (عربي)', type:'textarea' },
+      { k:'intro_en', label:'مقدمة (إنجليزي)', type:'textarea' },
+      { k:'highlights_ar', label:'المعالم (عربي، افصل بفاصلة)', type:'list' },
+      { k:'highlights_en', label:'المعالم (إنجليزي، افصل بفاصلة)', type:'list' },
+    ],
+  },
+  trails: {
+    arrayKey: 'trails',
+    title: 'المسارات',
+    img: 'image',
+    fields: [
+      { k:'id', label:'المعرّف (id)', type:'text' },
+      { k:'name_ar', label:'الاسم (عربي)', type:'text' },
+      { k:'name_en', label:'الاسم (إنجليزي)', type:'text' },
+      { k:'region_ar', label:'المنطقة (عربي)', type:'text' },
+      { k:'region_en', label:'المنطقة (إنجليزي)', type:'text' },
+      { k:'difficulty', label:'الصعوبة (easy/moderate/hard)', type:'text' },
+      { k:'distance_km', label:'المسافة (كم)', type:'number' },
+      { k:'duration_hours', label:'المدة (ساعات)', type:'number' },
+      { k:'elevation_m', label:'الارتفاع (م)', type:'number' },
+      { k:'desc_ar', label:'الوصف (عربي)', type:'textarea' },
+      { k:'desc_en', label:'الوصف (إنجليزي)', type:'textarea' },
+      { k:'best_time_ar', label:'أفضل وقت (عربي)', type:'text' },
+      { k:'best_time_en', label:'أفضل وقت (إنجليزي)', type:'text' },
+    ],
+  },
+};
+
+async function loadContentManager() {
+  cmSwitch(CM_KIND);
+}
+
+async function cmSwitch(kind) {
+  CM_KIND = kind;
+  document.getElementById('cmTabRegions').className = 'btn btn-sm ' + (kind==='regions'?'':'btn-outline-secondary');
+  document.getElementById('cmTabTrails').className  = 'btn btn-sm ' + (kind==='trails'?'':'btn-outline-secondary');
+  document.getElementById('cmTabRegions').style.cssText = kind==='regions'?'background:var(--teal);color:#fff':'';
+  document.getElementById('cmTabTrails').style.cssText  = kind==='trails'?'background:var(--teal);color:#fff':'';
+  const el = document.getElementById('cmEditor');
+  el.innerHTML = '<div class="text-center py-5 text-muted">جارٍ التحميل…</div>';
+  try {
+    const r = await fetch('/api/admin/content/' + kind, { credentials:'include' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'fail');
+    CM_DATA[kind] = d.data;
+    cmRender();
+  } catch (e) {
+    el.innerHTML = `<div class="text-center py-4 text-danger">تعذّر التحميل: ${e.message}</div>`;
+  }
+}
+
+function cmRender() {
+  const schema = CM_SCHEMA[CM_KIND];
+  const arr = (CM_DATA[CM_KIND] && CM_DATA[CM_KIND][schema.arrayKey]) || [];
+  const el = document.getElementById('cmEditor');
+  if (!arr.length) { el.innerHTML = '<div class="text-center py-4 text-muted">لا توجد عناصر. اضغط "إضافة عنصر".</div>'; return; }
+
+  el.innerHTML = arr.map((item, idx) => {
+    const img = item[schema.img] || '';
+    const fieldsHtml = schema.fields.map(f => {
+      const val = f.type==='list' ? (Array.isArray(item[f.k])?item[f.k].join('، '):'') : (item[f.k] != null ? item[f.k] : '');
+      const safe = String(val).replace(/"/g,'&quot;');
+      if (f.type==='textarea') {
+        return `<div class="col-md-6"><label class="form-label small fw-600 mb-1">${f.label}</label>
+          <textarea class="form-control form-control-sm" rows="3" data-idx="${idx}" data-k="${f.k}" data-t="${f.type}">${String(val).replace(/</g,'&lt;')}</textarea></div>`;
+      }
+      if (f.type==='list') {
+        return `<div class="col-12"><label class="form-label small fw-600 mb-1">${f.label}</label>
+          <input class="form-control form-control-sm" value="${safe}" data-idx="${idx}" data-k="${f.k}" data-t="list"></div>`;
+      }
+      return `<div class="col-md-4 col-6"><label class="form-label small fw-600 mb-1">${f.label}</label>
+        <input class="form-control form-control-sm" type="${f.type}" value="${safe}" data-idx="${idx}" data-k="${f.k}" data-t="${f.type}"></div>`;
+    }).join('');
+
+    return `
+    <div class="border rounded p-3 mb-3" style="background:#fafbfc" data-card="${idx}">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-700 mb-0">#${idx+1} · ${(item.name_ar||item.name_en||item.id||'عنصر')}</h6>
+        <button class="btn btn-sm btn-outline-danger" onclick="cmRemove(${idx})">🗑️ حذف</button>
+      </div>
+      <div class="row g-2 align-items-start">
+        <div class="col-md-3 text-center">
+          <img src="${img||'/logo.png'}" id="cmImg_${idx}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.src='/logo.png'">
+          <input type="file" accept="image/*" id="cmFile_${idx}" style="display:none" onchange="cmUpload(${idx},this)">
+          <button class="btn btn-sm btn-outline-teal w-100 mt-2" onclick="document.getElementById('cmFile_${idx}').click()">📷 رفع صورة</button>
+          <input class="form-control form-control-sm mt-1" placeholder="أو الصق رابط صورة" value="${String(img).replace(/"/g,'&quot;')}" data-idx="${idx}" data-k="${schema.img}" data-t="text" oninput="document.getElementById('cmImg_${idx}').src=this.value||'/logo.png'">
+        </div>
+        <div class="col-md-9"><div class="row g-2">${fieldsHtml}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Pull current form values back into CM_DATA before save/add/remove
+function cmCollect() {
+  const schema = CM_SCHEMA[CM_KIND];
+  const arr = CM_DATA[CM_KIND][schema.arrayKey];
+  document.querySelectorAll('#cmEditor [data-idx]').forEach(inp => {
+    const idx = +inp.dataset.idx, k = inp.dataset.k, t = inp.dataset.t;
+    if (!arr[idx]) return;
+    let v = inp.value;
+    if (t==='number') v = parseFloat(v) || 0;
+    else if (t==='list') v = v.split(/[،,]/).map(s=>s.trim()).filter(Boolean);
+    arr[idx][k] = v;
+  });
+}
+
+async function cmUpload(idx, inp) {
+  const file = inp.files && inp.files[0]; inp.value='';
+  if (!file) return;
+  const fd = new FormData(); fd.append('photo', file);
+  document.getElementById('cmImg_'+idx).style.opacity = '.5';
+  try {
+    const r = await fetch('/api/upload/image', { method:'POST', credentials:'include', body:fd });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message||'فشل الرفع');
+    const schema = CM_SCHEMA[CM_KIND];
+    cmCollect();
+    CM_DATA[CM_KIND][schema.arrayKey][idx][schema.img] = d.url;
+    cmRender();
+    showToast('تم رفع الصورة ✅','success');
+  } catch(e){ showToast(e.message||'فشل الرفع','danger'); document.getElementById('cmImg_'+idx).style.opacity='1'; }
+}
+
+function cmRemove(idx) {
+  if (!confirm('حذف هذا العنصر؟')) return;
+  cmCollect();
+  CM_DATA[CM_KIND][CM_SCHEMA[CM_KIND].arrayKey].splice(idx, 1);
+  cmRender();
+}
+
+function cmAddItem() {
+  cmCollect();
+  const schema = CM_SCHEMA[CM_KIND];
+  const blank = { id: CM_KIND.slice(0,3) + '-' + Date.now().toString(36) };
+  schema.fields.forEach(f => { if (f.k!=='id') blank[f.k] = f.type==='list' ? [] : (f.type==='number'?0:''); });
+  blank[schema.img] = '';
+  CM_DATA[CM_KIND][schema.arrayKey].push(blank);
+  cmRender();
+  // scroll to bottom
+  document.getElementById('cmEditor').lastElementChild?.scrollIntoView({behavior:'smooth'});
+}
+
+async function cmSaveAll() {
+  cmCollect();
+  const btn = document.getElementById('cmSaveBtn');
+  if (btn){ btn.disabled = true; btn.textContent = 'جارٍ الحفظ…'; }
+  try {
+    const r = await fetch('/api/admin/content/' + CM_KIND, {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ data: CM_DATA[CM_KIND] }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message||'فشل الحفظ');
+    showToast('تم حفظ التغييرات ونشرها ✅','success');
+  } catch(e){ showToast(e.message||'فشل الحفظ','danger'); }
+  finally { if (btn){ btn.disabled=false; btn.textContent='💾 حفظ الكل'; } }
+}
+
+async function cmReset() {
+  if (!confirm('استعادة المحتوى الافتراضي؟ سيُلغى كلّ تعديلاتك على هذا القسم.')) return;
+  try {
+    const r = await fetch('/api/admin/content/' + CM_KIND + '/reset', { method:'POST', credentials:'include' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message||'فشل');
+    CM_DATA[CM_KIND] = d.data;
+    cmRender();
+    showToast('تمت الاستعادة','success');
+  } catch(e){ showToast(e.message||'فشل','danger'); }
+}
 
 // ─── CHAT MODERATION (admin sees all user-to-user conversations) ───
 let _chatModAll = [];

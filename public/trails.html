@@ -72,7 +72,7 @@
       b.textContent = m[b.dataset.f];
     });
   }
-  const data = await fetch('/data/trails.json').then(r=>r.json());
+  const data = await fetch('/api/content/trails').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/trails.json').then(r=>r.json())).catch(()=>fetch('/data/trails.json').then(r=>r.json()));
   const grid = document.getElementById('tGrid');
   const dMap = {easy:{en:'Easy',ar:'سهل'}, moderate:{en:'Moderate',ar:'متوسط'}, hard:{en:'Hard',ar:'صعب'}};
   function render(filter) {

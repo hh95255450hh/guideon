@@ -424,7 +424,7 @@
 window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
 (async () => {
   try {
-    const d = await fetch('/data/regions.json').then(r=>r.json());
+    const d = await fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json())).catch(()=>fetch('/data/regions.json').then(r=>r.json()));
     const isAr = (document.documentElement.lang||'').toLowerCase().startsWith('ar');
     // Localize the section heading/subtitle correctly (avoids the RTL
     // number-reordering glitch where "11" jumped to the end).

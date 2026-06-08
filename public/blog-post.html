@@ -53,7 +53,7 @@
   const isAr = lang.startsWith('ar');
   if (isAr) { document.documentElement.lang='ar'; document.documentElement.dir='rtl'; }
   const id = new URLSearchParams(location.search).get('id');
-  const data = await fetch('/data/blog.json').then(r=>r.json());
+  const data = await fetch('/api/content/blog').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/blog.json').then(r=>r.json())).catch(()=>fetch('/data/blog.json').then(r=>r.json()));
   const p = data.posts.find(x => x.slug === id) || data.posts[0];
   document.title = (isAr?p.title_ar:p.title_en) + ' — Guideon';
   document.getElementById('pHero').style.backgroundImage = `url('${p.cover}')`;

@@ -58,7 +58,7 @@
     document.getElementById('pHeroSub').textContent = 'من أخوار مسندم إلى جبال ظفار الضبابية — اكتشف محافظات السلطنة الـ11 بمعالم مختارة ومرشدين محلّيين.';
   }
   const FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
-  const data = await fetch('/data/regions.json').then(r=>r.json());
+  const data = await fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json())).catch(()=>fetch('/data/regions.json').then(r=>r.json()));
   const grid = document.getElementById('regionGrid');
   grid.innerHTML = data.regions.map(r => `
     <a class="region-card" href="/region.html?id=${r.id}">

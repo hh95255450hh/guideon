@@ -180,6 +180,7 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/site-settings', require('./routes/siteSettings'));
+app.use('/api/content', require('./routes/content'));
 app.use('/api/stats',    require('./routes/stats'));
 app.use('/api',          require('./routes/guideAnalytics'));
 app.use('/api/qa', require('./routes/qa'));

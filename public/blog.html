@@ -52,7 +52,7 @@
     document.getElementById('pTitle').textContent='قصص ودلائل السفر';
     document.getElementById('pSub').textContent='خطط رحلات عملية، نصائح موسمية، وقصص من مرشدينا المرخّصين.';
   }
-  const data = await fetch('/data/blog.json').then(r=>r.json());
+  const data = await fetch('/api/content/blog').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/blog.json').then(r=>r.json())).catch(()=>fetch('/data/blog.json').then(r=>r.json()));
   document.getElementById('bGrid').innerHTML = data.posts.map(p => `
     <a class="b-card" href="/blog-post.html?id=${p.slug}">
       <div class="img" style="background-image:url('${p.cover}')"></div>

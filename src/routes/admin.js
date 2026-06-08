@@ -68,4 +68,10 @@ const { adminListConversations, adminViewThread } = require('../controllers/mess
 router.get('/messages/conversations', adminListConversations);
 router.get('/messages/thread',        adminViewThread);
 
+// Content management — regions / trails / blog (admin or staff)
+const content = require('../controllers/contentController');
+router.get('/content/:key',        content.get);
+router.put('/content/:key',        content.save);
+router.post('/content/:key/reset', content.reset);
+
 module.exports = router;
