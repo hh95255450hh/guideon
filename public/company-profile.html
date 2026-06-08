@@ -17,11 +17,18 @@
   .co-avatar img { width:100%; height:100%; object-fit:cover; border-radius:14px; }
   .info-card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,.07); margin-bottom:20px; border:1px solid #eef0f4; }
   .info-card h5 { font-weight:800; font-size:1.05rem; color:#1a1a2e; margin-bottom:14px; }
-  .pkg-card { background:#fff; border:1px solid #e8eef0; border-radius:14px; padding:18px; transition:.2s; }
+  .pkg-card { background:#fff; border:1px solid #e8eef0; border-radius:14px; overflow:hidden; transition:.2s; display:flex; flex-direction:column; height:100%; }
   .pkg-card:hover { box-shadow:0 6px 22px rgba(0,0,0,.08); transform:translateY(-2px); }
-  .pkg-price { font-weight:800; color:#0f7b6c; font-size:1.4rem; }
+  .pkg-card-img { width:100%; height:160px; object-fit:cover; background:#f0f4f3; }
+  .pkg-card-body { padding:14px; flex:1; display:flex; flex-direction:column; }
+  .pkg-price { font-weight:800; color:#0f7b6c; font-size:1.25rem; }
   .badge-verified { background:rgba(34,197,94,.18); border:1px solid rgba(34,197,94,.5); color:#bbf7d0; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; }
   .badge-pending { background:rgba(234,179,8,.15); border:1px solid rgba(234,179,8,.45); color:#fef08a; padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700; }
+  .co-tag { display:inline-block; padding:5px 14px; border-radius:20px; font-size:.8rem; font-weight:600; margin:3px; background:#e8f5f0; color:#0f7b6c; }
+  .co-dest-tag { background:#f4f6fb; color:#1a2c5b; border:1px solid #dee2e6; }
+  .co-gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; }
+  .co-gallery-grid img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:10px; cursor:pointer; transition:.2s; }
+  .co-gallery-grid img:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(0,0,0,.15); }
 </style>
 </head>
 <body>
@@ -71,16 +78,36 @@
           <p id="cDescription" class="text-muted mb-0" style="line-height:1.8">—</p>
         </div>
 
+        <div class="info-card d-none" id="cServicesCard">
+          <h5>✨ <span>الخدمات المقدمة</span></h5>
+          <div id="cServices"></div>
+        </div>
+
+        <div class="info-card d-none" id="cDestsCard">
+          <h5>📍 <span>الوجهات المغطاة</span></h5>
+          <div id="cDestinations"></div>
+        </div>
+
+        <div class="info-card d-none" id="cGalleryCard">
+          <h5>📸 <span>معرض الصور</span></h5>
+          <div id="cGallery" class="co-gallery-grid"></div>
+        </div>
+
+        <div class="info-card d-none" id="cVideoCard">
+          <h5>🎬 <span>فيديو تعريفي</span></h5>
+          <div id="cVideo"></div>
+        </div>
+
         <div class="info-card">
           <h5>🗺️ <span>الرحلات المتاحة</span></h5>
-          <div id="cPackages">
-            <div class="text-center py-4 text-muted small">جارٍ التحميل…</div>
+          <div id="cPackages" class="row g-3">
+            <div class="col-12 text-center py-4 text-muted small">جارٍ التحميل…</div>
           </div>
         </div>
       </div>
 
       <div class="col-lg-4">
-        <div class="info-card">
+        <div class="info-card" style="position:sticky;top:80px">
           <h5>📞 <span>التواصل</span></h5>
           <div id="cContact"></div>
         </div>
@@ -127,6 +154,16 @@ function showError() {
 
 function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+function getYouTubeEmbed(url) {
+  let id;
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtube.com')) id = u.searchParams.get('v');
+    else if (u.hostname === 'youtu.be') id = u.pathname.slice(1);
+  } catch {}
+  return id ? `https://www.youtube.com/embed/${id}` : null;
+}
+
 function render(packages) {
   document.title = (COMPANY.companyName || 'Company') + ' — Guideon';
   document.getElementById('cName').textContent = COMPANY.companyName || COMPANY.fullName || '—';
@@ -142,6 +179,41 @@ function render(packages) {
   document.getElementById('cDescription').textContent =
     COMPANY.companyDescription || 'لم يقم هذا الشريك بإضافة وصف بعد.';
 
+  // Services
+  const svcs = Array.isArray(COMPANY.companyServices) ? COMPANY.companyServices.filter(Boolean) : [];
+  if (svcs.length) {
+    document.getElementById('cServices').innerHTML = svcs.map(s => `<span class="co-tag">✨ ${esc(s)}</span>`).join('');
+    document.getElementById('cServicesCard').classList.remove('d-none');
+  }
+
+  // Destinations
+  const dests = Array.isArray(COMPANY.companyDestinations) ? COMPANY.companyDestinations.filter(Boolean) : [];
+  if (dests.length) {
+    document.getElementById('cDestinations').innerHTML = dests.map(d => `<span class="co-tag co-dest-tag">📍 ${esc(d)}</span>`).join('');
+    document.getElementById('cDestsCard').classList.remove('d-none');
+  }
+
+  // Photo gallery
+  const gallery = Array.isArray(COMPANY.galleryPhotos) ? COMPANY.galleryPhotos.filter(Boolean) : [];
+  if (gallery.length) {
+    document.getElementById('cGallery').innerHTML = gallery.map(url =>
+      `<img loading="lazy" src="${url}" alt="" onclick="window.open('${url}','_blank')">`
+    ).join('');
+    document.getElementById('cGalleryCard').classList.remove('d-none');
+  }
+
+  // Video
+  if (COMPANY.videoUrl) {
+    const embed = getYouTubeEmbed(COMPANY.videoUrl);
+    if (embed) {
+      document.getElementById('cVideo').innerHTML =
+        `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px">
+          <iframe src="${embed}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" allowfullscreen loading="lazy"></iframe>
+         </div>`;
+      document.getElementById('cVideoCard').classList.remove('d-none');
+    }
+  }
+
   // Contact card
   const contact = document.getElementById('cContact');
   const items = [];
@@ -150,26 +222,33 @@ function render(packages) {
   if (COMPANY.phone) items.push(`<a class="btn btn-success w-100 mt-2" href="https://wa.me/${COMPANY.phone.replace(/[^0-9]/g,'')}" target="_blank">💬 تواصل عبر واتساب</a>`);
   contact.innerHTML = items.join('') || '<div class="text-muted small">لا توجد معلومات تواصل عامة.</div>';
 
-  // Packages
+  // Packages — image-first card grid (much more visual than text list)
   const pkgEl = document.getElementById('cPackages');
   if (!packages.length) {
-    pkgEl.innerHTML = '<div class="text-center py-4 text-muted small">لا توجد رحلات منشورة حالياً.</div>';
+    pkgEl.innerHTML = '<div class="col-12 text-center py-4 text-muted small">لا توجد رحلات منشورة حالياً.</div>';
     return;
   }
-  pkgEl.innerHTML = packages.map(p => `
-    <div class="pkg-card mb-3">
-      <div class="d-flex justify-content-between align-items-start mb-2">
-        <div style="flex:1">
+  pkgEl.innerHTML = packages.map(p => {
+    const cover = p.cover_image || (Array.isArray(p.images) && p.images[0]) || '';
+    return `
+    <div class="col-md-6">
+      <div class="pkg-card">
+        ${cover
+          ? `<img class="pkg-card-img" src="${esc(cover)}" alt="" loading="lazy">`
+          : `<div class="pkg-card-img" style="display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#9aa3b2">🗺️</div>`}
+        <div class="pkg-card-body">
           <div class="fw-800 mb-1" style="font-size:1.05rem">${esc(p.title)}</div>
           <div class="small text-muted mb-2">📍 ${esc(p.destination || '—')}</div>
+          ${p.description ? `<p class="small text-muted mb-2" style="line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.description)}</p>` : ''}
+          ${Array.isArray(p.includes) && p.includes.length ? `<div class="small mb-2" style="color:#0f7b6c"><strong>يشمل:</strong> ${p.includes.slice(0,3).map(esc).join(' · ')}</div>` : ''}
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+            <div class="pkg-price">OMR ${p.price_adult || '—'}</div>
+            <a class="btn btn-teal btn-sm" href="/tour-package.html?id=${p.id}">عرض التفاصيل ←</a>
+          </div>
         </div>
-        <div class="pkg-price">OMR ${p.price_adult || '—'}</div>
       </div>
-      ${p.description ? `<p class="small text-muted mb-2" style="line-height:1.6">${esc(p.description).slice(0, 200)}${p.description.length > 200 ? '…' : ''}</p>` : ''}
-      ${Array.isArray(p.includes) && p.includes.length ? `<div class="small mb-2"><strong style="color:#0f7b6c">يشمل:</strong> ${p.includes.map(esc).join(' · ')}</div>` : ''}
-      <a class="btn btn-teal btn-sm w-100" href="/tour-package.html?id=${p.id}">عرض التفاصيل والحجز ←</a>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 init();

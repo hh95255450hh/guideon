@@ -380,17 +380,44 @@
     } catch {}
   }
 
+  function closeBellSSE() {
+    if (window.__gdBellSSE) {
+      try { window.__gdBellSSE.close(); } catch (_) {}
+      window.__gdBellSSE = null;
+    }
+  }
+
   // ─── Check session, then inject ────────────────────────────────────────
+  let _pollTimer = null;
   async function init() {
     try {
       const r = await fetch('/api/auth/me', { credentials: 'include' });
       if (!r.ok) return; // not signed in — don't show bell
       inject();
       pollUnread();
-      setInterval(pollUnread, POLL_INTERVAL);
+      _pollTimer = setInterval(() => { if (!document.hidden) pollUnread(); }, POLL_INTERVAL);
       connectBellSSE();
     } catch (e) {}
   }
+
+  // Pause the SSE connection when the tab is hidden (e.g. user navigated
+  // away from a company profile to another tab) and reconnect when they
+  // come back. Keeps Egress + Railway memory + battery in check.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) closeBellSSE();
+    else if (document.getElementById('gdBellBtn')) connectBellSSE();
+  });
+
+  // Hard cleanup when leaving the page entirely.
+  window.addEventListener('beforeunload', () => {
+    closeBellSSE();
+    if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+  });
+  // Mobile Safari fires pagehide instead of beforeunload reliably.
+  window.addEventListener('pagehide', () => {
+    closeBellSSE();
+    if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
