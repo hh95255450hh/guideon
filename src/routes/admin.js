@@ -63,4 +63,9 @@ router.post('/staff',             requireSuperAdmin, admin.createStaff);
 router.patch('/staff/:id',        requireSuperAdmin, admin.updateStaff);
 router.delete('/staff/:id',       requireSuperAdmin, admin.deleteStaff);
 
+// Messages moderation — list all conversations + view any thread
+const { adminListConversations, adminViewThread } = require('../controllers/messagesController');
+router.get('/messages/conversations', adminListConversations);
+router.get('/messages/thread',        adminViewThread);
+
 module.exports = router;

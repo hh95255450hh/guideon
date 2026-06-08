@@ -141,6 +141,7 @@
     <button class="admin-tab" onclick="showTab('admins',this)" data-i18n="tab_admins">👑 Admins</button>
     <button class="admin-tab" onclick="showTab('staff',this)" data-i18n="tab_staff">👔 Staff</button>
     <button class="admin-tab" onclick="showTab('messages',this)">💬 Messages <span class="badge bg-danger" id="adminMsgBadge" style="display:none"></span></button>
+    <button class="admin-tab" onclick="showTab('chatmod',this); loadAllChats()">🔍 Chat Moderation</button>
     <button class="admin-tab" onclick="showTab('broadcast',this)" data-i18n="tab_broadcast">📢 Broadcast</button>
     <button class="admin-tab" onclick="showTab('analytics',this)" data-i18n="tab_analytics">📈 Analytics</button>
     <button class="admin-tab" onclick="showTab('audit',this)" data-i18n="tab_audit">🔍 Audit Log</button>
@@ -408,6 +409,44 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════ CHAT MODERATION (admin sees all) ═══════════════════════ -->
+  <div id="tab-chatmod" class="d-none">
+    <div class="t-card p-4">
+      <div class="d-flex justify-content-between align-items-start mb-3 gap-2 flex-wrap">
+        <div>
+          <h5 class="fw-700 mb-1">🔍 جميع محادثات المستخدمين</h5>
+          <p class="text-muted small mb-0">يمكنك مراجعة كلّ محادثة بين السياح والمرشدين/الشركات لمنع تجاوز المنصّة والكشف عن النزاعات.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <input id="chatModSearch" class="form-control form-control-sm" placeholder="🔎 ابحث باسم أو معرّف…" style="width:240px" oninput="filterChatList()">
+          <button class="btn btn-sm btn-outline-secondary" onclick="loadAllChats()">↻ تحديث</button>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <!-- Conversations list -->
+        <div class="col-md-5">
+          <div class="border rounded" style="max-height:600px;overflow-y:auto" id="chatModList">
+            <div class="text-center py-4 text-muted small">اضغط على تبويب Chat Moderation لتحميل المحادثات.</div>
+          </div>
+        </div>
+        <!-- Thread view -->
+        <div class="col-md-7">
+          <div class="border rounded p-3" style="min-height:600px;background:#f4f6f9" id="chatModThread">
+            <div class="text-center text-muted py-5">
+              <div style="font-size:3rem;opacity:.3">💬</div>
+              <p class="mb-0">اختر محادثة من القائمة لعرضها</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warning small mt-3 mb-0">
+        <strong>ملاحظة خصوصيّة:</strong> الرسائل التي حاول فيها المستخدمون مشاركة أرقام أو بريد إلكتروني تظهر مُقنّعة بـ <code>••••</code> — هذا هو الشكل المخزَّن في قاعدة البيانات (لا نحتفظ بالأرقام الأصلية لحماية المستخدمين).
       </div>
     </div>
   </div>
@@ -1474,6 +1513,85 @@ function adminConnectSSE(){
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.activeElement?.id==='adminMsgInput')adminSendMsg();});
 
 checkAuth();
+
+// ─── CHAT MODERATION (admin sees all user-to-user conversations) ───
+let _chatModAll = [];
+async function loadAllChats() {
+  const list = document.getElementById('chatModList');
+  list.innerHTML = '<div class="text-center py-4 text-muted small">جارٍ التحميل…</div>';
+  try {
+    const r = await fetch('/api/admin/messages/conversations?limit=200', { credentials:'include' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'fail');
+    _chatModAll = d.conversations || [];
+    renderChatList(_chatModAll);
+  } catch (e) {
+    list.innerHTML = `<div class="text-center py-4 text-danger small">فشل التحميل: ${e.message}</div>`;
+  }
+}
+function renderChatList(items) {
+  const list = document.getElementById('chatModList');
+  if (!items.length) { list.innerHTML = '<div class="text-center py-4 text-muted small">لا توجد محادثات.</div>'; return; }
+  list.innerHTML = items.map(c => {
+    const last = c.lastMessage || {};
+    const snippet = (last.content || (last.attachmentType ? '📎 مرفق' : '')).slice(0, 60);
+    const when = last.createdAt ? new Date(last.createdAt).toLocaleString('ar') : '';
+    const flagged = /•••/.test(last.content || '') ? '<span class="badge bg-warning text-dark ms-1">⚠️ مُقنّع</span>' : '';
+    const aN = (c.aName || c.aId).replace(/"/g,'&quot;');
+    const bN = (c.bName || c.bId).replace(/"/g,'&quot;');
+    return `<button class="list-group-item list-group-item-action text-start" onclick="openChatModThread('${c.aId}','${c.bId}','${aN}','${bN}')">
+      <div class="d-flex justify-content-between align-items-start">
+        <div style="flex:1;min-width:0">
+          <div class="fw-700 small">${aN} ↔ ${bN}</div>
+          <div class="text-muted small text-truncate">${snippet}${flagged}</div>
+        </div>
+        <div class="text-muted" style="font-size:.7rem;white-space:nowrap;margin-inline-start:8px">
+          <div>${c.count} 💬</div><div>${(when.split(',')[0] || '')}</div>
+        </div>
+      </div>
+    </button>`;
+  }).join('');
+}
+function filterChatList() {
+  const q = (document.getElementById('chatModSearch').value || '').toLowerCase().trim();
+  if (!q) return renderChatList(_chatModAll);
+  renderChatList(_chatModAll.filter(c =>
+    (c.aName||'').toLowerCase().includes(q) ||
+    (c.bName||'').toLowerCase().includes(q) ||
+    c.aId.toLowerCase().includes(q) ||
+    c.bId.toLowerCase().includes(q)));
+}
+async function openChatModThread(aId, bId, aName, bName) {
+  const el = document.getElementById('chatModThread');
+  el.innerHTML = '<div class="text-center py-4 text-muted small">جارٍ التحميل…</div>';
+  try {
+    const r = await fetch(`/api/admin/messages/thread?a=${encodeURIComponent(aId)}&b=${encodeURIComponent(bId)}`, { credentials:'include' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'fail');
+    const msgs = d.messages || [];
+    el.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
+        <div><div class="fw-700">${aName} ↔ ${bName}</div><div class="text-muted small">${msgs.length} رسالة</div></div>
+      </div>
+      <div style="max-height:520px;overflow-y:auto;display:flex;flex-direction:column;gap:8px">
+        ${msgs.map(m => {
+          const mine = m.fromId === aId;
+          const flagged = /•••/.test(m.content || '');
+          const time = new Date(m.createdAt).toLocaleString('ar');
+          const txt = (m.content || (m.attachmentType ? ('📎 ' + (m.attachmentName||'مرفق')) : '')).replace(/</g,'&lt;');
+          return `<div style="align-self:${mine?'flex-start':'flex-end'};max-width:75%">
+            <div style="background:${mine?'#fff':'#dcf8c6'};padding:9px 13px;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.06)">
+              <div style="font-size:.7rem;font-weight:700;opacity:.7;margin-bottom:3px">${mine?aName:bName}</div>
+              <div style="font-size:.93rem;line-height:1.45;word-break:break-word">${txt}</div>
+              <div style="font-size:.68rem;opacity:.55;margin-top:3px">${time}${flagged?' • ⚠️ مُقنّع':''}</div>
+            </div>
+          </div>`;
+        }).join('') || '<div class="text-center text-muted py-4 small">لا توجد رسائل.</div>'}
+      </div>`;
+  } catch (e) {
+    el.innerHTML = `<div class="text-center py-4 text-danger small">فشل التحميل: ${e.message}</div>`;
+  }
+}
 </script>
 <script src="/js/pwa.js?v=14"></script>
 <script src="/js/common-widgets.js?v=12"></script>

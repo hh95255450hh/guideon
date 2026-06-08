@@ -246,4 +246,72 @@ function stream(req, res) {
   req.on('close', () => clearInterval(ping));
 }
 
-module.exports = { send, conversations, thread, unreadCount, typing, stream, supportAgent };
+// ── ADMIN: view all conversations and threads (moderation) ──────────
+// Lets admin/staff inspect any conversation between two users to
+// investigate disputes or platform-avoidance attempts. Messages are
+// returned WITH their masked content (••••) so admins can also see
+// which messages were sanitized. Raw original text is NOT stored —
+// sanitization happens at write time, so even admin sees the masked
+// version.  This is by design: we don't want a leaked admin token to
+// expose phone numbers we promised not to retain.
+async function adminListConversations(req, res) {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 200, 500);
+    // Pull recent messages and group by (smaller, larger) participant pair
+    const { data: msgs, error } = await supabase
+      .from('messages')
+      .select('*')
+      .order('createdAt', { ascending: false })
+      .limit(limit * 5); // grab a wider window so we can group
+    if (error) throw error;
+
+    const pairs = {};
+    for (const m of (msgs || [])) {
+      const a = m.fromId < m.toId ? m.fromId : m.toId;
+      const b = m.fromId < m.toId ? m.toId   : m.fromId;
+      const key = `${a}__${b}`;
+      if (!pairs[key]) {
+        pairs[key] = {
+          aId: a, bId: b,
+          aName: m.fromId === a ? m.fromName : m.toName,
+          bName: m.fromId === b ? m.fromName : m.toName,
+          lastMessage: m,
+          count: 1,
+        };
+      } else {
+        pairs[key].count++;
+        if (new Date(m.createdAt) > new Date(pairs[key].lastMessage.createdAt)) {
+          pairs[key].lastMessage = m;
+        }
+      }
+    }
+    const list = Object.values(pairs)
+      .sort((x, y) => new Date(y.lastMessage.createdAt) - new Date(x.lastMessage.createdAt))
+      .slice(0, limit);
+    res.json({ success: true, conversations: list, totalPairs: Object.keys(pairs).length });
+  } catch (e) {
+    console.error('[messages:adminListConversations]', e.message);
+    res.status(500).json({ success: false, message: 'Could not load conversations.' });
+  }
+}
+
+async function adminViewThread(req, res) {
+  try {
+    const { a, b } = req.query;
+    if (!a || !b || !ID_PATTERN.test(a) || !ID_PATTERN.test(b)) {
+      return res.status(400).json({ success: false, message: 'Two valid user ids (a, b) are required.' });
+    }
+    const { data: msgs, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(fromId.eq.${a},toId.eq.${b}),and(fromId.eq.${b},toId.eq.${a})`)
+      .order('createdAt', { ascending: true });
+    if (error) throw error;
+    res.json({ success: true, messages: msgs || [] });
+  } catch (e) {
+    console.error('[messages:adminViewThread]', e.message);
+    res.status(500).json({ success: false, message: 'Could not load thread.' });
+  }
+}
+
+module.exports = { send, conversations, thread, unreadCount, typing, stream, supportAgent, adminListConversations, adminViewThread };
