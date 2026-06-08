@@ -298,6 +298,14 @@
             <a href="/profile.html">${svg('user')} ${tr('My Profile','ملفي الشخصي')}</a>
             <a href="/notifications.html">${svg('bell')} ${tr('Notifications','الإشعارات')}</a>
             ${user.userType === 'tourist' ? `<a href="/wishlist.html"><span style="font-size:18px">❤️</span> ${tr('Saved Guides','المرشدون المحفوظون')}</a>` : ''}
+            ${(user.userType === 'admin' || user.userType === 'staff') ? `
+              <div class="gd-drawer-sep"></div>
+              <div style="padding:4px 20px;font-size:11px;color:var(--gd-ink-500);font-weight:700;letter-spacing:1px;text-transform:uppercase">🛡️ ${tr('Admin Tools','أدوات الإدارة')}</div>
+              <a href="/admin.html">${svg('dashboard')} ${tr('Admin Panel','لوحة الإدارة')}</a>
+              <a href="/admin-homepage.html"><span style="font-size:18px">🎨</span> ${tr('Homepage Manager','إدارة الصفحة الرئيسية')}</a>
+              <a href="/marketing/"><span style="font-size:18px">📢</span> ${tr('Marketing Kit','أدوات التسويق')}</a>
+            ` : ''}
+            <div class="gd-drawer-sep"></div>
             <a href="/contact.html"><span style="font-size:18px">💬</span> ${tr('Contact Support','تواصل مع الدعم')}</a>
           ` : ''}
         </nav>
@@ -401,6 +409,7 @@
       `;
       document.head.appendChild(s);
     }
+    const isAdmin = user.userType === 'admin' || user.userType === 'staff';
     menu.innerHTML = `
       <div class="head">
         <div class="name">${escapeHtml(user.fullName || user.companyName || user.email)}</div>
@@ -409,6 +418,11 @@
       <a href="${dashboardFor(user)}">${svg('dashboard')} ${tr('My Dashboard','لوحتي')}</a>
       <a href="/profile.html">${svg('user')} ${tr('My Profile','ملفي الشخصي')}</a>
       <a href="/notifications.html">${svg('bell')} ${tr('Notifications','الإشعارات')}</a>
+      ${isAdmin ? `
+        <div class="sep"></div>
+        <a href="/admin-homepage.html"><span style="font-size:16px">🎨</span> ${tr('Homepage Manager','إدارة الصفحة الرئيسية')}</a>
+        <a href="/marketing/"><span style="font-size:16px">📢</span> ${tr('Marketing Kit','أدوات التسويق')}</a>
+      ` : ''}
       <div class="sep"></div>
       <button id="gdMenuLogout" class="danger">${svg('logout')} ${tr('Sign Out','تسجيل الخروج')}</button>
     `;
