@@ -56,12 +56,16 @@ async function createBooking(touristId, body) {
     throw new BookingError(400, 'Missing required booking fields.', 'MISSING_FIELDS');
   }
 
+  // The booking provider can be either a solo guide OR a tour company.
+  // The frontend passes the provider's user id as `guideId` for historical
+  // reasons — keep accepting both user types so company package bookings
+  // don't fail with "Guide not found".
   const guide = await users.findById(guideId);
-  if (!guide || guide.userType !== 'guide') {
-    throw new BookingError(404, 'Guide not found.', 'GUIDE_NOT_FOUND');
+  if (!guide || (guide.userType !== 'guide' && guide.userType !== 'company')) {
+    throw new BookingError(404, 'Provider not found.', 'PROVIDER_NOT_FOUND');
   }
   if (!guide.isVerified) {
-    throw new BookingError(400, 'Guide is not verified.', 'GUIDE_NOT_VERIFIED');
+    throw new BookingError(400, 'Provider is not verified.', 'PROVIDER_NOT_VERIFIED');
   }
 
   const tourTime = rules.normalizeTourTime(reqTourTime || 'full_day');
