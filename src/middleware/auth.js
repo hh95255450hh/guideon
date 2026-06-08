@@ -33,6 +33,19 @@ exports.requireGuide = (req, res, next) => {
   next();
 };
 
+// A "provider" is anyone who can receive bookings and sell tours:
+// solo guides AND tour companies. Use this for booking-management
+// routes so companies aren't locked out the way requireGuide does.
+exports.requireProvider = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Please log in to continue.' });
+  }
+  if (req.session.userType !== 'guide' && req.session.userType !== 'company') {
+    return res.status(403).json({ success: false, message: 'Guide or company access required.' });
+  }
+  next();
+};
+
 exports.requireTourist = (req, res, next) => {
   if (!req.session.userId) {
     return res.status(401).json({ success: false, message: 'Please log in to continue.' });

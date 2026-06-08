@@ -190,6 +190,23 @@
         </div>
       </div>
 
+      <!-- Booking Requests Section -->
+      <div class="card-section mb-4" id="coBookingsSection">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="section-title mb-0">📋 طلبات الحجز <span id="coBkPendingBadge" class="badge bg-danger ms-1" style="display:none"></span></div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="coLoadBookings()" style="border-radius:8px">↻ تحديث</button>
+        </div>
+        <div class="d-flex gap-2 mb-3 flex-wrap" id="coBkFilters">
+          <button class="btn btn-sm btn-teal" data-f="pending" onclick="coBkFilter('pending',this)">الجديدة</button>
+          <button class="btn btn-sm btn-outline-secondary" data-f="confirmed" onclick="coBkFilter('confirmed',this)">المؤكّدة</button>
+          <button class="btn btn-sm btn-outline-secondary" data-f="past" onclick="coBkFilter('past',this)">السابقة</button>
+          <button class="btn btn-sm btn-outline-secondary" data-f="all" onclick="coBkFilter('all',this)">الكل</button>
+        </div>
+        <div id="coBookingsList">
+          <div class="text-center py-4 text-muted small">جارٍ تحميل الطلبات…</div>
+        </div>
+      </div>
+
       <!-- Tour Packages / Services Section -->
       <div class="card-section">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -345,6 +362,9 @@ async function init() {
   // Load packages from the canonical tour_packages table (same as guides).
   await loadCompanyPackages();
   render();
+
+  // Bookings — load the requests sent to this company
+  coLoadBookings();
 
   // Messaging — load conversations + open the real-time channel
   coLoadConvos();
@@ -816,6 +836,122 @@ async function doLogout() {
 }
 
 window.onLangChange = () => { if (COMPANY) render(); };
+
+// ══════════════════════ BOOKING REQUESTS (company) ══════════════════════
+let CO_BOOKINGS = [];
+let CO_BK_FILTER = 'pending';
+
+async function coLoadBookings(){
+  const el = document.getElementById('coBookingsList');
+  try {
+    const r = await fetch('/api/bookings/provider', { credentials:'include' });
+    if (r.status === 403) { // backend not redeployed yet — fall back to /guide
+      const r2 = await fetch('/api/bookings/guide', { credentials:'include' });
+      const d2 = await r2.json(); CO_BOOKINGS = d2.bookings || [];
+    } else {
+      const d = await r.json(); CO_BOOKINGS = d.bookings || [];
+    }
+    coRenderBookings();
+  } catch (e) {
+    el.innerHTML = `<div class="text-center py-3 text-danger small">تعذّر تحميل الطلبات: ${e.message}</div>`;
+  }
+}
+
+function coBkFilter(f, btn){
+  CO_BK_FILTER = f;
+  document.querySelectorAll('#coBkFilters button').forEach(b => {
+    b.classList.remove('btn-teal'); b.classList.add('btn-outline-secondary');
+  });
+  btn.classList.add('btn-teal'); btn.classList.remove('btn-outline-secondary');
+  coRenderBookings();
+}
+
+function coBkDate(d){
+  try { return new Date(d + 'T00:00:00').toLocaleDateString('ar', {weekday:'short',day:'numeric',month:'long',year:'numeric'}); }
+  catch { return d; }
+}
+
+function coRenderBookings(){
+  const el = document.getElementById('coBookingsList');
+  const today = new Date().toISOString().slice(0,10);
+
+  // Update the "new requests" badge (pending + quoted)
+  const pendingCount = CO_BOOKINGS.filter(b => b.status==='pending' || b.status==='quoted').length;
+  const badge = document.getElementById('coBkPendingBadge');
+  if (pendingCount > 0){ badge.textContent = pendingCount; badge.style.display = ''; }
+  else badge.style.display = 'none';
+
+  let list = CO_BOOKINGS;
+  if (CO_BK_FILTER === 'pending')   list = CO_BOOKINGS.filter(b => b.status==='pending' || b.status==='quoted');
+  else if (CO_BK_FILTER === 'confirmed') list = CO_BOOKINGS.filter(b => (b.status==='confirmed' || b.status==='in_progress') && b.tourDate >= today);
+  else if (CO_BK_FILTER === 'past')  list = CO_BOOKINGS.filter(b => b.status==='completed' || b.status==='cancelled' || (b.status==='confirmed' && b.tourDate < today));
+
+  if (!list.length){
+    el.innerHTML = '<div class="text-center py-4 text-muted small"><div style="font-size:2rem">📭</div>لا توجد طلبات في هذا التصنيف.</div>';
+    return;
+  }
+
+  const statusMap = {
+    pending:'⏳ بانتظار ردّك', quoted:'💬 عرض مُرسَل', confirmed:'✅ مؤكّد',
+    in_progress:'🚗 جارية', completed:'🏁 منتهية', cancelled:'❌ ملغاة',
+  };
+  const statusColor = {
+    pending:'#a16207', quoted:'#7c3aed', confirmed:'#15803d',
+    in_progress:'#0369a1', completed:'#374151', cancelled:'#b91c1c',
+  };
+
+  el.innerHTML = list.map(b => {
+    const pkgName = b.variantName ? ` · ${coEsc(b.variantName)}` : '';
+    const amount = b.totalAmount ? `OMR ${parseFloat(b.totalAmount).toFixed(2)}` : '';
+    let actions = '';
+    if (b.status === 'pending'){
+      // Company packages are fixed-price → accept / reject directly.
+      actions = `
+        <button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','confirmed')">✅ قبول</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled')">رفض</button>`;
+    } else if (b.status === 'confirmed' && b.tourDate >= today){
+      actions = `
+        <button class="btn btn-sm btn-primary" onclick="coBkStatus('${b.id}','in_progress')">🚗 بدء الرحلة</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled')">إلغاء</button>`;
+    } else if (b.status === 'in_progress'){
+      actions = `<button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','completed')">🏁 إنهاء</button>`;
+    }
+    return `
+      <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div>
+            <div class="fw-700">👤 ${coEsc(b.touristName || 'سائح')}</div>
+            <div class="small text-muted">${coEsc(b.touristEmail || '')}</div>
+          </div>
+          <span style="background:${statusColor[b.status]}18;color:${statusColor[b.status]};padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap">${statusMap[b.status]||b.status}</span>
+        </div>
+        <div class="small text-muted mb-1">📅 ${coBkDate(b.tourDate)} · 📍 ${coEsc(b.destination||'—')} · ${b.participants||1} أشخاص${pkgName}</div>
+        ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${coEsc(b.specialRequests)}"</div>` : ''}
+        <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+          <div class="fw-700" style="color:var(--teal,#0f7b6c)">${amount}</div>
+          <div class="d-flex gap-2">${actions}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function coBkStatus(id, status){
+  const labels = { confirmed:'قبول هذا الحجز؟', cancelled:'رفض/إلغاء هذا الحجز؟', in_progress:'بدء هذه الرحلة؟', completed:'إنهاء هذه الرحلة؟' };
+  if (!confirm(labels[status] || 'تأكيد العملية؟')) return;
+  try {
+    const r = await fetch(`/api/bookings/${id}/status`, {
+      method:'PATCH', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status }),
+    });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'فشل تحديث الحالة');
+    showToast(status==='confirmed' ? 'تم قبول الحجز ✅' : status==='cancelled' ? 'تم الإلغاء' : 'تم التحديث', 'success');
+    coLoadBookings();
+  } catch (e) {
+    showToast(e.message || 'فشل تحديث الحالة', 'danger');
+  }
+}
 
 // ══════════════════════ MESSAGING (company) ══════════════════════
 let CO_CONVOS = [];

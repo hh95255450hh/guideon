@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const booking = require('../controllers/bookingController');
-const { requireLogin, requireTourist, requireGuide, requireAdmin, requireVerifiedEmail } = require('../middleware/auth');
+const { requireLogin, requireTourist, requireGuide, requireProvider, requireAdmin, requireVerifiedEmail } = require('../middleware/auth');
 const SupabaseDB = require('../models/SupabaseDB');
 const { generateVoucher } = require('../services/voucherService');
 
@@ -11,10 +11,13 @@ const users    = new SupabaseDB('users');
 // for confirmation, and verification emails were unreliable (spam) for new users.
 router.post('/', requireTourist, booking.createBooking);
 router.get('/mine', requireTourist, booking.myBookings);
-router.get('/guide', requireGuide, booking.guideBookings);
+// Providers (guides AND companies) fetch the bookings made to them.
+// Kept the /guide path for backward-compat; /provider is the clearer alias.
+router.get('/guide', requireProvider, booking.guideBookings);
+router.get('/provider', requireProvider, booking.guideBookings);
 router.get('/all', requireAdmin, booking.allBookings);
 router.patch('/:id/status', requireLogin, booking.updateStatus);
-router.patch('/:id/quote', requireGuide, booking.setQuote);
+router.patch('/:id/quote', requireProvider, booking.setQuote);
 
 // GET /api/bookings/:id/voucher — PDF voucher for confirmed bookings
 router.get('/:id/voucher', requireLogin, async (req, res) => {

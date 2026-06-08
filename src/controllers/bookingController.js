@@ -105,8 +105,11 @@ exports.updateStatus = async (req, res) => {
     const userId   = req.session.userId;
     const userType = req.session.userType;
 
-    if (userType === 'guide'   && booking.guideId   !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
-    if (userType === 'tourist' && booking.touristId !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
+    // A company is a provider too: the booking's guideId holds the
+    // provider's user id whether they're a solo guide or a company.
+    const isProvider = userType === 'guide' || userType === 'company';
+    if (isProvider              && booking.guideId   !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
+    if (userType === 'tourist'  && booking.touristId !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     if (userType === 'tourist' && status === 'cancelled') {
       const hoursUntil = (new Date(booking.tourDate) - new Date()) / 36e5;
@@ -117,6 +120,7 @@ exports.updateStatus = async (req, res) => {
 
     const allowedTransitions = {
       guide:   ['confirmed', 'cancelled', 'in_progress', 'completed'],
+      company: ['confirmed', 'cancelled', 'in_progress', 'completed'],
       tourist: ['cancelled', 'confirmed'], // tourist 'confirmed' = accept the guide's price offer
       admin:   ['confirmed', 'cancelled', 'in_progress', 'completed'],
     };
@@ -133,8 +137,8 @@ exports.updateStatus = async (req, res) => {
       }
     }
 
-    // Guide can only START trip from 'confirmed' status, and only on/after tour date
-    if (status === 'in_progress' && userType === 'guide') {
+    // Provider (guide/company) can only START trip from 'confirmed' status, on/after tour date
+    if (status === 'in_progress' && isProvider) {
       if (booking.status !== 'confirmed') {
         return res.status(400).json({ success: false, message: 'Trip can only be started from a confirmed booking.' });
       }
@@ -146,8 +150,8 @@ exports.updateStatus = async (req, res) => {
       }
     }
 
-    // Guide can only COMPLETE trip from 'in_progress' status
-    if (status === 'completed' && userType === 'guide') {
+    // Provider (guide/company) can only COMPLETE trip from 'in_progress' status
+    if (status === 'completed' && isProvider) {
       if (booking.status !== 'in_progress') {
         return res.status(400).json({ success: false, message: 'Only trips that have started can be completed.' });
       }
@@ -166,6 +170,10 @@ exports.updateStatus = async (req, res) => {
     // Send emails based on new status
     const tourist = await users.findById(booking.touristId);
     const guide   = await users.findById(booking.guideId);
+    // Provider notifications must link to the right dashboard.
+    const providerLink = guide?.userType === 'company'
+      ? '/company-dashboard.html#bookings'
+      : '/guide-dashboard.html#bookings';
     const emailData = {
       destination: booking.destination,
       tourDate:    booking.tourDate,
@@ -192,7 +200,7 @@ exports.updateStatus = async (req, res) => {
         titleAr: 'لقد أكّدت الحجز',
         body:   `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} is confirmed.`,
         bodyAr: `تم تأكيد الرحلة مع ${tourist?.fullName || 'السائح'} بتاريخ ${booking.tourDate}.`,
-        link: '/guide-dashboard.html#bookings',
+        link: providerLink,
         metadata: { bookingId: id },
       });
 
@@ -215,8 +223,8 @@ exports.updateStatus = async (req, res) => {
       if (tourist) email.sendTouristBookingCancelled({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, ...emailData }).catch(() => {});
       if (guide)   email.sendGuideBookingCancelled({ email: guide.email, name: guide.fullName, touristName: tourist?.fullName, ...emailData }).catch(() => {});
 
-      const cancelledBy = userType === 'guide' ? 'guide' : (userType === 'tourist' ? 'tourist' : 'admin');
-      const cancelledByAr = userType === 'guide' ? 'المرشد' : (userType === 'tourist' ? 'السائح' : 'الإدارة');
+      const cancelledBy = (userType === 'guide' || userType === 'company') ? 'provider' : (userType === 'tourist' ? 'tourist' : 'admin');
+      const cancelledByAr = (userType === 'guide' || userType === 'company') ? 'المزوّد' : (userType === 'tourist' ? 'السائح' : 'الإدارة');
       if (tourist) notify({
         userId: tourist.id, type: 'booking_cancelled',
         title:   'Booking cancelled',
@@ -232,7 +240,7 @@ exports.updateStatus = async (req, res) => {
         titleAr: 'تم إلغاء الحجز',
         body:   `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} was cancelled.`,
         bodyAr: `تم إلغاء الرحلة مع ${tourist?.fullName || 'السائح'} بتاريخ ${booking.tourDate}.`,
-        link: '/guide-dashboard.html#bookings',
+        link: providerLink,
         metadata: { bookingId: id },
       });
 
@@ -277,7 +285,7 @@ exports.updateStatus = async (req, res) => {
         titleAr: 'اكتملت الرحلة 🎉',
         body:   `Tour with ${tourist?.fullName || 'a tourist'} on ${booking.tourDate} has been completed.`,
         bodyAr: `اكتملت الرحلة مع ${tourist?.fullName || 'السائح'} بتاريخ ${booking.tourDate}.`,
-        link: '/guide-dashboard.html#bookings',
+        link: providerLink,
         metadata: { bookingId: id },
       });
     }

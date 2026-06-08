@@ -188,13 +188,18 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
     totalAmount: booking.totalAmount, bookingId: booking.id,
   }).catch(() => {});
 
+  // Route the provider to their own dashboard (company vs guide).
+  const providerLink = guide.userType === 'company'
+    ? '/company-dashboard.html#bookings'
+    : '/guide-dashboard.html#bookings';
+
   if (isFixedPrice) {
     notify({
       userId: guide.id, type: 'booking_new',
       title: 'New booking request 📅', titleAr: 'طلب حجز جديد 📅',
       body: `${tourist.fullName} booked your ${destination} tour on ${tourDate}. Accept or decline.`,
       bodyAr: `حجز ${tourist.fullName} رحلتك إلى ${destination} بتاريخ ${tourDate}. اقبل أو ارفض.`,
-      link: '/guide-dashboard.html#bookings', metadata: { bookingId: booking.id },
+      link: providerLink, metadata: { bookingId: booking.id },
     });
     notify({
       userId: tourist.id, type: 'booking_new',
@@ -209,7 +214,7 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
       title: 'New trip request — please send a price', titleAr: 'طلب رحلة جديد — يرجى تحديد السعر',
       body: `${tourist.fullName} requested a tour to ${destination} on ${tourDate}.`,
       bodyAr: `طلب ${tourist.fullName} رحلة إلى ${destination} بتاريخ ${tourDate}.`,
-      link: '/guide-dashboard.html#bookings', metadata: { bookingId: booking.id },
+      link: providerLink, metadata: { bookingId: booking.id },
     });
     notify({
       userId: tourist.id, type: 'booking_new',
