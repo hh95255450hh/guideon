@@ -32,8 +32,15 @@ exports.submitReview = async (req, res) => {
     const booking = await bookings.findById(bookingId);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
     if (booking.touristId !== touristId) return res.status(403).json({ success: false, message: 'Access denied.' });
-    if (booking.status !== 'completed') return res.status(400).json({ success: false, message: 'You can only review completed tours.' });
-    if (new Date(booking.tourDate) > new Date()) return res.status(400).json({ success: false, message: 'Tour has not taken place yet.' });
+    // The authoritative signal that a tour happened is the provider marking
+    // the booking 'completed'. We deliberately do NOT also check the
+    // calendar date: a provider can legitimately complete a same-day or
+    // evening tour before midnight, and server/clock/timezone differences
+    // were producing a false "Tour has not taken place yet" rejection even
+    // for tours the guide had already closed out.
+    if (booking.status !== 'completed') {
+      return res.status(400).json({ success: false, message: 'You can only review completed tours.' });
+    }
 
     const existing = await reviews.findByField('bookingId', bookingId);
     if (existing) return res.status(409).json({ success: false, message: 'You have already reviewed this booking.' });
