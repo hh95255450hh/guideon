@@ -560,7 +560,7 @@ function doLogout() {
 
 // ── Tab switch ───────────────────────────────────────────────
 let ACTIVE_TAB = 'pending';
-const TABS = ['activity','pending','guides','companies','tourists','bookings','admins','staff','messages','broadcast','analytics','audit','export'];
+const TABS = ['activity','pending','guides','companies','tourists','bookings','admins','staff','messages','chatmod','broadcast','analytics','audit','export'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
@@ -576,6 +576,7 @@ function showTab(name, btn) {
   else if (name==='audit')     loadAudit();
   else if (name==='staff')     loadStaff();
   else if (name==='messages')  adminLoadConvos();
+  else if (name==='chatmod')   loadAllChats();
 }
 
 // ── Recent Activity timeline ──────────────────────────────────
