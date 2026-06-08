@@ -1,4 +1,5 @@
 const SupabaseDB = require('../models/SupabaseDB');
+const { sanitizeContact } = require('../utils/sanitizeContact');
 
 const users    = new SupabaseDB('users');
 const reviews  = new SupabaseDB('reviews', 'reviewId');
@@ -70,9 +71,9 @@ exports.searchGuides = async (req, res) => {
     else if (sortBy === 'price_desc') guides.sort((a, b) => b.pricePerDay - a.pricePerDay);
     else guides.sort((a, b) => b.rating - a.rating);
 
-    const safe = guides.map(({ password, availability, ...g }) => ({
-      ...g, availableCount: (availability || []).length,
-    }));
+    const safe = guides.map(({ password, availability, ...g }) =>
+      sanitizeContact({ ...g, availableCount: (availability || []).length }, req.user)
+    );
     res.json({ success: true, count: safe.length, guides: safe });
   } catch (err) {
     console.error(err);
@@ -88,7 +89,7 @@ exports.getCompany = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Company not found.' });
     }
     const { password, ...safe } = company;
-    res.json({ success: true, company: safe });
+    res.json({ success: true, company: sanitizeContact(safe, req.user) });
   } catch (err) {
     console.error('[getCompany]', err.message);
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -130,7 +131,7 @@ exports.topCompanies = async (req, res) => {
       ((b.totalReviews || 0) - (a.totalReviews || 0)) ||
       (new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
     );
-    const top = companies.slice(0, 10).map(({ password, ...c }) => c);
+    const top = companies.slice(0, 10).map(({ password, ...c }) => sanitizeContact(c, req.user));
     _topCompaniesCache = { at: Date.now(), data: top };
     res.json({ success: true, cached: false, companies: top });
   } catch (err) {
@@ -148,7 +149,7 @@ exports.getGuide = async (req, res) => {
     const { password, ...safe } = guide;
     const guideReviews = await reviews.findAllByField('guideId', guide.id);
     guideReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    res.json({ success: true, guide: safe, reviews: guideReviews });
+    res.json({ success: true, guide: sanitizeContact(safe, req.user), reviews: guideReviews });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -296,7 +297,7 @@ exports.topGuides = async (req, res) => {
       ((b.totalReviews || 0) - (a.totalReviews || 0)) ||
       (new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
     );
-    const top = guides.slice(0, 10).map(({ password, ...g }) => g);
+    const top = guides.slice(0, 10).map(({ password, ...g }) => sanitizeContact(g, req.user));
     _topCache = { at: Date.now(), data: top };
     res.json({ success: true, cached: false, guides: top });
   } catch (err) {

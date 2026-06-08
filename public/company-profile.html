@@ -216,13 +216,25 @@ function render(packages) {
     }
   }
 
-  // Contact card
+  // Contact card — for tourist protection, all communication is routed
+  // through the platform's messaging system. Phone/email/WhatsApp are
+  // never exposed publicly. Backend strips them too as a hard guard.
   const contact = document.getElementById('cContact');
-  const items = [];
-  if (COMPANY.phone) items.push(`<div class="mb-2"><strong>📞 الهاتف:</strong><br><a href="tel:${COMPANY.phone}">${COMPANY.phone}</a></div>`);
-  if (COMPANY.email) items.push(`<div class="mb-2"><strong>✉️ البريد:</strong><br>${COMPANY.email}</div>`);
-  if (COMPANY.phone) items.push(`<a class="btn btn-success w-100 mt-2" href="https://wa.me/${COMPANY.phone.replace(/[^0-9]/g,'')}" target="_blank">💬 تواصل عبر واتساب</a>`);
-  contact.innerHTML = items.join('') || '<div class="text-muted small">لا توجد معلومات تواصل عامة.</div>';
+  contact.innerHTML = `
+    <div class="text-center py-2">
+      <div style="font-size:2rem;margin-bottom:6px">🔒</div>
+      <div class="fw-700 mb-1">التواصل عبر المنصّة</div>
+      <p class="small text-muted mb-3">لحماية حجوزاتك ودعمك في حال أيّ خلاف، يتمّ التواصل مع الشركة عبر Guideon فقط.</p>
+      <button class="btn btn-success w-100 mb-2" onclick="openPlatformChat()">💬 ابدأ محادثة</button>
+      <a class="btn btn-outline-secondary btn-sm w-100" href="/plan-trip.html?companyId=${COMPANY.id}">✨ اطلب عرض سعر</a>
+    </div>`;
+
+  window.openPlatformChat = function() {
+    const dest = (window.__sessionUser && window.__sessionUser.userType === 'tourist')
+      ? `/tourist-dashboard.html#messages?to=${COMPANY.id}`
+      : `/login.html?next=${encodeURIComponent('/company-profile.html?id='+COMPANY.id)}`;
+    location.href = dest;
+  };
 
   // Packages — image-first card grid (much more visual than text list)
   const pkgEl = document.getElementById('cPackages');

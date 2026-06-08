@@ -30,9 +30,20 @@ async function send(req, res) {
   try {
     const { toId, content, attachmentUrl, attachmentType, attachmentName } = req.body;
     const fromId = req.session.userId;
-    const text = (content || '').trim();
+    let text = (content || '').trim();
     if (!toId || (!text && !attachmentUrl)) {
       return res.status(400).json({ success: false, message: 'toId and content (or attachment) are required.' });
+    }
+
+    // Anti-platform-avoidance: strip phone numbers, emails, and external
+    // chat handles from message bodies. Admins are exempt for moderation.
+    const isAdminUser = req.session.userType === 'admin' || req.session.userType === 'staff';
+    let contactFlagged = false;
+    if (text && !isAdminUser) {
+      const { sanitizeMessageBody } = require('../utils/sanitizeContact');
+      const r = sanitizeMessageBody(text);
+      text = r.clean;
+      contactFlagged = r.flagged;
     }
 
     // Get sender and recipient names
@@ -77,7 +88,12 @@ async function send(req, res) {
       metadata: { fromId, conversationId: convId(fromId, toId) },
     });
 
-    res.json({ success: true, message: data });
+    res.json({
+      success: true,
+      message: data,
+      contactFlagged,
+      ...(contactFlagged ? { warning: 'Phone numbers, emails and external chat links are removed automatically. Please keep your conversation on Guideon for booking protection and dispute support.' } : {}),
+    });
   } catch (e) {
     console.error('[messages:send]', e.message);
     res.status(500).json({ success: false, message: 'Could not send message.' });
