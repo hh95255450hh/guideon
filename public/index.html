@@ -726,39 +726,66 @@
 </section>
 
 <!-- ── SEO CONTENT (indexable, bilingual) ──────────────────────────────── -->
-<section class="py-5" style="background:#fafbfc;border-top:1px solid #eef0f4">
-  <div class="container" style="max-width:960px">
-    <h2 class="fw-800 mb-3" style="font-size:1.5rem;color:#0f1c3e">Tourism in Oman with Guideon · السياحة في عُمان مع Guideon</h2>
-    <p class="text-muted" style="line-height:1.9">
+<style>
+  .seo-section { background: linear-gradient(180deg, #fff 0%, #f7f8fa 100%); border-top: 1px solid #eef0f4; padding: 64px 0; }
+  .seo-container { max-width: 1040px; margin: 0 auto; padding-inline: 16px; }
+  .seo-eyebrow { display: inline-block; padding: 6px 14px; background: rgba(15,123,108,.10); color: #0f7b6c; border-radius: 999px; font-size: 13px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; margin-bottom: 16px; }
+  .seo-h2 { font-size: clamp(22px, 4vw, 32px); font-weight: 800; color: #0f1c3e; line-height: 1.25; margin-bottom: 12px; }
+  .seo-lead { font-size: 16px; line-height: 1.85; color: #4a5568; max-width: 740px; }
+  .seo-lead a { color: #0f7b6c; text-decoration: none; font-weight: 600; border-bottom: 1px dashed rgba(15,123,108,.4); }
+  .seo-lead a:hover { border-bottom-style: solid; }
+  .seo-divider { height: 1px; background: linear-gradient(90deg, transparent, #eef0f4, transparent); margin: 40px 0; }
+  .seo-faq { display: grid; gap: 12px; }
+  .seo-faq details { background: #fff; border: 1px solid #eef0f4; border-radius: 14px; padding: 0; transition: box-shadow .2s, border-color .2s; }
+  .seo-faq details[open] { box-shadow: 0 4px 18px rgba(15,28,62,.06); border-color: #d3ebe2; }
+  .seo-faq summary { cursor: pointer; padding: 18px 22px; font-weight: 700; color: #0f1c3e; font-size: 15px; list-style: none; display: flex; align-items: center; gap: 12px; }
+  .seo-faq summary::-webkit-details-marker { display: none; }
+  .seo-faq summary::before { content: '+'; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #e8f5f0; color: #0f7b6c; font-size: 18px; font-weight: 700; flex-shrink: 0; transition: transform .2s, background .2s; }
+  .seo-faq details[open] summary::before { content: '−'; background: #0f7b6c; color: #fff; transform: rotate(180deg); }
+  .seo-faq summary > span { flex: 1; }
+  .seo-faq .answer { padding: 0 22px 18px calc(22px + 26px + 12px); color: #4a5568; line-height: 1.85; font-size: 14.5px; }
+  html[dir="rtl"] .seo-faq .answer { padding: 0 calc(22px + 26px + 12px) 18px 22px; }
+</style>
+
+<section class="seo-section">
+  <div class="seo-container">
+    <span class="seo-eyebrow">About Guideon · عن المنصة</span>
+    <h2 class="seo-h2">Tourism in Oman with Guideon<br><span style="color:#0f7b6c">السياحة في عُمان</span></h2>
+
+    <p class="seo-lead">
       Guideon is Oman's marketplace for booking <strong>certified, Ministry-licensed local tour guides</strong>.
       Whether you want to explore the historic forts of <a href="/search.html?destination=Nizwa">Nizwa</a>,
       the souqs and corniche of <a href="/search.html?destination=Muscat">Muscat</a>, the green monsoon of
       <a href="/search.html?destination=Salalah">Salalah</a>, the fjords of
       <a href="/search.html?destination=Musandam">Musandam</a>, or the golden dunes of
-      <a href="/search.html?destination=Wahiba">Wahiba Sands</a>, you can find a trusted local guide who speaks
-      your language and knows the land. Request a custom trip, receive a price offer, and book with confidence.
+      <a href="/search.html?destination=Wahiba">Wahiba Sands</a> — find a trusted local who speaks your language.
     </p>
-    <p class="text-muted" dir="rtl" style="line-height:2;text-align:right">
-      <strong>Guideon</strong> هي منصة حجز <strong>المرشدين السياحيين المعتمدين</strong> من وزارة السياحة في سلطنة عُمان.
-      اكتشف قلاع <a href="/search.html?destination=Nizwa">نزوى</a> التاريخية، وأسواق وكورنيش
-      <a href="/search.html?destination=Muscat">مسقط</a>، وخريف <a href="/search.html?destination=Salalah">صلالة</a> الأخضر،
-      ومضايق <a href="/search.html?destination=Musandam">مسندم</a>، ورمال <a href="/search.html?destination=Wahiba">الشرقية</a> الذهبية.
-      اطلب رحلة خاصة بك، واستلم عرض السعر من المرشد، واحجز بثقة. مرشدون يتحدثون لغتك ويعرفون كل تفاصيل المكان.
+    <p class="seo-lead" dir="rtl" style="margin-top:18px">
+      <strong>Guideon</strong> منصة حجز <strong>المرشدين السياحيين المعتمدين</strong> من وزارة السياحة في سلطنة عُمان.
+      اكتشف قلاع <a href="/search.html?destination=Nizwa">نزوى</a>، وأسواق
+      <a href="/search.html?destination=Muscat">مسقط</a>، وخريف <a href="/search.html?destination=Salalah">صلالة</a>،
+      ومضايق <a href="/search.html?destination=Musandam">مسندم</a>،
+      ورمال <a href="/search.html?destination=Wahiba">الشرقية</a> الذهبية.
+      اطلب رحلتك، استلم عرض السعر، واحجز بثقة.
     </p>
 
-    <h3 class="fw-700 mt-4 mb-3" style="font-size:1.2rem;color:#0f1c3e">Frequently Asked Questions · الأسئلة الشائعة</h3>
-    <div class="accordion" id="seoFaq">
-      <details class="mb-2" style="background:#fff;border:1px solid #eef0f4;border-radius:10px;padding:14px 16px">
-        <summary class="fw-700" style="cursor:pointer;color:#0f7b6c">How do I book a tour guide in Oman? · كيف أحجز مرشداً سياحياً في عُمان؟</summary>
-        <p class="text-muted mt-2 mb-0" style="line-height:1.8">Search by destination and language, open a guide's profile, and send a trip request. The guide replies with a price offer, and you confirm to book. — ابحث حسب الوجهة واللغة، افتح ملف المرشد، وأرسل طلب رحلة. يرد المرشد بعرض سعر، وتؤكد الحجز.</p>
+    <div class="seo-divider"></div>
+
+    <span class="seo-eyebrow" style="background:rgba(201,168,76,.15);color:#b08e3a">FAQ · الأسئلة الشائعة</span>
+    <h3 class="seo-h2" style="font-size:clamp(20px,3vw,26px);margin-bottom:24px">Frequently Asked Questions</h3>
+
+    <div class="seo-faq">
+      <details>
+        <summary><span>How do I book a tour guide in Oman? · كيف أحجز مرشداً سياحياً في عُمان؟</span></summary>
+        <div class="answer">Search by destination and language, open a guide's profile, and send a trip request. The guide replies with a price offer, and you confirm to book.<br><br><span dir="rtl">ابحث حسب الوجهة واللغة، افتح ملف المرشد، وأرسل طلب رحلة. يرد المرشد بعرض سعر، وتؤكد الحجز.</span></div>
       </details>
-      <details class="mb-2" style="background:#fff;border:1px solid #eef0f4;border-radius:10px;padding:14px 16px">
-        <summary class="fw-700" style="cursor:pointer;color:#0f7b6c">Are the guides licensed? · هل المرشدون معتمدون؟</summary>
-        <p class="text-muted mt-2 mb-0" style="line-height:1.8">Yes — Guideon highlights Ministry of Tourism licensed guides with a verified badge. — نعم، تُبرز Guideon المرشدين المرخّصين من وزارة السياحة بشارة توثيق.</p>
+      <details>
+        <summary><span>Are the guides licensed? · هل المرشدون معتمدون؟</span></summary>
+        <div class="answer">Yes — Guideon highlights Ministry of Tourism licensed guides with a verified badge on their profile.<br><br><span dir="rtl">نعم، تُبرز Guideon المرشدين المرخّصين من وزارة السياحة بشارة توثيق.</span></div>
       </details>
-      <details class="mb-2" style="background:#fff;border:1px solid #eef0f4;border-radius:10px;padding:14px 16px">
-        <summary class="fw-700" style="cursor:pointer;color:#0f7b6c">Which destinations are covered? · ما الوجهات المتاحة؟</summary>
-        <p class="text-muted mt-2 mb-0" style="line-height:1.8">Muscat, Nizwa, Salalah, Musandam, Wahiba Sands, Sur, Jebel Akhdar and more across all of Oman. — مسقط، نزوى، صلالة، مسندم، رمال الشرقية، صور، الجبل الأخضر وغيرها في كل عُمان.</p>
+      <details>
+        <summary><span>Which destinations are covered? · ما الوجهات المتاحة؟</span></summary>
+        <div class="answer">Muscat, Nizwa, Salalah, Musandam, Wahiba Sands, Sur, Jebel Akhdar and more across all of Oman.<br><br><span dir="rtl">مسقط، نزوى، صلالة، مسندم، رمال الشرقية، صور، الجبل الأخضر وغيرها في كل عُمان.</span></div>
       </details>
     </div>
   </div>
@@ -789,78 +816,194 @@
 </script>
 <!-- ─────────────────────────────────────────────────────────────────── -->
 
-<!-- FOOTER -->
-<footer class="gd-footer">
-  <div class="container">
-    <div class="row gy-5 gx-4">
+<!-- ── FOOTER (redesigned) ─────────────────────────────────────────────── -->
+<style>
+  .gf { background: linear-gradient(180deg, #0f1c3e 0%, #0a1429 100%); color: rgba(255,255,255,.85); padding: 64px 0 0; position: relative; overflow: hidden; }
+  .gf::before { content: ''; position: absolute; top: 0; inset-inline: 0; height: 3px; background: linear-gradient(90deg, #0f7b6c, #c9a84c, #0f7b6c); }
+  .gf-wrap { max-width: 1280px; margin: 0 auto; padding-inline: 24px; }
+  .gf-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 48px; }
+  @media (max-width: 991px) { .gf-grid { grid-template-columns: 1fr 1fr 1fr; gap: 32px; } .gf-brand { grid-column: 1 / -1; } }
+  @media (max-width: 575px) { .gf-grid { grid-template-columns: 1fr 1fr; gap: 28px; } .gf-brand { grid-column: 1 / -1; text-align: center; } }
+
+  .gf-brand .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 575px) { .gf-brand .logo-row { justify-content: center; } }
+  .gf-brand .logo-row img { height: 44px; width: auto; }
+  .gf-brand .logo-row .name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: .3px; }
+  .gf-brand p { font-size: 14px; line-height: 1.7; color: rgba(255,255,255,.65); margin: 0 0 20px; max-width: 320px; }
+  @media (max-width: 575px) { .gf-brand p { margin-inline: auto; } }
+
+  .gf-social { display: flex; gap: 10px; flex-wrap: wrap; }
+  @media (max-width: 575px) { .gf-social { justify-content: center; } }
+  .gf-social a {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+    color: rgba(255,255,255,.85); display: inline-flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all .2s;
+  }
+  .gf-social a:hover { background: #0f7b6c; border-color: #0f7b6c; color: #fff; transform: translateY(-2px); }
+  .gf-social svg { width: 18px; height: 18px; }
+
+  .gf-col h6 {
+    font-size: 12px; font-weight: 800; color: #fff; text-transform: uppercase;
+    letter-spacing: 1.2px; margin: 0 0 18px; position: relative; padding-bottom: 10px;
+  }
+  .gf-col h6::after {
+    content: ''; position: absolute; bottom: 0; inset-inline-start: 0;
+    width: 28px; height: 2px; background: #c9a84c; border-radius: 2px;
+  }
+  .gf-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .gf-col a {
+    color: rgba(255,255,255,.65); text-decoration: none; font-size: 14px;
+    transition: color .15s, padding-inline-start .15s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .gf-col a:hover { color: #fff; padding-inline-start: 4px; }
+  .gf-col a .dot {
+    width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.3);
+    transition: background .15s, width .15s;
+  }
+  .gf-col a:hover .dot { background: #c9a84c; width: 8px; border-radius: 4px; }
+
+  .gf-contact-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; color: rgba(255,255,255,.65); font-size: 14px; }
+  .gf-contact-item svg { width: 16px; height: 16px; margin-top: 3px; color: #0f7b6c; flex-shrink: 0; }
+  .gf-contact-item a { color: rgba(255,255,255,.85); text-decoration: none; transition: color .15s; }
+  .gf-contact-item a:hover { color: #c9a84c; }
+
+  .gf-bar {
+    border-top: 1px solid rgba(255,255,255,.08); padding: 28px 0; margin-top: 16px;
+    display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;
+  }
+  .gf-pay { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .gf-pay-lbl { font-size: 12px; color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-inline-end: 8px; }
+  .gf-chip {
+    padding: 6px 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.10);
+    border-radius: 8px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.75);
+  }
+  .gf-pay-secure { display: inline-flex; align-items: center; gap: 6px; color: #4ade80; font-size: 12px; font-weight: 700; }
+
+  .gf-bottom {
+    border-top: 1px solid rgba(255,255,255,.06); padding: 20px 0 28px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    font-size: 13px; color: rgba(255,255,255,.55);
+  }
+  .gf-bottom .madein { display: inline-flex; align-items: center; gap: 6px; }
+  .gf-bottom .madein .flag {
+    width: 18px; height: 12px; background: linear-gradient(180deg, #fff 0% 33%, #c8102e 33% 66%, #009b48 66% 100%); border-radius: 2px;
+    position: relative; overflow: hidden;
+  }
+  .gf-bottom .madein .flag::before {
+    content: ''; position: absolute; top: 0; bottom: 0; inset-inline-start: 0; width: 5px; background: #c8102e;
+  }
+  .gf-bottom-links { display: flex; gap: 18px; }
+  .gf-bottom-links a { color: rgba(255,255,255,.55); text-decoration: none; transition: color .15s; }
+  .gf-bottom-links a:hover { color: #fff; }
+</style>
+
+<footer class="gf">
+  <div class="gf-wrap">
+    <div class="gf-grid">
       <!-- Brand -->
-      <div class="col-lg-4 col-md-12 gd-foot-brand">
-        <img loading="lazy" decoding="async" src="/logo.png" alt="Guideon" height="48" class="gd-foot-logo">
-        <p class="gd-foot-desc" data-i18n="footer_desc">Connecting tourists with certified guides across Oman.</p>
-        <div class="gd-foot-social">
-          <a href="https://instagram.com/guideonoman" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" style="vertical-align:middle"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 1.8c-3.15 0-3.52.01-4.76.07-1.15.05-1.77.24-2.18.4-.55.21-.94.47-1.35.88-.41.41-.67.8-.88 1.35-.16.41-.35 1.03-.4 2.18-.06 1.24-.07 1.61-.07 4.76s.01 3.52.07 4.76c.05 1.15.24 1.77.4 2.18.21.55.47.94.88 1.35.41.41.8.67 1.35.88.41.16 1.03.35 2.18.4 1.24.06 1.61.07 4.76.07s3.52-.01 4.76-.07c1.15-.05 1.77-.24 2.18-.4.55-.21.94-.47 1.35-.88.41-.41.67-.8.88-1.35.16-.41.35-1.03.4-2.18.06-1.24.07-1.61.07-4.76s-.01-3.52-.07-4.76c-.05-1.15-.24-1.77-.4-2.18a3.6 3.6 0 0 0-.88-1.35 3.6 3.6 0 0 0-1.35-.88c-.41-.16-1.03-.35-2.18-.4-1.24-.06-1.61-.07-4.76-.07zm0 3.06a4.98 4.98 0 1 1 0 9.96 4.98 4.98 0 0 1 0-9.96zm0 8.21a3.23 3.23 0 1 0 0-6.46 3.23 3.23 0 0 0 0 6.46zm6.34-8.41a1.16 1.16 0 1 1-2.33 0 1.16 1.16 0 0 1 2.33 0z"/></svg>
+      <div class="gf-brand">
+        <div class="logo-row">
+          <img src="/logo.png" alt="Guideon">
+          <span class="name">Guideon</span>
+        </div>
+        <p data-i18n="footer_desc">Oman's marketplace for certified, Ministry-licensed local tour guides. Request a custom trip, get a price offer, book with confidence.</p>
+        <div class="gf-social">
+          <a href="https://instagram.com/guideonoman" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 3.06a4.98 4.98 0 1 0 0 9.96 4.98 4.98 0 0 0 0-9.96zm0 8.21a3.23 3.23 0 1 1 0-6.46 3.23 3.23 0 0 1 0 6.46zm6.34-8.41a1.16 1.16 0 1 1-2.33 0 1.16 1.16 0 0 1 2.33 0z"/></svg>
           </a>
-          <a href="https://wa.me/96895255450" target="_blank" rel="noopener" title="WhatsApp">💬</a>
-          <a href="mailto:hh92hh@guideon.om" title="Email">✉️</a>
-          <a href="tel:+96895255450" title="Call">📞</a>
+          <a href="https://wa.me/96895255450" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.22 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.79c-1.78 0-3.52-.48-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 0 1 2.89 6.99c0 5.45-4.44 9.88-9.89 9.88M20.46 3.59A11.81 11.81 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.66a11.88 11.88 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.33 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41"/></svg>
+          </a>
+          <a href="mailto:hh92hh@guideon.om" aria-label="Email">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </a>
+          <a href="tel:+96895255450" aria-label="Call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </a>
         </div>
       </div>
+
       <!-- Platform -->
-      <div class="col-6 col-lg-2 gd-foot-col">
-        <h6 class="gd-foot-h" data-i18n="footer_platform">Platform</h6>
-        <a href="/search.html" data-i18n="nav_find">Find a Guide</a>
-        <a href="/how-it-works.html" data-i18n="footer_howitworks">How it works</a>
-        <a href="/register.html" data-i18n="nav_signup">Sign Up</a>
-        <a href="/login.html" data-i18n="nav_login">Log In</a>
+      <div class="gf-col">
+        <h6 data-i18n="footer_platform">Platform</h6>
+        <ul>
+          <li><a href="/search.html"><span class="dot"></span><span data-i18n="nav_find">Find a Guide</span></a></li>
+          <li><a href="/plan-trip.html"><span class="dot"></span><span>Plan a Trip</span></a></li>
+          <li><a href="/how-it-works.html"><span class="dot"></span><span data-i18n="footer_howitworks">How it works</span></a></li>
+          <li><a href="/register.html"><span class="dot"></span><span data-i18n="nav_signup">Sign Up</span></a></li>
+          <li><a href="/login.html"><span class="dot"></span><span data-i18n="nav_login">Log In</span></a></li>
+        </ul>
       </div>
+
       <!-- Destinations -->
-      <div class="col-6 col-lg-2 gd-foot-col">
-        <h6 class="gd-foot-h" data-i18n="footer_dests">Destinations</h6>
-        <a href="/search.html?destination=Muscat">Muscat</a>
-        <a href="/search.html?destination=Nizwa">Nizwa</a>
-        <a href="/search.html?destination=Salalah">Salalah</a>
-        <a href="/search.html?destination=Musandam">Musandam</a>
+      <div class="gf-col">
+        <h6 data-i18n="footer_dests">Destinations</h6>
+        <ul>
+          <li><a href="/search.html?destination=Muscat"><span class="dot"></span>Muscat · مسقط</a></li>
+          <li><a href="/search.html?destination=Nizwa"><span class="dot"></span>Nizwa · نزوى</a></li>
+          <li><a href="/search.html?destination=Salalah"><span class="dot"></span>Salalah · صلالة</a></li>
+          <li><a href="/search.html?destination=Musandam"><span class="dot"></span>Musandam · مسندم</a></li>
+          <li><a href="/search.html?destination=Wahiba"><span class="dot"></span>Wahiba · الشرقية</a></li>
+        </ul>
       </div>
+
       <!-- Legal -->
-      <div class="col-6 col-lg-2 gd-foot-col">
-        <h6 class="gd-foot-h" data-i18n="footer_legal">Legal</h6>
-        <a href="/terms.html" data-i18n="footer_terms">Terms</a>
-        <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
-        <a href="/faq.html" data-i18n="footer_faq">FAQ</a>
-        <a href="/contact.html" data-i18n="nav_contact">Contact</a>
+      <div class="gf-col">
+        <h6 data-i18n="footer_legal">Legal</h6>
+        <ul>
+          <li><a href="/terms.html"><span class="dot"></span><span data-i18n="footer_terms">Terms</span></a></li>
+          <li><a href="/privacy.html"><span class="dot"></span><span data-i18n="footer_privacy">Privacy</span></a></li>
+          <li><a href="/faq.html"><span class="dot"></span><span data-i18n="footer_faq">FAQ</span></a></li>
+          <li><a href="/contact.html"><span class="dot"></span><span data-i18n="nav_contact">Contact</span></a></li>
+        </ul>
       </div>
+
       <!-- Contact -->
-      <div class="col-6 col-lg-2 gd-foot-col">
-        <h6 class="gd-foot-h" data-i18n="footer_contact">Contact Us</h6>
-        <a href="mailto:hh92hh@guideon.om" dir="ltr">hh92hh@guideon.om</a>
-        <a href="tel:+96895255450" dir="ltr">+968 9525 5450</a>
-        <a href="https://wa.me/96895255450" target="_blank" rel="noopener">WhatsApp</a>
-        <span class="gd-foot-loc">📍 Muscat, Oman</span>
+      <div class="gf-col">
+        <h6 data-i18n="footer_contact">Contact</h6>
+        <div class="gf-contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a href="mailto:hh92hh@guideon.om" dir="ltr">hh92hh@guideon.om</a>
+        </div>
+        <div class="gf-contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="tel:+96895255450" dir="ltr">+968 9525 5450</a>
+        </div>
+        <div class="gf-contact-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Muscat, Oman · مسقط، عُمان</span>
+        </div>
       </div>
     </div>
 
-    <div class="gd-foot-bar">
-      <div class="gd-pay">
-        <span class="gd-pay-label" data-i18n="payment_accept">Secure payments</span>
-        <span class="gd-pay-chip">Visa</span>
-        <span class="gd-pay-chip">Mastercard</span>
-        <span class="gd-pay-chip">PayPal</span>
-        <span class="gd-pay-chip">Apple Pay</span>
-        <span class="gd-pay-chip">Bank</span>
+    <div class="gf-bar">
+      <div class="gf-pay">
+        <span class="gf-pay-lbl" data-i18n="payment_accept">Secure payments</span>
+        <span class="gf-chip">Visa</span>
+        <span class="gf-chip">Mastercard</span>
+        <span class="gf-chip">Apple Pay</span>
+        <span class="gf-chip">PayPal</span>
+        <span class="gf-chip">Bank Muscat</span>
       </div>
-      <div class="gd-foot-links">
+      <span class="gf-pay-secure">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        SSL Secured
+      </span>
+    </div>
+
+    <div class="gf-bottom">
+      <span>© <span id="gfYear">2026</span> Guideon. <span data-i18n="footer_bottom">All rights reserved.</span></span>
+      <span class="madein"><span class="flag"></span> Made in Oman with ❤️</span>
+      <div class="gf-bottom-links">
         <a href="/terms.html" data-i18n="footer_terms">Terms</a>
         <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
-        <a href="/how-it-works.html" data-i18n="footer_howitworks">How it works</a>
         <a href="/faq.html" data-i18n="footer_faq">FAQ</a>
       </div>
     </div>
-    <div class="gd-foot-copy">
-      <span data-i18n="footer_bottom">Guideon © 2026. All rights reserved.</span>
-    </div>
   </div>
 </footer>
+<script>document.getElementById('gfYear').textContent = new Date().getFullYear();</script>
 
 <div id="toast-container"></div>
 
