@@ -550,6 +550,12 @@
     document.body.insertBefore(nav, document.body.firstChild);
     document.body.appendChild(bottom);
 
+    // Signal to gd-instant.css that the real navbar is now mounted —
+    // removes the placeholder background and the reserved padding so the
+    // actual navbar (which has its own fixed position + spacing) takes over
+    // without a layout shift.
+    document.body.classList.add('gd-navbar-ready');
+
     // Highlight active page in primary links
     nav.querySelectorAll('.gd-nav-links a').forEach(a => {
       const href = a.getAttribute('href');

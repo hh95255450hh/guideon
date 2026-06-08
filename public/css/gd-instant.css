@@ -1,0 +1,40 @@
+/* gd-instant.css — anti-FOUC. Loaded synchronously in <head> on every page
+   so the legacy navbar never paints, even for a frame. The unified navbar
+   (gd-navbar.js) injects itself a few ms later into the same reserved space. */
+
+/* 1. Hide ALL legacy top-level navs/headers immediately. The unified navbar
+      lives inside a runtime-injected wrapper that doesn't match these. */
+body > nav,
+body > .navbar,
+body > header.navbar,
+body > .gd-navbar-legacy {
+  display: none !important;
+}
+
+/* 2. Reserve the navbar's height so content below doesn't jump up at first
+      paint and then drop when the real navbar gets injected. */
+body {
+  padding-top: 64px;
+}
+@media (max-width: 991px) {
+  body { padding-top: 56px; }
+}
+
+/* 3. Tiny placeholder bar with the navbar's brand colour so the very first
+      paint shows the right palette, not a blank white strip. */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  background: #0f1c3e;
+  z-index: 1;
+  pointer-events: none;
+}
+@media (max-width: 991px) {
+  body::before { height: 56px; }
+}
+
+/* 4. Once the real navbar mounts, this class removes the placeholder. */
+body.gd-navbar-ready::before { display: none; }
+body.gd-navbar-ready { padding-top: 0; } /* real navbar handles its own spacing */
