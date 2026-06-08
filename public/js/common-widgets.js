@@ -225,6 +225,17 @@
     document.body.appendChild(s);
   }
 
+  // Unified navbar — replaces any legacy <nav> on the page with the new
+  // responsive bilingual bar. Pages can opt out with <body data-no-gd-nav>.
+  function loadUnifiedNav() {
+    if (document.querySelector('script[data-gd-nav]')) return;
+    if (document.body && document.body.dataset.noGdNav !== undefined) return;
+    const s = document.createElement('script');
+    s.src = '/js/gd-navbar.js?v=1';
+    s.dataset.gdNav = '1';
+    document.body.appendChild(s);
+  }
+
   // ─── Email verification banner ─────────────────────────────────────────
   // Gentle, non-blocking reminder for signed-in users whose email isn't
   // verified, with a one-click resend. Hidden for verified users, Google
@@ -282,9 +293,9 @@
   // ─── Boot ──────────────────────────────────────────────────────────────
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); enhancePasswordFields(); injectVerifyBanner();
+      loadUnifiedNav(); injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); enhancePasswordFields(); injectVerifyBanner();
     });
   } else {
-    injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); injectVerifyBanner();
+    loadUnifiedNav(); injectWhatsApp(); injectContact(); injectCookieBar(); loadNotifications(); injectVerifyBanner();
   }
 })();
