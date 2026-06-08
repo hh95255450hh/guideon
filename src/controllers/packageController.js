@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('../services/emailService');
+const { sanitizeContact } = require('../utils/sanitizeContact');
 
 const packages = new SupabaseDB('tour_packages');
 const users    = new SupabaseDB('users');
@@ -77,7 +78,8 @@ exports.get = async (req, res) => {
     const provider = await users.findById(pkg.providerId);
     if (provider) {
       const { password, ...safe } = provider;
-      pkg.provider = safe;
+      // Strip phone/email/social so tourists can't bypass the platform.
+      pkg.provider = sanitizeContact(safe, req.user);
     }
 
     res.json({ success: true, package: pkg });

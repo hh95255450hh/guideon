@@ -198,12 +198,14 @@ async function loadPackage() {
     const d = await r.json();
     if (!d.success || !d.package) throw new Error('Not found');
     PACKAGE = d.package;
-    // Load guide's time slots
-    try {
-      const gr = await fetch('/api/guides/' + PACKAGE.providerId);
-      const gd = await gr.json();
-      PACKAGE.providerSlots = Array.isArray(gd.guide?.availabilitySlots) ? gd.guide.availabilitySlots : [];
-    } catch { PACKAGE.providerSlots = []; }
+    // The provider (guide OR company) is already embedded in the package
+    // response, so we read availability slots straight from it. The old
+    // code called /api/guides/:id which 404s for company providers and
+    // surfaced a misleading "Guide not found" error. Companies sell
+    // fixed-date packages and don't use availabilitySlots anyway.
+    PACKAGE.providerSlots = Array.isArray(PACKAGE.provider?.availabilitySlots)
+      ? PACKAGE.provider.availabilitySlots
+      : [];
     renderPackage();
   } catch (e) {
     document.body.innerHTML = '<div class="container py-5 text-center"><h3>Tour not found</h3><a href="/search.html" class="btn btn-teal mt-3">Browse tours</a></div>';
