@@ -237,23 +237,35 @@ function render(packages) {
   // composer keeps the user on the current page, posts directly to
   // /api/messages, and only sends them to login if no session exists.
   window.openPlatformChat = async function() {
+    // ALWAYS do a fresh /api/auth/me call. We can't trust the gdSession
+    // cache because it memoizes the very first response — if the cache
+    // was set to null before the user logged in (e.g. on a different
+    // tab) it stays null forever and we'd incorrectly send a logged-in
+    // user to /login.html (which feels like a forced logout).
     let user = null;
     try {
-      if (window.gdSession?.get) user = await window.gdSession.get();
-      if (!user) {
-        const r = await fetch('/api/auth/me', { credentials: 'include' });
-        if (r.ok) { const d = await r.json(); user = d?.user || null; }
-      }
+      const r = await fetch('/api/auth/me', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+      if (r.ok) { const d = await r.json(); user = d?.user || null; }
     } catch (_) {}
 
+    // Block self-messaging — a company owner viewing their own profile
+    // shouldn't be able to message themselves.
+    if (user && user.id === COMPANY.id) {
+      alert('لا يمكنك إرسال رسالة إلى ملفك الشخصي.');
+      return;
+    }
+
     if (!user || !user.id) {
-      // Save current page so we come straight back after login.
       const next = encodeURIComponent('/company-profile.html?id=' + COMPANY.id);
-      sessionStorage.setItem('gd_after_login', '/company-profile.html?id=' + COMPANY.id);
       location.href = `/login.html?next=${next}`;
       return;
     }
 
+    // Refresh the shared cache so other widgets pick up the current user
+    try { window.gdSession?.invalidate?.(); } catch (_) {}
     showChatModal(user);
   };
 
