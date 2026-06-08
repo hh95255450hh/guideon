@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Travel Stories &amp; Guides — Guideon Blog</title>
+<meta name="description" content="Travel tips, itineraries and local stories from Guideon's licensed Omani guides.">
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/design-tokens.css">
+<style>
+  body{font-family:'Inter','Tajawal',sans-serif;background:#fafafa;color:#0f1c3e}
+  .page-hero{background:linear-gradient(135deg,#0f1c3e,#3b1c4a);color:#fff;padding:80px 0 60px;text-align:center}
+  .page-hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800}
+  .page-hero p{opacity:.92;max-width:680px;margin:8px auto 0;font-size:1.1rem}
+  .b-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:26px;padding:50px 0}
+  .b-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:.25s;text-decoration:none;color:inherit;display:block}
+  .b-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
+  .b-card .img{height:220px;background-size:cover;background-position:center}
+  .b-card .body{padding:22px}
+  .b-meta{font-size:.82rem;color:#6b7280;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+  .b-card h2{font-size:1.3rem;font-weight:800;margin:0 0 10px;line-height:1.35}
+  .b-card p{color:#4b5563;font-size:.95rem;line-height:1.6;margin:0}
+  html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
+</style>
+</head>
+<body>
+<div id="navMount"></div>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 id="pTitle">Travel Stories &amp; Guides</h1>
+    <p id="pSub">Practical itineraries, seasonal tips, and stories from our licensed local guides.</p>
+  </div>
+</section>
+
+<main class="container">
+  <div class="b-grid" id="bGrid"></div>
+</main>
+
+<div id="footerMount"></div>
+
+<script src="/js/common-widgets.js?v=12"></script>
+<script>
+(async () => {
+  const lang = (localStorage.getItem('gd_lang') || 'en').toLowerCase();
+  const isAr = lang.startsWith('ar');
+  if (isAr) { document.documentElement.lang='ar'; document.documentElement.dir='rtl';
+    document.title='قصص ودلائل السفر — مدوّنة Guideon';
+    document.getElementById('pTitle').textContent='قصص ودلائل السفر';
+    document.getElementById('pSub').textContent='خطط رحلات عملية، نصائح موسمية، وقصص من مرشدينا المرخّصين.';
+  }
+  const data = await fetch('/data/blog.json').then(r=>r.json());
+  document.getElementById('bGrid').innerHTML = data.posts.map(p => `
+    <a class="b-card" href="/blog-post.html?id=${p.slug}">
+      <div class="img" style="background-image:url('${p.cover}')"></div>
+      <div class="body">
+        <div class="b-meta">
+          <span>${new Date(p.date).toLocaleDateString(isAr?'ar':'en',{year:'numeric',month:'short',day:'numeric'})}</span>
+          <span>•</span>
+          <span>${p.read_minutes} ${isAr?'دقائق قراءة':'min read'}</span>
+        </div>
+        <h2>${isAr?p.title_ar:p.title_en}</h2>
+        <p>${isAr?p.excerpt_ar:p.excerpt_en}</p>
+      </div>
+    </a>`).join('');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{
+  "posts": [
+    {
+      "id": "first-time-oman",
+      "slug": "first-time-oman",
+      "title_en": "First Time in Oman? A 7-Day Itinerary That Doesn't Feel Rushed",
+      "title_ar": "زيارتك الأولى لعُمان؟ خطة 7 أيام بدون استعجال",
+      "cover": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Sultan_Qaboos_Grand_Mosque_%281%29.jpg/1920px-Sultan_Qaboos_Grand_Mosque_%281%29.jpg",
+      "excerpt_en": "Two days in Muscat, a night in the desert, sunrise on Jebel Akhdar, and a swim in Wadi Shab. Here's how to do it without burning out.",
+      "excerpt_ar": "يومان في مسقط، ليلة في الصحراء، شروق على الجبل الأخضر، وسباحة في وادي شاب. إليك الخطة دون إرهاق.",
+      "author_en": "Guideon Editorial",
+      "author_ar": "تحرير Guideon",
+      "date": "2026-05-12",
+      "read_minutes": 8,
+      "body_en": "<p>Most first-time visitors try to do too much. Oman rewards a slower pace — the country is the size of the UK, but the drives between regions are part of the experience, not a chore to rush through.</p><h2>Days 1–2: Muscat</h2><p>Start at the <strong>Sultan Qaboos Grand Mosque</strong> (open to non-Muslim visitors 8–11 am, modest dress required). Spend the afternoon at the National Museum and end the day at Mutrah Souq.</p><h2>Day 3: Nizwa &amp; Jebel Akhdar</h2><p>Drive 90 minutes inland. Hit Nizwa Souq early, climb Nizwa Fort, then take the 4x4-only road up to Jebel Akhdar for the night.</p><h2>Day 4: W4 Trail &amp; Bahla</h2><p>Hike the 5.5 km Three-Villages walk in the cool morning. Descend, lunch at Birkat al Mouz, visit Bahla Fort (UNESCO).</p><h2>Day 5: Wahiba Sands</h2><p>Three hours east. Stay in a Bedouin-style desert camp — dune drives at sunset, stars after dinner.</p><h2>Day 6: Wadi Bani Khalid &amp; Sur</h2><p>Swim in the wadi pools, drive to Sur for the dhow yards, then on to <strong>Ras Al Jinz</strong> for the nighttime turtle tour.</p><h2>Day 7: Back to Muscat via the coast</h2><p>Stop at Bimmah Sinkhole and Wadi Shab on the way.</p><p><em>Want a guide who knows the timing tricks (like leaving Wahiba at first light to avoid heat)? <a href='/search.html'>Find a licensed guide on Guideon</a>.</em></p>",
+      "body_ar": "<p>معظم الزوار الأوائل يحاولون فعل الكثير. عُمان تكافئ الإيقاع الهادئ — البلد بحجم بريطانيا، لكن القيادة بين المناطق جزء من التجربة وليست عبئاً.</p><h2>اليومان 1–2: مسقط</h2><p>ابدأ بـ<strong>جامع السلطان قابوس الأكبر</strong> (مفتوح لغير المسلمين 8–11 صباحاً بلباس محتشم). اقضِ بعد الظهر في المتحف الوطني، واختم اليوم في سوق مطرح.</p><h2>اليوم 3: نزوى والجبل الأخضر</h2><p>قُد 90 دقيقة إلى الداخل. زُر سوق نزوى مبكّراً، اصعد قلعة نزوى، ثم خذ طريق الدفع الرباعي إلى الجبل الأخضر للمبيت.</p><h2>اليوم 4: مسار W4 وبهلا</h2><p>اسلك مسار القرى الثلاث (5.5 كم) في برد الصباح. انزل، تناول الغداء في بركة الموز، وزُر قلعة بهلا (يونسكو).</p><h2>اليوم 5: رمال الشرقية</h2><p>ثلاث ساعات شرقاً. أقم في مخيّم بدوي — قيادة الكثبان عند الغروب، نجوم بعد العشاء.</p><h2>اليوم 6: وادي بني خالد وصور</h2><p>اسبح في برك الوادي، توجّه إلى صور لأحواض السفن، ثم <strong>رأس الجنز</strong> لجولة السلاحف الليلية.</p><h2>اليوم 7: العودة إلى مسقط عبر الساحل</h2><p>توقّف عند هوّة بمّاه ووادي شاب في الطريق.</p><p><em>تريد مرشداً يعرف الأوقات المثلى (كمغادرة الشرقية مع أول ضوء لتفادي الحرّ)؟ <a href='/search.html'>ابحث عن مرشد مرخّص في Guideon</a>.</em></p>"
+    },
+    {
+      "id": "khareef-salalah-guide",
+      "slug": "khareef-salalah-guide",
+      "title_en": "Khareef Season: Why Gulf Travelers Flock to Salalah in Summer",
+      "title_ar": "موسم الخريف: لماذا يقصد الخليجيون صلالة صيفاً؟",
+      "cover": "https://images.unsplash.com/photo-1610198194861-c83e8cd25b71?w=1600&q=80",
+      "excerpt_en": "From late June to early September, southern Oman turns into a misty, green oasis. Here's what to see, when to book, and how to dress.",
+      "excerpt_ar": "من أواخر يونيو إلى أوائل سبتمبر، يتحوّل جنوب عُمان إلى واحة خضراء ضبابية. ماذا تشاهد ومتى تحجز وكيف تلبس.",
+      "author_en": "Guideon Editorial",
+      "author_ar": "تحرير Guideon",
+      "date": "2026-04-30",
+      "read_minutes": 6,
+      "body_en": "<p>While the Gulf bakes in 45°C, Dhofar sits at a perfect 22–25°C, wrapped in a cool drizzle locals call <em>al-khareef</em>.</p><h2>What is Khareef?</h2><p>The southwest monsoon brushes Oman's southern coast each summer. Dhofar's mountains catch the moisture, and the entire landscape — usually pale brown — flushes a vivid green.</p><h2>Top experiences</h2><ul><li>Wadi Darbat waterfalls (peak August)</li><li>Mughsail blowholes shooting 20 m sprays</li><li>Jebel Samhan viewpoints above the clouds</li><li>Frankincense souqs of Al Husn</li></ul><h2>Booking tips</h2><p>Hotels triple in price July–August and sell out months ahead. Direct flights from Muscat, Dubai, Doha and Kuwait fill fast. Book your guide and 4x4 together via Guideon to save 10–15%.</p>",
+      "body_ar": "<p>بينما يحترق الخليج تحت 45 درجة، تبقى ظفار عند 22–25 درجة تحت رذاذ بارد يسمّيه أهلها <em>الخريف</em>.</p><h2>ما هو الخريف؟</h2><p>الرياح الموسمية الجنوبية الغربية تلامس ساحل عُمان الجنوبي كل صيف. تحبس جبال ظفار الرطوبة، فيتحوّل المكان من بنيّ باهت إلى أخضر زاهٍ.</p><h2>أفضل التجارب</h2><ul><li>شلالات وادي دربات (ذروتها أغسطس)</li><li>نوافذ المغسيل تقذف الماء 20 متراً</li><li>إطلالات جبل سمحان فوق الغيوم</li><li>أسواق اللبان في الحصن</li></ul><h2>نصائح الحجز</h2><p>أسعار الفنادق تتضاعف ثلاث مرات في يوليو وأغسطس وتنفد قبل شهور. الرحلات المباشرة من مسقط ودبي والدوحة والكويت تمتلئ بسرعة. احجز مرشدك وسيارتك الدفع الرباعي معاً عبر Guideon لتوفير 10–15٪.</p>"
+    },
+    {
+      "id": "etiquette-dress-code",
+      "slug": "etiquette-dress-code",
+      "title_en": "What to Wear in Oman — A Practical Guide (Not a Lecture)",
+      "title_ar": "ماذا ترتدي في عُمان — دليل عملي (لا محاضرة)",
+      "cover": "https://images.unsplash.com/photo-1559564484-e5c2c8e2c6c8?w=1600&q=80",
+      "excerpt_en": "Oman is famously relaxed, but a little awareness goes a long way. What works on a desert hike, in a mosque, and at a fine-dining restaurant.",
+      "excerpt_ar": "عُمان مرنة، لكنّ القليل من الوعي يُحدث فرقاً. ما يناسب الصحراء، والمسجد، والمطاعم الراقية.",
+      "author_en": "Guideon Editorial",
+      "author_ar": "تحرير Guideon",
+      "date": "2026-04-10",
+      "read_minutes": 5,
+      "body_en": "<p>The short version: cover shoulders and knees in public, swimwear is for hotel pools and beaches only, and bring a scarf for the mosque visit.</p><h2>For women</h2><p>Loose linen trousers, knee-length skirts, and tops with sleeves work everywhere. The Grand Mosque requires a headscarf and a full-length abaya (loaned at the entrance for free).</p><h2>For men</h2><p>Lightweight long trousers are more comfortable than shorts in most places — they protect from sun, dust, and mosque dress codes. Bring a long-sleeved shirt for the mosque.</p><h2>Hiking &amp; wadi swims</h2><p>Quick-dry trousers, a long-sleeved sun shirt, and grippy water shoes. Bikinis are fine at private resort beaches; modest one-pieces are kinder at public wadis.</p>",
+      "body_ar": "<p>باختصار: غطِّ الكتفين والركبتين في الأماكن العامة، ملابس السباحة لمسابح الفنادق والشواطئ فقط، وأحضر شالاً لزيارة المسجد.</p><h2>للنساء</h2><p>بناطيل كتّان فضفاضة، تنانير حتى الركبة، وبلوزات بأكمام مناسبة في كل مكان. يستلزم الجامع الأكبر غطاء رأس وعباءة طويلة (تُعار مجاناً عند المدخل).</p><h2>للرجال</h2><p>البناطيل الطويلة الخفيفة أكثر راحة من الشورت في معظم الأماكن — تحمي من الشمس والغبار وتناسب قواعد المسجد. أحضر قميصاً طويل الأكمام للمسجد.</p><h2>المشي والسباحة في الأودية</h2><p>بناطيل سريعة الجفاف، قميص شمسي طويل الأكمام، وأحذية مائية. البكيني مناسب في شواطئ المنتجعات الخاصة؛ مايوه قطعة واحدة أنسب في الأودية العامة.</p>"
+    }
+  ]
+}

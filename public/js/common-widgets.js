@@ -252,7 +252,7 @@
     if (document.querySelector('script[data-gd-nav]')) return;
     if (document.body && document.body.dataset.noGdNav !== undefined) return;
     const s = document.createElement('script');
-    s.src = '/js/gd-navbar.js?v=4';
+    s.src = '/js/gd-navbar.js?v=5';
     s.dataset.gdNav = '1';
     document.body.appendChild(s);
   }

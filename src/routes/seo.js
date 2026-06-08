@@ -29,7 +29,20 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/login.html',        changefreq: 'monthly',priority: 0.5 },
       { loc: '/register.html',     changefreq: 'monthly',priority: 0.6 },
       { loc: '/qr.html',           changefreq: 'monthly',priority: 0.4 },
+      { loc: '/regions.html',      changefreq: 'monthly',priority: 0.9 },
+      { loc: '/trails.html',       changefreq: 'monthly',priority: 0.8 },
+      { loc: '/blog.html',         changefreq: 'weekly', priority: 0.8 },
+      { loc: '/cancellation.html', changefreq: 'yearly', priority: 0.4 },
     ];
+
+    // Region & blog detail pages from static JSON
+    try {
+      const fs = require('fs'); const path = require('path');
+      const regions = JSON.parse(fs.readFileSync(path.join(__dirname,'..','..','public','data','regions.json'),'utf8')).regions;
+      regions.forEach(r => staticPages.push({ loc:`/region.html?id=${r.id}`, changefreq:'monthly', priority:0.75 }));
+      const posts = JSON.parse(fs.readFileSync(path.join(__dirname,'..','..','public','data','blog.json'),'utf8')).posts;
+      posts.forEach(p => staticPages.push({ loc:`/blog-post.html?id=${p.slug}`, changefreq:'monthly', priority:0.7 }));
+    } catch (e) { /* JSON optional */ }
 
     const allGuides    = await users.findAllByField('userType', 'guide');
     const allCompanies = await users.findAllByField('userType', 'company');

@@ -328,8 +328,10 @@
 
         <nav class="gd-nav-links" id="gdNavLinks">
           <a href="/search.html"      data-key="find">${tr('Find a Guide','ابحث عن مرشد')}</a>
+          <a href="/regions.html"     data-key="regions">${tr('Regions','المناطق')}</a>
+          <a href="/trails.html"      data-key="trails">${tr('Trails','المسارات')}</a>
           <a href="/plan-trip.html"   data-key="plan">${tr('Plan a Trip','خطط رحلة')}</a>
-          <a href="/how-it-works.html" data-key="how">${tr('How It Works','كيف يعمل')}</a>
+          <a href="/blog.html"        data-key="blog">${tr('Blog','المدوّنة')}</a>
         </nav>
 
         <a class="gd-nav-cta gd-nav-cta-desk" href="/plan-trip.html">
@@ -391,8 +393,12 @@
           <div class="gd-drawer-section">${tr('Browse','تصفّح')}</div>
           <a href="/"               ${activeAttr('/')}><span style="font-size:18px">🏠</span> ${tr('Home','الرئيسية')}</a>
           <a href="/search.html"    ${activeAttr('/search')}>${svg('search')} ${tr('Find a Guide','ابحث عن مرشد')}</a>
+          <a href="/regions.html"   ${activeAttr('/regions')}>${svg('map')} ${tr('Explore Regions','استكشف المناطق')}</a>
+          <a href="/trails.html"    ${activeAttr('/trails')}>${svg('sparkle')} ${tr('Hiking Trails','مسارات المشي')}</a>
           <a href="/plan-trip.html" ${activeAttr('/plan-trip')}>${svg('sparkle')} ${tr('Plan a Trip','خطط رحلة')}</a>
+          <a href="/blog.html"      ${activeAttr('/blog')}>${svg('star')} ${tr('Blog','المدوّنة')}</a>
           <a href="/how-it-works.html">${svg('map')} ${tr('How It Works','كيف يعمل')}</a>
+          <a href="/cancellation.html">${svg('shield')} ${tr('Cancellation','سياسة الإلغاء')}</a>
           <!-- Role-tailored sections -->
           ${user ? renderMenuSections(actionsForRole(user), 'drawer') : ''}
         </nav>

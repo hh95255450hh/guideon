@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Region — Guideon</title>
+<meta name="description" content="Explore an Omani region — what to see, best time to visit, and verified local guides.">
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/design-tokens.css">
+<style>
+  body{font-family:'Inter','Tajawal',sans-serif;background:#fff;color:#0f1c3e}
+  .r-hero{position:relative;height:60vh;min-height:380px;background-size:cover;background-position:center;color:#fff;display:flex;align-items:flex-end}
+  .r-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.7) 100%)}
+  .r-hero .container{position:relative;z-index:2;padding-bottom:50px}
+  .r-hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;margin:0;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+  .r-hero .tag{font-size:1.2rem;opacity:.95;margin-top:8px;font-weight:500}
+  .r-quick{background:#0f7b6c;color:#fff;padding:14px 0;font-size:.95rem}
+  .r-quick .item{display:inline-flex;gap:8px;align-items:center;margin-inline-end:24px}
+  .r-quick svg{width:18px;height:18px;flex-shrink:0}
+  .r-section{padding:50px 0;border-bottom:1px solid #eef0f4}
+  .r-section h2{font-size:1.6rem;font-weight:800;margin-bottom:20px;color:#0f1c3e}
+  .hl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .hl-card{background:linear-gradient(135deg,#fff,#f7f9fb);border:1px solid #eef0f4;border-radius:12px;padding:18px;display:flex;gap:12px;align-items:flex-start;transition:.2s}
+  .hl-card:hover{border-color:#0f7b6c;transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,123,108,.1)}
+  .hl-card .dot{width:10px;height:10px;border-radius:50%;background:#0f7b6c;margin-top:6px;flex-shrink:0}
+  .hl-card span{font-weight:600;color:#0f1c3e}
+  .intro p{font-size:1.05rem;line-height:1.85;color:#374151}
+  .r-cta{background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:50px 0;text-align:center;border-radius:20px;margin:50px 0}
+  .r-cta h3{font-size:1.6rem;font-weight:800;margin-bottom:8px}
+  .r-cta .btn{background:#fff;color:#0f1c3e;padding:12px 28px;border-radius:999px;font-weight:700;text-decoration:none;display:inline-block;margin-top:12px;transition:.2s}
+  .r-cta .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+  html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
+</style>
+</head>
+<body>
+<div id="navMount"></div>
+
+<section class="r-hero" id="rHero">
+  <div class="container">
+    <h1 id="rName">…</h1>
+    <p class="tag" id="rTag"></p>
+  </div>
+</section>
+
+<div class="r-quick">
+  <div class="container">
+    <span class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/></svg><span id="rSites">…</span></span>
+    <span class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span id="rTime">…</span></span>
+  </div>
+</div>
+
+<main class="container">
+  <section class="r-section intro">
+    <h2 id="hAbout">About</h2>
+    <p id="rIntro"></p>
+  </section>
+
+  <section class="r-section">
+    <h2 id="hHighlights">Top Highlights</h2>
+    <div class="hl-grid" id="rHighlights"></div>
+  </section>
+
+  <section class="r-cta">
+    <h3 id="cTitle">Find a verified local guide</h3>
+    <p id="cSub">Book a Ministry-licensed expert who knows this region inside out.</p>
+    <a class="btn" id="cBtn" href="#">→</a>
+  </section>
+</main>
+
+<div id="footerMount"></div>
+
+<script src="/js/common-widgets.js?v=12"></script>
+<script>
+(async () => {
+  const lang = (localStorage.getItem('gd_lang') || 'en').toLowerCase();
+  const isAr = lang.startsWith('ar');
+  if (isAr) { document.documentElement.lang='ar'; document.documentElement.dir='rtl'; }
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const data = await fetch('/data/regions.json').then(r=>r.json());
+  const r = data.regions.find(x => x.id === id) || data.regions[0];
+  document.title = (isAr?r.name_ar:r.name_en) + ' — Guideon';
+  document.getElementById('rHero').style.backgroundImage = `url('${r.hero}')`;
+  document.getElementById('rName').textContent = isAr?r.name_ar:r.name_en;
+  document.getElementById('rTag').textContent = isAr?r.tagline_ar:r.tagline_en;
+  document.getElementById('rSites').textContent = `${r.sites} ${isAr?'موقع سياحي':'sites of interest'}`;
+  document.getElementById('rTime').textContent = (isAr?'أفضل وقت: ':'Best time: ') + (isAr?r.best_time_ar:r.best_time_en);
+  document.getElementById('rIntro').textContent = isAr?r.intro_ar:r.intro_en;
+  document.getElementById('hAbout').textContent = isAr?`عن ${r.name_ar}`:`About ${r.name_en}`;
+  document.getElementById('hHighlights').textContent = isAr?'أبرز المعالم':'Top Highlights';
+  const hls = isAr?r.highlights_ar:r.highlights_en;
+  document.getElementById('rHighlights').innerHTML = hls.map(h => `<div class="hl-card"><div class="dot"></div><span>${h}</span></div>`).join('');
+  document.getElementById('cTitle').textContent = isAr?`اعثر على مرشد محلّي معتمد في ${r.name_ar}`:`Find a verified local guide in ${r.name_en}`;
+  document.getElementById('cSub').textContent = isAr?'احجز مرشداً مرخّصاً من الوزارة يعرف هذه المنطقة عن ظهر قلب.':'Book a Ministry-licensed expert who knows this region inside out.';
+  const btn = document.getElementById('cBtn');
+  btn.href = `/search.html?region=${encodeURIComponent(r.name_en)}`;
+  btn.textContent = isAr?'ابحث عن مرشدين →':'Browse guides →';
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Explore Oman by Region — Guideon</title>
+<meta name="description" content="Discover Oman's 11 governorates — Muscat, Musandam, Dhofar, Nizwa and more. Curated guides, top sites, best time to visit, and local experts in each region.">
+<link rel="icon" href="/logo.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/design-tokens.css">
+<style>
+  body{font-family:'Inter','Tajawal',sans-serif;background:#fafafa;color:#0f1c3e}
+  .page-hero{background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:80px 0 60px;text-align:center}
+  .page-hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;margin-bottom:12px}
+  .page-hero p{opacity:.92;max-width:680px;margin:0 auto;font-size:1.1rem}
+  .region-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;padding:60px 0}
+  .region-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:transform .25s,box-shadow .25s;text-decoration:none;color:inherit;display:block}
+  .region-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
+  .region-card .img{height:200px;background-size:cover;background-position:center;position:relative}
+  .region-card .img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.55))}
+  .region-card .sites-badge{position:absolute;top:12px;inset-inline-end:12px;background:rgba(255,255,255,.95);color:#0f1c3e;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;z-index:1}
+  .region-card .body{padding:18px}
+  .region-card h3{font-size:1.25rem;font-weight:800;margin:0 0 6px;color:#0f1c3e}
+  .region-card .tag{color:#0f7b6c;font-size:.92rem;font-weight:600;margin:0}
+  .region-card .meta{margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0;font-size:.85rem;color:#6b7280;display:flex;justify-content:space-between;align-items:center}
+  .region-card .meta strong{color:#0f1c3e}
+  html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
+</style>
+</head>
+<body>
+<div id="navMount"></div>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 id="pHeroTitle">Explore Oman by Region</h1>
+    <p id="pHeroSub">From the fjords of Musandam to the misty mountains of Dhofar — discover all 11 governorates with curated highlights and local experts.</p>
+  </div>
+</section>
+
+<main class="container">
+  <div class="region-grid" id="regionGrid"></div>
+</main>
+
+<div id="footerMount"></div>
+
+<script src="/js/common-widgets.js?v=12"></script>
+<script>
+(async () => {
+  const lang = (localStorage.getItem('gd_lang') || (document.documentElement.lang || 'en')).toLowerCase();
+  const isAr = lang.startsWith('ar');
+  if (isAr) { document.documentElement.lang = 'ar'; document.documentElement.dir = 'rtl';
+    document.title = 'استكشف عُمان حسب المنطقة — Guideon';
+    document.getElementById('pHeroTitle').textContent = 'استكشف عُمان حسب المنطقة';
+    document.getElementById('pHeroSub').textContent = 'من أخوار مسندم إلى جبال ظفار الضبابية — اكتشف محافظات السلطنة الـ11 بمعالم مختارة ومرشدين محلّيين.';
+  }
+  const data = await fetch('/data/regions.json').then(r=>r.json());
+  const grid = document.getElementById('regionGrid');
+  grid.innerHTML = data.regions.map(r => `
+    <a class="region-card" href="/region.html?id=${r.id}">
+      <div class="img" style="background-image:url('${r.hero}')">
+        <span class="sites-badge">${r.sites} ${isAr?'موقع':'sites'}</span>
+      </div>
+      <div class="body">
+        <h3>${isAr?r.name_ar:r.name_en}</h3>
+        <p class="tag">${isAr?r.tagline_ar:r.tagline_en}</p>
+        <div class="meta">
+          <span>${isAr?'أفضل وقت':'Best time'}: <strong>${isAr?r.best_time_ar:r.best_time_en}</strong></span>
+          <span>→</span>
+        </div>
+      </div>
+    </a>`).join('');
+})();
+</script>
+</body>
+</html>

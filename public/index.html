@@ -395,6 +395,43 @@
   </div>
 </section>
 
+<!-- EXPLORE BY REGION -->
+<section class="py-5" style="background:#fff">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+      <div>
+        <h2 class="section-title mb-1" data-i18n="regions_title" data-i18n-ar="استكشف عُمان حسب المنطقة">Explore Oman by Region</h2>
+        <p class="text-muted mb-0" data-i18n-ar="11 محافظة، كلٌّ بشخصيّتها الخاصة">11 governorates, each with its own character</p>
+      </div>
+      <a href="/regions.html" class="btn-outline-teal btn btn-sm">View All →</a>
+    </div>
+    <div id="homeRegionGrid" class="row g-3"></div>
+  </div>
+</section>
+<style>
+  .home-region-card{position:relative;display:block;border-radius:14px;overflow:hidden;height:200px;background-size:cover;background-position:center;text-decoration:none;color:#fff;transition:transform .25s,box-shadow .25s}
+  .home-region-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(15,28,62,.18);color:#fff}
+  .home-region-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75))}
+  .home-region-card .lbl{position:absolute;bottom:14px;inset-inline-start:16px;z-index:2;font-weight:800;font-size:1.15rem;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .home-region-card .badge-sites{position:absolute;top:12px;inset-inline-end:12px;background:rgba(255,255,255,.95);color:#0f1c3e;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;z-index:2}
+</style>
+<script>
+(async () => {
+  try {
+    const d = await fetch('/data/regions.json').then(r=>r.json());
+    const isAr = (document.documentElement.lang||'').toLowerCase().startsWith('ar');
+    const pick = d.regions.slice(0,6);
+    document.getElementById('homeRegionGrid').innerHTML = pick.map(r => `
+      <div class="col-md-4 col-sm-6">
+        <a class="home-region-card" href="/region.html?id=${r.id}" style="background-image:url('${r.hero}')">
+          <span class="badge-sites">${r.sites} ${isAr?'موقع':'sites'}</span>
+          <span class="lbl">${isAr?r.name_ar:r.name_en}</span>
+        </a>
+      </div>`).join('');
+  } catch (e) { console.warn('regions widget', e); }
+})();
+</script>
+
 <!-- HOW IT WORKS -->
 <section class="py-5" style="background:var(--teal-light)">
   <div class="container">
@@ -942,7 +979,10 @@
         <h6 data-i18n="footer_platform">Platform</h6>
         <ul>
           <li><a href="/search.html"><span class="dot"></span><span data-i18n="nav_find">Find a Guide</span></a></li>
+          <li><a href="/regions.html"><span class="dot"></span><span>Explore Regions · المناطق</span></a></li>
+          <li><a href="/trails.html"><span class="dot"></span><span>Hiking Trails · مسارات المشي</span></a></li>
           <li><a href="/plan-trip.html"><span class="dot"></span><span>Plan a Trip</span></a></li>
+          <li><a href="/blog.html"><span class="dot"></span><span>Blog · المدوّنة</span></a></li>
           <li><a href="/how-it-works.html"><span class="dot"></span><span data-i18n="footer_howitworks">How it works</span></a></li>
           <li><a href="/register.html"><span class="dot"></span><span data-i18n="nav_signup">Sign Up</span></a></li>
           <li><a href="/login.html"><span class="dot"></span><span data-i18n="nav_login">Log In</span></a></li>
@@ -967,6 +1007,7 @@
         <ul>
           <li><a href="/terms.html"><span class="dot"></span><span data-i18n="footer_terms">Terms</span></a></li>
           <li><a href="/privacy.html"><span class="dot"></span><span data-i18n="footer_privacy">Privacy</span></a></li>
+          <li><a href="/cancellation.html"><span class="dot"></span><span>Cancellation · سياسة الإلغاء</span></a></li>
           <li><a href="/faq.html"><span class="dot"></span><span data-i18n="footer_faq">FAQ</span></a></li>
           <li><a href="/contact.html"><span class="dot"></span><span data-i18n="nav_contact">Contact</span></a></li>
         </ul>
@@ -1364,7 +1405,7 @@ loadFeaturedCompanies();
 loadPopularTours();
 </script>
 <script src="/js/pwa.js?v=14"></script>
-<script src="/js/common-widgets.js?v=11"></script>
+<script src="/js/common-widgets.js?v=12"></script>
 <script src="/js/upgrade.js?v=3"></script>
 </body>
 </html>

@@ -147,7 +147,57 @@
     </div>
   </div>
 
+  <!-- REFERRAL PROGRAM -->
+  <div class="guide-card p-4 mt-4" style="background:linear-gradient(135deg,#fff,#f0fdfa);border:1px solid #99f6e4">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span style="font-size:1.6rem">🎁</span>
+      <h5 class="fw-800 mb-0" data-i18n-en="Invite friends, earn rewards" data-i18n-ar="ادعُ أصدقاءك واربح مكافآت">Invite friends, earn rewards</h5>
+    </div>
+    <p class="text-muted small mb-3" data-i18n-en="Share your referral link. When a friend completes their first booking, you both get 5 OMR credit." data-i18n-ar="شارك رابط الإحالة. عندما يكمل صديقك أوّل حجز، تحصلان كلاكما على رصيد 5 ر.ع.">Share your referral link. When a friend completes their first booking, you both get 5 OMR credit.</p>
+    <div class="d-flex gap-2 align-items-center" style="background:#fff;border:1px dashed #14b8a6;border-radius:10px;padding:10px 14px">
+      <code id="refLink" style="flex:1;font-size:.9rem;color:#0f1c3e;word-break:break-all">…</code>
+      <button class="btn btn-sm btn-success" type="button" onclick="copyRef()" data-i18n-en="Copy" data-i18n-ar="نسخ">Copy</button>
+      <button class="btn btn-sm btn-outline-success" type="button" onclick="shareRef()">📤</button>
+    </div>
+    <div class="row g-2 mt-3 text-center">
+      <div class="col-4"><div class="p-2 bg-white rounded border"><div class="fw-800 fs-5" id="refCount">0</div><div class="small text-muted" data-i18n-en="Friends invited" data-i18n-ar="أصدقاء مدعوّون">Friends invited</div></div></div>
+      <div class="col-4"><div class="p-2 bg-white rounded border"><div class="fw-800 fs-5" id="refDone">0</div><div class="small text-muted" data-i18n-en="Bookings done" data-i18n-ar="حجوزات تمّت">Bookings done</div></div></div>
+      <div class="col-4"><div class="p-2 bg-white rounded border"><div class="fw-800 fs-5" id="refEarn">0 OMR</div><div class="small text-muted" data-i18n-en="Earned credit" data-i18n-ar="رصيد المكافآت">Earned credit</div></div></div>
+    </div>
+  </div>
+
 </div>
+
+<script>
+// Light bilingual swap for elements with data-i18n-ar
+(function(){
+  const isAr = (document.documentElement.lang||'').toLowerCase().startsWith('ar')
+    || (localStorage.getItem('preferredLanguage')||'').toLowerCase().startsWith('ar');
+  if (isAr) document.querySelectorAll('[data-i18n-ar]').forEach(el => { el.textContent = el.dataset.i18nAr; });
+})();
+function buildRefLink(u) {
+  if (!u) return '';
+  // stable, shareable code derived from user id (first 8 chars)
+  const code = (u.id || '').toString().replace(/-/g,'').slice(0,8).toUpperCase() || 'GUIDEON';
+  return `${location.origin}/register.html?ref=${code}`;
+}
+function copyRef() {
+  const t = document.getElementById('refLink').textContent;
+  navigator.clipboard.writeText(t).then(()=>{
+    const btn = event.target;
+    const old = btn.textContent; btn.textContent = '✓';
+    setTimeout(()=>btn.textContent=old, 1400);
+  });
+}
+function shareRef() {
+  const url = document.getElementById('refLink').textContent;
+  const text = (document.documentElement.lang==='ar'
+    ? 'انضمّ إلى Guideon — منصّة المرشدين المعتمدين في عُمان. استخدم رابطي واحصل على رصيد 5 ر.ع. عند أوّل حجز:'
+    : 'Join Guideon — Oman\'s marketplace for licensed local guides. Use my link and get 5 OMR credit on your first booking:');
+  if (navigator.share) navigator.share({ title:'Guideon', text, url }).catch(()=>{});
+  else window.open(`https://wa.me/?text=${encodeURIComponent(text+' '+url)}`, '_blank');
+}
+</script>
 
 <script defer src="/js/bootstrap.bundle.min.js"></script>
 <script src="/js/i18n.js?v=38"></script>
@@ -199,6 +249,10 @@ async function loadProfile() {
 
     document.getElementById('profileName').textContent = u.fullName;
     document.getElementById('profileType').textContent = u.userType.charAt(0).toUpperCase() + u.userType.slice(1);
+
+    // Referral link
+    const refEl = document.getElementById('refLink');
+    if (refEl) refEl.textContent = buildRefLink(u);
 
     // Basic info
     document.getElementById('fName').value        = u.fullName || '';
@@ -287,7 +341,7 @@ async function uploadPhoto(input) {
 loadProfile();
 </script>
 <script src="/js/pwa.js?v=14"></script>
-<script src="/js/common-widgets.js?v=11"></script>
+<script src="/js/common-widgets.js?v=12"></script>
 </body>
 </html>
 

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hiking Trails in Oman — Guideon</title>
+<meta name="description" content="The best hiking trails in Oman — from the Jebel Shams Balcony Walk (W6) to Wadi Shab. Difficulty, distance, and verified mountain guides.">
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/design-tokens.css">
+<style>
+  body{font-family:'Inter','Tajawal',sans-serif;background:#fafafa;color:#0f1c3e}
+  .page-hero{background:linear-gradient(135deg,#0f7b6c,#0f1c3e);color:#fff;padding:80px 0 60px;text-align:center}
+  .page-hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800}
+  .page-hero p{opacity:.92;max-width:680px;margin:8px auto 0;font-size:1.1rem}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:24px 0 0}
+  .filters button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:999px;font-size:.88rem;cursor:pointer;transition:.2s}
+  .filters button:hover,.filters button.active{background:#fff;color:#0f1c3e}
+  .t-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px;padding:50px 0}
+  .t-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:.2s}
+  .t-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
+  .t-card .img{height:180px;background-size:cover;background-position:center;position:relative}
+  .diff-badge{position:absolute;top:12px;inset-inline-start:12px;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+  .diff-easy{background:#dcfce7;color:#15803d}
+  .diff-moderate{background:#fef3c7;color:#a16207}
+  .diff-hard{background:#fee2e2;color:#b91c1c}
+  .t-card .body{padding:18px}
+  .t-card h3{font-size:1.15rem;font-weight:800;margin:0 0 6px}
+  .t-card .region{color:#0f7b6c;font-size:.85rem;font-weight:700;margin:0 0 10px}
+  .t-card p{color:#4b5563;font-size:.92rem;line-height:1.55;margin:0 0 14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .t-stats{display:flex;gap:14px;padding-top:12px;border-top:1px solid #f0f0f0;font-size:.82rem;color:#6b7280}
+  .t-stats div{display:flex;flex-direction:column}
+  .t-stats strong{color:#0f1c3e;font-size:1rem}
+  html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
+</style>
+</head>
+<body>
+<div id="navMount"></div>
+
+<section class="page-hero">
+  <div class="container">
+    <h1 id="pTitle">Hiking Trails in Oman</h1>
+    <p id="pSub">From easy family walks to technical canyoneering — Oman's mountain trails offer something for every level.</p>
+    <div class="filters" id="filters">
+      <button class="active" data-f="all">All</button>
+      <button data-f="easy">Easy</button>
+      <button data-f="moderate">Moderate</button>
+      <button data-f="hard">Hard</button>
+    </div>
+  </div>
+</section>
+
+<main class="container">
+  <div class="t-grid" id="tGrid"></div>
+</main>
+
+<div id="footerMount"></div>
+
+<script src="/js/common-widgets.js?v=12"></script>
+<script>
+(async () => {
+  const lang = (localStorage.getItem('gd_lang') || 'en').toLowerCase();
+  const isAr = lang.startsWith('ar');
+  if (isAr) { document.documentElement.lang='ar'; document.documentElement.dir='rtl';
+    document.title='مسارات المشي في عُمان — Guideon';
+    document.getElementById('pTitle').textContent='مسارات المشي في عُمان';
+    document.getElementById('pSub').textContent='من النزهات العائلية السهلة إلى الكانيونينغ التقنيّ — مسارات عُمان لكل المستويات.';
+    document.querySelectorAll('#filters button').forEach(b => {
+      const m = {all:'الكل',easy:'سهل',moderate:'متوسط',hard:'صعب'};
+      b.textContent = m[b.dataset.f];
+    });
+  }
+  const data = await fetch('/data/trails.json').then(r=>r.json());
+  const grid = document.getElementById('tGrid');
+  const dMap = {easy:{en:'Easy',ar:'سهل'}, moderate:{en:'Moderate',ar:'متوسط'}, hard:{en:'Hard',ar:'صعب'}};
+  function render(filter) {
+    const list = filter==='all'? data.trails : data.trails.filter(t => t.difficulty===filter);
+    grid.innerHTML = list.map(t => `
+      <article class="t-card">
+        <div class="img" style="background-image:url('${t.image}')">
+          <span class="diff-badge diff-${t.difficulty}">${isAr?dMap[t.difficulty].ar:dMap[t.difficulty].en}</span>
+        </div>
+        <div class="body">
+          <h3>${isAr?t.name_ar:t.name_en}</h3>
+          <p class="region">📍 ${isAr?t.region_ar:t.region_en}</p>
+          <p>${isAr?t.desc_ar:t.desc_en}</p>
+          <div class="t-stats">
+            <div><strong>${t.distance_km} km</strong><span>${isAr?'المسافة':'distance'}</span></div>
+            <div><strong>${t.duration_hours} h</strong><span>${isAr?'المدة':'duration'}</span></div>
+            <div><strong>+${t.elevation_m} m</strong><span>${isAr?'الارتفاع':'elevation'}</span></div>
+          </div>
+        </div>
+      </article>`).join('');
+  }
+  render('all');
+  document.querySelectorAll('#filters button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#filters button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    render(b.dataset.f);
+  }));
+})();
+</script>
+</body>
+</html>

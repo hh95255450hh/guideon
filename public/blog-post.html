@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Article — Guideon</title>
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/design-tokens.css">
+<style>
+  body{font-family:'Inter','Tajawal',sans-serif;background:#fff;color:#0f1c3e}
+  .post-hero{height:50vh;min-height:340px;background-size:cover;background-position:center;position:relative}
+  .post-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.6))}
+  .post-hero .container{position:relative;z-index:2;color:#fff;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:40px}
+  .post-hero h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;text-shadow:0 2px 12px rgba(0,0,0,.4);margin:0}
+  .post-meta{opacity:.95;margin-top:10px;font-size:.95rem}
+  article.body{max-width:760px;margin:50px auto;padding:0 20px;font-size:1.08rem;line-height:1.85;color:#1f2937}
+  article.body h2{font-size:1.55rem;font-weight:800;margin:36px 0 14px;color:#0f1c3e}
+  article.body p{margin:0 0 18px}
+  article.body ul{margin:0 0 18px;padding-inline-start:24px}
+  article.body li{margin:6px 0}
+  article.body a{color:#0f7b6c;font-weight:600}
+  .post-cta{background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:40px;border-radius:16px;text-align:center;margin:40px auto;max-width:760px}
+  .post-cta a{background:#fff;color:#0f1c3e;padding:12px 28px;border-radius:999px;font-weight:700;text-decoration:none;display:inline-block;margin-top:14px}
+  html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
+</style>
+</head>
+<body>
+<div id="navMount"></div>
+
+<section class="post-hero" id="pHero">
+  <div class="container">
+    <h1 id="pTitle">…</h1>
+    <div class="post-meta" id="pMeta"></div>
+  </div>
+</section>
+
+<article class="body" id="pBody"></article>
+
+<div class="post-cta">
+  <h3 id="cTitle" style="font-weight:800;margin:0 0 6px">Plan your trip with a verified local guide</h3>
+  <a id="cBtn" href="/search.html">→</a>
+</div>
+
+<div id="footerMount"></div>
+
+<script src="/js/common-widgets.js?v=12"></script>
+<script>
+(async () => {
+  const lang = (localStorage.getItem('gd_lang') || 'en').toLowerCase();
+  const isAr = lang.startsWith('ar');
+  if (isAr) { document.documentElement.lang='ar'; document.documentElement.dir='rtl'; }
+  const id = new URLSearchParams(location.search).get('id');
+  const data = await fetch('/data/blog.json').then(r=>r.json());
+  const p = data.posts.find(x => x.slug === id) || data.posts[0];
+  document.title = (isAr?p.title_ar:p.title_en) + ' — Guideon';
+  document.getElementById('pHero').style.backgroundImage = `url('${p.cover}')`;
+  document.getElementById('pTitle').textContent = isAr?p.title_ar:p.title_en;
+  document.getElementById('pMeta').textContent =
+    `${isAr?p.author_ar:p.author_en} • ${new Date(p.date).toLocaleDateString(isAr?'ar':'en',{year:'numeric',month:'long',day:'numeric'})} • ${p.read_minutes} ${isAr?'دقائق قراءة':'min read'}`;
+  document.getElementById('pBody').innerHTML = isAr?p.body_ar:p.body_en;
+  document.getElementById('cTitle').textContent = isAr?'خطط رحلتك مع مرشد محلّي معتمد':'Plan your trip with a verified local guide';
+  document.getElementById('cBtn').textContent = isAr?'ابدأ الآن →':'Get started →';
+})();
+</script>
+</body>
+</html>

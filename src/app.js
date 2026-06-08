@@ -194,6 +194,7 @@ app.get(['/search', '/guide-profile', '/login', '/register',
          '/forgot-password', '/reset-password',
          '/tour-package', '/shared-wishlist', '/qr', '/two-factor',
          '/terms', '/privacy', '/faq', '/how-it-works',
+         '/regions', '/region', '/trails', '/blog', '/blog-post', '/cancellation',
          '/admin-homepage'], (req, res, next) => {
   res.sendFile(path.join(__dirname, '..', 'public', req.path.replace('/', '') + '.html'), err => {
     if (err) next();
