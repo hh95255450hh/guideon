@@ -19,8 +19,9 @@
   .region-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;padding:60px 0}
   .region-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:transform .25s,box-shadow .25s;text-decoration:none;color:inherit;display:block}
   .region-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
-  .region-card .img{height:200px;background-size:cover;background-position:center;position:relative}
-  .region-card .img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.55))}
+  .region-card .img{height:200px;position:relative;background:linear-gradient(135deg,#0f1c3e,#0f7b6c)}
+  .region-card .img img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .region-card .img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.55));z-index:1}
   .region-card .sites-badge{position:absolute;top:12px;inset-inline-end:12px;background:rgba(255,255,255,.95);color:#0f1c3e;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;z-index:1}
   .region-card .body{padding:18px}
   .region-card h3{font-size:1.25rem;font-weight:800;margin:0 0 6px;color:#0f1c3e}
@@ -56,11 +57,14 @@
     document.getElementById('pHeroTitle').textContent = 'استكشف عُمان حسب المنطقة';
     document.getElementById('pHeroSub').textContent = 'من أخوار مسندم إلى جبال ظفار الضبابية — اكتشف محافظات السلطنة الـ11 بمعالم مختارة ومرشدين محلّيين.';
   }
+  const FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
   const data = await fetch('/data/regions.json').then(r=>r.json());
   const grid = document.getElementById('regionGrid');
   grid.innerHTML = data.regions.map(r => `
     <a class="region-card" href="/region.html?id=${r.id}">
-      <div class="img" style="background-image:url('${r.hero}')">
+      <div class="img">
+        <img class="bg" src="${r.hero}" alt="${isAr?r.name_ar:r.name_en}" loading="lazy" decoding="async"
+             onerror="if(this.src!=='${FALLBACK}'){this.src='${FALLBACK}'}">
         <span class="sites-badge">${r.sites} ${isAr?'موقع':'sites'}</span>
       </div>
       <div class="body">

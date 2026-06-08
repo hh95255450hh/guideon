@@ -402,8 +402,8 @@
   <div class="container">
     <div class="d-flex justify-content-between align-items-end mb-3">
       <div>
-        <h2 class="section-title mb-1" data-i18n="regions_title" data-i18n-ar="استكشف عُمان حسب المنطقة">Explore Oman by Region</h2>
-        <p class="text-muted mb-0" data-i18n-ar="11 محافظة، كلٌّ بشخصيّتها الخاصة">11 governorates, each with its own character</p>
+        <h2 class="section-title mb-1" id="regionsHeading">Explore Oman by Region</h2>
+        <p class="text-muted mb-0" id="regionsSub"><bdi>11</bdi> governorates, each with its own character</p>
       </div>
       <a href="/regions.html" class="btn-outline-teal btn btn-sm">View All →</a>
     </div>
@@ -411,21 +411,35 @@
   </div>
 </section>
 <style>
-  .home-region-card{position:relative;display:block;border-radius:14px;overflow:hidden;height:200px;background-size:cover;background-position:center;text-decoration:none;color:#fff;transition:transform .25s,box-shadow .25s}
+  .home-region-card{position:relative;display:block;border-radius:14px;overflow:hidden;height:200px;text-decoration:none;color:#fff;transition:transform .25s,box-shadow .25s;background:linear-gradient(135deg,#0f1c3e,#0f7b6c)}
   .home-region-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(15,28,62,.18);color:#fff}
-  .home-region-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75))}
+  .home-region-card img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .home-region-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75));z-index:1}
   .home-region-card .lbl{position:absolute;bottom:14px;inset-inline-start:16px;z-index:2;font-weight:800;font-size:1.15rem;text-shadow:0 2px 8px rgba(0,0,0,.4)}
   .home-region-card .badge-sites{position:absolute;top:12px;inset-inline-end:12px;background:rgba(255,255,255,.95);color:#0f1c3e;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;z-index:2}
 </style>
 <script>
+// Guaranteed-working fallback (Muscat mosque). If any region image 404s,
+// onerror swaps to this so a real photo always renders — never a gray box.
+window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
 (async () => {
   try {
     const d = await fetch('/data/regions.json').then(r=>r.json());
     const isAr = (document.documentElement.lang||'').toLowerCase().startsWith('ar');
+    // Localize the section heading/subtitle correctly (avoids the RTL
+    // number-reordering glitch where "11" jumped to the end).
+    if (isAr) {
+      const h = document.getElementById('regionsHeading');
+      const s = document.getElementById('regionsSub');
+      if (h) h.textContent = 'استكشف عُمان حسب المنطقة';
+      if (s) s.textContent = '11 محافظة، لكلٍّ طابعها الخاص';
+    }
     const pick = d.regions.slice(0,6);
     document.getElementById('homeRegionGrid').innerHTML = pick.map(r => `
       <div class="col-md-4 col-sm-6">
-        <a class="home-region-card" href="/region.html?id=${r.id}" style="background-image:url('${r.hero}')">
+        <a class="home-region-card" href="/region.html?id=${r.id}">
+          <img class="bg" src="${r.hero}" alt="${isAr?r.name_ar:r.name_en}" loading="lazy" decoding="async"
+               onerror="if(this.src!==window.GD_REGION_FALLBACK){this.src=window.GD_REGION_FALLBACK}">
           <span class="badge-sites">${r.sites} ${isAr?'موقع':'sites'}</span>
           <span class="lbl">${isAr?r.name_ar:r.name_en}</span>
         </a>

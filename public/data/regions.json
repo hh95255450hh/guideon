@@ -7,15 +7,32 @@
       "name_ar": "مسقط",
       "tagline_en": "The royal capital where heritage meets the sea",
       "tagline_ar": "العاصمة الملكية حيث يلتقي التراث بالبحر",
-      "hero": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Sultan_Qaboos_Grand_Mosque_%281%29.jpg/1920px-Sultan_Qaboos_Grand_Mosque_%281%29.jpg",
+      "hero": "https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600",
       "intro_en": "Muscat is a city of contrasts — gleaming white mosques rise beside ancient forts, and gold-domed palaces sit a short walk from a working fish market. Spend a morning at the Sultan Qaboos Grand Mosque, an afternoon at the Mutrah Souq, and an evening watching the lights twinkle along the Corniche.",
       "intro_ar": "مسقط مدينة التناقضات الجميلة — مساجد بيضاء لامعة بجوار قلاع أثرية، وقصور بقبب ذهبية على بُعد خطوات من سوق الأسماك. ابدأ صباحك في جامع السلطان قابوس الأكبر، وقضِّ بعد الظهر في سوق مطرح، واختم اليوم على كورنيش مطرح.",
-      "highlights_en": ["Sultan Qaboos Grand Mosque", "Mutrah Souq & Corniche", "Royal Opera House", "Al Jalali & Al Mirani Forts", "Bait Al Zubair Museum", "Qurum Beach", "National Museum"],
-      "highlights_ar": ["جامع السلطان قابوس الأكبر", "سوق وكورنيش مطرح", "دار الأوبرا السلطانية", "قلعتا الجلالي والميراني", "متحف بيت الزبير", "شاطئ القرم", "المتحف الوطني"],
+      "highlights_en": [
+        "Sultan Qaboos Grand Mosque",
+        "Mutrah Souq & Corniche",
+        "Royal Opera House",
+        "Al Jalali & Al Mirani Forts",
+        "Bait Al Zubair Museum",
+        "Qurum Beach",
+        "National Museum"
+      ],
+      "highlights_ar": [
+        "جامع السلطان قابوس الأكبر",
+        "سوق وكورنيش مطرح",
+        "دار الأوبرا السلطانية",
+        "قلعتا الجلالي والميراني",
+        "متحف بيت الزبير",
+        "شاطئ القرم",
+        "المتحف الوطني"
+      ],
       "best_time_en": "October to April (avoid midday in summer)",
       "best_time_ar": "من أكتوبر إلى أبريل (تجنّب وقت الظهيرة صيفاً)",
       "sites": 48,
-      "lat": 23.5880, "lng": 58.3829
+      "lat": 23.588,
+      "lng": 58.3829
     },
     {
       "id": "musandam",
@@ -24,15 +41,30 @@
       "name_ar": "مسندم",
       "tagline_en": "The Norway of Arabia — fjords, dolphins, and dramatic cliffs",
       "tagline_ar": "نرويج العرب — خلجان وأخوار ومنحدرات مذهلة",
-      "hero": "https://images.unsplash.com/photo-1583245177184-4c8e2c2c0f6f?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
       "intro_en": "A peninsula severed from the rest of Oman by the UAE, Musandam offers Arabia's most dramatic coastline. Traditional dhow cruises through Khor Sham reveal pods of dolphins, hidden villages, and water so clear you can see the seabed twenty meters down.",
       "intro_ar": "شبه جزيرة تطلّ على مضيق هرمز، وتُعدّ من أجمل سواحل الجزيرة العربية. رحلات السفن الخشبية في خور الشم تكشف عن الدلافين والقرى المعزولة ومياه تتجاوز شفافيّتها 20 متراً.",
-      "highlights_en": ["Khor Sham Fjord Cruise", "Khasab Castle", "Telegraph Island", "Jebel Harim", "Dolphin Watching", "Snorkeling at Banks"],
-      "highlights_ar": ["رحلة خور الشم بالسفينة الخشبية", "قلعة خصب", "جزيرة التلغراف", "جبل حريم", "مشاهدة الدلافين", "الغوص في البنوك"],
+      "highlights_en": [
+        "Khor Sham Fjord Cruise",
+        "Khasab Castle",
+        "Telegraph Island",
+        "Jebel Harim",
+        "Dolphin Watching",
+        "Snorkeling at Banks"
+      ],
+      "highlights_ar": [
+        "رحلة خور الشم بالسفينة الخشبية",
+        "قلعة خصب",
+        "جزيرة التلغراف",
+        "جبل حريم",
+        "مشاهدة الدلافين",
+        "الغوص في البنوك"
+      ],
       "best_time_en": "November to March",
       "best_time_ar": "من نوفمبر إلى مارس",
       "sites": 18,
-      "lat": 26.1979, "lng": 56.2487
+      "lat": 26.1979,
+      "lng": 56.2487
     },
     {
       "id": "dhofar",
@@ -41,15 +73,30 @@
       "name_ar": "ظفار",
       "tagline_en": "Where monsoon turns the desert green",
       "tagline_ar": "حيث يُحيل الخريف الصحراءَ مراعيَ خضراء",
-      "hero": "https://images.unsplash.com/photo-1610198194861-c83e8cd25b71?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&q=80",
       "intro_en": "From late June through early September, Dhofar transforms. The 'Khareef' monsoon brings cool mist, waterfalls cascade down the Jebel Qara, and Salalah's beaches come alive with Gulf visitors. The rest of the year, frankincense trees and ancient ruins draw history lovers.",
       "intro_ar": "بين أواخر يونيو وأوائل سبتمبر، تتحوّل ظفار. يجلب موسم الخريف رذاذاً بارداً وشلالات تنحدر من جبل القرا، وشواطئ صلالة تنبض بالزوار الخليجيين. وفي بقية العام، تجذب أشجار اللبان والآثار العريقة عشّاق التاريخ.",
-      "highlights_en": ["Wadi Darbat", "Mughsail Beach & Blowholes", "Al Baleed Archaeological Park", "Frankincense Land Museum", "Empty Quarter desert", "Tomb of Job (Nabi Ayoub)"],
-      "highlights_ar": ["وادي دربات", "شاطئ المغسيل والنوافذ", "حديقة البليد الأثرية", "متحف أرض اللبان", "صحراء الربع الخالي", "ضريح النبي أيوب"],
+      "highlights_en": [
+        "Wadi Darbat",
+        "Mughsail Beach & Blowholes",
+        "Al Baleed Archaeological Park",
+        "Frankincense Land Museum",
+        "Empty Quarter desert",
+        "Tomb of Job (Nabi Ayoub)"
+      ],
+      "highlights_ar": [
+        "وادي دربات",
+        "شاطئ المغسيل والنوافذ",
+        "حديقة البليد الأثرية",
+        "متحف أرض اللبان",
+        "صحراء الربع الخالي",
+        "ضريح النبي أيوب"
+      ],
       "best_time_en": "Khareef season: late June – early September",
       "best_time_ar": "موسم الخريف: أواخر يونيو – أوائل سبتمبر",
       "sites": 32,
-      "lat": 17.0151, "lng": 54.0924
+      "lat": 17.0151,
+      "lng": 54.0924
     },
     {
       "id": "dakhiliyah",
@@ -58,15 +105,30 @@
       "name_ar": "الداخلية",
       "tagline_en": "Forts, oases, and the green mountain",
       "tagline_ar": "القلاع والواحات والجبل الأخضر",
-      "hero": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Nizwa_Fort_2.jpg/1920px-Nizwa_Fort_2.jpg",
+      "hero": "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1600&q=80",
       "intro_en": "The historic heart of Oman. Nizwa was once the country's capital; today its Friday goat market and round-tower fort draw visitors from around the world. Climb the cooler heights of Jebel Akhdar for rose gardens and pomegranate terraces.",
       "intro_ar": "القلب التاريخي لعُمان. كانت نزوى عاصمة البلاد، وما زال سوق الماعز يوم الجمعة وقلعتها المستديرة يجذبان الزوار. اصعد إلى الجبل الأخضر لمزارع الورد والرمّان.",
-      "highlights_en": ["Nizwa Fort & Souq", "Jebel Akhdar (Green Mountain)", "Bahla Fort (UNESCO)", "Jabreen Castle", "Al Hamra & Misfat Al Abriyeen", "Wadi Ghul (Grand Canyon of Oman)"],
-      "highlights_ar": ["قلعة وسوق نزوى", "الجبل الأخضر", "قلعة بهلا (يونسكو)", "قصر جبرين", "الحمراء ومسفاة العبريين", "وادي غول (الأخدود العظيم)"],
+      "highlights_en": [
+        "Nizwa Fort & Souq",
+        "Jebel Akhdar (Green Mountain)",
+        "Bahla Fort (UNESCO)",
+        "Jabreen Castle",
+        "Al Hamra & Misfat Al Abriyeen",
+        "Wadi Ghul (Grand Canyon of Oman)"
+      ],
+      "highlights_ar": [
+        "قلعة وسوق نزوى",
+        "الجبل الأخضر",
+        "قلعة بهلا (يونسكو)",
+        "قصر جبرين",
+        "الحمراء ومسفاة العبريين",
+        "وادي غول (الأخدود العظيم)"
+      ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 38,
-      "lat": 22.9333, "lng": 57.5333
+      "lat": 22.9333,
+      "lng": 57.5333
     },
     {
       "id": "sharqiyah-north",
@@ -75,15 +137,28 @@
       "name_ar": "شمال الشرقية",
       "tagline_en": "Desert dunes and date-palm wadis",
       "tagline_ar": "كثبان رمليّة وأودية نخيل",
-      "hero": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80",
       "intro_en": "Drive east of Muscat and the landscape softens into farmland, then opens into the Wahiba Sands — an ocean of orange dunes you can summit by 4x4 at sunset. Wadi Bani Khalid, with its turquoise pools, is the perfect cool-down.",
       "intro_ar": "شرق مسقط تتحوّل الأرض إلى مزارع ثم تنفتح على رمال الشرقية — محيط من الكثبان البرتقالية. ووادي بني خالد ببركه الفيروزية هو المكان المثالي للتبريد.",
-      "highlights_en": ["Wahiba Sands desert camps", "Wadi Bani Khalid", "Ibra Wednesday Market", "Al Kamil Heritage", "Sinaw Souq"],
-      "highlights_ar": ["مخيمات رمال الشرقية", "وادي بني خالد", "سوق إبراء (الأربعاء)", "تراث الكامل", "سوق سناو"],
+      "highlights_en": [
+        "Wahiba Sands desert camps",
+        "Wadi Bani Khalid",
+        "Ibra Wednesday Market",
+        "Al Kamil Heritage",
+        "Sinaw Souq"
+      ],
+      "highlights_ar": [
+        "مخيمات رمال الشرقية",
+        "وادي بني خالد",
+        "سوق إبراء (الأربعاء)",
+        "تراث الكامل",
+        "سوق سناو"
+      ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 22,
-      "lat": 22.6906, "lng": 58.5326
+      "lat": 22.6906,
+      "lng": 58.5326
     },
     {
       "id": "sharqiyah-south",
@@ -95,12 +170,27 @@
       "hero": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1600&q=80",
       "intro_en": "Sur is a town of dhow builders — wooden ocean-going vessels still take shape on its waterfront. Inland, Bimmah Sinkhole offers a swim in cobalt water, and Ras Al Jinz protects one of the world's most important green-turtle nesting beaches.",
       "intro_ar": "صور بلدة بنّائي السفن — لا تزال السفن الخشبية تُصنع على واجهتها البحرية. وفي الداخل، توفّر هوّة بمّاه سباحة في مياه فيروزية، ومحميّة رأس الجنز تحمي أحد أهم شواطئ تعشيش السلاحف الخضراء عالمياً.",
-      "highlights_en": ["Ras Al Jinz Turtle Reserve", "Sur dhow yards", "Bimmah Sinkhole", "Wadi Shab", "Wadi Tiwi", "Al Ayjah Lighthouse"],
-      "highlights_ar": ["محمية رأس الجنز للسلاحف", "أحواض صناعة السفن في صور", "هوّة بمّاه", "وادي شاب", "وادي طيوي", "منارة العيجة"],
+      "highlights_en": [
+        "Ras Al Jinz Turtle Reserve",
+        "Sur dhow yards",
+        "Bimmah Sinkhole",
+        "Wadi Shab",
+        "Wadi Tiwi",
+        "Al Ayjah Lighthouse"
+      ],
+      "highlights_ar": [
+        "محمية رأس الجنز للسلاحف",
+        "أحواض صناعة السفن في صور",
+        "هوّة بمّاه",
+        "وادي شاب",
+        "وادي طيوي",
+        "منارة العيجة"
+      ],
       "best_time_en": "October to April; turtle nesting peaks July–October",
       "best_time_ar": "من أكتوبر إلى أبريل؛ ذروة تعشيش السلاحف يوليو–أكتوبر",
       "sites": 26,
-      "lat": 22.5667, "lng": 59.5289
+      "lat": 22.5667,
+      "lng": 59.5289
     },
     {
       "id": "batinah-north",
@@ -109,15 +199,26 @@
       "name_ar": "شمال الباطنة",
       "tagline_en": "Coastal forts and citrus farms",
       "tagline_ar": "قلاع ساحلية ومزارع حمضيات",
-      "hero": "https://images.unsplash.com/photo-1559564484-e5c2c8e2c6c8?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1600&q=80",
       "intro_en": "A 270 km coastline between the Hajar Mountains and the Sea of Oman. Sohar is the old port from which Sinbad allegedly sailed; today it's a relaxed beach town with a striking white fort.",
       "intro_ar": "ساحل بطول 270 كم بين جبال الحجر وبحر عُمان. صحار هو الميناء القديم الذي يُقال إن السندباد أبحر منه؛ واليوم هي بلدة شاطئية هادئة بقلعة بيضاء لافتة.",
-      "highlights_en": ["Sohar Fort", "Saham beach", "Liwa mangroves", "Shinas to Khor Fakkan road"],
-      "highlights_ar": ["قلعة صحار", "شاطئ صحم", "غابات قرم لِوى", "طريق شناص – خورفكان"],
+      "highlights_en": [
+        "Sohar Fort",
+        "Saham beach",
+        "Liwa mangroves",
+        "Shinas to Khor Fakkan road"
+      ],
+      "highlights_ar": [
+        "قلعة صحار",
+        "شاطئ صحم",
+        "غابات قرم لِوى",
+        "طريق شناص – خورفكان"
+      ],
       "best_time_en": "November to March",
       "best_time_ar": "من نوفمبر إلى مارس",
       "sites": 14,
-      "lat": 24.3431, "lng": 56.7290
+      "lat": 24.3431,
+      "lng": 56.729
     },
     {
       "id": "batinah-south",
@@ -126,15 +227,26 @@
       "name_ar": "جنوب الباطنة",
       "tagline_en": "Wadis of the Western Hajar",
       "tagline_ar": "أودية الحجر الغربي",
-      "hero": "https://images.unsplash.com/photo-1583252628842-ec64bcd45474?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
       "intro_en": "Where the mountains meet the coast. Rustaq's hot springs and round tower fort are a perfect day-trip from Muscat, and Wadi Bani Awf delivers Oman's most thrilling 4x4 drive.",
       "intro_ar": "حيث تلتقي الجبال بالساحل. حمامات الرستاق الكبريتية وقلعتها المستديرة وجهة مثالية ليوم واحد من مسقط، ووادي بني عوف يقدّم أكثر مغامرات الدفع الرباعي إثارة.",
-      "highlights_en": ["Rustaq Fort & hot springs", "Nakhal Fort", "Wadi Bani Awf & Snake Canyon", "Al Hoota Cave (near border)"],
-      "highlights_ar": ["قلعة الرستاق والحمامات", "قلعة نخل", "وادي بني عوف ووادي الثعبان", "كهف الهوتا"],
+      "highlights_en": [
+        "Rustaq Fort & hot springs",
+        "Nakhal Fort",
+        "Wadi Bani Awf & Snake Canyon",
+        "Al Hoota Cave (near border)"
+      ],
+      "highlights_ar": [
+        "قلعة الرستاق والحمامات",
+        "قلعة نخل",
+        "وادي بني عوف ووادي الثعبان",
+        "كهف الهوتا"
+      ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 18,
-      "lat": 23.3914, "lng": 57.4250
+      "lat": 23.3914,
+      "lng": 57.425
     },
     {
       "id": "dhahirah",
@@ -143,15 +255,26 @@
       "name_ar": "الظاهرة",
       "tagline_en": "Bronze Age tombs and quiet oases",
       "tagline_ar": "مقابر العصر البرونزي وواحات هادئة",
-      "hero": "https://images.unsplash.com/photo-1612289636739-5d0d3e2e0b7b?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&q=80",
       "intro_en": "Off the main tourist trail, Ad Dhahirah rewards the curious. The beehive tombs of Bat are a UNESCO World Heritage Site, and Ibri's old quarter is a maze of mud-brick alleys.",
       "intro_ar": "بعيداً عن المسارات السياحية المعتادة، تُكافئ الظاهرة الفضوليين. مقابر بات الخلوية مدرجة في يونسكو، وحارة إبري القديمة متاهة من أزقّة الطين.",
-      "highlights_en": ["Bat Tombs (UNESCO)", "Ibri Old Town", "Yanqul mountains", "Al Aynayn ruins"],
-      "highlights_ar": ["مقابر بات (يونسكو)", "حارة إبري القديمة", "جبال ينقل", "آثار العينين"],
+      "highlights_en": [
+        "Bat Tombs (UNESCO)",
+        "Ibri Old Town",
+        "Yanqul mountains",
+        "Al Aynayn ruins"
+      ],
+      "highlights_ar": [
+        "مقابر بات (يونسكو)",
+        "حارة إبري القديمة",
+        "جبال ينقل",
+        "آثار العينين"
+      ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 12,
-      "lat": 23.2257, "lng": 56.5117
+      "lat": 23.2257,
+      "lng": 56.5117
     },
     {
       "id": "buraimi",
@@ -160,15 +283,24 @@
       "name_ar": "البريمي",
       "tagline_en": "The oasis on the UAE border",
       "tagline_ar": "الواحة على الحدود الإماراتية",
-      "hero": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1600&q=80",
       "intro_en": "Famous for its date palms and the impressive Al Khandaq Fort, Al Buraimi has been an important trading oasis for centuries.",
       "intro_ar": "تشتهر بأشجار النخيل وقلعة الخندق المهيبة، وكانت واحة تجارية مهمّة منذ قرون.",
-      "highlights_en": ["Al Khandaq Fort", "Al Hilla Fort", "Date farms"],
-      "highlights_ar": ["قلعة الخندق", "قلعة الحلّة", "مزارع التمور"],
+      "highlights_en": [
+        "Al Khandaq Fort",
+        "Al Hilla Fort",
+        "Date farms"
+      ],
+      "highlights_ar": [
+        "قلعة الخندق",
+        "قلعة الحلّة",
+        "مزارع التمور"
+      ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 8,
-      "lat": 24.2500, "lng": 55.7833
+      "lat": 24.25,
+      "lng": 55.7833
     },
     {
       "id": "wusta",
@@ -177,15 +309,26 @@
       "name_ar": "الوسطى",
       "tagline_en": "Wild beaches and the lost city of Ubar",
       "tagline_ar": "شواطئ بكر ومدينة أوبار المفقودة",
-      "hero": "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1600&q=80",
+      "hero": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80",
       "intro_en": "Oman's largest and least-populated governorate. The Arabian oryx roams the protected reserve here, and the coast around Duqm is rapidly becoming a frontier for adventure tourism.",
       "intro_ar": "أكبر محافظات عُمان وأقلّها سكاناً. يتجوّل المها العربي في محميّتها، وساحل الدقم يتحوّل بسرعة إلى وجهة لسياحة المغامرات.",
-      "highlights_en": ["Arabian Oryx Sanctuary", "Duqm Rock Garden", "Masirah Island", "Ras Madrakah"],
-      "highlights_ar": ["محمية المها العربي", "حديقة صخور الدقم", "جزيرة مصيرة", "رأس مدركة"],
+      "highlights_en": [
+        "Arabian Oryx Sanctuary",
+        "Duqm Rock Garden",
+        "Masirah Island",
+        "Ras Madrakah"
+      ],
+      "highlights_ar": [
+        "محمية المها العربي",
+        "حديقة صخور الدقم",
+        "جزيرة مصيرة",
+        "رأس مدركة"
+      ],
       "best_time_en": "November to March",
       "best_time_ar": "من نوفمبر إلى مارس",
       "sites": 10,
-      "lat": 19.9667, "lng": 56.2667
+      "lat": 19.9667,
+      "lng": 56.2667
     }
   ]
 }

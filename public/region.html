@@ -83,7 +83,13 @@
   const data = await fetch('/data/regions.json').then(r=>r.json());
   const r = data.regions.find(x => x.id === id) || data.regions[0];
   document.title = (isAr?r.name_ar:r.name_en) + ' — Guideon';
-  document.getElementById('rHero').style.backgroundImage = `url('${r.hero}')`;
+  // Preload-check the hero; fall back to a guaranteed image if it 404s.
+  const FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
+  const heroEl = document.getElementById('rHero');
+  const probe = new Image();
+  probe.onload  = () => { heroEl.style.backgroundImage = `url('${r.hero}')`; };
+  probe.onerror = () => { heroEl.style.backgroundImage = `url('${FALLBACK}')`; };
+  probe.src = r.hero;
   document.getElementById('rName').textContent = isAr?r.name_ar:r.name_en;
   document.getElementById('rTag').textContent = isAr?r.tagline_ar:r.tagline_en;
   document.getElementById('rSites').textContent = `${r.sites} ${isAr?'موقع سياحي':'sites of interest'}`;
