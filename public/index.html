@@ -79,14 +79,27 @@
 </script>
 <!-- ─────────────────────────────────────────────────────────────────── -->
 
-<link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
-<link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
+<!-- Preconnect to all third-party origins we hit on every load — saves
+     ~100-200ms on slow networks by warming up DNS+TLS in parallel with
+     the HTML parse. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://uwgkszszsogivhphlfdy.supabase.co">
+
+<!-- Critical CSS: brand styles render-block by design -->
+<link id="bs-ltr" rel="stylesheet" href="/css/bootstrap.min.css">
+<link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
 <link rel="stylesheet" href="/css/style.css?v=40">
 <link rel="stylesheet" href="/css/upgrade.css?v=13">
+
+<!-- Fonts: load only the 4 weights actually used (was 8 = ~2x payload) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Tajawal:wght@700;800&display=swap">
+
+<!-- Swiper CSS is only needed AFTER paint (carousels). Lazy-load it via
+     the standard rel=preload→onload trick so it doesn't block FCP/LCP. -->
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"></noscript>
 </head>
 <body>
 
@@ -1008,7 +1021,7 @@
 <div id="toast-container"></div>
 
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="/js/i18n.js?v=38"></script>
 <script src="/js/oman-locations.js?v=1"></script>
 <script src="/js/dynamic-homepage.js?v=1"></script>
