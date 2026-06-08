@@ -229,33 +229,99 @@ function render(packages) {
       <a class="btn btn-outline-secondary btn-sm w-100" href="/plan-trip.html?companyId=${COMPANY.id}">✨ اطلب عرض سعر</a>
     </div>`;
 
+  // Open an inline modal composer instead of navigating to another
+  // dashboard. The dashboard-per-role redirect was fragile: each
+  // dashboard has its own userType gate (tourist-dashboard only allows
+  // tourists, etc.) and any mismatch — including a stale cached page —
+  // bounced the user to /login.html, which looked like a logout. The
+  // composer keeps the user on the current page, posts directly to
+  // /api/messages, and only sends them to login if no session exists.
   window.openPlatformChat = async function() {
     let user = null;
     try {
-      // Prefer the shared session cache that common-widgets sets up;
-      // fall back to a direct /api/auth/me call so this works even if
-      // common-widgets hasn't finished initializing yet.
-      if (window.gdSession && typeof window.gdSession.get === 'function') {
-        user = await window.gdSession.get();
-      } else {
+      if (window.gdSession?.get) user = await window.gdSession.get();
+      if (!user) {
         const r = await fetch('/api/auth/me', { credentials: 'include' });
-        const d = await r.json();
-        if (d && d.success) user = d.user;
+        if (r.ok) { const d = await r.json(); user = d?.user || null; }
       }
     } catch (_) {}
 
-    const target = `/tourist-dashboard.html#messages?to=${COMPANY.id}`;
-    if (user && user.id) {
-      // Already logged in — go straight to the messages tab. Works for
-      // tourists, guides, companies and admins (they may want to chat too).
-      const base = user.userType === 'guide'   ? '/guide-dashboard.html'
-                 : user.userType === 'company' ? '/company-dashboard.html'
-                 : user.userType === 'admin' || user.userType === 'staff' ? '/admin.html'
-                 : '/tourist-dashboard.html';
-      location.href = `${base}#messages?to=${COMPANY.id}`;
-    } else {
-      // Not logged in — send them through the login page with a return URL.
-      location.href = `/login.html?next=${encodeURIComponent('/company-profile.html?id=' + COMPANY.id)}`;
+    if (!user || !user.id) {
+      // Save current page so we come straight back after login.
+      const next = encodeURIComponent('/company-profile.html?id=' + COMPANY.id);
+      sessionStorage.setItem('gd_after_login', '/company-profile.html?id=' + COMPANY.id);
+      location.href = `/login.html?next=${next}`;
+      return;
+    }
+
+    showChatModal(user);
+  };
+
+  function showChatModal(user) {
+    if (document.getElementById('gdChatModal')) {
+      document.getElementById('gdChatModal').remove();
+    }
+    const modal = document.createElement('div');
+    modal.id = 'gdChatModal';
+    modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(15,28,62,.55);display:flex;align-items:center;justify-content:center;padding:16px;animation:gdFadeIn .15s';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden">
+        <div style="background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:800;font-size:1.05rem">💬 مراسلة ${(COMPANY.companyName || COMPANY.fullName || 'الشركة').replace(/</g,'&lt;')}</div>
+            <div style="font-size:.78rem;opacity:.85;margin-top:2px">سيتلقّون رسالتك على Guideon ويردّون قريباً</div>
+          </div>
+          <button onclick="document.getElementById('gdChatModal').remove()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.2rem;cursor:pointer">×</button>
+        </div>
+        <div style="padding:18px 22px">
+          <textarea id="gdChatMsg" rows="4" placeholder="اكتب رسالتك… مثلاً: مرحباً، أريد الاستفسار عن باقة مسقط لشخصين في 15 يوليو."
+            style="width:100%;border:1px solid #dee2e6;border-radius:10px;padding:12px;font-size:.95rem;font-family:inherit;resize:vertical;outline:none"
+            oninput="this.style.borderColor=this.value.trim()?'#0f7b6c':'#dee2e6'"></textarea>
+          <div id="gdChatErr" style="color:#b91c1c;font-size:.85rem;margin-top:8px;display:none"></div>
+          <div style="background:#fef3c7;color:#92400e;padding:8px 12px;border-radius:8px;font-size:.78rem;margin-top:10px">⚠️ لتأمين حجزك ودعمك، تجنّب مشاركة رقم الهاتف أو البريد — يتمّ حذفها تلقائياً.</div>
+          <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+            <button onclick="document.getElementById('gdChatModal').remove()" style="background:#f1f3f5;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer">إلغاء</button>
+            <button id="gdChatSend" onclick="sendChatNow('${COMPANY.id}')" style="background:#0f7b6c;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer">إرسال 📤</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    setTimeout(()=>document.getElementById('gdChatMsg')?.focus(), 80);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  }
+
+  window.sendChatNow = async function(toId) {
+    const txt = (document.getElementById('gdChatMsg').value || '').trim();
+    const err = document.getElementById('gdChatErr');
+    const btn = document.getElementById('gdChatSend');
+    if (!txt) { err.textContent='يرجى كتابة رسالة قبل الإرسال.'; err.style.display=''; return; }
+    btn.disabled = true; btn.textContent = 'جارٍ الإرسال…';
+    try {
+      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
+      const r = await fetch('/api/messages', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type':'application/json', ...(csrf?{'x-csrf-token':csrf}:{}) },
+        body: JSON.stringify({ toId, content: txt }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.success) throw new Error(d.message || 'فشل الإرسال');
+      // Success — replace modal contents with confirmation
+      document.getElementById('gdChatModal').innerHTML = `
+        <div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:30px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+          <div style="font-size:3rem;margin-bottom:8px">✅</div>
+          <h4 style="font-weight:800;margin-bottom:8px">تمّ إرسال رسالتك</h4>
+          <p style="color:#6b7280;margin-bottom:18px">سيتمكّن الفريق من الردّ عليك عبر Guideon. ستجد المحادثة في لوحتك.</p>
+          ${d.contactFlagged ? '<div style="background:#fef3c7;color:#92400e;padding:10px;border-radius:8px;font-size:.85rem;margin-bottom:14px">⚠️ حُذفت أرقام/بريد إلكتروني من رسالتك تلقائياً.</div>' : ''}
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button onclick="document.getElementById('gdChatModal').remove()" style="background:#f1f3f5;border:none;padding:10px 18px;border-radius:10px;font-weight:600;cursor:pointer">إغلاق</button>
+            <a href="/notifications.html" style="background:#0f7b6c;color:#fff;text-decoration:none;padding:10px 18px;border-radius:10px;font-weight:700">فتح الرسائل ←</a>
+          </div>
+        </div>`;
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'إرسال 📤';
+      err.textContent = e.message || 'فشل الإرسال — حاول مرّة أخرى.';
+      err.style.display = '';
     }
   };
 
