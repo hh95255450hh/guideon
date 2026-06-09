@@ -17,10 +17,12 @@
 (function () {
   if (window.gdCompressImage) return;
 
-  const DEFAULT_MAX_DIM   = 2000;   // longest edge (px)
-  const DEFAULT_QUALITY   = 0.85;
-  const DEFAULT_TARGET_KB = 1500;   // try to land under ~1.5 MB
-  const HARD_CAP_KB       = 8000;   // never send anything bigger than 8 MB
+  // Tighter defaults — Supabase egress was the bottleneck, not Storage size.
+  // Even 1400 px is enough for full-bleed hero images on a 5" phone.
+  const DEFAULT_MAX_DIM   = 1400;   // longest edge (px)
+  const DEFAULT_QUALITY   = 0.80;
+  const DEFAULT_TARGET_KB = 600;    // try to land under ~600 KB
+  const HARD_CAP_KB       = 4000;   // never send anything bigger than 4 MB
 
   function loadImage(file) {
     return new Promise((resolve, reject) => {
@@ -100,11 +102,11 @@
    */
   const UPLOAD_PATHS = /\/api\/upload\/|\/api\/auth\/upload-photo|\/api\/reviews\/upload-photo/;
   const PRESET_BY_PATH = [
-    [/\/upload\/photo/,              { maxDim: 800,  targetKB: 350 }], // avatars — small
-    [/\/upload\/gallery/,            { maxDim: 1800, targetKB: 800 }],
-    [/\/upload\/image/,              { maxDim: 1800, targetKB: 800 }],
-    [/\/upload\/message-attachment/, { maxDim: 1400, targetKB: 600 }],
-    [/upload-photo/,                 { maxDim: 800,  targetKB: 350 }],
+    [/\/upload\/photo/,              { maxDim: 500,  targetKB: 150 }], // avatars — rendered ≤110 px
+    [/\/upload\/gallery/,            { maxDim: 1200, targetKB: 500 }],
+    [/\/upload\/image/,              { maxDim: 1400, targetKB: 500 }],
+    [/\/upload\/message-attachment/, { maxDim: 1000, targetKB: 350 }],
+    [/upload-photo/,                 { maxDim: 500,  targetKB: 150 }],
   ];
   function presetFor(url) {
     for (const [rx, opts] of PRESET_BY_PATH) if (rx.test(url)) return opts;

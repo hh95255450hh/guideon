@@ -11,12 +11,15 @@ const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'media';
 // stop serving 6 MB iPhone originals from Supabase storage (and burning
 // Egress quota). Anything not listed falls back to GENERIC.
 const PRESETS = {
-  avatars:  { maxWidth: 512,  maxHeight: 512,  quality: 78, fit: 'cover'   }, // profile photo
-  gallery:  { maxWidth: 1600, maxHeight: 1600, quality: 78, fit: 'inside'  }, // guide / company gallery
-  homepage: { maxWidth: 1600, maxHeight: 1600, quality: 78, fit: 'inside'  }, // hero / tour cover / asset photos
-  messages: { maxWidth: 1280, maxHeight: 1280, quality: 75, fit: 'inside'  }, // chat attachments
-  reviews:  { maxWidth: 1280, maxHeight: 1280, quality: 78, fit: 'inside'  },
-  GENERIC:  { maxWidth: 1600, maxHeight: 1600, quality: 78, fit: 'inside'  },
+  // Tighter ceilings to cut Supabase egress. Cards and hero images on
+  // modern phones rarely render past ~1200 px — anything larger just
+  // wastes bandwidth on every page view.
+  avatars:  { maxWidth: 400,  maxHeight: 400,  quality: 75, fit: 'cover'   }, // profile photo (renders ≤110 px)
+  gallery:  { maxWidth: 1200, maxHeight: 1200, quality: 72, fit: 'inside'  }, // guide / company gallery
+  homepage: { maxWidth: 1400, maxHeight: 1400, quality: 72, fit: 'inside'  }, // hero / tour cover / asset photos
+  messages: { maxWidth: 1000, maxHeight: 1000, quality: 70, fit: 'inside'  }, // chat attachments
+  reviews:  { maxWidth: 1000, maxHeight: 1000, quality: 72, fit: 'inside'  },
+  GENERIC:  { maxWidth: 1200, maxHeight: 1200, quality: 72, fit: 'inside'  },
 };
 
 function presetFor(folder) {
