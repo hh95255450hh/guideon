@@ -339,6 +339,46 @@
           <div class="form-text mb-2">حدّد نقطة اللقاء والمسار المتوقّع — سيظهر للسياح على صفحة الرحلة.</div>
           <div id="pkgMap"></div>
         </div>
+
+        <!-- ═══ Service Tiers (Standard / Premium / VIP) ═══ -->
+        <div class="mb-3 p-3" style="background:#f7f9fb;border-radius:12px;border:1px solid #eef0f4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-700 mb-0">💼 الباقات (Standard · Premium · VIP)</label>
+            <button type="button" class="btn btn-sm btn-outline-teal" onclick="addPkgVariant()">+ إضافة باقة</button>
+          </div>
+          <div class="form-text mb-2">أنشئ مستويات مختلفة (عادي / متميّز / VIP) بأسعار وميزات مختلفة. السائح يختار ما يناسبه.</div>
+          <div id="pkgVariantsList"></div>
+        </div>
+
+        <!-- ═══ Optional Add-ons (extra services) ═══ -->
+        <div class="mb-3 p-3" style="background:#f7f9fb;border-radius:12px;border:1px solid #eef0f4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-700 mb-0">🎁 خدمات إضافية اختياريّة</label>
+            <button type="button" class="btn btn-sm btn-outline-teal" onclick="addPkgAddon()">+ إضافة خدمة</button>
+          </div>
+          <div class="form-text mb-2">خدمات يمكن للسائح إضافتها لرحلته (مثل: مصوّر، عشاء بدويّ، نقل من المطار…)</div>
+          <div id="pkgAddonsList"></div>
+        </div>
+
+        <!-- ═══ Special Offer / Discount ═══ -->
+        <div class="mb-3 p-3" style="background:linear-gradient(135deg,#fff8e6,#fef3c7);border-radius:12px;border:1px solid #fde68a">
+          <label class="form-label fw-700 mb-2">🏷️ عرض خاصّ (اختياري)</label>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <label class="form-label small mb-1">نسبة الخصم %</label>
+              <input type="number" class="form-control form-control-sm" id="pkgDiscount" min="0" max="90" step="1" placeholder="مثلاً: 20">
+            </div>
+            <div class="col-md-5">
+              <label class="form-label small mb-1">عنوان العرض</label>
+              <input type="text" class="form-control form-control-sm" id="pkgOfferLabel" placeholder="مثلاً: تخفيضات الصيف">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small mb-1">ساري حتى</label>
+              <input type="date" class="form-control form-control-sm" id="pkgOfferUntil">
+            </div>
+          </div>
+          <div class="form-text mt-1">يظهر شريط ذهبيّ بالعرض على صفحة الرحلة قبل الإطار الزمني.</div>
+        </div>
       </div>
       <div class="modal-footer border-0 pt-0">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="cancel_btn">Cancel</button>
@@ -633,6 +673,72 @@ async function saveProfile() {
   }
 }
 
+// ─── Package extras: tiers + add-ons + offer ────────────────────────
+let PKG_VARIANTS = []; // [{ name, priceAdult, priceChild, perks, isVIP }]
+let PKG_ADDONS   = []; // [{ name, price }]
+
+function _esc(s){return String(s||'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+
+function renderPkgVariants() {
+  const el = document.getElementById('pkgVariantsList');
+  if (!el) return;
+  if (!PKG_VARIANTS.length) { el.innerHTML = '<div class="text-muted small">لا توجد باقات. اضغط "+ إضافة باقة" لإنشاء Standard / Premium / VIP.</div>'; return; }
+  el.innerHTML = PKG_VARIANTS.map((v, i) => `
+    <div class="border rounded p-2 mb-2" style="background:#fff">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label small mb-1">اسم الباقة</label>
+          <input class="form-control form-control-sm" value="${_esc(v.name)}" oninput="PKG_VARIANTS[${i}].name=this.value" placeholder="Standard / Premium / VIP">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">سعر للشخص (OMR)</label>
+          <input type="number" min="1" step="0.5" class="form-control form-control-sm" value="${v.priceAdult||''}" oninput="PKG_VARIANTS[${i}].priceAdult=parseFloat(this.value)||0">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">شخص إضافي (OMR)</label>
+          <input type="number" min="0" step="0.5" class="form-control form-control-sm" value="${v.priceChild||''}" oninput="PKG_VARIANTS[${i}].priceChild=parseFloat(this.value)||0">
+        </div>
+        <div class="col-md-2 text-end">
+          <label class="form-check form-check-inline small" style="margin:0">
+            <input type="checkbox" class="form-check-input" ${v.isVIP?'checked':''} onchange="PKG_VARIANTS[${i}].isVIP=this.checked">
+            <span class="form-check-label">✨ VIP</span>
+          </label>
+          <button type="button" class="btn btn-sm btn-outline-danger ms-1" onclick="PKG_VARIANTS.splice(${i},1);renderPkgVariants()">🗑️</button>
+        </div>
+        <div class="col-12">
+          <label class="form-label small mb-1">ما يميّز هذه الباقة (افصل بفواصل)</label>
+          <input class="form-control form-control-sm" value="${_esc((v.perks||[]).join(', '))}" oninput="PKG_VARIANTS[${i}].perks=this.value.split(/[،,]/).map(s=>s.trim()).filter(Boolean)" placeholder="فطور، مرشد خاصّ، نقل خاصّ، صور احترافيّة">
+        </div>
+      </div>
+    </div>`).join('');
+}
+function addPkgVariant() {
+  PKG_VARIANTS.push({ name:'', priceAdult:0, priceChild:0, perks:[], isVIP:false });
+  renderPkgVariants();
+}
+
+function renderPkgAddons() {
+  const el = document.getElementById('pkgAddonsList');
+  if (!el) return;
+  if (!PKG_ADDONS.length) { el.innerHTML = '<div class="text-muted small">لا توجد خدمات إضافيّة. اضغط "+ إضافة خدمة".</div>'; return; }
+  el.innerHTML = PKG_ADDONS.map((a, i) => `
+    <div class="row g-2 mb-2 align-items-end">
+      <div class="col-md-8">
+        <input class="form-control form-control-sm" value="${_esc(a.name)}" oninput="PKG_ADDONS[${i}].name=this.value" placeholder="اسم الخدمة (مثلاً: مصوّر احترافيّ)">
+      </div>
+      <div class="col-md-3">
+        <input type="number" min="0" step="0.5" class="form-control form-control-sm" value="${a.price||''}" oninput="PKG_ADDONS[${i}].price=parseFloat(this.value)||0" placeholder="OMR">
+      </div>
+      <div class="col-md-1 text-end">
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="PKG_ADDONS.splice(${i},1);renderPkgAddons()">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+function addPkgAddon() {
+  PKG_ADDONS.push({ name:'', price:0 });
+  renderPkgAddons();
+}
+
 // Holds the active map editor instance for the package modal. Created
 // lazily so pages without the modal open don't pay for Leaflet.
 let _pkgMapEditor = null;
@@ -645,11 +751,15 @@ async function _mountPkgMap(initial) {
 function openAddPackage() {
   document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_add_title') || 'إضافة حزمة سياحية';
   document.getElementById('pkgEditIndex').value = '';
-  ['pkgName','pkgPrice','pkgDuration','pkgDestination','pkgIncludes','pkgDescription'].forEach(id => {
-    document.getElementById(id).value = '';
+  ['pkgName','pkgPrice','pkgDuration','pkgDestination','pkgIncludes','pkgDescription','pkgDiscount','pkgOfferLabel','pkgOfferUntil'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
   });
   PKG_KEPT_PHOTOS    = [];
   PKG_PENDING_FILES  = [];
+  PKG_VARIANTS = [];
+  PKG_ADDONS   = [];
+  renderPkgVariants();
+  renderPkgAddons();
   document.getElementById('pkgPhotosInput').value = '';
   document.getElementById('pkgUploadStatus').textContent = '';
   renderPkgPhotoStrip();
@@ -670,6 +780,14 @@ function editPackage(id) {
   document.getElementById('pkgDestination').value = pkg.destination || '';
   document.getElementById('pkgIncludes').value    = pkg.includes    || '';
   document.getElementById('pkgDescription').value = pkg.description || '';
+  // Tiers + add-ons + offer
+  PKG_VARIANTS = Array.isArray(pkg.variants) ? pkg.variants.slice() : [];
+  PKG_ADDONS   = Array.isArray(pkg.addons)   ? pkg.addons.slice()   : [];
+  document.getElementById('pkgDiscount').value    = pkg.discountPercent || '';
+  document.getElementById('pkgOfferLabel').value  = pkg.offerLabel || '';
+  document.getElementById('pkgOfferUntil').value  = pkg.offerUntil || '';
+  renderPkgVariants();
+  renderPkgAddons();
   PKG_KEPT_PHOTOS    = (pkg.images || []).slice();
   PKG_PENDING_FILES  = [];
   document.getElementById('pkgPhotosInput').value = '';
@@ -724,6 +842,11 @@ async function savePackage() {
     // if one was mounted. Missing/empty is fine.
     const mapData = _pkgMapEditor ? _pkgMapEditor.getData() : { meetingPoint: null, route: [] };
 
+    // Offer fields (discount only valid 0–90 %)
+    const discountVal = Math.max(0, Math.min(90, parseInt(document.getElementById('pkgDiscount').value) || 0));
+    const offerLabel  = document.getElementById('pkgOfferLabel').value.trim();
+    const offerUntil  = document.getElementById('pkgOfferUntil').value || null;
+
     const body = {
       title:         name,
       description:   document.getElementById('pkgDescription').value.trim() || name,
@@ -737,6 +860,13 @@ async function savePackage() {
       cover_image:   images[0] || '',
       meetingPoint:  mapData.meetingPoint,
       route:         mapData.route,
+      // Tiers (Standard/Premium/VIP) — only keep ones with a name + price
+      variants:      PKG_VARIANTS.filter(v => v && v.name && v.priceAdult > 0),
+      // Optional add-ons — only keep ones with a name (price can be free)
+      addons:        PKG_ADDONS.filter(a => a && a.name),
+      discountPercent: discountVal,
+      offerLabel:    offerLabel || null,
+      offerUntil:    offerUntil,
     };
 
     const r = await fetch(url, {
