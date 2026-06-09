@@ -47,7 +47,7 @@ app.use(helmet({
       styleSrc:      ["'self'", "https:", "'unsafe-inline'"],
       imgSrc:        ["'self'", "data:", "https:", "https://upload.wikimedia.org"],
       mediaSrc:      ["'self'", "https:", "data:", "blob:"],
-      connectSrc:    ["'self'", "https://api.qrserver.com", "https://accounts.google.com", "https://oauth2.googleapis.com", "https://www.googleapis.com"],
+      connectSrc:    ["'self'", "https://api.qrserver.com", "https://accounts.google.com", "https://oauth2.googleapis.com", "https://www.googleapis.com", "https://nominatim.openstreetmap.org"],
       fontSrc:       ["'self'", "https:", "data:"],
       objectSrc:     ["'none'"],
       frameSrc:      ["'self'", "https://www.youtube.com", "https://accounts.google.com", "https://accounts.google.com/gsi/"],
