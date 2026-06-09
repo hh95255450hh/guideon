@@ -32,7 +32,7 @@
 .edit-row .val { flex:1; }
 </style>
 <script src="/js/image-compress.js?v=2"></script>
-<script src="/js/gd-map.js?v=1" defer></script>
+<script src="/js/gd-map.js?v=2" defer></script>
 </head>
 <body>
 
@@ -742,10 +742,17 @@ function addPkgAddon() {
 // Holds the active map editor instance for the package modal. Created
 // lazily so pages without the modal open don't pay for Leaflet.
 let _pkgMapEditor = null;
-async function _mountPkgMap(initial) {
-  if (!window.gdMap) return;
+async function _mountPkgMap(initial, tries = 0) {
+  // gd-map.js is `defer`-loaded; poll until ready (up to 8 s) so the
+  // editor reliably mounts and the route the company draws isn't lost.
+  if (!(window.gdMap && typeof window.gdMap.editor === 'function')) {
+    if (tries < 80) return setTimeout(() => _mountPkgMap(initial, tries + 1), 100);
+    console.warn('gd-map.js never loaded — map editor unavailable');
+    return;
+  }
   if (_pkgMapEditor) { try { _pkgMapEditor.destroy(); } catch {} _pkgMapEditor = null; }
-  try { _pkgMapEditor = await window.gdMap.editor('pkgMap', initial || null); } catch(e){ console.warn('map editor', e); }
+  try { _pkgMapEditor = await window.gdMap.editor('pkgMap', initial || null); }
+  catch (e) { console.warn('map editor', e); }
 }
 
 function openAddPackage() {

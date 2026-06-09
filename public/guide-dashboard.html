@@ -19,7 +19,7 @@
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
 <link rel="stylesheet" href="/css/style.css?v=40">
 <script src="/js/image-compress.js?v=2"></script>
-<script src="/js/gd-map.js?v=1" defer></script>
+<script src="/js/gd-map.js?v=2" defer></script>
 </head>
 <body>
 
@@ -833,12 +833,24 @@ function openTourModal(tour) {
   document.querySelectorAll('.tour-tab').forEach((t,i) => t.style.display = i===0 ? '' : 'none');
   document.getElementById('tourModalTitle').textContent = tour ? (I18N.t('tour_modal_edit') || 'Edit Tour') : (I18N.t('tour_modal_add') || 'Add New Tour');
   new bootstrap.Modal(document.getElementById('tourModal')).show();
-  // Mount the interactive map editor for this tour (lazy-loads Leaflet).
-  setTimeout(async () => {
-    if (!window.gdMap) return;
-    if (window._tourMapEditor) { try { window._tourMapEditor.destroy(); } catch{} }
-    try { window._tourMapEditor = await window.gdMap.editor('tourMap', { meetingPoint: tour?.meetingPoint || null, route: tour?.route || [] }); } catch(e){ console.warn(e); }
-  }, 300);
+  // Mount the map editor. gd-map.js is `defer`-loaded so it may not be
+  // ready yet — poll briefly until it is. Without this the editor was
+  // sometimes never mounted and the guide's drawn route was silently
+  // lost at save time.
+  const initialMap = { meetingPoint: tour?.meetingPoint || null, route: tour?.route || [] };
+  const tryMountTourMap = (tries = 0) => {
+    if (window.gdMap && typeof window.gdMap.editor === 'function') {
+      if (window._tourMapEditor) { try { window._tourMapEditor.destroy(); } catch {} }
+      window.gdMap.editor('tourMap', initialMap)
+        .then(ed => { window._tourMapEditor = ed; })
+        .catch(e => console.warn('tour map editor', e));
+    } else if (tries < 80) {
+      setTimeout(() => tryMountTourMap(tries + 1), 100);
+    } else {
+      console.warn('gd-map.js never loaded — map editor unavailable');
+    }
+  };
+  setTimeout(() => tryMountTourMap(), 300);
 }
 
 function editTour(id) {
