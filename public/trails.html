@@ -22,6 +22,8 @@
   .t-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:.2s}
   .t-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
   .t-card .img{height:180px;background-size:cover;background-position:center;position:relative}
+  .t-card .img.no-img{background:repeating-linear-gradient(135deg,#0f7b6c,#0f7b6c 14px,#13876f 14px,#13876f 28px)}
+  .t-card .img .ph-mark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.2rem;opacity:.4}
   .diff-badge{position:absolute;top:12px;inset-inline-start:12px;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
   .diff-easy{background:#dcfce7;color:#15803d}
   .diff-moderate{background:#fef3c7;color:#a16207}
@@ -79,7 +81,8 @@
     const list = filter==='all'? data.trails : data.trails.filter(t => t.difficulty===filter);
     grid.innerHTML = list.map(t => `
       <article class="t-card">
-        <div class="img" style="background-image:url('${t.image}')">
+        <div class="img${t.image?'':' no-img'}" ${t.image?`style="background-image:url('${t.image}')"`:''}>
+          ${t.image?'':'<span class="ph-mark">🥾</span>'}
           <span class="diff-badge diff-${t.difficulty}">${isAr?dMap[t.difficulty].ar:dMap[t.difficulty].en}</span>
         </div>
         <div class="body">

@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="/css/design-tokens.css">
 <style>
   body{font-family:'Inter','Tajawal',sans-serif;background:#fff;color:#0f1c3e}
-  .r-hero{position:relative;height:60vh;min-height:380px;background-size:cover;background-position:center;color:#fff;display:flex;align-items:flex-end}
+  .r-hero{position:relative;height:60vh;min-height:380px;background:linear-gradient(135deg,#0f1c3e,#0f7b6c);background-size:cover;background-position:center;color:#fff;display:flex;align-items:flex-end}
   .r-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.7) 100%)}
   .r-hero .container{position:relative;z-index:2;padding-bottom:50px}
   .r-hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;margin:0;text-shadow:0 2px 12px rgba(0,0,0,.4)}
@@ -83,13 +83,14 @@
   const data = await fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json())).catch(()=>fetch('/data/regions.json').then(r=>r.json()));
   const r = data.regions.find(x => x.id === id) || data.regions[0];
   document.title = (isAr?r.name_ar:r.name_en) + ' — Guideon';
-  // Preload-check the hero; fall back to a guaranteed image if it 404s.
-  const FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
+  // Only set a background if a real image exists; otherwise keep the
+  // branded gradient placeholder (admin can add a photo from the panel).
   const heroEl = document.getElementById('rHero');
-  const probe = new Image();
-  probe.onload  = () => { heroEl.style.backgroundImage = `url('${r.hero}')`; };
-  probe.onerror = () => { heroEl.style.backgroundImage = `url('${FALLBACK}')`; };
-  probe.src = r.hero;
+  if (r.hero) {
+    const probe = new Image();
+    probe.onload = () => { heroEl.style.backgroundImage = `url('${r.hero}')`; };
+    probe.src = r.hero;
+  }
   document.getElementById('rName').textContent = isAr?r.name_ar:r.name_en;
   document.getElementById('rTag').textContent = isAr?r.tagline_ar:r.tagline_en;
   document.getElementById('rSites').textContent = `${r.sites} ${isAr?'موقع سياحي':'sites of interest'}`;

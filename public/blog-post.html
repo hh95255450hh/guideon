@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="/css/design-tokens.css">
 <style>
   body{font-family:'Inter','Tajawal',sans-serif;background:#fff;color:#0f1c3e}
-  .post-hero{height:50vh;min-height:340px;background-size:cover;background-position:center;position:relative}
+  .post-hero{height:50vh;min-height:340px;background:linear-gradient(135deg,#0f1c3e,#3b1c4a);background-size:cover;background-position:center;position:relative}
   .post-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.6))}
   .post-hero .container{position:relative;z-index:2;color:#fff;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:40px}
   .post-hero h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;text-shadow:0 2px 12px rgba(0,0,0,.4);margin:0}
@@ -56,7 +56,7 @@
   const data = await fetch('/api/content/blog').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/blog.json').then(r=>r.json())).catch(()=>fetch('/data/blog.json').then(r=>r.json()));
   const p = data.posts.find(x => x.slug === id) || data.posts[0];
   document.title = (isAr?p.title_ar:p.title_en) + ' — Guideon';
-  document.getElementById('pHero').style.backgroundImage = `url('${p.cover}')`;
+  if (p.cover) document.getElementById('pHero').style.backgroundImage = `url('${p.cover}')`;
   document.getElementById('pTitle').textContent = isAr?p.title_ar:p.title_en;
   document.getElementById('pMeta').textContent =
     `${isAr?p.author_ar:p.author_en} • ${new Date(p.date).toLocaleDateString(isAr?'ar':'en',{year:'numeric',month:'long',day:'numeric'})} • ${p.read_minutes} ${isAr?'دقائق قراءة':'min read'}`;

@@ -290,7 +290,7 @@
         <div class="trust-item"><div class="trust-num">8+</div><div class="trust-label" data-i18n="trust_reviews">Happy Reviews</div></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="trust-item"><div class="trust-num">🏛️</div><div class="trust-label" data-i18n="trust_since">Est. 2025</div></div>
+        <div class="trust-item"><div class="trust-num">🏛️</div><div class="trust-label" data-i18n="trust_since">Est. 2026</div></div>
       </div>
     </div>
   </div>
@@ -417,6 +417,8 @@
   .home-region-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75));z-index:1}
   .home-region-card .lbl{position:absolute;bottom:14px;inset-inline-start:16px;z-index:2;font-weight:800;font-size:1.15rem;text-shadow:0 2px 8px rgba(0,0,0,.4)}
   .home-region-card .badge-sites{position:absolute;top:12px;inset-inline-end:12px;background:rgba(255,255,255,.95);color:#0f1c3e;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;z-index:2}
+  .home-region-card.no-img{background:repeating-linear-gradient(135deg,#0f1c3e,#0f1c3e 14px,#13234a 14px,#13234a 28px)}
+  .home-region-card .ph-mark{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);z-index:1;font-size:2.4rem;opacity:.35}
 </style>
 <script>
 // Guaranteed-working fallback (Muscat mosque). If any region image 404s,
@@ -437,9 +439,8 @@ window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath
     const pick = d.regions.slice(0,6);
     document.getElementById('homeRegionGrid').innerHTML = pick.map(r => `
       <div class="col-md-4 col-sm-6">
-        <a class="home-region-card" href="/region.html?id=${r.id}">
-          <img class="bg" src="${r.hero}" alt="${isAr?r.name_ar:r.name_en}" loading="lazy" decoding="async"
-               onerror="if(this.src!==window.GD_REGION_FALLBACK){this.src=window.GD_REGION_FALLBACK}">
+        <a class="home-region-card${r.hero?'':' no-img'}" href="/region.html?id=${r.id}">
+          ${r.hero ? `<img class="bg" src="${r.hero}" alt="${isAr?r.name_ar:r.name_en}" loading="lazy" decoding="async">` : `<span class="ph-mark" aria-hidden="true">📍</span>`}
           <span class="badge-sites">${r.sites} ${isAr?'موقع':'sites'}</span>
           <span class="lbl">${isAr?r.name_ar:r.name_en}</span>
         </a>
@@ -504,51 +505,73 @@ window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath
 </section>
 
 <!-- ABOUT GUIDEON -->
-<section class="about-section py-5">
-  <div class="container">
+<section class="about-section py-5" id="about">
+  <span class="about-orb about-orb-1" aria-hidden="true"></span>
+  <span class="about-orb about-orb-2" aria-hidden="true"></span>
+  <div class="container position-relative">
     <div class="row align-items-center g-5">
 
-      <!-- Left: Logo + Description -->
-      <div class="col-lg-5 text-center text-lg-start">
-        <img loading="lazy" decoding="async" src="/logo.png" alt="Guideon" class="about-logo mb-4">
-        <h2 class="fw-800 mb-3" data-i18n="about_title">About Guideon</h2>
-        <p class="about-desc mb-3" data-i18n="about_p1">Guideon is Oman's leading platform connecting travellers with Ministry-licensed local guides. Founded in 2025, we make authentic Omani experiences accessible to everyone — from ancient forts to desert dunes.</p>
+      <!-- Left: Brand + Description -->
+      <div class="col-lg-5">
+        <span class="about-eyebrow"><span class="dot"></span><span data-i18n="about_eyebrow">About the platform</span></span>
+        <div class="about-brand mb-3">
+          <img loading="lazy" decoding="async" src="/logo.png" alt="Guideon" class="about-logo">
+        </div>
+        <h2 class="about-h2 mb-3" data-i18n="about_title">About Guideon</h2>
+        <p class="about-desc mb-3" data-i18n="about_p1">Guideon is Oman's leading platform connecting travellers with Ministry-licensed local guides. Founded in 2026, we make authentic Omani experiences accessible to everyone — from ancient forts to desert dunes.</p>
         <p class="about-desc mb-4" data-i18n="about_p2">Every guide on our platform is personally verified, licensed by the Ministry of Heritage & Tourism, and committed to delivering genuine, memorable journeys across the Sultanate.</p>
-        <div class="d-flex gap-3 flex-wrap justify-content-center justify-content-lg-start">
+
+        <!-- Stat strip -->
+        <div class="about-stats mb-4">
+          <div class="about-stat"><div class="num">11</div><div class="lbl" data-i18n="about_stat_regions">Governorates</div></div>
+          <div class="about-stat"><div class="num">100%</div><div class="lbl" data-i18n="about_stat_licensed">Licensed guides</div></div>
+          <div class="about-stat"><div class="num">24/7</div><div class="lbl" data-i18n="about_stat_support">Support</div></div>
+          <div class="about-stat"><div class="num">2026</div><div class="lbl" data-i18n="about_stat_since">Founded</div></div>
+        </div>
+
+        <div class="d-flex gap-3 flex-wrap">
           <a href="/search.html" class="btn-teal btn px-4 py-2 fw-700" data-i18n="nav_find">Find a Guide</a>
           <a href="/register.html" class="btn-outline-teal btn px-4 py-2 fw-700" data-i18n="about_join">Join the Community</a>
         </div>
       </div>
 
-      <!-- Right: Values Grid -->
+      <!-- Right: Values Grid (SVG icons) -->
       <div class="col-lg-7">
-        <div class="row g-3">
-          <div class="col-6">
+        <div class="row g-3 g-md-4">
+          <div class="col-sm-6">
             <div class="about-value-card">
-              <div class="about-value-icon">🎯</div>
-              <h6 class="fw-700 mb-1" data-i18n="about_v1_title">Our Mission</h6>
-              <p class="small text-muted mb-0" data-i18n="about_v1_desc">To make authentic Omani travel experiences accessible to every visitor through verified, professional local guides.</p>
+              <span class="av-icon av-mission">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/></svg>
+              </span>
+              <h6 class="av-title" data-i18n="about_v1_title">Our Mission</h6>
+              <p class="av-desc" data-i18n="about_v1_desc">To make authentic Omani travel experiences accessible to every visitor through verified, professional local guides.</p>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-sm-6">
             <div class="about-value-card">
-              <div class="about-value-icon">🌟</div>
-              <h6 class="fw-700 mb-1" data-i18n="about_v2_title">Our Vision</h6>
-              <p class="small text-muted mb-0" data-i18n="about_v2_desc">To become the most trusted travel platform in Oman, celebrating the country's rich heritage and natural beauty.</p>
+              <span class="av-icon av-vision">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              </span>
+              <h6 class="av-title" data-i18n="about_v2_title">Our Vision</h6>
+              <p class="av-desc" data-i18n="about_v2_desc">To become the most trusted travel platform in Oman, celebrating the country's rich heritage and natural beauty.</p>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-sm-6">
             <div class="about-value-card">
-              <div class="about-value-icon">🤝</div>
-              <h6 class="fw-700 mb-1" data-i18n="about_v3_title">Our Values</h6>
-              <p class="small text-muted mb-0" data-i18n="about_v3_desc">Authenticity, transparency, and community. We connect people, not just places — supporting local guides and their families.</p>
+              <span class="av-icon av-values">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+              </span>
+              <h6 class="av-title" data-i18n="about_v3_title">Our Values</h6>
+              <p class="av-desc" data-i18n="about_v3_desc">Authenticity, transparency, and community. We connect people, not just places — supporting local guides and their families.</p>
             </div>
           </div>
-          <div class="col-6">
+          <div class="col-sm-6">
             <div class="about-value-card">
-              <div class="about-value-icon">🏛️</div>
-              <h6 class="fw-700 mb-1" data-i18n="about_v4_title">Ministry Certified</h6>
-              <p class="small text-muted mb-0" data-i18n="about_v4_desc">Every guide holds an official Ministry of Heritage & Tourism licence — your guarantee of quality and professionalism.</p>
+              <span class="av-icon av-cert">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+              </span>
+              <h6 class="av-title" data-i18n="about_v4_title">Ministry Certified</h6>
+              <p class="av-desc" data-i18n="about_v4_desc">Every guide holds an official Ministry of Heritage & Tourism licence — your guarantee of quality and professionalism.</p>
             </div>
           </div>
         </div>

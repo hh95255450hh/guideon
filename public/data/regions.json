@@ -7,7 +7,7 @@
       "name_ar": "مسقط",
       "tagline_en": "The royal capital where heritage meets the sea",
       "tagline_ar": "العاصمة الملكية حيث يلتقي التراث بالبحر",
-      "hero": "https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600",
+      "hero": "",
       "intro_en": "Muscat is a city of contrasts — gleaming white mosques rise beside ancient forts, and gold-domed palaces sit a short walk from a working fish market. Spend a morning at the Sultan Qaboos Grand Mosque, an afternoon at the Mutrah Souq, and an evening watching the lights twinkle along the Corniche.",
       "intro_ar": "مسقط مدينة التناقضات الجميلة — مساجد بيضاء لامعة بجوار قلاع أثرية، وقصور بقبب ذهبية على بُعد خطوات من سوق الأسماك. ابدأ صباحك في جامع السلطان قابوس الأكبر، وقضِّ بعد الظهر في سوق مطرح، واختم اليوم على كورنيش مطرح.",
       "highlights_en": [
@@ -41,7 +41,7 @@
       "name_ar": "مسندم",
       "tagline_en": "The Norway of Arabia — fjords, dolphins, and dramatic cliffs",
       "tagline_ar": "نرويج العرب — خلجان وأخوار ومنحدرات مذهلة",
-      "hero": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
+      "hero": "",
       "intro_en": "A peninsula severed from the rest of Oman by the UAE, Musandam offers Arabia's most dramatic coastline. Traditional dhow cruises through Khor Sham reveal pods of dolphins, hidden villages, and water so clear you can see the seabed twenty meters down.",
       "intro_ar": "شبه جزيرة تطلّ على مضيق هرمز، وتُعدّ من أجمل سواحل الجزيرة العربية. رحلات السفن الخشبية في خور الشم تكشف عن الدلافين والقرى المعزولة ومياه تتجاوز شفافيّتها 20 متراً.",
       "highlights_en": [
@@ -73,7 +73,7 @@
       "name_ar": "ظفار",
       "tagline_en": "Where monsoon turns the desert green",
       "tagline_ar": "حيث يُحيل الخريف الصحراءَ مراعيَ خضراء",
-      "hero": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&q=80",
+      "hero": "",
       "intro_en": "From late June through early September, Dhofar transforms. The 'Khareef' monsoon brings cool mist, waterfalls cascade down the Jebel Qara, and Salalah's beaches come alive with Gulf visitors. The rest of the year, frankincense trees and ancient ruins draw history lovers.",
       "intro_ar": "بين أواخر يونيو وأوائل سبتمبر، تتحوّل ظفار. يجلب موسم الخريف رذاذاً بارداً وشلالات تنحدر من جبل القرا، وشواطئ صلالة تنبض بالزوار الخليجيين. وفي بقية العام، تجذب أشجار اللبان والآثار العريقة عشّاق التاريخ.",
       "highlights_en": [
@@ -105,7 +105,7 @@
       "name_ar": "الداخلية",
       "tagline_en": "Forts, oases, and the green mountain",
       "tagline_ar": "القلاع والواحات والجبل الأخضر",
-      "hero": "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1600&q=80",
+      "hero": "",
       "intro_en": "The historic heart of Oman. Nizwa was once the country's capital; today its Friday goat market and round-tower fort draw visitors from around the world. Climb the cooler heights of Jebel Akhdar for rose gardens and pomegranate terraces.",
       "intro_ar": "القلب التاريخي لعُمان. كانت نزوى عاصمة البلاد، وما زال سوق الماعز يوم الجمعة وقلعتها المستديرة يجذبان الزوار. اصعد إلى الجبل الأخضر لمزارع الورد والرمّان.",
       "highlights_en": [
@@ -137,7 +137,7 @@
       "name_ar": "شمال الشرقية",
       "tagline_en": "Desert dunes and date-palm wadis",
       "tagline_ar": "كثبان رمليّة وأودية نخيل",
-      "hero": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80",
+      "hero": "",
       "intro_en": "Drive east of Muscat and the landscape softens into farmland, then opens into the Wahiba Sands — an ocean of orange dunes you can summit by 4x4 at sunset. Wadi Bani Khalid, with its turquoise pools, is the perfect cool-down.",
       "intro_ar": "شرق مسقط تتحوّل الأرض إلى مزارع ثم تنفتح على رمال الشرقية — محيط من الكثبان البرتقالية. ووادي بني خالد ببركه الفيروزية هو المكان المثالي للتبريد.",
       "highlights_en": [
@@ -167,7 +167,7 @@
       "name_ar": "جنوب الشرقية",
       "tagline_en": "Coastline of turtles and sinkholes",
       "tagline_ar": "ساحل السلاحف والكهوف الجيريّة",
-      "hero": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1600&q=80",
+      "hero": "",
       "intro_en": "Sur is a town of dhow builders — wooden ocean-going vessels still take shape on its waterfront. Inland, Bimmah Sinkhole offers a swim in cobalt water, and Ras Al Jinz protects one of the world's most important green-turtle nesting beaches.",
       "intro_ar": "صور بلدة بنّائي السفن — لا تزال السفن الخشبية تُصنع على واجهتها البحرية. وفي الداخل، توفّر هوّة بمّاه سباحة في مياه فيروزية، ومحميّة رأس الجنز تحمي أحد أهم شواطئ تعشيش السلاحف الخضراء عالمياً.",
       "highlights_en": [
@@ -199,7 +199,7 @@
       "name_ar": "شمال الباطنة",
       "tagline_en": "Coastal forts and citrus farms",
       "tagline_ar": "قلاع ساحلية ومزارع حمضيات",
-      "hero": "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=1600&q=80",
+      "hero": "",
       "intro_en": "A 270 km coastline between the Hajar Mountains and the Sea of Oman. Sohar is the old port from which Sinbad allegedly sailed; today it's a relaxed beach town with a striking white fort.",
       "intro_ar": "ساحل بطول 270 كم بين جبال الحجر وبحر عُمان. صحار هو الميناء القديم الذي يُقال إن السندباد أبحر منه؛ واليوم هي بلدة شاطئية هادئة بقلعة بيضاء لافتة.",
       "highlights_en": [
@@ -227,7 +227,7 @@
       "name_ar": "جنوب الباطنة",
       "tagline_en": "Wadis of the Western Hajar",
       "tagline_ar": "أودية الحجر الغربي",
-      "hero": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=80",
+      "hero": "",
       "intro_en": "Where the mountains meet the coast. Rustaq's hot springs and round tower fort are a perfect day-trip from Muscat, and Wadi Bani Awf delivers Oman's most thrilling 4x4 drive.",
       "intro_ar": "حيث تلتقي الجبال بالساحل. حمامات الرستاق الكبريتية وقلعتها المستديرة وجهة مثالية ليوم واحد من مسقط، ووادي بني عوف يقدّم أكثر مغامرات الدفع الرباعي إثارة.",
       "highlights_en": [
@@ -255,7 +255,7 @@
       "name_ar": "الظاهرة",
       "tagline_en": "Bronze Age tombs and quiet oases",
       "tagline_ar": "مقابر العصر البرونزي وواحات هادئة",
-      "hero": "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=1600&q=80",
+      "hero": "",
       "intro_en": "Off the main tourist trail, Ad Dhahirah rewards the curious. The beehive tombs of Bat are a UNESCO World Heritage Site, and Ibri's old quarter is a maze of mud-brick alleys.",
       "intro_ar": "بعيداً عن المسارات السياحية المعتادة، تُكافئ الظاهرة الفضوليين. مقابر بات الخلوية مدرجة في يونسكو، وحارة إبري القديمة متاهة من أزقّة الطين.",
       "highlights_en": [
@@ -283,7 +283,7 @@
       "name_ar": "البريمي",
       "tagline_en": "The oasis on the UAE border",
       "tagline_ar": "الواحة على الحدود الإماراتية",
-      "hero": "https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1600&q=80",
+      "hero": "",
       "intro_en": "Famous for its date palms and the impressive Al Khandaq Fort, Al Buraimi has been an important trading oasis for centuries.",
       "intro_ar": "تشتهر بأشجار النخيل وقلعة الخندق المهيبة، وكانت واحة تجارية مهمّة منذ قرون.",
       "highlights_en": [
@@ -309,7 +309,7 @@
       "name_ar": "الوسطى",
       "tagline_en": "Wild beaches and the lost city of Ubar",
       "tagline_ar": "شواطئ بكر ومدينة أوبار المفقودة",
-      "hero": "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80",
+      "hero": "",
       "intro_en": "Oman's largest and least-populated governorate. The Arabian oryx roams the protected reserve here, and the coast around Duqm is rapidly becoming a frontier for adventure tourism.",
       "intro_ar": "أكبر محافظات عُمان وأقلّها سكاناً. يتجوّل المها العربي في محميّتها، وساحل الدقم يتحوّل بسرعة إلى وجهة لسياحة المغامرات.",
       "highlights_en": [

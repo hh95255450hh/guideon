@@ -18,7 +18,9 @@
   .b-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:26px;padding:50px 0}
   .b-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:.25s;text-decoration:none;color:inherit;display:block}
   .b-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
-  .b-card .img{height:220px;background-size:cover;background-position:center}
+  .b-card .img{height:220px;background-size:cover;background-position:center;position:relative}
+  .b-card .img.no-img{background:repeating-linear-gradient(135deg,#0f1c3e,#0f1c3e 14px,#13234a 14px,#13234a 28px)}
+  .b-card .img .ph-mark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.4rem;opacity:.4}
   .b-card .body{padding:22px}
   .b-meta{font-size:.82rem;color:#6b7280;margin-bottom:8px;display:flex;gap:10px;align-items:center}
   .b-card h2{font-size:1.3rem;font-weight:800;margin:0 0 10px;line-height:1.35}
@@ -55,7 +57,7 @@
   const data = await fetch('/api/content/blog').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/blog.json').then(r=>r.json())).catch(()=>fetch('/data/blog.json').then(r=>r.json()));
   document.getElementById('bGrid').innerHTML = data.posts.map(p => `
     <a class="b-card" href="/blog-post.html?id=${p.slug}">
-      <div class="img" style="background-image:url('${p.cover}')"></div>
+      <div class="img${p.cover?'':' no-img'}" ${p.cover?`style="background-image:url('${p.cover}')"`:''}>${p.cover?'':'<span class="ph-mark">📝</span>'}</div>
       <div class="body">
         <div class="b-meta">
           <span>${new Date(p.date).toLocaleDateString(isAr?'ar':'en',{year:'numeric',month:'short',day:'numeric'})}</span>

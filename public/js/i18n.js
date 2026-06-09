@@ -44,15 +44,20 @@ const TRANSLATIONS = {
     footer_platform:  'Platform',
     footer_dests:     'Destinations',
     footer_demo:      'Demo Accounts',
-    footer_bottom:    'Guideon © 2025. All rights reserved.',
+    footer_bottom:    'Guideon © 2026. All rights reserved.',
     loading_guides:   'Loading guides...',
     no_guides:        'No guides available yet.',
 
     /* ── ABOUT SECTION ── */
     about_title:      'About Guideon',
-    about_p1:         "Guideon is Oman's leading platform connecting travellers with Ministry-licensed local guides. Founded in 2025, we make authentic Omani experiences accessible to everyone — from ancient forts to desert dunes.",
+    about_p1:         "Guideon is Oman's leading platform connecting travellers with Ministry-licensed local guides. Founded in 2026, we make authentic Omani experiences accessible to everyone — from ancient forts to desert dunes.",
     about_p2:         'Every guide on our platform is personally verified, licensed by the Ministry of Heritage & Tourism, and committed to delivering genuine, memorable journeys across the Sultanate.',
     about_join:       'Join the Community',
+    about_eyebrow:    'About the platform',
+    about_stat_regions: 'Governorates',
+    about_stat_licensed:'Licensed guides',
+    about_stat_support: 'Support',
+    about_stat_since:   'Founded',
     about_v1_title:   'Our Mission',
     about_v1_desc:    'To make authentic Omani travel experiences accessible to every visitor through verified, professional local guides.',
     about_v2_title:   'Our Vision',
@@ -697,7 +702,7 @@ const TRANSLATIONS = {
     trust_guides:     'Verified Guides',
     trust_dests:      'Destinations',
     trust_reviews:    'Happy Reviews',
-    trust_since:      'Est. 2025',
+    trust_since:      'Est. 2026',
 
     /* ── WISHLIST ── */
     wishlist_saved:   '❤️ Saved to Wishlist',
@@ -1243,15 +1248,20 @@ const TRANSLATIONS = {
     footer_platform:  'المنصة',
     footer_dests:     'الوجهات',
     footer_demo:      'حسابات تجريبية',
-    footer_bottom:    'Guideon © ٢٠٢٥. جميع الحقوق محفوظة.',
+    footer_bottom:    'Guideon © ٢٠٢٦. جميع الحقوق محفوظة.',
     loading_guides:   'جارٍ تحميل المرشدين...',
     no_guides:        'لا يوجد مرشدون حتى الآن.',
 
     /* ── ABOUT SECTION ── */
     about_title:      'عن Guideon',
-    about_p1:         'Guideon هي المنصة الرائدة في عُمان التي تربط المسافرين بمرشدين سياحيين معتمدين من وزارة التراث والسياحة. تأسست عام ٢٠٢٥ لتجعل التجارب العُمانية الأصيلة متاحة للجميع — من القلاع الأثرية إلى الكثبان الرملية.',
+    about_p1:         'Guideon هي المنصة الرائدة في عُمان التي تربط المسافرين بمرشدين سياحيين معتمدين من وزارة التراث والسياحة. تأسست عام ٢٠٢٦ لتجعل التجارب العُمانية الأصيلة متاحة للجميع — من القلاع الأثرية إلى الكثبان الرملية.',
     about_p2:         'كل مرشد على منصتنا موثّق شخصياً، ويحمل ترخيصاً رسمياً من وزارة التراث والسياحة، وملتزم بتقديم رحلات حقيقية لا تُنسى في أرجاء السلطنة.',
     about_join:       'انضم إلى المجتمع',
+    about_eyebrow:    'عن المنصّة',
+    about_stat_regions: 'محافظة',
+    about_stat_licensed:'مرشدون مرخّصون',
+    about_stat_support: 'دعم متواصل',
+    about_stat_since:   'سنة التأسيس',
     about_v1_title:   'مهمتنا',
     about_v1_desc:    'جعل التجارب السياحية الأصيلة في عُمان متاحة لكل زائر من خلال مرشدين محليين موثّقين ومحترفين.',
     about_v2_title:   'رؤيتنا',
@@ -1897,7 +1907,7 @@ const TRANSLATIONS = {
     trust_guides:     'مرشد معتمد',
     trust_dests:      'وجهة سياحية',
     trust_reviews:    'مراجعة سعيدة',
-    trust_since:      'تأسس ٢٠٢٥',
+    trust_since:      'تأسس ٢٠٢٦',
 
     /* ── WISHLIST ── */
     wishlist_saved:   '❤️ تم الحفظ في المفضلة',
