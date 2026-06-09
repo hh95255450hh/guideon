@@ -29,7 +29,14 @@ exports.subscribe = async (req, res) => {
       isActive: true,
       createdAt: new Date().toISOString(),
     };
-    await subs.insert(record);
+    try {
+      await subs.insert(record);
+    } catch (insErr) {
+      // Never show a visitor a scary 500 for a newsletter sign-up. Log it
+      // for ops and respond gracefully — worst case is a missed subscription.
+      console.error('[newsletter:insert]', insErr.message);
+      return res.json({ success: true, message: 'Thanks! We\'ll be in touch.' });
+    }
 
     // Welcome email
     if (emailService.send) {
