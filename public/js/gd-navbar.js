@@ -200,13 +200,41 @@
     return l === 'ar' || l === 'ur';   // both RTL
   };
 
+  // Built-in dictionary for the navbar/drawer's most-visible strings —
+  // covers all 10 supported languages so the top bar actually changes
+  // when the user picks 中文 / Français / etc. Keys are the English text
+  // so existing call sites don't need updating.
+  const NAV_I18N = {
+    'Find a Guide':  { ar:'ابحث عن مرشد', zh:'寻找导游',    hi:'गाइड खोजें',  es:'Buscar guía',     fr:'Trouver un guide', bn:'গাইড খুঁজুন', pt:'Encontrar guia',     ru:'Найти гида',      ur:'گائیڈ تلاش کریں' },
+    'Plan a Trip':   { ar:'خطط رحلة',     zh:'规划行程',    hi:'यात्रा प्लान करें', es:'Planifica un viaje', fr:'Planifier un voyage', bn:'ভ্রমণ পরিকল্পনা', pt:'Planejar viagem',   ru:'Спланировать поездку', ur:'سفر کی منصوبہ بندی' },
+    'Regions':       { ar:'المناطق',      zh:'地区',        hi:'क्षेत्र',          es:'Regiones',        fr:'Régions',           bn:'অঞ্চল',         pt:'Regiões',            ru:'Регионы',         ur:'علاقے' },
+    'Trails':        { ar:'المسارات',     zh:'步道',        hi:'पगडंडियाँ',     es:'Senderos',        fr:'Sentiers',          bn:'পথ',           pt:'Trilhas',            ru:'Маршруты',        ur:'پیدل راستے' },
+    'Blog':          { ar:'المدوّنة',     zh:'博客',        hi:'ब्लॉग',         es:'Blog',            fr:'Blog',              bn:'ব্লগ',          pt:'Blog',               ru:'Блог',            ur:'بلاگ' },
+    'Home':          { ar:'الرئيسية',     zh:'首页',        hi:'मुख्य',         es:'Inicio',          fr:'Accueil',           bn:'হোম',          pt:'Início',             ru:'Главная',         ur:'صفحۂ اول' },
+    'How It Works':  { ar:'كيف يعمل',     zh:'如何使用',    hi:'यह कैसे काम करता है', es:'Cómo funciona', fr:'Comment ça marche', bn:'কিভাবে কাজ করে', pt:'Como funciona', ru:'Как это работает', ur:'یہ کیسے کام کرتا ہے' },
+    'Plan My Trip':  { ar:'خطط رحلتي',    zh:'规划我的行程', hi:'मेरी यात्रा प्लान करें', es:'Planificar mi viaje', fr:'Planifier mon voyage', bn:'আমার ভ্রমণ পরিকল্পনা', pt:'Planejar minha viagem', ru:'Спланировать поездку', ur:'میرا سفر' },
+    'Sign In':       { ar:'تسجيل الدخول', zh:'登录',        hi:'लॉगिन',         es:'Iniciar sesión',  fr:'Connexion',         bn:'লগইন',         pt:'Entrar',             ru:'Вход',            ur:'لاگ اِن' },
+    'Sign Up':       { ar:'إنشاء حساب',   zh:'注册',        hi:'साइन अप',       es:'Registrarse',     fr:"S'inscrire",        bn:'সাইন আপ',      pt:'Cadastrar',          ru:'Регистрация',     ur:'سائن اپ' },
+    'Sign Out':      { ar:'تسجيل الخروج', zh:'退出登录',    hi:'लॉगआउट',        es:'Cerrar sesión',   fr:'Déconnexion',       bn:'লগআউট',        pt:'Sair',               ru:'Выйти',           ur:'لاگ آؤٹ' },
+    'Notifications': { ar:'الإشعارات',    zh:'通知',        hi:'सूचनाएं',       es:'Notificaciones',  fr:'Notifications',     bn:'বিজ্ঞপ্তি',     pt:'Notificações',       ru:'Уведомления',     ur:'اطلاعات' },
+    'Account':       { ar:'الحساب',       zh:'账户',        hi:'खाता',          es:'Cuenta',          fr:'Compte',            bn:'অ্যাকাউন্ট',   pt:'Conta',              ru:'Аккаунт',         ur:'اکاؤنٹ' },
+    'Menu':          { ar:'القائمة',      zh:'菜单',        hi:'मेनू',          es:'Menú',            fr:'Menu',              bn:'মেনু',         pt:'Menu',               ru:'Меню',            ur:'مینو' },
+    'Open menu':     { ar:'فتح القائمة',  zh:'打开菜单',    hi:'मेनू खोलें',    es:'Abrir menú',      fr:'Ouvrir le menu',    bn:'মেনু খুলুন',    pt:'Abrir menu',         ru:'Открыть меню',    ur:'مینو کھولیں' },
+    'Close':         { ar:'إغلاق',        zh:'关闭',        hi:'बंद करें',      es:'Cerrar',          fr:'Fermer',            bn:'বন্ধ',         pt:'Fechar',             ru:'Закрыть',         ur:'بند کریں' },
+    'Language':      { ar:'اللغة',        zh:'语言',        hi:'भाषा',          es:'Idioma',          fr:'Langue',            bn:'ভাষা',         pt:'Idioma',             ru:'Язык',            ur:'زبان' },
+    'Currency':      { ar:'العملة',       zh:'货币',        hi:'मुद्रा',        es:'Moneda',          fr:'Devise',            bn:'মুদ্রা',        pt:'Moeda',              ru:'Валюта',          ur:'کرنسی' },
+    'get a price quote': { ar:'اطلب عرض سعر', zh:'获取报价', hi:'मूल्य उद्धरण प्राप्त करें', es:'obtén un presupuesto', fr:'obtenir un devis', bn:'মূল্য উদ্ধৃতি পান', pt:'obter orçamento', ru:'получить расчёт', ur:'قیمت کا تخمینہ لیں' },
+    'Browse':        { ar:'تصفّح',        zh:'浏览',        hi:'ब्राउज़ करें',  es:'Explorar',        fr:'Parcourir',         bn:'ব্রাউজ করুন',  pt:'Explorar',           ru:'Обзор',           ur:'براؤز کریں' },
+  };
+
   // Resolve a translation in this priority:
-  //   1. Localized via I18N for the current language (if a key is given)
-  //   2. The Arabic fallback for RTL languages
-  //   3. The English fallback (works for the 8 newer languages too)
-  // Old call sites pass (enText, arText). New call sites can pass
-  // (enText, arText, i18nKey) to opt into proper multi-language resolution.
+  //   1. NAV_I18N dictionary for the current language (instant, no I18N dep)
+  //   2. I18N.t(key) if a key is given (fallback path)
+  //   3. The Arabic or English fallback from the call site
   const tr = (en, ar, key) => {
+    const lang = currentLang();
+    const dict = NAV_I18N[en];
+    if (dict && dict[lang]) return dict[lang];
     if (key && window.I18N && typeof I18N.t === 'function') {
       const v = I18N.t(key);
       if (v && v !== key) return v;
