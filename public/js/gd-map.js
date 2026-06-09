@@ -226,5 +226,71 @@
     document.head.appendChild(st);
   }
 
-  window.gdMap = { editor, viewer, loadLeaflet };
+  // ─── LANDMARKS (region page: many pins, colour-coded by type) ─────
+  // Each landmark: { name_ar, name_en, lat, lng, type? }
+  const TYPE_COLORS = {
+    religious:'#7c3aed', culture:'#d97706', fort:'#b45309', museum:'#0369a1',
+    nature:'#15803d',    beach:'#0891b2',   mountain:'#7f1d1d', desert:'#b45309',
+    heritage:'#a16207', city:'#1f2937', default:'#0f7b6c',
+  };
+  const TYPE_GLYPH = {
+    religious:'🕌', culture:'🎭', fort:'🏰', museum:'🏛️',
+    nature:'🌿',    beach:'🏖️',   mountain:'⛰️', desert:'🏜️',
+    heritage:'🗿', city:'🏙️', default:'📍',
+  };
+
+  async function landmarks(elOrId, items, opts) {
+    const host = resolveEl(elOrId);
+    if (!host) throw new Error('gdMap.landmarks: container not found');
+    const isAr = (opts && opts.lang) ? opts.lang === 'ar'
+                                     : (document.documentElement.lang || '').toLowerCase().startsWith('ar');
+    host.innerHTML = `
+      <div class="gd-map-legend" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;font-size:.78rem"></div>
+      <div class="gd-map-canvas" style="height:460px;border-radius:14px;overflow:hidden;border:1px solid #dee2e6;background:#eef2f7"></div>`;
+    const canvas = host.querySelector('.gd-map-canvas');
+    const legend = host.querySelector('.gd-map-legend');
+
+    const L = await loadLeaflet();
+    const map = L.map(canvas, { scrollWheelZoom: false }).setView([OMAN.lat, OMAN.lng], OMAN.zoom);
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTR, maxZoom: 19 }).addTo(map);
+
+    const bounds = L.latLngBounds([]);
+    const typesShown = new Set();
+    (items || []).forEach((p) => {
+      if (!p || !Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
+      const type  = p.type || 'default';
+      const color = TYPE_COLORS[type] || TYPE_COLORS.default;
+      const glyph = TYPE_GLYPH[type] || TYPE_GLYPH.default;
+      const icon  = makeIcon(L, color, glyph);
+      const name  = (isAr && p.name_ar) ? p.name_ar : (p.name_en || p.name_ar || '');
+      const gmaps = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+      L.marker([p.lat, p.lng], { icon })
+        .addTo(map)
+        .bindPopup(`<div style="font-weight:700;margin-bottom:4px">${name}</div>
+                    <a href="${gmaps}" target="_blank" rel="noopener" style="font-size:.85rem">${isAr?'افتح في خرائط Google':'Open in Google Maps'} ↗</a>`);
+      bounds.extend([p.lat, p.lng]);
+      typesShown.add(type);
+    });
+
+    // Legend chips for the types actually on the map
+    const TYPE_LABEL = {
+      religious:{ar:'ديني',en:'Religious'}, culture:{ar:'ثقافي',en:'Culture'},
+      fort:{ar:'قلاع',en:'Forts'},          museum:{ar:'متاحف',en:'Museums'},
+      nature:{ar:'طبيعة',en:'Nature'},      beach:{ar:'شواطئ',en:'Beach'},
+      mountain:{ar:'جبال',en:'Mountains'},  desert:{ar:'صحراء',en:'Desert'},
+      heritage:{ar:'تراث',en:'Heritage'},   city:{ar:'مدن',en:'Cities'},
+    };
+    legend.innerHTML = [...typesShown].map(t => {
+      const c = TYPE_COLORS[t] || TYPE_COLORS.default;
+      const lbl = TYPE_LABEL[t] ? (isAr?TYPE_LABEL[t].ar:TYPE_LABEL[t].en) : t;
+      return `<span style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #e5e7eb;padding:3px 9px;border-radius:999px">
+        <span style="width:9px;height:9px;border-radius:50%;background:${c}"></span>${lbl}</span>`;
+    }).join('');
+
+    if (bounds.isValid()) map.fitBounds(bounds.pad(0.18), { maxZoom: 12 });
+    setTimeout(() => map.invalidateSize(), 200);
+    return { destroy() { map.remove(); host.innerHTML = ''; } };
+  }
+
+  window.gdMap = { editor, viewer, landmarks, loadLeaflet };
 })();

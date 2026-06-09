@@ -35,6 +35,7 @@
   html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
 </style>
 <script src="/js/image-compress.js?v=2"></script>
+<script src="/js/gd-map.js?v=1" defer></script>
 </head>
 <body>
 <div id="navMount"></div>
@@ -62,6 +63,12 @@
   <section class="r-section">
     <h2 id="hHighlights">Top Highlights</h2>
     <div class="hl-grid" id="rHighlights"></div>
+  </section>
+
+  <section class="r-section" id="rMapSection" style="display:none">
+    <h2 id="hMap">Map of Landmarks</h2>
+    <p id="rMapSub" class="text-muted" style="margin-bottom:14px"></p>
+    <div id="rLandmarksMap"></div>
   </section>
 
   <section class="r-cta">
@@ -101,6 +108,17 @@
   document.getElementById('hHighlights').textContent = isAr?'أبرز المعالم':'Top Highlights';
   const hls = isAr?r.highlights_ar:r.highlights_en;
   document.getElementById('rHighlights').innerHTML = hls.map(h => `<div class="hl-card"><div class="dot"></div><span>${h}</span></div>`).join('');
+
+  // Interactive landmarks map — appears only if the region has coordinates.
+  if (Array.isArray(r.landmarks) && r.landmarks.length && window.gdMap) {
+    const section = document.getElementById('rMapSection');
+    section.style.display = '';
+    document.getElementById('hMap').textContent = isAr ? `📍 خريطة معالم ${r.name_ar}` : `📍 Landmarks of ${r.name_en}`;
+    document.getElementById('rMapSub').textContent = isAr
+      ? `${r.landmarks.length} معلماً سياحياً. انقر على أيّ علامة للتفاصيل.`
+      : `${r.landmarks.length} landmarks. Click any marker for details.`;
+    window.gdMap.landmarks('rLandmarksMap', r.landmarks, { lang: isAr ? 'ar' : 'en' }).catch(e => console.warn('landmarks map', e));
+  }
   document.getElementById('cTitle').textContent = isAr?`اعثر على مرشد محلّي معتمد في ${r.name_ar}`:`Find a verified local guide in ${r.name_en}`;
   document.getElementById('cSub').textContent = isAr?'احجز مرشداً مرخّصاً من الوزارة يعرف هذه المنطقة عن ظهر قلب.':'Book a Ministry-licensed expert who knows this region inside out.';
   const btn = document.getElementById('cBtn');

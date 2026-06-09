@@ -32,7 +32,72 @@
       "best_time_ar": "من أكتوبر إلى أبريل (تجنّب وقت الظهيرة صيفاً)",
       "sites": 48,
       "lat": 23.588,
-      "lng": 58.3829
+      "lng": 58.3829,
+      "landmarks": [
+        {
+          "name_ar": "جامع السلطان قابوس الأكبر",
+          "name_en": "Sultan Qaboos Grand Mosque",
+          "lat": 23.584,
+          "lng": 58.3889,
+          "type": "religious"
+        },
+        {
+          "name_ar": "سوق مطرح",
+          "name_en": "Mutrah Souq",
+          "lat": 23.623,
+          "lng": 58.567,
+          "type": "culture"
+        },
+        {
+          "name_ar": "كورنيش مطرح",
+          "name_en": "Mutrah Corniche",
+          "lat": 23.6195,
+          "lng": 58.58,
+          "type": "nature"
+        },
+        {
+          "name_ar": "دار الأوبرا السلطانية",
+          "name_en": "Royal Opera House",
+          "lat": 23.6116,
+          "lng": 58.4604,
+          "type": "culture"
+        },
+        {
+          "name_ar": "قلعة الجلالي",
+          "name_en": "Al Jalali Fort",
+          "lat": 23.6171,
+          "lng": 58.5945,
+          "type": "fort"
+        },
+        {
+          "name_ar": "قلعة الميراني",
+          "name_en": "Al Mirani Fort",
+          "lat": 23.6182,
+          "lng": 58.5908,
+          "type": "fort"
+        },
+        {
+          "name_ar": "متحف بيت الزبير",
+          "name_en": "Bait Al Zubair Museum",
+          "lat": 23.6172,
+          "lng": 58.5926,
+          "type": "museum"
+        },
+        {
+          "name_ar": "المتحف الوطني",
+          "name_en": "National Museum of Oman",
+          "lat": 23.6147,
+          "lng": 58.5915,
+          "type": "museum"
+        },
+        {
+          "name_ar": "شاطئ القرم",
+          "name_en": "Qurum Beach",
+          "lat": 23.6086,
+          "lng": 58.4781,
+          "type": "beach"
+        }
+      ]
     },
     {
       "id": "musandam",
@@ -64,7 +129,51 @@
       "best_time_ar": "من نوفمبر إلى مارس",
       "sites": 18,
       "lat": 26.1979,
-      "lng": 56.2487
+      "lng": 56.2487,
+      "landmarks": [
+        {
+          "name_ar": "خصب",
+          "name_en": "Khasab",
+          "lat": 26.1799,
+          "lng": 56.2486,
+          "type": "city"
+        },
+        {
+          "name_ar": "خور الشم",
+          "name_en": "Khor Sham Fjord",
+          "lat": 26.2333,
+          "lng": 56.3,
+          "type": "nature"
+        },
+        {
+          "name_ar": "جزيرة التلغراف",
+          "name_en": "Telegraph Island",
+          "lat": 26.2306,
+          "lng": 56.2528,
+          "type": "nature"
+        },
+        {
+          "name_ar": "جبل حريم",
+          "name_en": "Jebel Harim",
+          "lat": 25.9889,
+          "lng": 56.2278,
+          "type": "mountain"
+        },
+        {
+          "name_ar": "قلعة خصب",
+          "name_en": "Khasab Castle",
+          "lat": 26.1781,
+          "lng": 56.2475,
+          "type": "fort"
+        },
+        {
+          "name_ar": "خور النجد",
+          "name_en": "Khor Najd",
+          "lat": 26.205,
+          "lng": 56.3083,
+          "type": "nature"
+        }
+      ]
     },
     {
       "id": "dhofar",
@@ -96,7 +205,58 @@
       "best_time_ar": "موسم الخريف: أواخر يونيو – أوائل سبتمبر",
       "sites": 32,
       "lat": 17.0151,
-      "lng": 54.0924
+      "lng": 54.0924,
+      "landmarks": [
+        {
+          "name_ar": "صلالة",
+          "name_en": "Salalah",
+          "lat": 17.0151,
+          "lng": 54.0924,
+          "type": "city"
+        },
+        {
+          "name_ar": "وادي دربات",
+          "name_en": "Wadi Darbat",
+          "lat": 17.1067,
+          "lng": 54.45,
+          "type": "nature"
+        },
+        {
+          "name_ar": "شاطئ المغسيل",
+          "name_en": "Mughsail Beach",
+          "lat": 16.8703,
+          "lng": 53.7644,
+          "type": "beach"
+        },
+        {
+          "name_ar": "موقع البليد الأثري",
+          "name_en": "Al Baleed Archaeological Park",
+          "lat": 17.0044,
+          "lng": 54.1083,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "متحف أرض اللبان",
+          "name_en": "Frankincense Land Museum",
+          "lat": 17.0042,
+          "lng": 54.1086,
+          "type": "museum"
+        },
+        {
+          "name_ar": "ضريح النبي أيوب",
+          "name_en": "Tomb of Job (Nabi Ayoub)",
+          "lat": 17.1561,
+          "lng": 54.0028,
+          "type": "religious"
+        },
+        {
+          "name_ar": "جبل سمحان",
+          "name_en": "Jebel Samhan",
+          "lat": 17.11,
+          "lng": 54.68,
+          "type": "mountain"
+        }
+      ]
     },
     {
       "id": "dakhiliyah",
@@ -128,7 +288,72 @@
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 38,
       "lat": 22.9333,
-      "lng": 57.5333
+      "lng": 57.5333,
+      "landmarks": [
+        {
+          "name_ar": "قلعة نزوى",
+          "name_en": "Nizwa Fort",
+          "lat": 22.9332,
+          "lng": 57.5328,
+          "type": "fort"
+        },
+        {
+          "name_ar": "سوق نزوى",
+          "name_en": "Nizwa Souq",
+          "lat": 22.9342,
+          "lng": 57.532,
+          "type": "culture"
+        },
+        {
+          "name_ar": "الجبل الأخضر",
+          "name_en": "Jebel Akhdar (Sayq)",
+          "lat": 23.0664,
+          "lng": 57.6611,
+          "type": "mountain"
+        },
+        {
+          "name_ar": "قلعة بهلا (يونسكو)",
+          "name_en": "Bahla Fort (UNESCO)",
+          "lat": 22.9706,
+          "lng": 57.3008,
+          "type": "fort"
+        },
+        {
+          "name_ar": "قصر جبرين",
+          "name_en": "Jabreen Castle",
+          "lat": 22.9342,
+          "lng": 57.2547,
+          "type": "fort"
+        },
+        {
+          "name_ar": "مسفاة العبريين",
+          "name_en": "Misfat Al Abriyeen",
+          "lat": 22.9408,
+          "lng": 57.3422,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "الحمراء",
+          "name_en": "Al Hamra",
+          "lat": 23.1186,
+          "lng": 57.3267,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "وادي غول",
+          "name_en": "Wadi Ghul",
+          "lat": 23.2389,
+          "lng": 57.2592,
+          "type": "nature"
+        },
+        {
+          "name_ar": "جبل شمس",
+          "name_en": "Jebel Shams",
+          "lat": 23.2333,
+          "lng": 57.2667,
+          "type": "mountain"
+        }
+      ]
     },
     {
       "id": "sharqiyah-north",
@@ -158,7 +383,51 @@
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 22,
       "lat": 22.6906,
-      "lng": 58.5326
+      "lng": 58.5326,
+      "landmarks": [
+        {
+          "name_ar": "رمال الشرقية (وهيبة)",
+          "name_en": "Wahiba Sands",
+          "lat": 22,
+          "lng": 58.5,
+          "type": "desert"
+        },
+        {
+          "name_ar": "وادي بني خالد",
+          "name_en": "Wadi Bani Khalid",
+          "lat": 22.4067,
+          "lng": 59.0061,
+          "type": "nature"
+        },
+        {
+          "name_ar": "إبراء",
+          "name_en": "Ibra",
+          "lat": 22.6906,
+          "lng": 58.5326,
+          "type": "city"
+        },
+        {
+          "name_ar": "سوق إبراء",
+          "name_en": "Ibra Wednesday Market",
+          "lat": 22.6919,
+          "lng": 58.5325,
+          "type": "culture"
+        },
+        {
+          "name_ar": "سناو",
+          "name_en": "Sinaw Souq",
+          "lat": 22.3911,
+          "lng": 58.0067,
+          "type": "culture"
+        },
+        {
+          "name_ar": "الكامل والوافي",
+          "name_en": "Al Kamil & Al Wafi",
+          "lat": 22.2261,
+          "lng": 59.2086,
+          "type": "heritage"
+        }
+      ]
     },
     {
       "id": "sharqiyah-south",
@@ -190,7 +459,58 @@
       "best_time_ar": "من أكتوبر إلى أبريل؛ ذروة تعشيش السلاحف يوليو–أكتوبر",
       "sites": 26,
       "lat": 22.5667,
-      "lng": 59.5289
+      "lng": 59.5289,
+      "landmarks": [
+        {
+          "name_ar": "صور",
+          "name_en": "Sur",
+          "lat": 22.5667,
+          "lng": 59.5289,
+          "type": "city"
+        },
+        {
+          "name_ar": "محمية رأس الجنز",
+          "name_en": "Ras Al Jinz Turtle Reserve",
+          "lat": 22.4061,
+          "lng": 59.8275,
+          "type": "nature"
+        },
+        {
+          "name_ar": "هوّة بمّاه",
+          "name_en": "Bimmah Sinkhole",
+          "lat": 22.8439,
+          "lng": 59.2089,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي شاب",
+          "name_en": "Wadi Shab",
+          "lat": 22.8389,
+          "lng": 59.2389,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي طيوي",
+          "name_en": "Wadi Tiwi",
+          "lat": 22.7842,
+          "lng": 59.2611,
+          "type": "nature"
+        },
+        {
+          "name_ar": "منارة العيجة",
+          "name_en": "Al Ayjah Lighthouse",
+          "lat": 22.5742,
+          "lng": 59.5511,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "أحواض بناء السفن",
+          "name_en": "Sur Dhow Yards",
+          "lat": 22.5731,
+          "lng": 59.535,
+          "type": "culture"
+        }
+      ]
     },
     {
       "id": "batinah-north",
@@ -218,7 +538,44 @@
       "best_time_ar": "من نوفمبر إلى مارس",
       "sites": 14,
       "lat": 24.3431,
-      "lng": 56.729
+      "lng": 56.729,
+      "landmarks": [
+        {
+          "name_ar": "قلعة صحار",
+          "name_en": "Sohar Fort",
+          "lat": 24.3622,
+          "lng": 56.7036,
+          "type": "fort"
+        },
+        {
+          "name_ar": "مدينة صحار",
+          "name_en": "Sohar City",
+          "lat": 24.3431,
+          "lng": 56.729,
+          "type": "city"
+        },
+        {
+          "name_ar": "صحم",
+          "name_en": "Saham",
+          "lat": 24.1717,
+          "lng": 56.8889,
+          "type": "city"
+        },
+        {
+          "name_ar": "شناص",
+          "name_en": "Shinas",
+          "lat": 24.74,
+          "lng": 56.4694,
+          "type": "city"
+        },
+        {
+          "name_ar": "لِوى",
+          "name_en": "Liwa",
+          "lat": 24.5333,
+          "lng": 56.5667,
+          "type": "nature"
+        }
+      ]
     },
     {
       "id": "batinah-south",
@@ -246,7 +603,51 @@
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 18,
       "lat": 23.3914,
-      "lng": 57.425
+      "lng": 57.425,
+      "landmarks": [
+        {
+          "name_ar": "قلعة الرستاق",
+          "name_en": "Rustaq Fort",
+          "lat": 23.3911,
+          "lng": 57.425,
+          "type": "fort"
+        },
+        {
+          "name_ar": "حمامات الرستاق",
+          "name_en": "Rustaq Hot Springs",
+          "lat": 23.395,
+          "lng": 57.425,
+          "type": "nature"
+        },
+        {
+          "name_ar": "قلعة نخل",
+          "name_en": "Nakhal Fort",
+          "lat": 23.3919,
+          "lng": 57.8203,
+          "type": "fort"
+        },
+        {
+          "name_ar": "حمامات الثوارة",
+          "name_en": "Ain Al Thawwarah",
+          "lat": 23.4044,
+          "lng": 57.8147,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي بني عوف",
+          "name_en": "Wadi Bani Awf",
+          "lat": 23.2667,
+          "lng": 57.45,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي الثعبان",
+          "name_en": "Snake Canyon",
+          "lat": 23.2542,
+          "lng": 57.4528,
+          "type": "nature"
+        }
+      ]
     },
     {
       "id": "dhahirah",
@@ -274,7 +675,37 @@
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 12,
       "lat": 23.2257,
-      "lng": 56.5117
+      "lng": 56.5117,
+      "landmarks": [
+        {
+          "name_ar": "مقابر بات (يونسكو)",
+          "name_en": "Bat Beehive Tombs (UNESCO)",
+          "lat": 23.2667,
+          "lng": 56.75,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "إبري",
+          "name_en": "Ibri",
+          "lat": 23.2257,
+          "lng": 56.5117,
+          "type": "city"
+        },
+        {
+          "name_ar": "حارة إبري القديمة",
+          "name_en": "Ibri Old Quarter",
+          "lat": 23.2261,
+          "lng": 56.5119,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "ينقل",
+          "name_en": "Yanqul",
+          "lat": 23.5856,
+          "lng": 56.5447,
+          "type": "city"
+        }
+      ]
     },
     {
       "id": "buraimi",
@@ -300,7 +731,37 @@
       "best_time_ar": "من أكتوبر إلى أبريل",
       "sites": 8,
       "lat": 24.25,
-      "lng": 55.7833
+      "lng": 55.7833,
+      "landmarks": [
+        {
+          "name_ar": "قلعة الخندق",
+          "name_en": "Al Khandaq Fort",
+          "lat": 24.25,
+          "lng": 55.7833,
+          "type": "fort"
+        },
+        {
+          "name_ar": "قلعة الحلّة",
+          "name_en": "Al Hilla Fort",
+          "lat": 24.2486,
+          "lng": 55.7836,
+          "type": "fort"
+        },
+        {
+          "name_ar": "مدينة البريمي",
+          "name_en": "Al Buraimi",
+          "lat": 24.25,
+          "lng": 55.7833,
+          "type": "city"
+        },
+        {
+          "name_ar": "محضة",
+          "name_en": "Mahda",
+          "lat": 24.4561,
+          "lng": 55.9783,
+          "type": "city"
+        }
+      ]
     },
     {
       "id": "wusta",
@@ -328,7 +789,44 @@
       "best_time_ar": "من نوفمبر إلى مارس",
       "sites": 10,
       "lat": 19.9667,
-      "lng": 56.2667
+      "lng": 56.2667,
+      "landmarks": [
+        {
+          "name_ar": "محمية المها العربي",
+          "name_en": "Arabian Oryx Sanctuary",
+          "lat": 19.6667,
+          "lng": 57.25,
+          "type": "nature"
+        },
+        {
+          "name_ar": "الدقم",
+          "name_en": "Duqm",
+          "lat": 19.6586,
+          "lng": 57.7058,
+          "type": "city"
+        },
+        {
+          "name_ar": "حديقة صخور الدقم",
+          "name_en": "Duqm Rock Garden",
+          "lat": 19.5167,
+          "lng": 57.7333,
+          "type": "nature"
+        },
+        {
+          "name_ar": "جزيرة مصيرة",
+          "name_en": "Masirah Island",
+          "lat": 20.4067,
+          "lng": 58.7333,
+          "type": "beach"
+        },
+        {
+          "name_ar": "رأس مدركة",
+          "name_en": "Ras Madrakah",
+          "lat": 19.0167,
+          "lng": 57.85,
+          "type": "beach"
+        }
+      ]
     }
   ]
 }
