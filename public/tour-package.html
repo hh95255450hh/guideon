@@ -260,10 +260,19 @@ function renderPackage() {
   // Interactive map — only show if the provider actually drew something.
   const hasMeet  = p.meetingPoint && Number.isFinite(p.meetingPoint.lat) && Number.isFinite(p.meetingPoint.lng);
   const hasRoute = Array.isArray(p.route) && p.route.length > 0;
-  if ((hasMeet || hasRoute) && window.gdMap) {
+  if (hasMeet || hasRoute) {
     document.getElementById('mapSection').classList.remove('d-none');
-    window.gdMap.viewer('pkgMapView', { meetingPoint: p.meetingPoint, route: p.route || [] })
-      .catch(e => console.warn('map viewer', e));
+    // gd-map.js is loaded with `defer`, so it may not be ready when this
+    // inline script runs. Poll briefly until it appears, then render.
+    const tryDraw = (tries = 0) => {
+      if (window.gdMap && typeof window.gdMap.viewer === 'function') {
+        window.gdMap.viewer('pkgMapView', { meetingPoint: p.meetingPoint, route: p.route || [] })
+          .catch(e => console.warn('map viewer', e));
+      } else if (tries < 50) {
+        setTimeout(() => tryDraw(tries + 1), 100);
+      }
+    };
+    tryDraw();
   }
   if (Array.isArray(p.itinerary) && p.itinerary.length) {
     document.getElementById('itinerarySection').classList.remove('d-none');

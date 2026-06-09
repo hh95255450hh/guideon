@@ -970,7 +970,18 @@ async function saveTour() {
     });
     const d = await r.json();
     if (d.success) {
-      toast(I18N.t('saved_ok') || 'Saved!', 'success');
+      // Warn the guide if their map data (or any other new field) was
+      // silently stripped because the DB column doesn't exist yet.
+      if (Array.isArray(d._droppedCols) && d._droppedCols.length) {
+        const lost = d._droppedCols;
+        const mapLost = lost.includes('meetingPoint') || lost.includes('route');
+        toast(
+          (mapLost ? '⚠️ تم الحفظ لكن بيانات الخريطة لم تُحفظ — يحتاج الأدمن تشغيل migration 036.' : '⚠️ تم الحفظ لكن بعض الحقول الجديدة لم تُحفظ بعد.'),
+          'warning'
+        );
+      } else {
+        toast(I18N.t('saved_ok') || 'Saved!', 'success');
+      }
       bootstrap.Modal.getInstance(document.getElementById('tourModal')).hide();
       TOUR_GALLERY_KEPT = [];
       TOUR_GALLERY_PENDING = [];

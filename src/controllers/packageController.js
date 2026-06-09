@@ -258,16 +258,26 @@ exports.update = async (req, res) => {
     // new fields (e.g. meetingPoint / route from migration 036) don't
     // break edits before the migration runs in production.
     let updated;
+    const droppedCols = [];
     while (true) {
       try { updated = await packages.update(req.params.id, changes); break; }
       catch (e) {
         const m = String(e?.message || '').match(/Could not find the '([^']+)' column|column "([^"]+)" of relation/);
         const col = m && (m[1] || m[2]);
-        if (col && changes[col] !== undefined) { delete changes[col]; continue; }
+        if (col && changes[col] !== undefined) {
+          droppedCols.push(col);
+          delete changes[col];
+          continue;
+        }
         throw e;
       }
     }
-    res.json({ success: true, package: updated });
+    // Surface dropped-column problems to ops so map / new-field data
+    // isn't silently lost behind a pending migration.
+    if (droppedCols.length) {
+      console.warn('[packages.update] Saved after dropping columns:', droppedCols.join(', '), '— run the pending migration.');
+    }
+    res.json({ success: true, package: updated, _droppedCols: droppedCols.length ? droppedCols : undefined });
   } catch (err) {
     console.error('[packageController.update] FAILED:', err?.message || err);
     const msg = String(err?.message || '');
