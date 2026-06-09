@@ -106,6 +106,7 @@ exports.create = async (req, res) => {
       cover_image, cancellation_policy,
       isPublished, discountPercent, offerLabel, offerUntil,
       variants, addons, availableDates, highlights,
+      meetingPoint, route,   // interactive map fields (lat/lng + route array)
     } = req.body;
 
     if (!title || !description || !price_adult) {
@@ -148,6 +149,14 @@ exports.create = async (req, res) => {
       addons:         Array.isArray(addons)         ? addons         : [],
       availableDates: Array.isArray(availableDates) ? availableDates : [],
       highlights:     Array.isArray(highlights)     ? highlights     : [],
+      // Interactive map — coerce defensively. Only accept finite numbers
+      // so a malformed payload can never crash the page.
+      meetingPoint: (meetingPoint && Number.isFinite(meetingPoint.lat) && Number.isFinite(meetingPoint.lng))
+        ? { lat: +meetingPoint.lat, lng: +meetingPoint.lng } : null,
+      route: Array.isArray(route)
+        ? route.filter(p => p && Number.isFinite(p.lat) && Number.isFinite(p.lng))
+               .map(p => ({ lat: +p.lat, lng: +p.lng }))
+        : [],
       rating: 0, totalReviews: 0, totalBookings: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -238,13 +247,26 @@ exports.update = async (req, res) => {
       'includes', 'excludes', 'itinerary', 'meeting_point', 'languages', 'images',
       'cover_image', 'cancellation_policy', 'isPublished',
       'discountPercent', 'offerLabel', 'offerUntil',
-      'variants', 'addons', 'availableDates', 'highlights'];
+      'variants', 'addons', 'availableDates', 'highlights',
+      'meetingPoint', 'route'];   // interactive map
     const changes = { updatedAt: new Date().toISOString() };
     for (const k of allowed) {
       if (req.body[k] !== undefined) changes[k] = req.body[k];
     }
 
-    const updated = await packages.update(req.params.id, changes);
+    // Resilient update: same missing-column retry pattern as create, so
+    // new fields (e.g. meetingPoint / route from migration 036) don't
+    // break edits before the migration runs in production.
+    let updated;
+    while (true) {
+      try { updated = await packages.update(req.params.id, changes); break; }
+      catch (e) {
+        const m = String(e?.message || '').match(/Could not find the '([^']+)' column|column "([^"]+)" of relation/);
+        const col = m && (m[1] || m[2]);
+        if (col && changes[col] !== undefined) { delete changes[col]; continue; }
+        throw e;
+      }
+    }
     res.json({ success: true, package: updated });
   } catch (err) {
     console.error('[packageController.update] FAILED:', err?.message || err);

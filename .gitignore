@@ -17,3 +17,8 @@ GUIDEON_Credentials.docx
 app/*.zip
 *.aab
 *.apk
+
+# Local reference images — never commit (huge)
+صور/
+صور
+

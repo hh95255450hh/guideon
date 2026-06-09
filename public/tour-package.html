@@ -32,6 +32,7 @@
   .offer-banner { background:linear-gradient(135deg,#ffd700,#ffa500); color:#fff; padding:6px 14px; border-radius:8px; font-weight:700; display:inline-block; margin-bottom:10px; font-size:.9rem }
 </style>
 <script src="/js/image-compress.js?v=2"></script>
+<script src="/js/gd-map.js?v=1" defer></script>
 </head>
 <body>
 
@@ -66,6 +67,11 @@
       <div class="mb-4 d-none" id="highlightsSection"><h5 class="fw-700" data-i18n="highlights">✨ Highlights</h5><ul id="pkgHighlights" class="text-muted"></ul></div>
       <div class="mb-4 d-none" id="includesSection"><h5 class="fw-700" data-i18n="included">✓ What's Included</h5><ul id="pkgIncludes" class="text-muted"></ul></div>
       <div class="mb-4 d-none" id="meetingSection"><h5 class="fw-700" data-i18n="meeting_point">📍 Meeting Point</h5><p id="pkgMeeting" class="text-muted"></p></div>
+      <div class="mb-4 d-none" id="mapSection">
+        <h5 class="fw-700">🗺️ <span>خريطة الرحلة</span></h5>
+        <p class="small text-muted mb-2">نقطة اللقاء والمسار المتوقّع كما حدّدها مزوّد الخدمة.</p>
+        <div id="pkgMapView"></div>
+      </div>
       <div class="mb-4 d-none" id="itinerarySection"><h5 class="fw-700" data-i18n="day_itinerary">🗺️ Day-by-day Itinerary</h5><div id="pkgItinerary"></div></div>
       <div class="mb-4 d-none" id="variantsSection">
         <h5 class="fw-700" data-i18n="choose_package">💼 Choose Your Package</h5>
@@ -250,6 +256,14 @@ function renderPackage() {
   if (p.meeting_point) {
     document.getElementById('meetingSection').classList.remove('d-none');
     document.getElementById('pkgMeeting').textContent = p.meeting_point;
+  }
+  // Interactive map — only show if the provider actually drew something.
+  const hasMeet  = p.meetingPoint && Number.isFinite(p.meetingPoint.lat) && Number.isFinite(p.meetingPoint.lng);
+  const hasRoute = Array.isArray(p.route) && p.route.length > 0;
+  if ((hasMeet || hasRoute) && window.gdMap) {
+    document.getElementById('mapSection').classList.remove('d-none');
+    window.gdMap.viewer('pkgMapView', { meetingPoint: p.meetingPoint, route: p.route || [] })
+      .catch(e => console.warn('map viewer', e));
   }
   if (Array.isArray(p.itinerary) && p.itinerary.length) {
     document.getElementById('itinerarySection').classList.remove('d-none');

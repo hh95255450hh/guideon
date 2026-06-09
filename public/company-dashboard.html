@@ -32,6 +32,7 @@
 .edit-row .val { flex:1; }
 </style>
 <script src="/js/image-compress.js?v=2"></script>
+<script src="/js/gd-map.js?v=1" defer></script>
 </head>
 <body>
 
@@ -333,6 +334,11 @@
           <label class="form-label fw-600 small" data-i18n="pkg_desc_lbl">الوصف</label>
           <textarea class="form-control" id="pkgDescription" rows="3" placeholder="صف هذه الرحلة للسياح..."></textarea>
         </div>
+        <div class="mb-3">
+          <label class="form-label fw-600 small">🗺️ خريطة الرحلة <span class="text-muted fw-400">(اختياري)</span></label>
+          <div class="form-text mb-2">حدّد نقطة اللقاء والمسار المتوقّع — سيظهر للسياح على صفحة الرحلة.</div>
+          <div id="pkgMap"></div>
+        </div>
       </div>
       <div class="modal-footer border-0 pt-0">
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="cancel_btn">Cancel</button>
@@ -627,6 +633,15 @@ async function saveProfile() {
   }
 }
 
+// Holds the active map editor instance for the package modal. Created
+// lazily so pages without the modal open don't pay for Leaflet.
+let _pkgMapEditor = null;
+async function _mountPkgMap(initial) {
+  if (!window.gdMap) return;
+  if (_pkgMapEditor) { try { _pkgMapEditor.destroy(); } catch {} _pkgMapEditor = null; }
+  try { _pkgMapEditor = await window.gdMap.editor('pkgMap', initial || null); } catch(e){ console.warn('map editor', e); }
+}
+
 function openAddPackage() {
   document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_add_title') || 'إضافة حزمة سياحية';
   document.getElementById('pkgEditIndex').value = '';
@@ -640,6 +655,8 @@ function openAddPackage() {
   renderPkgPhotoStrip();
   document.getElementById('pkgErrMsg').classList.add('d-none');
   pkgModal.show();
+  // Mount the map once the modal is on-screen (Leaflet needs real size).
+  setTimeout(() => _mountPkgMap(null), 250);
 }
 
 function editPackage(id) {
@@ -660,6 +677,7 @@ function editPackage(id) {
   renderPkgPhotoStrip();
   document.getElementById('pkgErrMsg').classList.add('d-none');
   pkgModal.show();
+  setTimeout(() => _mountPkgMap({ meetingPoint: pkg.meetingPoint || null, route: pkg.route || [] }), 250);
 }
 
 // Track in-flight save so a double-click on "حفظ" can't fire twice and
@@ -702,6 +720,10 @@ async function savePackage() {
     const newUrls = await uploadPendingPkgPhotos();
     const images  = [...PKG_KEPT_PHOTOS, ...newUrls];
 
+    // Pull the latest map data (meeting point + route) from the editor,
+    // if one was mounted. Missing/empty is fine.
+    const mapData = _pkgMapEditor ? _pkgMapEditor.getData() : { meetingPoint: null, route: [] };
+
     const body = {
       title:         name,
       description:   document.getElementById('pkgDescription').value.trim() || name,
@@ -713,6 +735,8 @@ async function savePackage() {
       category:      'Cultural',
       images,
       cover_image:   images[0] || '',
+      meetingPoint:  mapData.meetingPoint,
+      route:         mapData.route,
     };
 
     const r = await fetch(url, {

@@ -42,7 +42,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc:    ["'self'"],
-      scriptSrc:     ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://accounts.google.com", "https://accounts.google.com/gsi/client"],
+      scriptSrc:     ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://accounts.google.com", "https://accounts.google.com/gsi/client"],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc:      ["'self'", "https:", "'unsafe-inline'"],
       imgSrc:        ["'self'", "data:", "https:", "https://upload.wikimedia.org"],

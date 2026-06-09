@@ -19,6 +19,7 @@
 <link id="bs-rtl" rel="stylesheet" href="/css/bootstrap.rtl.min.css" media="not all">
 <link rel="stylesheet" href="/css/style.css?v=40">
 <script src="/js/image-compress.js?v=2"></script>
+<script src="/js/gd-map.js?v=1" defer></script>
 </head>
 <body>
 
@@ -274,6 +275,10 @@
                   <div class="col-md-6">
                     <label class="form-label small fw-600" data-i18n="tour_meeting">Meeting Point</label>
                     <input class="form-control" id="tourMeeting" data-i18n-ph="tour_meeting_ph" placeholder="e.g. Nizwa Fort entrance, 7:00 AM">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-600">🗺️ Trip Map (optional) — drop the meeting pin and draw the expected route</label>
+                    <div id="tourMap"></div>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label small fw-600" data-i18n="tour_includes">What's Included (comma-separated)</label>
@@ -828,6 +833,12 @@ function openTourModal(tour) {
   document.querySelectorAll('.tour-tab').forEach((t,i) => t.style.display = i===0 ? '' : 'none');
   document.getElementById('tourModalTitle').textContent = tour ? (I18N.t('tour_modal_edit') || 'Edit Tour') : (I18N.t('tour_modal_add') || 'Add New Tour');
   new bootstrap.Modal(document.getElementById('tourModal')).show();
+  // Mount the interactive map editor for this tour (lazy-loads Leaflet).
+  setTimeout(async () => {
+    if (!window.gdMap) return;
+    if (window._tourMapEditor) { try { window._tourMapEditor.destroy(); } catch{} }
+    try { window._tourMapEditor = await window.gdMap.editor('tourMap', { meetingPoint: tour?.meetingPoint || null, route: tour?.route || [] }); } catch(e){ console.warn(e); }
+  }, 300);
 }
 
 function editTour(id) {
@@ -933,6 +944,8 @@ async function saveTour() {
     max_group_size: parseInt(document.getElementById('tourMaxGroup').value),
     description:    document.getElementById('tourDescription').value.trim(),
     meeting_point:  document.getElementById('tourMeeting').value.trim(),
+    // Interactive map data (meeting pin + route waypoints from gd-map.js)
+    ...(window._tourMapEditor ? window._tourMapEditor.getData() : {}),
     includes:       document.getElementById('tourIncludes').value.split(',').map(s => s.trim()).filter(Boolean),
     highlights:     document.getElementById('tourHighlights').value.split('\n').map(s => s.trim()).filter(Boolean),
     variants:       TOUR_VARIANTS.filter(v => v.name && v.priceAdult > 0),
