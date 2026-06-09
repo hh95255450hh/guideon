@@ -18,7 +18,7 @@ function safeMulter(mw, label) {
   return (req, res, next) => mw(req, res, (err) => {
     if (!err) return next();
     if (err.code === 'LIMIT_FILE_SIZE') {
-      const max = err.field === 'video' ? 50 : 10;
+      const max = err.field === 'video' ? 50 : 25;
       return res.status(400).json({ success:false, code:err.code, message:`File too large — maximum ${max} MB.` });
     }
     if (err.code === 'LIMIT_UNEXPECTED_FILE') {
@@ -40,7 +40,11 @@ const upload = multer({
     );
     cb(null, ok);
   },
-  limits: { fileSize: 10 * 1024 * 1024 },
+  // Bumped from 10 MB → 25 MB. Modern phone cameras shoot 5–15 MB JPEGs.
+  // The client-side compressor (gdCompressImage) usually shrinks these to
+  // <1.5 MB before they even reach us, but we keep a generous server cap
+  // for clients that don't run the compressor (older browsers, API users).
+  limits: { fileSize: 25 * 1024 * 1024 },
 });
 
 // POST /api/upload/photo — update profile photo
