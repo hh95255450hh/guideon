@@ -126,14 +126,28 @@
   document.getElementById('rHighlights').innerHTML = hls.map(h => `<div class="hl-card"><div class="dot"></div><span>${h}</span></div>`).join('');
 
   // Interactive landmarks map — appears only if the region has coordinates.
-  if (Array.isArray(r.landmarks) && r.landmarks.length && window.gdMap) {
+  if (Array.isArray(r.landmarks) && r.landmarks.length) {
     const section = document.getElementById('rMapSection');
     section.style.display = '';
     document.getElementById('hMap').textContent = isAr ? `📍 خريطة معالم ${r.name_ar}` : `📍 Landmarks of ${r.name_en}`;
     document.getElementById('rMapSub').textContent = isAr
       ? `${r.landmarks.length} معلماً سياحياً. انقر على أيّ علامة للتفاصيل.`
       : `${r.landmarks.length} landmarks. Click any marker for details.`;
-    window.gdMap.landmarks('rLandmarksMap', r.landmarks, { lang: isAr ? 'ar' : 'en' }).catch(e => console.warn('landmarks map', e));
+    // gd-map.js is loaded with `defer`, so it may not be ready when this
+    // inline script runs. Poll briefly (up to 5s) until it appears, then
+    // render. This makes the map reliably show for every visitor.
+    const tryDraw = (tries = 0) => {
+      if (window.gdMap && typeof window.gdMap.landmarks === 'function') {
+        window.gdMap.landmarks('rLandmarksMap', r.landmarks, { lang: isAr ? 'ar' : 'en' })
+          .catch(e => console.warn('landmarks map', e));
+      } else if (tries < 50) {
+        setTimeout(() => tryDraw(tries + 1), 100);
+      } else {
+        document.getElementById('rLandmarksMap').innerHTML =
+          '<div class="text-center text-muted py-4">Map could not load. Please refresh the page.</div>';
+      }
+    };
+    tryDraw();
   }
   document.getElementById('cTitle').textContent = isAr?`اعثر على مرشد محلّي معتمد في ${r.name_ar}`:`Find a verified local guide in ${r.name_en}`;
   document.getElementById('cSub').textContent = isAr?'احجز مرشداً مرخّصاً من الوزارة يعرف هذه المنطقة عن ظهر قلب.':'Book a Ministry-licensed expert who knows this region inside out.';

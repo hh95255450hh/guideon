@@ -2649,10 +2649,20 @@ const I18N = {
   setLang(code) {
     if (!LANG_BY_CODE[code]) code = 'en';
     if (code === this.lang) return;
+    const prev = this.lang;
     this.lang = code;
     localStorage.setItem('gd_lang', code);
     this.apply();
     if (typeof window.onLangChange === 'function') window.onLangChange();
+    // The unified navbar + many static page strings are bilingual EN/AR
+    // only — for the 8 newer languages a full re-render is needed so
+    // the navbar links, hero text, and any non-data-i18n copy switch.
+    // Cheap reload guarantees a consistent UI for those switches.
+    const BILINGUAL = new Set(['en','ar']);
+    if (!BILINGUAL.has(code) || !BILINGUAL.has(prev)) {
+      // Avoid loops if the page hash already contains a flag (e.g. dev tools)
+      setTimeout(() => location.reload(), 50);
+    }
   },
 
   // Back-compat: legacy code calls I18N.toggle() expecting EN↔AR.
