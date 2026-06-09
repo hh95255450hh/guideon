@@ -343,8 +343,13 @@
             <label class="gd-nav-chip" title="${tr('Language','اللغة')}">
               ${svg('globe')}
               <select id="gdNavLang">
-                <option value="en">EN</option>
-                <option value="ar">عربي</option>
+                ${(window.I18N && window.I18N.languages || [
+                  {code:'en',native:'English',flag:'🇬🇧'},{code:'ar',native:'العربية',flag:'🇴🇲'},
+                  {code:'zh',native:'中文',flag:'🇨🇳'},{code:'hi',native:'हिन्दी',flag:'🇮🇳'},
+                  {code:'es',native:'Español',flag:'🇪🇸'},{code:'fr',native:'Français',flag:'🇫🇷'},
+                  {code:'bn',native:'বাংলা',flag:'🇧🇩'},{code:'pt',native:'Português',flag:'🇵🇹'},
+                  {code:'ru',native:'Русский',flag:'🇷🇺'},{code:'ur',native:'اردو',flag:'🇵🇰'}])
+                  .map(l => `<option value="${l.code}">${l.flag} ${l.native}</option>`).join('')}
               </select>
             </label>
             <label class="gd-nav-chip" title="${tr('Currency','العملة')}">
@@ -407,8 +412,13 @@
             <label class="gd-nav-chip" style="flex:1;justify-content:center;background:var(--gd-ink-50);color:var(--gd-ink-900);border-color:var(--gd-ink-100)">
               ${svg('globe')}
               <select id="gdDrawerLang" style="color:var(--gd-ink-900);width:100%">
-                <option value="en">English</option>
-                <option value="ar">العربية</option>
+                ${(window.I18N && window.I18N.languages || [
+                  {code:'en',native:'English',flag:'🇬🇧'},{code:'ar',native:'العربية',flag:'🇴🇲'},
+                  {code:'zh',native:'中文',flag:'🇨🇳'},{code:'hi',native:'हिन्दी',flag:'🇮🇳'},
+                  {code:'es',native:'Español',flag:'🇪🇸'},{code:'fr',native:'Français',flag:'🇫🇷'},
+                  {code:'bn',native:'বাংলা',flag:'🇧🇩'},{code:'pt',native:'Português',flag:'🇵🇹'},
+                  {code:'ru',native:'Русский',flag:'🇷🇺'},{code:'ur',native:'اردو',flag:'🇵🇰'}])
+                  .map(l => `<option value="${l.code}">${l.flag} ${l.native}</option>`).join('')}
               </select>
             </label>
             <label class="gd-nav-chip" style="flex:1;justify-content:center;background:var(--gd-ink-50);color:var(--gd-ink-900);border-color:var(--gd-ink-100)">
@@ -564,7 +574,9 @@
 
     // Language / currency syncing — whitelist values so a hand-edited
     // localStorage entry can never inject arbitrary text into the DOM.
-    const ALLOWED_LANG = new Set(['en', 'ar']);
+    // Lang whitelist is derived from the I18N registry so adding a new
+    // language only requires editing i18n.js.
+    const ALLOWED_LANG = new Set((window.I18N && window.I18N.languages || [{code:'en'},{code:'ar'}]).map(l => l.code));
     const ALLOWED_CUR  = new Set(['OMR', 'USD', 'EUR', 'GBP']);
     const rawLang = localStorage.getItem('gd_lang');
     const rawCur  = localStorage.getItem('gd_currency');
@@ -575,8 +587,11 @@
     if (langSel) langSel.value = lang;
     if (curSel)  curSel.value  = cur;
     langSel?.addEventListener('change', e => {
-      localStorage.setItem('gd_lang', e.target.value);
-      if (window.I18N && I18N.set) I18N.set(e.target.value);
+      const v = e.target.value;
+      if (!ALLOWED_LANG.has(v)) return;
+      localStorage.setItem('gd_lang', v);
+      // Prefer the proper setLang API for instant swap (no reload).
+      if (window.I18N && typeof I18N.setLang === 'function') I18N.setLang(v);
       else location.reload();
     });
     curSel?.addEventListener('change', e => {
@@ -623,7 +638,12 @@
     // Drawer lang/currency mirror
     const dLang = document.getElementById('gdDrawerLang');
     const dCur  = document.getElementById('gdDrawerCurrency');
-    if (dLang) { dLang.value = lang; dLang.addEventListener('change', e => { localStorage.setItem('gd_lang', e.target.value); location.reload(); }); }
+    if (dLang) { dLang.value = lang; dLang.addEventListener('change', e => {
+      const v = e.target.value; if (!ALLOWED_LANG.has(v)) return;
+      localStorage.setItem('gd_lang', v);
+      if (window.I18N && typeof I18N.setLang === 'function') I18N.setLang(v);
+      else location.reload();
+    }); }
     if (dCur)  { dCur.value  = cur;  dCur.addEventListener('change',  e => { localStorage.setItem('gd_currency', e.target.value); location.reload(); }); }
 
     // Logout

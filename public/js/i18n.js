@@ -2412,74 +2412,256 @@ const TRANSLATIONS = {
     contact_faq_a5:             'جميع رسائلنا وقنوات الدعم ثنائية اللغة بالكامل (العربية والإنجليزية). ستصلك النسختان في الرسالة نفسها، ويرد فريقنا بلغتك المفضلة.',
     contact_faq_q6:             'ما سرعة ردكم؟',
     contact_faq_a6:             'الواتساب: أقل من ساعة. البريد الإلكتروني: أقل من 24 ساعة (عادةً 2–4 ساعات خلال ساعات العمل العمانية). مشاكل الحجز العاجلة لها أولوية ويُرد عليها خلال 30 دقيقة في ساعات العمل.',
-  }
+  },
+
+  /* ─── CORE UI ONLY (8 languages × ~35 keys). Anything not listed
+       here falls back to English at runtime. We deliberately keep
+       this surface small: nav + hero + CTAs + buttons. User-generated
+       content (guide bios, package descriptions) is shown as written.
+  ─────────────────────────────────────────────────────────────────── */
+
+  // ════════════ MANDARIN CHINESE ════════════
+  zh: {
+    nav_home:'首页', nav_find:'寻找导游', nav_signup:'注册', nav_login:'登录', nav_contact:'联系',
+    hero_badge:'政府认证向导', hero_title:'与一位', hero_highlight:'当地认证向导一起探索阿曼',
+    hero_sub:'与阿曼苏丹国的政府认证旅游向导建立联系。',
+    search_governorate:'省份', search_wilayat:'地区', search_lang:'语言', search_lang_any:'任何语言',
+    search_date:'日期', search_btn:'🔍 搜索',
+    about_title:'关于 Guideon',
+    about_p1:'Guideon 是阿曼领先的平台，连接旅行者与官方认证的当地向导。',
+    about_p2:'每位向导均经过认证，持有遗产与旅游部颁发的执照。',
+    sec_how:'如何使用', sec_dests:'热门目的地', sec_guides:'认证导游', sec_view_all:'查看全部 →',
+    step1_title:'1. 浏览导游', step2_title:'2. 选择您的导游', step3_title:'3. 享受您的旅程',
+    submit_btn:'提交', cancel_btn:'取消', save_btn:'保存', edit_btn:'编辑', delete_btn:'删除',
+    book_now:'立即预订', pay_now:'立即付款', paid_label:'已付款',
+    write_review:'写评论', accept_offer:'✅ 接受报价',
+    contact_us:'联系我们', loading:'加载中…',
+  },
+
+  // ════════════ HINDI ════════════
+  hi: {
+    nav_home:'मुख्य', nav_find:'गाइड खोजें', nav_signup:'साइन अप', nav_login:'लॉगिन', nav_contact:'संपर्क',
+    hero_badge:'सरकार द्वारा प्रमाणित गाइड', hero_title:'ओमान की खोज करें', hero_highlight:'सत्यापित स्थानीय विशेषज्ञ के साथ',
+    hero_sub:'ओमान सल्तनत के प्रमाणित पर्यटक गाइडों से जुड़ें।',
+    search_governorate:'गवर्नरेट', search_wilayat:'विलायत', search_lang:'भाषा', search_lang_any:'कोई भी भाषा',
+    search_date:'दौरे की तारीख', search_btn:'🔍 खोजें',
+    about_title:'Guideon के बारे में',
+    about_p1:'Guideon ओमान का प्रमुख प्लेटफ़ॉर्म है जो यात्रियों को सरकार द्वारा प्रमाणित स्थानीय गाइडों से जोड़ता है।',
+    about_p2:'प्लेटफ़ॉर्म पर हर गाइड व्यक्तिगत रूप से सत्यापित है और विरासत और पर्यटन मंत्रालय से लाइसेंस प्राप्त है।',
+    sec_how:'यह कैसे काम करता है', sec_dests:'लोकप्रिय गंतव्य', sec_guides:'प्रमाणित गाइड', sec_view_all:'सभी देखें →',
+    step1_title:'1. गाइड ब्राउज़ करें', step2_title:'2. अपना गाइड चुनें', step3_title:'3. अपनी यात्रा का आनंद लें',
+    submit_btn:'जमा करें', cancel_btn:'रद्द करें', save_btn:'सहेजें', edit_btn:'संपादित करें', delete_btn:'हटाएं',
+    book_now:'अभी बुक करें', pay_now:'अभी भुगतान करें', paid_label:'भुगतान किया गया',
+    write_review:'समीक्षा लिखें', accept_offer:'✅ ऑफ़र स्वीकार करें',
+    contact_us:'संपर्क करें', loading:'लोड हो रहा है…',
+  },
+
+  // ════════════ SPANISH ════════════
+  es: {
+    nav_home:'Inicio', nav_find:'Buscar guía', nav_signup:'Registrarse', nav_login:'Iniciar sesión', nav_contact:'Contacto',
+    hero_badge:'Guías con licencia ministerial', hero_title:'Descubre Omán con un', hero_highlight:'experto local verificado',
+    hero_sub:'Conéctate con guías turísticos certificados en todo el Sultanato de Omán.',
+    search_governorate:'Gobernación', search_wilayat:'Wilayat', search_lang:'Idioma', search_lang_any:'Cualquier idioma',
+    search_date:'Fecha del tour', search_btn:'🔍 Buscar',
+    about_title:'Acerca de Guideon',
+    about_p1:'Guideon es la plataforma líder en Omán que conecta a los viajeros con guías locales con licencia ministerial.',
+    about_p2:'Cada guía está personalmente verificado y posee una licencia oficial del Ministerio de Patrimonio y Turismo.',
+    sec_how:'Cómo funciona', sec_dests:'Destinos populares', sec_guides:'Guías verificados', sec_view_all:'Ver todo →',
+    step1_title:'1. Explora guías', step2_title:'2. Elige tu guía', step3_title:'3. Disfruta tu viaje',
+    submit_btn:'Enviar', cancel_btn:'Cancelar', save_btn:'Guardar', edit_btn:'Editar', delete_btn:'Eliminar',
+    book_now:'Reservar ahora', pay_now:'Pagar ahora', paid_label:'Pagado',
+    write_review:'Escribir reseña', accept_offer:'✅ Aceptar oferta',
+    contact_us:'Contáctanos', loading:'Cargando…',
+  },
+
+  // ════════════ FRENCH ════════════
+  fr: {
+    nav_home:'Accueil', nav_find:'Trouver un guide', nav_signup:"S'inscrire", nav_login:'Connexion', nav_contact:'Contact',
+    hero_badge:'Guides agréés par le Ministère', hero_title:'Découvrez Oman avec un', hero_highlight:'expert local vérifié',
+    hero_sub:'Connectez-vous à des guides touristiques certifiés à travers le Sultanat d’Oman.',
+    search_governorate:'Gouvernorat', search_wilayat:'Wilayat', search_lang:'Langue', search_lang_any:'Toute langue',
+    search_date:'Date du tour', search_btn:'🔍 Rechercher',
+    about_title:'À propos de Guideon',
+    about_p1:'Guideon est la plateforme leader d’Oman qui relie les voyageurs à des guides locaux agréés.',
+    about_p2:'Chaque guide est personnellement vérifié et possède une licence officielle du Ministère du Patrimoine et du Tourisme.',
+    sec_how:'Comment ça marche', sec_dests:'Destinations populaires', sec_guides:'Guides vérifiés', sec_view_all:'Voir tout →',
+    step1_title:'1. Parcourir les guides', step2_title:'2. Choisissez votre guide', step3_title:'3. Profitez de votre voyage',
+    submit_btn:'Envoyer', cancel_btn:'Annuler', save_btn:'Enregistrer', edit_btn:'Modifier', delete_btn:'Supprimer',
+    book_now:'Réserver', pay_now:'Payer maintenant', paid_label:'Payé',
+    write_review:'Écrire un avis', accept_offer:'✅ Accepter l’offre',
+    contact_us:'Contactez-nous', loading:'Chargement…',
+  },
+
+  // ════════════ BENGALI ════════════
+  bn: {
+    nav_home:'হোম', nav_find:'গাইড খুঁজুন', nav_signup:'সাইন আপ', nav_login:'লগইন', nav_contact:'যোগাযোগ',
+    hero_badge:'সরকার-অনুমোদিত গাইড', hero_title:'ওমান আবিষ্কার করুন', hero_highlight:'যাচাইকৃত স্থানীয় বিশেষজ্ঞের সাথে',
+    hero_sub:'ওমান সালতানাত জুড়ে সার্টিফাইড পর্যটন গাইডের সাথে সংযুক্ত হন।',
+    search_governorate:'গভর্নরেট', search_wilayat:'উইলায়াত', search_lang:'ভাষা', search_lang_any:'যেকোনো ভাষা',
+    search_date:'ভ্রমণের তারিখ', search_btn:'🔍 অনুসন্ধান',
+    about_title:'Guideon সম্পর্কে',
+    about_p1:'Guideon ওমানের শীর্ষস্থানীয় প্ল্যাটফর্ম যা ভ্রমণকারীদের সরকার-অনুমোদিত স্থানীয় গাইডদের সাথে সংযুক্ত করে।',
+    about_p2:'প্রতিটি গাইড ব্যক্তিগতভাবে যাচাইকৃত এবং ঐতিহ্য ও পর্যটন মন্ত্রণালয়ের অফিসিয়াল লাইসেন্সধারী।',
+    sec_how:'কিভাবে কাজ করে', sec_dests:'জনপ্রিয় গন্তব্য', sec_guides:'যাচাইকৃত গাইড', sec_view_all:'সব দেখুন →',
+    step1_title:'১. গাইড দেখুন', step2_title:'২. গাইড নির্বাচন করুন', step3_title:'৩. ভ্রমণ উপভোগ করুন',
+    submit_btn:'জমা দিন', cancel_btn:'বাতিল', save_btn:'সংরক্ষণ', edit_btn:'সম্পাদনা', delete_btn:'মুছুন',
+    book_now:'এখনই বুক করুন', pay_now:'এখন পেমেন্ট করুন', paid_label:'পরিশোধিত',
+    write_review:'রিভিউ লিখুন', accept_offer:'✅ অফার গ্রহণ',
+    contact_us:'যোগাযোগ করুন', loading:'লোড হচ্ছে…',
+  },
+
+  // ════════════ PORTUGUESE ════════════
+  pt: {
+    nav_home:'Início', nav_find:'Encontrar guia', nav_signup:'Cadastrar', nav_login:'Entrar', nav_contact:'Contato',
+    hero_badge:'Guias licenciados pelo Ministério', hero_title:'Descubra Omã com um', hero_highlight:'especialista local verificado',
+    hero_sub:'Conecte-se com guias turísticos certificados em todo o Sultanato de Omã.',
+    search_governorate:'Governadoria', search_wilayat:'Wilayat', search_lang:'Idioma', search_lang_any:'Qualquer idioma',
+    search_date:'Data do passeio', search_btn:'🔍 Buscar',
+    about_title:'Sobre o Guideon',
+    about_p1:'Guideon é a plataforma líder em Omã que conecta viajantes a guias locais licenciados pelo Ministério.',
+    about_p2:'Cada guia é verificado pessoalmente e possui licença oficial do Ministério do Patrimônio e Turismo.',
+    sec_how:'Como funciona', sec_dests:'Destinos populares', sec_guides:'Guias verificados', sec_view_all:'Ver tudo →',
+    step1_title:'1. Explore os guias', step2_title:'2. Escolha seu guia', step3_title:'3. Aproveite a viagem',
+    submit_btn:'Enviar', cancel_btn:'Cancelar', save_btn:'Salvar', edit_btn:'Editar', delete_btn:'Excluir',
+    book_now:'Reservar agora', pay_now:'Pagar agora', paid_label:'Pago',
+    write_review:'Escrever avaliação', accept_offer:'✅ Aceitar oferta',
+    contact_us:'Fale conosco', loading:'Carregando…',
+  },
+
+  // ════════════ RUSSIAN ════════════
+  ru: {
+    nav_home:'Главная', nav_find:'Найти гида', nav_signup:'Регистрация', nav_login:'Вход', nav_contact:'Контакты',
+    hero_badge:'Гиды с лицензией Министерства', hero_title:'Откройте для себя Оман с', hero_highlight:'проверенным местным экспертом',
+    hero_sub:'Свяжитесь с сертифицированными туристическими гидами по всему Султанату Оман.',
+    search_governorate:'Провинция', search_wilayat:'Вилаят', search_lang:'Язык', search_lang_any:'Любой язык',
+    search_date:'Дата тура', search_btn:'🔍 Поиск',
+    about_title:'О Guideon',
+    about_p1:'Guideon — ведущая платформа Омана, соединяющая путешественников с местными гидами, лицензированными Министерством.',
+    about_p2:'Каждый гид лично проверен и имеет официальную лицензию Министерства наследия и туризма.',
+    sec_how:'Как это работает', sec_dests:'Популярные направления', sec_guides:'Проверенные гиды', sec_view_all:'Смотреть всё →',
+    step1_title:'1. Просмотр гидов', step2_title:'2. Выберите гида', step3_title:'3. Наслаждайтесь путешествием',
+    submit_btn:'Отправить', cancel_btn:'Отмена', save_btn:'Сохранить', edit_btn:'Редактировать', delete_btn:'Удалить',
+    book_now:'Забронировать', pay_now:'Оплатить', paid_label:'Оплачено',
+    write_review:'Написать отзыв', accept_offer:'✅ Принять предложение',
+    contact_us:'Связаться с нами', loading:'Загрузка…',
+  },
+
+  // ════════════ URDU (RTL) ════════════
+  ur: {
+    nav_home:'صفحۂ اول', nav_find:'گائیڈ تلاش کریں', nav_signup:'سائن اپ', nav_login:'لاگ اِن', nav_contact:'رابطہ',
+    hero_badge:'وزارت سے منظور شدہ گائیڈز', hero_title:'عمان کو دریافت کریں', hero_highlight:'مقامی مصدقہ ماہر کے ساتھ',
+    hero_sub:'سلطنت عمان بھر کے سرٹیفائیڈ سیاحتی گائیڈز سے رابطہ کریں۔',
+    search_governorate:'گورنریٹ', search_wilayat:'ولایت', search_lang:'زبان', search_lang_any:'کوئی بھی زبان',
+    search_date:'دورے کی تاریخ', search_btn:'🔍 تلاش',
+    about_title:'Guideon کے بارے میں',
+    about_p1:'Guideon عمان کا سرکردہ پلیٹ فارم ہے جو مسافروں کو وزارت سے منظور شدہ مقامی گائیڈز سے جوڑتا ہے۔',
+    about_p2:'ہر گائیڈ ذاتی طور پر مصدقہ ہے اور وزارتِ ورثہ و سیاحت سے باضابطہ لائسنس یافتہ ہے۔',
+    sec_how:'یہ کیسے کام کرتا ہے', sec_dests:'مشہور مقامات', sec_guides:'مصدقہ گائیڈز', sec_view_all:'سب دیکھیں ←',
+    step1_title:'۱. گائیڈز دیکھیں', step2_title:'۲. اپنا گائیڈ منتخب کریں', step3_title:'۳. اپنے سفر سے لطف اٹھائیں',
+    submit_btn:'جمع کرائیں', cancel_btn:'منسوخ', save_btn:'محفوظ کریں', edit_btn:'ترمیم', delete_btn:'حذف',
+    book_now:'ابھی بک کریں', pay_now:'ابھی ادائیگی کریں', paid_label:'ادا شدہ',
+    write_review:'تبصرہ لکھیں', accept_offer:'✅ پیشکش قبول کریں',
+    contact_us:'ہم سے رابطہ', loading:'لوڈ ہو رہا ہے…',
+  },
 };
 
 /* ═══════════════════════════════════════════════
    I18N ENGINE
 ═══════════════════════════════════════════════ */
 
+// ─── Supported languages (top 10 by speakers globally) ───────────────
+// Order: most spoken first. RTL for Arabic + Urdu. Each entry pairs the
+// ISO code we store in localStorage with display metadata for the UI.
+const LANGUAGES = [
+  { code:'en', name:'English',    native:'English',    flag:'🇬🇧', dir:'ltr' },
+  { code:'zh', name:'Mandarin',   native:'中文',        flag:'🇨🇳', dir:'ltr' },
+  { code:'hi', name:'Hindi',      native:'हिन्दी',       flag:'🇮🇳', dir:'ltr' },
+  { code:'es', name:'Spanish',    native:'Español',    flag:'🇪🇸', dir:'ltr' },
+  { code:'fr', name:'French',     native:'Français',   flag:'🇫🇷', dir:'ltr' },
+  { code:'ar', name:'Arabic',     native:'العربية',     flag:'🇴🇲', dir:'rtl' },
+  { code:'bn', name:'Bengali',    native:'বাংলা',       flag:'🇧🇩', dir:'ltr' },
+  { code:'pt', name:'Portuguese', native:'Português',  flag:'🇵🇹', dir:'ltr' },
+  { code:'ru', name:'Russian',    native:'Русский',    flag:'🇷🇺', dir:'ltr' },
+  { code:'ur', name:'Urdu',       native:'اردو',        flag:'🇵🇰', dir:'rtl' },
+];
+const LANG_BY_CODE = Object.fromEntries(LANGUAGES.map(l => [l.code, l]));
+
 const I18N = {
-  lang: localStorage.getItem('gd_lang') || 'en',
+  lang: (function () {
+    const stored = localStorage.getItem('gd_lang');
+    if (stored && LANG_BY_CODE[stored]) return stored;
+    // Best-effort browser-language detection on first visit
+    const nav = (navigator.language || 'en').slice(0,2).toLowerCase();
+    return LANG_BY_CODE[nav] ? nav : 'en';
+  })(),
+  languages: LANGUAGES,
 
   t(key, ...args) {
-    const val = TRANSLATIONS[this.lang][key] || TRANSLATIONS['en'][key] || key;
+    // Safe lookup: if the chosen language has no entry, fall back to English,
+    // and if even that is missing, return the key (catches new code paths).
+    const dict = TRANSLATIONS[this.lang] || {};
+    const val = dict[key] || TRANSLATIONS['en'][key] || key;
     return typeof val === 'function' ? val(...args) : val;
   },
 
   apply() {
-    const isAr = this.lang === 'ar';
+    const meta = LANG_BY_CODE[this.lang] || LANG_BY_CODE['en'];
+    const isRtl = meta.dir === 'rtl';
     document.documentElement.lang = this.lang;
-    document.documentElement.dir  = isAr ? 'rtl' : 'ltr';
+    document.documentElement.dir  = meta.dir;
 
-    // Bootstrap RTL/LTR CSS swap (use media attr — both files pre-downloaded, no flash)
+    // Bootstrap RTL/LTR swap (media attr — no FOUC)
     const bsLtr = document.getElementById('bs-ltr');
     const bsRtl = document.getElementById('bs-rtl');
-    if (bsLtr) bsLtr.media = isAr ? 'not all' : '';
-    if (bsRtl) bsRtl.media = isAr ? '' : 'not all';
+    if (bsLtr) bsLtr.media = isRtl ? 'not all' : '';
+    if (bsRtl) bsRtl.media = isRtl ? '' : 'not all';
 
-    // Custom font for Arabic
-    document.body.style.fontFamily = isAr
-      ? "'Segoe UI', 'Cairo', 'Tajawal', system-ui, sans-serif"
+    // Per-language font stack
+    document.body.style.fontFamily = isRtl
+      ? "'Segoe UI', 'Cairo', 'Tajawal', 'Noto Naskh Arabic', system-ui, sans-serif"
+      : (this.lang === 'zh') ? "'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif"
+      : (this.lang === 'hi' || this.lang === 'bn') ? "'Segoe UI', 'Noto Sans Devanagari', system-ui, sans-serif"
       : "'Segoe UI', system-ui, sans-serif";
 
-    // Translate all [data-i18n] elements
+    const dict = TRANSLATIONS[this.lang] || {};
+    // Translate all [data-i18n] elements (HTML strings render as innerHTML)
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.getAttribute('data-i18n');
-      const t   = TRANSLATIONS[this.lang][key] || TRANSLATIONS['en'][key];
+      const t   = dict[key] || TRANSLATIONS['en'][key];
       if (t && typeof t === 'string') {
-        // Translations are trusted developer constants. When a string contains
-        // HTML (e.g. links in FAQ answers), render it so the markup is live
-        // instead of showing raw <a>/<strong> tags as text.
         if (/<[a-z][\s\S]*>/i.test(t)) el.innerHTML = t;
         else el.textContent = t;
       }
     });
-
     // Translate placeholders
     document.querySelectorAll('[data-i18n-ph]').forEach(el => {
       const key = el.getAttribute('data-i18n-ph');
-      const t   = TRANSLATIONS[this.lang][key] || TRANSLATIONS['en'][key];
+      const t   = dict[key] || TRANSLATIONS['en'][key];
       if (t && typeof t === 'string') el.placeholder = t;
     });
 
-    // Update toggle button
+    // Update legacy toggle buttons + new selector chips
     document.querySelectorAll('.lang-toggle').forEach(btn => {
-      btn.textContent = isAr ? '🌐 English' : '🌐 عربي';
+      btn.textContent = '🌐 ' + meta.native;
     });
   },
 
-  toggle() {
-    this.lang = this.lang === 'en' ? 'ar' : 'en';
-    localStorage.setItem('gd_lang', this.lang);
+  setLang(code) {
+    if (!LANG_BY_CODE[code]) code = 'en';
+    if (code === this.lang) return;
+    this.lang = code;
+    localStorage.setItem('gd_lang', code);
     this.apply();
-    // Re-render dynamic content if needed
     if (typeof window.onLangChange === 'function') window.onLangChange();
   },
 
-  init() {
-    this.apply();
-  }
+  // Back-compat: legacy code calls I18N.toggle() expecting EN↔AR.
+  // Keep that behaviour, but the proper way is now setLang(code).
+  toggle() {
+    this.setLang(this.lang === 'en' ? 'ar' : 'en');
+  },
+
+  init() { this.apply(); }
 };
 
 // Auto-init
