@@ -8,6 +8,30 @@ const { uploadBuffer, deleteByUrl } = require('../services/storageService');
 const router = express.Router();
 const users  = new SupabaseDB('users');
 
+/**
+ * Wrap any multer middleware so its errors become a clean 400 to the
+ * client instead of bubbling up to the global error handler (and
+ * Sentry). Multer throws *before* the route handler runs, so without
+ * this every "file too large" / "unexpected field" pages an admin.
+ */
+function safeMulter(mw, label) {
+  return (req, res, next) => mw(req, res, (err) => {
+    if (!err) return next();
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      const max = err.field === 'video' ? 50 : 10;
+      return res.status(400).json({ success:false, code:err.code, message:`File too large — maximum ${max} MB.` });
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({ success:false, code:err.code, message:`Unexpected file field: ${err.field}` });
+    }
+    if (err.name === 'MulterError') {
+      return res.status(400).json({ success:false, code:err.code, message: err.message });
+    }
+    // Non-multer error — let the global handler deal with it.
+    next(err);
+  });
+}
+
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
@@ -20,7 +44,7 @@ const upload = multer({
 });
 
 // POST /api/upload/photo — update profile photo
-router.post('/photo', requireLogin, upload.single('photo'), async (req, res) => {
+router.post('/photo', requireLogin, safeMulter(upload.single('photo')), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
   try {
     const user = await users.findById(req.session.userId);
@@ -51,7 +75,7 @@ router.post('/photo', requireLogin, upload.single('photo'), async (req, res) => 
 });
 
 // POST /api/upload/gallery — add one gallery photo (max 8)
-router.post('/gallery', requireLogin, upload.single('photo'), async (req, res) => {
+router.post('/gallery', requireLogin, safeMulter(upload.single('photo')), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
   try {
     const user    = await users.findById(req.session.userId);
@@ -91,7 +115,7 @@ router.delete('/gallery', requireLogin, async (req, res) => {
 
 // POST /api/upload/image — generic image upload (homepage slides, etc.)
 // Returns { success, url } with NO side effects on the user's profile.
-router.post('/image', requireLogin, upload.single('photo'), async (req, res) => {
+router.post('/image', requireLogin, safeMulter(upload.single('photo')), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
   try {
     const { url } = await uploadBuffer({
@@ -125,7 +149,7 @@ const uploadVid = multer({
 
 // POST /api/upload/video-file — generic video upload (homepage slides, etc.)
 // Returns { success, url }. Use a short, muted, web-optimised clip.
-router.post('/video-file', requireLogin, uploadVid.single('video'), async (req, res) => {
+router.post('/video-file', requireLogin, safeMulter(uploadVid.single('video')), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No video uploaded (use mp4/webm/mov, max 50 MB).' });
   try {
     const { url } = await uploadBuffer({
@@ -149,7 +173,7 @@ router.post('/video-file', requireLogin, uploadVid.single('video'), async (req, 
 });
 
 // POST /api/upload/message-attachment — upload an image to send in chat
-router.post('/message-attachment', requireLogin, upload.single('file'), async (req, res) => {
+router.post('/message-attachment', requireLogin, safeMulter(upload.single('file')), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
   try {
     const { url } = await uploadBuffer({
