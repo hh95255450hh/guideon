@@ -193,11 +193,26 @@
   document.head.appendChild(style);
 
   // ─── Helpers ──────────────────────────────────────────────────────────
-  const isAr = () =>
-    (window.I18N && I18N.lang) ? I18N.lang === 'ar' :
-    (localStorage.getItem('gd_lang') === 'ar');
+  const currentLang = () =>
+    (window.I18N && I18N.lang) || localStorage.getItem('gd_lang') || 'en';
+  const isAr = () => {
+    const l = currentLang();
+    return l === 'ar' || l === 'ur';   // both RTL
+  };
 
-  const tr = (en, ar) => isAr() ? ar : en;
+  // Resolve a translation in this priority:
+  //   1. Localized via I18N for the current language (if a key is given)
+  //   2. The Arabic fallback for RTL languages
+  //   3. The English fallback (works for the 8 newer languages too)
+  // Old call sites pass (enText, arText). New call sites can pass
+  // (enText, arText, i18nKey) to opt into proper multi-language resolution.
+  const tr = (en, ar, key) => {
+    if (key && window.I18N && typeof I18N.t === 'function') {
+      const v = I18N.t(key);
+      if (v && v !== key) return v;
+    }
+    return isAr() ? ar : en;
+  };
 
   const path = location.pathname.replace(/\/$/, '') || '/';
   const isActive = (...patterns) => patterns.some(p =>
@@ -251,7 +266,7 @@
     const tourist = [
       { label: tr('My Bookings','حجوزاتي'),                href: '/tourist-dashboard.html#bookings', icon: 'bookings' },
       { label: tr('Saved Guides','المرشدون المحفوظون'),    href: '/wishlist.html', icon: 'heart' },
-      { label: tr('Find a Guide','ابحث عن مرشد'),          href: '/search.html', icon: 'search' },
+      { label: tr('Find a Guide','ابحث عن مرشد','nav_find'),          href: '/search.html', icon: 'search' },
       { label: tr('Plan a Trip','خطط رحلة'),               href: '/plan-trip.html', icon: 'sparkle' },
     ];
 
@@ -327,7 +342,7 @@
         </a>
 
         <nav class="gd-nav-links" id="gdNavLinks">
-          <a href="/search.html"      data-key="find">${tr('Find a Guide','ابحث عن مرشد')}</a>
+          <a href="/search.html"      data-key="find">${tr('Find a Guide','ابحث عن مرشد','nav_find')}</a>
           <a href="/regions.html"     data-key="regions">${tr('Regions','المناطق')}</a>
           <a href="/trails.html"      data-key="trails">${tr('Trails','المسارات')}</a>
           <a href="/plan-trip.html"   data-key="plan">${tr('Plan a Trip','خطط رحلة')}</a>
@@ -397,7 +412,7 @@
           <!-- Browse — visible to everyone -->
           <div class="gd-drawer-section">${tr('Browse','تصفّح')}</div>
           <a href="/"               ${activeAttr('/')}><span style="font-size:18px">🏠</span> ${tr('Home','الرئيسية')}</a>
-          <a href="/search.html"    ${activeAttr('/search')}>${svg('search')} ${tr('Find a Guide','ابحث عن مرشد')}</a>
+          <a href="/search.html"    ${activeAttr('/search')}>${svg('search')} ${tr('Find a Guide','ابحث عن مرشد','nav_find')}</a>
           <a href="/regions.html"   ${activeAttr('/regions')}>${svg('map')} ${tr('Explore Regions','استكشف المناطق')}</a>
           <a href="/trails.html"    ${activeAttr('/trails')}>${svg('sparkle')} ${tr('Hiking Trails','مسارات المشي')}</a>
           <a href="/plan-trip.html" ${activeAttr('/plan-trip')}>${svg('sparkle')} ${tr('Plan a Trip','خطط رحلة')}</a>
