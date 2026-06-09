@@ -28,13 +28,25 @@ exports.get = async (req, res) => {
     const key = req.params.key;
     if (!CONTENT[key]) return res.status(404).json({ success: false, message: 'Unknown content.' });
 
-    let data = null;
+    let dbData = null;
     try {
       const row = await settings.findById('content_' + key);
-      if (row && row.value) data = row.value;
+      if (row && row.value) dbData = row.value;
     } catch { /* table/row may not exist yet */ }
 
-    if (!data) data = staticData(key);
+    const fallback = staticData(key);
+    // Merge strategy: start from bundled defaults so newly-added fields
+    // (e.g. `landmarks` we added after the admin's last save) always
+    // surface; the admin's DB-saved values override on top, item by id.
+    let data = fallback;
+    if (dbData && Array.isArray(fallback?.regions) && Array.isArray(dbData.regions)) {
+      const fbById = Object.fromEntries(fallback.regions.map(r => [r.id, r]));
+      const dbById = Object.fromEntries(dbData.regions.map(r => [r.id, r]));
+      const ids = [...new Set([...fallback.regions.map(r=>r.id), ...dbData.regions.map(r=>r.id)])];
+      data = { regions: ids.map(id => ({ ...(fbById[id]||{}), ...(dbById[id]||{}) })) };
+    } else if (dbData) {
+      data = dbData;
+    }
     res.json({ success: true, key, data });
   } catch (err) {
     console.error('[content:get]', err.message);

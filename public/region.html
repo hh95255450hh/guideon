@@ -88,8 +88,24 @@
   if (isAr) { document.documentElement.lang='ar'; document.documentElement.dir='rtl'; }
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
-  const data = await fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json())).catch(()=>fetch('/data/regions.json').then(r=>r.json()));
+  // Read BOTH the API content (which may be an older admin-saved copy
+  // missing new fields like `landmarks`) and the bundled defaults, then
+  // merge per-region so new fields surface even after an admin save.
+  const [apiData, staticData] = await Promise.all([
+    fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:null).catch(()=>null),
+    fetch('/data/regions.json?v=2').then(r=>r.json()).catch(()=>({regions:[]})),
+  ]);
+  const apiById = {}; (apiData?.regions || []).forEach(x => apiById[x.id] = x);
+  const stcById = {}; (staticData?.regions || []).forEach(x => stcById[x.id] = x);
+  // Merge: static is the base, API overrides whatever the admin edited.
+  const allIds = [...new Set([...(staticData?.regions||[]).map(x=>x.id), ...(apiData?.regions||[]).map(x=>x.id)])];
+  const merged = allIds.map(id => ({ ...(stcById[id] || {}), ...(apiById[id] || {}) }));
+  const data = { regions: merged };
   const r = data.regions.find(x => x.id === id) || data.regions[0];
+  // If the admin-saved version was missing landmarks, fall back to the static one.
+  if ((!r.landmarks || !r.landmarks.length) && stcById[r.id]?.landmarks) {
+    r.landmarks = stcById[r.id].landmarks;
+  }
   document.title = (isAr?r.name_ar:r.name_en) + ' — Guideon';
   // Only set a background if a real image exists; otherwise keep the
   // branded gradient placeholder (admin can add a photo from the panel).
