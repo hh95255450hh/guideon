@@ -257,7 +257,8 @@ function renderBookings() {
         <div class="d-flex gap-2 flex-wrap">
           <a href="/guide-profile.html?id=${b.guideId}" class="btn btn-sm btn-outline-secondary">${I18N.t('view_guide')}</a>
           ${isQuoted ? `<button class="btn btn-sm btn-teal" onclick="acceptOffer('${b.id}')">${I18N.t('accept_offer') || '✅ قبول العرض'}</button>` : ''}
-          ${(b.status === 'confirmed' && window.PAYMENTS_ENABLED) ? `<a href="/checkout.html?booking_id=${b.id}" class="btn btn-sm btn-gold">💳 Pay Now</a>` : ''}
+          ${(b.status === 'confirmed' && !b.isPaid && window.PAYMENTS_ENABLED) ? `<a href="/checkout.html?booking_id=${b.id}" class="btn btn-sm btn-gold">💳 ${I18N.t('pay_now') || 'ادفع الآن'}</a>` : ''}
+          ${b.isPaid ? `<span class="badge bg-success-subtle text-success align-self-center">✓ ${I18N.t('paid_label') || 'مدفوع'}</span>` : ''}
           ${canReview ? `<button class="btn btn-sm btn-teal" onclick="openReview('${b.id}')">${I18N.t('write_review')}</button>` : ''}
           ${(b.status === 'completed' && b.reviewed) ? `<span class="badge bg-success-subtle text-success align-self-center">${I18N.t('reviewed_done') || '✓ Reviewed'}</span>` : ''}
           ${canCancel ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelBooking('${b.id}')">${isQuoted ? (I18N.t('decline_offer') || 'رفض') : I18N.t('cancel_bk')}</button>` : ''}

@@ -1,103 +1,64 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0f7b6c">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Guideon">
-<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<title>Payment Confirmed — Guideon</title>
+<title>تأكيد الدفع — Guideon</title>
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <link rel="stylesheet" href="/css/style.css?v=40">
 <style>
-  body { background:var(--bg); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
-  .success-card { background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,.1); width:100%; max-width:440px; padding:48px 36px; text-align:center; }
-  .check-circle { width:80px; height:80px; background:linear-gradient(135deg,#e8f5ee,#c3e6d5); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; font-size:2.4rem; }
-  .booking-box { background:#f8f9fa; border-radius:12px; padding:16px; font-size:13px; color:#555; margin:20px 0; text-align:left; }
-  .booking-box .row-item { display:flex; justify-content:space-between; padding:4px 0; }
-  .booking-box .row-item span:last-child { font-weight:600; color:#333; }
-  .bid { font-size:11px; color:#888; margin-top:10px; word-break:break-all; }
+  body{background:#eef2f7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Tajawal','Inter',sans-serif}
+  .card-box{background:#fff;border-radius:20px;box-shadow:0 12px 48px rgba(15,28,62,.14);width:100%;max-width:460px;padding:44px 34px;text-align:center}
+  .tick{width:88px;height:88px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:46px}
+  .spin{width:54px;height:54px;border:5px solid #e5e7eb;border-top-color:#0f7b6c;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 18px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  h3{font-weight:800;color:#0f1c3e;margin-bottom:10px}
+  p{color:#555;line-height:1.8}
 </style>
 </head>
 <body>
-
-<div class="success-card">
-  <div id="loadState">
-    <div class="check-circle">⏳</div>
-    <h2 style="color:#333">Confirming payment…</h2>
-    <p class="text-muted small">Please wait a moment.</p>
-  </div>
-
-  <div id="successState" style="display:none">
-    <div class="check-circle">✅</div>
-    <h2 style="color:#0f7b6c;font-weight:800">Booking Confirmed!</h2>
-    <p class="text-muted mt-2">Your payment was successful. A confirmation email has been sent to you.</p>
-    <div class="booking-box" id="bookingBox" style="display:none">
-      <div class="row-item"><span>Guide</span><span id="bGuide">—</span></div>
-      <div class="row-item"><span>Destination</span><span id="bDest">—</span></div>
-      <div class="row-item"><span>Date</span><span id="bDate">—</span></div>
-      <div class="row-item"><span>Total</span><span id="bTotal">—</span></div>
-      <div class="row-item"><span>Status</span><span style="color:#0f7b6c">✅ Confirmed</span></div>
-    </div>
-    <div class="bid" id="bId"></div>
-    <a href="/tourist-dashboard.html" class="btn-teal btn w-100 mt-4 py-2" style="border-radius:12px">View My Bookings</a>
-  </div>
-
-  <div id="errorState" style="display:none">
-    <div class="check-circle" style="background:#fdf2f2">❌</div>
-    <h2 style="color:#c0392b">Something went wrong</h2>
-    <p class="text-muted mt-2" id="errDetail">We couldn't confirm your payment. Please contact support.</p>
-    <a href="/tourist-dashboard.html" class="btn btn-outline-secondary w-100 mt-4">Go to Dashboard</a>
-  </div>
+<div class="card-box" id="box">
+  <div class="spin"></div>
+  <h3>جارٍ تأكيد الدفع…</h3>
+  <p>لحظة من فضلك، نتحقّق من عملية الدفع مع ثواني.</p>
 </div>
 
 <script>
-const qs = p => new URLSearchParams(window.location.search).get(p);
-
+const qs = p => new URLSearchParams(location.search).get(p);
 (async () => {
   const bookingId = qs('booking_id');
-  if (!bookingId) {
-    show('errorState');
-    document.getElementById('errDetail').textContent = 'Missing booking information.';
-    return;
+  const sessionId = qs('session_id');
+  const box = document.getElementById('box');
+
+  function fail(msg) {
+    box.innerHTML = `
+      <div class="tick" style="background:#fee2e2">⚠️</div>
+      <h3>لم يكتمل الدفع</h3>
+      <p>${msg}</p>
+      <a href="/checkout.html?booking_id=${bookingId||''}" class="btn btn-teal w-100 mt-2" style="padding:13px">إعادة المحاولة</a>
+      <a href="/tourist-dashboard.html" class="btn btn-link w-100 mt-1">العودة إلى حجوزاتي</a>`;
+  }
+  function done() {
+    box.innerHTML = `
+      <div class="tick">✅</div>
+      <h3>تم الدفع بنجاح!</h3>
+      <p>حجزك الآن مؤكّد ومدفوع. تواصل مع مزوّد الخدمة عبر الرسائل لترتيب التفاصيل. رحلة سعيدة! 🌿</p>
+      <a href="/tourist-dashboard.html#bookings" class="btn btn-teal w-100 mt-2" style="padding:13px">العودة إلى حجوزاتي</a>`;
   }
 
-  // Give Stripe webhook a moment to process
-  await new Promise(r => setTimeout(r, 2000));
+  if (!bookingId || !sessionId) { fail('بيانات الدفع ناقصة.'); return; }
 
   try {
-    const r = await fetch('/api/bookings/mine', { credentials: 'include' });
-    if (!r.ok) { window.location.href = '/login.html'; return; }
+    const r = await fetch(`/api/payments/verify?session_id=${encodeURIComponent(sessionId)}&booking_id=${encodeURIComponent(bookingId)}`, { credentials:'include' });
+    if (r.status === 401) { location.href = '/login.html'; return; }
     const d = await r.json();
-    const booking = (d.bookings || []).find(b => b.id === bookingId);
-
-    if (!booking) throw new Error('Booking not found.');
-
-    document.getElementById('bGuide').textContent = booking.guideName   || '—';
-    document.getElementById('bDest').textContent  = booking.destination || '—';
-    document.getElementById('bDate').textContent  = booking.tourDate    || '—';
-    document.getElementById('bTotal').textContent = 'USD $' + parseFloat(booking.totalAmount).toFixed(2);
-    document.getElementById('bId').textContent    = 'Booking ID: ' + bookingId;
-    document.getElementById('bookingBox').style.display = 'block';
-
-    show('successState');
-  } catch (err) {
-    // Payment went through even if we can't load details — still show success
-    document.getElementById('bId').textContent = 'Booking ID: ' + bookingId;
-    show('successState');
+    if (d.success && d.paid) done();
+    else fail('لم نتمكّن من تأكيد الدفع. إن كنت قد دفعت، تواصل مع الدعم وسنؤكّده يدويّاً.');
+  } catch (e) {
+    fail('تعذّر الاتصال بالخادم. حاول مرّة أخرى.');
   }
 })();
-
-function show(id) {
-  document.getElementById('loadState').style.display   = 'none';
-  document.getElementById('successState').style.display = 'none';
-  document.getElementById('errorState').style.display   = 'none';
-  document.getElementById(id).style.display = 'block';
-}
 </script>
-<script src="/js/pwa.js?v=14"></script>
 </body>
 </html>

@@ -1,165 +1,124 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0f7b6c">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Guideon">
-<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<title>Complete Payment — Guideon</title>
+<title>إتمام الدفع — Guideon</title>
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <link rel="stylesheet" href="/css/style.css?v=40">
 <style>
-  body { background:var(--bg); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
-  .pay-card { background:#fff; border-radius:20px; box-shadow:0 8px 40px rgba(0,0,0,.12); width:100%; max-width:460px; overflow:hidden; }
-  .pay-header { background:linear-gradient(135deg,#0a5c50,#0f7b6c); padding:28px 32px; color:#fff; }
-  .pay-row { display:flex; justify-content:space-between; font-size:14px; padding:5px 0; opacity:.9; }
-  .pay-row.total { border-top:1px solid rgba(255,255,255,.3); margin-top:10px; padding-top:12px; font-weight:700; font-size:1.05rem; opacity:1; }
-  .pay-body { padding:28px 32px; }
-  .stripe-btn { width:100%; padding:14px; background:#635bff; color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:background .2s; }
-  .stripe-btn:hover { background:#4f46e5; }
-  .stripe-btn:disabled { opacity:.6; cursor:not-allowed; }
-  .skeleton { background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:6px; height:14px; margin-bottom:10px; }
-  @keyframes shimmer { to { background-position:-200% 0; } }
-  .secure-note { text-align:center; font-size:12px; color:#888; margin-top:12px; }
-  .cancel-note { font-size:12px; color:#e74c3c; background:#fdf2f2; border-radius:8px; padding:10px 14px; margin-bottom:16px; display:none; }
+  body{background:#eef2f7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Tajawal','Inter',sans-serif}
+  .pay-card{background:#fff;border-radius:20px;box-shadow:0 12px 48px rgba(15,28,62,.14);width:100%;max-width:470px;overflow:hidden}
+  .pay-header{background:linear-gradient(135deg,#0a5c50,#0f7b6c);padding:26px 32px;color:#fff}
+  .pay-row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;opacity:.92}
+  .pay-row.total{border-top:1px solid rgba(255,255,255,.3);margin-top:10px;padding-top:12px;font-weight:800;font-size:1.15rem;opacity:1}
+  .pay-body{padding:26px 32px}
+  .thawani-btn{width:100%;padding:15px;background:linear-gradient(135deg,#0f7b6c,#14a085);color:#fff;border:none;border-radius:14px;font-size:1.05rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s}
+  .thawani-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(15,123,108,.3)}
+  .thawani-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+  .skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e3e3e3 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px;height:14px;margin-bottom:10px}
+  @keyframes shimmer{to{background-position:-200% 0}}
+  .secure-note{text-align:center;font-size:12px;color:#888;margin-top:12px}
+  .cancel-note{font-size:13px;color:#b91c1c;background:#fef2f2;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:none}
+  .pay-methods{display:flex;gap:8px;justify-content:center;margin-top:10px;opacity:.7;font-size:12px;color:#666}
 </style>
 </head>
 <body>
-
-<div class="pay-card" id="mainCard">
-
+<div class="pay-card">
   <!-- Loading -->
   <div id="loadScreen" style="padding:40px 32px">
     <div class="skeleton" style="width:40%;margin-bottom:20px"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton" style="width:80%"></div>
-    <div class="skeleton" style="width:60%"></div>
+    <div class="skeleton"></div><div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:60%"></div>
   </div>
 
-  <!-- Free launch screen (when PAYMENTS_ENABLED=false) -->
-  <div id="freeScreen" style="display:none; padding:48px 32px; text-align:center">
-    <div style="font-size:64px; margin-bottom:16px">🎉</div>
-    <h3 style="color:var(--teal); font-weight:800; margin-bottom:12px">Free During Launch!</h3>
-    <p style="color:#555; line-height:1.7; margin-bottom:24px">
-      As a thank you for being among our first users, all bookings during the launch period are <strong>free</strong>.
-      Your booking is confirmed — just enjoy your tour with the guide!
-    </p>
-    <div style="background:#e8f5f2; border-radius:12px; padding:16px 20px; margin-bottom:24px; text-align:left">
-      <div style="font-weight:600; color:#0f5c50; margin-bottom:6px">✓ What happens next?</div>
-      <div style="font-size:14px; color:#0a4a40; line-height:1.6">
-        • Contact your guide via the messaging feature<br>
-        • Confirm meeting time and place<br>
-        • Enjoy your tour — payment will be requested in the future
-      </div>
-    </div>
-    <a href="/tourist-dashboard.html" class="btn btn-teal btn-lg w-100" style="padding:14px">
-      Go to My Bookings
-    </a>
+  <!-- Free-launch screen -->
+  <div id="freeScreen" style="display:none;padding:48px 32px;text-align:center">
+    <div style="font-size:64px;margin-bottom:16px">🎉</div>
+    <h3 style="color:var(--teal);font-weight:800;margin-bottom:12px">مجّاناً خلال فترة الإطلاق!</h3>
+    <p style="color:#555;line-height:1.8;margin-bottom:24px">شكراً لانضمامك مبكراً — كلّ الحجوزات مجانية حالياً. حجزك مؤكّد، تواصل مع مزوّد الخدمة عبر الرسائل واستمتع برحلتك!</p>
+    <a href="/tourist-dashboard.html" class="btn btn-teal btn-lg w-100" style="padding:14px">العودة إلى حجوزاتي</a>
   </div>
 
   <!-- Payment summary -->
   <div id="payScreen" style="display:none">
     <div class="pay-header">
       <div style="margin-bottom:14px"><img src="/logo.png" alt="Guideon" height="44"></div>
-      <h6 class="mb-3" style="opacity:.8;font-size:.85rem;text-transform:uppercase;letter-spacing:1px">Order Summary</h6>
-      <div class="pay-row"><span>Guide</span><span id="sGuide">—</span></div>
-      <div class="pay-row"><span>Destination</span><span id="sDest">—</span></div>
-      <div class="pay-row"><span>Date</span><span id="sDate">—</span></div>
-      <div class="pay-row"><span>Duration</span><span id="sDuration">—</span></div>
-      <div class="pay-row"><span>Participants</span><span id="sPax">—</span></div>
-      <div class="pay-row total"><span>Total</span><span id="sTotal">—</span></div>
+      <h6 class="mb-3" style="opacity:.8;font-size:.82rem;letter-spacing:1px">ملخّص الطلب</h6>
+      <div class="pay-row"><span>المزوّد</span><span id="sGuide">—</span></div>
+      <div class="pay-row"><span>الوجهة</span><span id="sDest">—</span></div>
+      <div class="pay-row"><span>التاريخ</span><span id="sDate">—</span></div>
+      <div class="pay-row"><span>عدد الأشخاص</span><span id="sPax">—</span></div>
+      <div class="pay-row total"><span>الإجمالي</span><span id="sTotal">—</span></div>
     </div>
     <div class="pay-body">
-      <div id="cancelNote" class="cancel-note">⚠️ Your last payment was cancelled. You can try again below.</div>
+      <div id="cancelNote" class="cancel-note">⚠️ تم إلغاء عملية الدفع السابقة. يمكنك المحاولة مرّة أخرى.</div>
       <div id="errMsg" class="alert alert-danger d-none mb-3 small"></div>
-      <button class="stripe-btn" id="payBtn" onclick="goToStripe()">
-        <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#fff"/><path d="M13.5 19.5c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z" fill="#635bff"/><path d="M16 8C11.6 8 8 11.6 8 16s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z" fill="#635bff"/></svg>
-        Pay Securely with Stripe
+      <button class="thawani-btn" id="payBtn" onclick="goToThawani()">
+        🔒 ادفع بأمان عبر ثواني
       </button>
-      <p class="secure-note">🔒 You will be redirected to Stripe's secure payment page</p>
-      <p class="secure-note mt-1">Test card: <strong>4242 4242 4242 4242</strong> · Any expiry · Any CVV</p>
+      <div class="pay-methods">💳 Visa · Mastercard · محفظة ثواني</div>
+      <p class="secure-note">سيتم تحويلك إلى صفحة ثواني الآمنة لإتمام الدفع.</p>
     </div>
   </div>
-
 </div>
 
 <script>
-const qs = p => new URLSearchParams(window.location.search).get(p);
+const qs = p => new URLSearchParams(location.search).get(p);
 let BOOKING_ID = null;
 
 (async () => {
   BOOKING_ID = qs('booking_id');
-  if (!BOOKING_ID) {
-    document.getElementById('loadScreen').innerHTML = '<p class="text-danger p-4">Missing booking ID. <a href="/tourist-dashboard.html">Go back</a></p>';
-    return;
-  }
+  if (!BOOKING_ID) { document.getElementById('loadScreen').innerHTML = '<p class="text-danger p-4">معرّف الحجز مفقود. <a href="/tourist-dashboard.html">رجوع</a></p>'; return; }
 
-  // Check if payments are enabled — if not, show "Free during launch" screen
   try {
-    const fr = await fetch('/api/payments/feature-status', { credentials: 'include' });
+    const fr = await fetch('/api/payments/feature-status', { credentials:'include' });
     const fd = await fr.json();
-    if (!fd.enabled) {
-      document.getElementById('loadScreen').style.display = 'none';
-      document.getElementById('freeScreen').style.display = 'block';
-      return;
-    }
+    if (!fd.enabled) { document.getElementById('loadScreen').style.display='none'; document.getElementById('freeScreen').style.display='block'; return; }
   } catch {}
 
-  if (qs('cancelled') === '1') {
-    document.getElementById('cancelNote').style.display = 'block';
-  }
+  if (qs('cancelled') === '1') document.getElementById('cancelNote').style.display = 'block';
 
   try {
-    const r = await fetch('/api/bookings/mine', { credentials: 'include' });
-    if (!r.ok) { window.location.href = '/login.html'; return; }
+    const r = await fetch('/api/bookings/mine', { credentials:'include' });
+    if (!r.ok) { location.href = '/login.html'; return; }
     const d = await r.json();
-    const booking = (d.bookings || []).find(b => b.id === BOOKING_ID);
-    if (!booking) throw new Error('Booking not found.');
-    if (booking.status === 'cancelled') throw new Error('This booking has been cancelled.');
-    if (booking.status === 'confirmed' || booking.status === 'completed') {
-      window.location.href = '/tourist-dashboard.html';
-      return;
-    }
+    const b = (d.bookings || []).find(x => x.id === BOOKING_ID);
+    if (!b) throw new Error('الحجز غير موجود.');
+    if (b.status === 'cancelled') throw new Error('تم إلغاء هذا الحجز.');
+    if (b.isPaid) { location.href = '/tourist-dashboard.html#bookings'; return; }
+    if (b.status !== 'confirmed') throw new Error('يمكنك الدفع بعد قبول المزوّد للحجز.');
 
-    document.getElementById('sGuide').textContent    = booking.guideName    || '—';
-    document.getElementById('sDest').textContent     = booking.destination  || '—';
-    document.getElementById('sDate').textContent     = booking.tourDate     || '—';
-    document.getElementById('sDuration').textContent = booking.duration === 'half' ? 'Half Day' : 'Full Day';
-    document.getElementById('sPax').textContent      = booking.participants + ' person(s)';
-    document.getElementById('sTotal').textContent    = 'USD $' + parseFloat(booking.totalAmount).toFixed(2);
+    document.getElementById('sGuide').textContent = b.guideName || '—';
+    document.getElementById('sDest').textContent  = b.destination || '—';
+    document.getElementById('sDate').textContent  = b.tourDate || '—';
+    document.getElementById('sPax').textContent   = (b.participants || 1) + ' أشخاص';
+    document.getElementById('sTotal').textContent = 'OMR ' + parseFloat(b.totalAmount).toFixed(2);
 
     document.getElementById('loadScreen').style.display = 'none';
     document.getElementById('payScreen').style.display  = 'block';
   } catch (err) {
-    document.getElementById('loadScreen').innerHTML = `<p class="text-danger p-4">${err.message} <a href="/tourist-dashboard.html">Go back</a></p>`;
+    document.getElementById('loadScreen').innerHTML = `<p class="text-danger p-4">${err.message} <a href="/tourist-dashboard.html">رجوع</a></p>`;
   }
 })();
 
-async function goToStripe() {
-  const btn = document.getElementById('payBtn');
-  const err = document.getElementById('errMsg');
-  err.classList.add('d-none');
-  btn.disabled = true;
-  btn.innerHTML = '⏳ Redirecting to Stripe…';
-
+async function goToThawani() {
+  const btn = document.getElementById('payBtn'), err = document.getElementById('errMsg');
+  err.classList.add('d-none'); btn.disabled = true; btn.textContent = '⏳ جارٍ التحويل إلى ثواني…';
   try {
     const r = await fetch('/api/payments/create-checkout', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ bookingId: BOOKING_ID }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
-    window.location.href = d.url;
+    location.href = d.url;
   } catch (ex) {
-    err.textContent = ex.message;
-    err.classList.remove('d-none');
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#fff"/><path d="M13.5 19.5c0 1.1.9 2 2 2s2-.9 2-2-.9-2-2-2-2 .9-2 2z" fill="#635bff"/><path d="M16 8C11.6 8 8 11.6 8 16s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 14c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z" fill="#635bff"/></svg> Pay Securely with Stripe';
+    err.textContent = ex.message; err.classList.remove('d-none');
+    btn.disabled = false; btn.textContent = '🔒 ادفع بأمان عبر ثواني';
   }
 }
 </script>
