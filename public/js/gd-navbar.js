@@ -629,11 +629,23 @@
     document.body.appendChild(drawerWrap);
     const back = document.getElementById('gdDrawerBack');
     const drawer = document.getElementById('gdDrawer');
-    const openDrawer  = () => { back.classList.add('open'); drawer.classList.add('open'); };
-    const closeDrawer = () => { back.classList.remove('open'); drawer.classList.remove('open'); };
-    document.getElementById('gdNavBurger').addEventListener('click', openDrawer);
-    document.getElementById('gdDrawerClose').addEventListener('click', closeDrawer);
-    back.addEventListener('click', closeDrawer);
+    const openDrawer  = () => { if (back && drawer) { back.classList.add('open'); drawer.classList.add('open'); document.body.style.overflow = 'hidden'; } };
+    const closeDrawer = () => { if (back && drawer) { back.classList.remove('open'); drawer.classList.remove('open'); document.body.style.overflow = ''; } };
+    // Direct bind (fast path)
+    document.getElementById('gdNavBurger')?.addEventListener('click', openDrawer);
+    document.getElementById('gdDrawerClose')?.addEventListener('click', closeDrawer);
+    back?.addEventListener('click', closeDrawer);
+    // Defensive event delegation: even if the direct bind above is lost
+    // (a script error before/after, re-render, etc.) any tap that lands
+    // on the burger button still opens the drawer. Survives DOM swaps.
+    document.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!t) return;
+      if (t.closest && t.closest('#gdNavBurger')) { e.preventDefault(); openDrawer(); }
+      else if (t.closest && t.closest('#gdDrawerClose')) { e.preventDefault(); closeDrawer(); }
+    }, { passive: false });
+    // ESC closes the drawer
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
 
     // Drawer lang/currency mirror
     const dLang = document.getElementById('gdDrawerLang');
