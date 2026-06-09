@@ -615,15 +615,18 @@
       if (href && (path === href || path.startsWith(href.replace(/\.html$/, '')))) a.classList.add('active');
     });
 
-    // Language / currency syncing — whitelist values so a hand-edited
-    // localStorage entry can never inject arbitrary text into the DOM.
-    // Lang whitelist is derived from the I18N registry so adding a new
-    // language only requires editing i18n.js.
-    const ALLOWED_LANG = new Set((window.I18N && window.I18N.languages || [{code:'en'},{code:'ar'}]).map(l => l.code));
+    // Language / currency syncing. The lang whitelist must be derived
+    // AT CLICK TIME (not at mount time) because i18n.js can load after
+    // the navbar — if we snapshot too early the list is just ['en','ar']
+    // and every new language gets rejected silently.
+    const STATIC_LANGS = ['en','ar','zh','hi','es','fr','bn','pt','ru','ur'];
+    const allowedLangs = () => new Set(
+      (window.I18N && window.I18N.languages || []).map(l => l.code).concat(STATIC_LANGS)
+    );
     const ALLOWED_CUR  = new Set(['OMR', 'USD', 'EUR', 'GBP']);
     const rawLang = localStorage.getItem('gd_lang');
     const rawCur  = localStorage.getItem('gd_currency');
-    const lang = ALLOWED_LANG.has(rawLang) ? rawLang : 'en';
+    const lang = allowedLangs().has(rawLang) ? rawLang : 'en';
     const cur  = ALLOWED_CUR.has(rawCur)   ? rawCur  : 'OMR';
     const langSel = document.getElementById('gdNavLang');
     const curSel  = document.getElementById('gdNavCurrency');
@@ -631,11 +634,18 @@
     if (curSel)  curSel.value  = cur;
     langSel?.addEventListener('change', e => {
       const v = e.target.value;
-      if (!ALLOWED_LANG.has(v)) return;
+      if (!allowedLangs().has(v)) return;
       localStorage.setItem('gd_lang', v);
-      // Prefer the proper setLang API for instant swap (no reload).
-      if (window.I18N && typeof I18N.setLang === 'function') I18N.setLang(v);
-      else location.reload();
+      // For any language other than the current one, reload — guarantees
+      // the navbar, hero, About section etc. all re-render in the new
+      // language regardless of I18N readiness.
+      if (window.I18N && typeof I18N.setLang === 'function') {
+        I18N.setLang(v);
+        // Hard reload as a belt-and-braces for non-bilingual targets
+        if (v !== 'en' && v !== 'ar') setTimeout(() => location.reload(), 80);
+      } else {
+        location.reload();
+      }
     });
     curSel?.addEventListener('change', e => {
       localStorage.setItem('gd_currency', e.target.value);
@@ -694,10 +704,13 @@
     const dLang = document.getElementById('gdDrawerLang');
     const dCur  = document.getElementById('gdDrawerCurrency');
     if (dLang) { dLang.value = lang; dLang.addEventListener('change', e => {
-      const v = e.target.value; if (!ALLOWED_LANG.has(v)) return;
+      const v = e.target.value;
+      if (!allowedLangs().has(v)) return;
       localStorage.setItem('gd_lang', v);
-      if (window.I18N && typeof I18N.setLang === 'function') I18N.setLang(v);
-      else location.reload();
+      if (window.I18N && typeof I18N.setLang === 'function') {
+        I18N.setLang(v);
+        if (v !== 'en' && v !== 'ar') setTimeout(() => location.reload(), 80);
+      } else location.reload();
     }); }
     if (dCur)  { dCur.value  = cur;  dCur.addEventListener('change',  e => { localStorage.setItem('gd_currency', e.target.value); location.reload(); }); }
 
