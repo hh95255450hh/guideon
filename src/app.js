@@ -149,8 +149,22 @@ app.use(session({
 }));
 
 // Local HTML, CSS, JS — never HTTP-cache so browser always gets the latest version
+// Smart caching: HTML must always re-check (otherwise a deploy never
+// reaches users), but CSS/JS/static assets carry cache-busted ?v= query
+// strings (e.g. style.css?v=40), so they can — and should — be cached
+// hard. Browsers will still pull the new file when ?v= bumps.
+//
+// Before this change every request to /, /css/*, /js/* set no-store →
+// returning visitors re-downloaded ~140 KB of CSS+JS every page view.
+// Now the second page view costs essentially zero bytes.
+// HTML must always re-check (otherwise a new deploy never reaches users).
+// CSS/JS/images all carry cache-busted ?v= query strings, so caching them
+// hard is safe: when the version bumps the URL changes. Setting these via
+// express.static's setHeaders option (below) is the only reliable way —
+// a separate middleware gets overwritten by static's own header logic.
 app.use((req, res, next) => {
-  if (/\.(html|css|js)$/.test(req.path) || req.path === '/') {
+  const p = req.path;
+  if (p.endsWith('.html') || p === '/') {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
@@ -164,6 +178,14 @@ app.use(require('./middleware/seoMeta'));
 
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   dotfiles: 'allow', // serve /.well-known/assetlinks.json for TWA / Play Store
+  setHeaders: (res, filePath) => {
+    // HTML re-check rule is handled by the middleware above; here we only
+    // need to mark versioned static assets as long-cacheable. .html falling
+    // through to static (rare) keeps the no-store header from above.
+    if (/\.(css|js|woff2?|ttf|otf|eot|webp|png|jpe?g|gif|svg|ico|mp4|webm|json)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  },
 }));
 
 const { apiLimiter, chatLimiter } = require('./middleware/rateLimit');
