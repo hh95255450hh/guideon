@@ -367,8 +367,16 @@ async function doLogout() {
 }
 
 /* ── LOAD GUIDES ── */
-async function loadGuides() {
+// Pagination state — kept simple: append more rows on demand.
+let SEARCH_PAGE = 1;
+const SEARCH_PAGE_SIZE = 24;
+let SEARCH_HAS_MORE = false;
+
+async function loadGuides(append = false) {
+  if (!append) { SEARCH_PAGE = 1; ALL_GUIDES = []; }
   const params = new URLSearchParams();
+  params.set('page', SEARCH_PAGE);
+  params.set('pageSize', SEARCH_PAGE_SIZE);
   const gov       = document.getElementById('fGov').value;
   const dest      = document.getElementById('fDest').value;
   const lang      = document.getElementById('fLang').value;
@@ -399,12 +407,38 @@ async function loadGuides() {
   try {
     const r = await fetch('/api/guides?' + params, { credentials: 'include' });
     const data = await r.json();
-    ALL_GUIDES = data.guides || [];
+    const newGuides = data.guides || [];
+    ALL_GUIDES = append ? ALL_GUIDES.concat(newGuides) : newGuides;
+    SEARCH_HAS_MORE = !!data.hasMore;
     updateWishlistBar();
     renderGuides(SHOWING_WISHLIST ? ALL_GUIDES.filter(g => isWishlisted(g.id)) : ALL_GUIDES);
+    renderLoadMore(data.total);
   } catch {
     document.getElementById('guideGrid').innerHTML = '<div class="col-12 text-center text-danger py-4">Error loading guides.</div>';
   }
+}
+
+function renderLoadMore(total) {
+  let bar = document.getElementById('loadMoreBar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'loadMoreBar';
+    bar.className = 'text-center py-4';
+    document.getElementById('guideGrid').after(bar);
+  }
+  if (SEARCH_HAS_MORE && !SHOWING_WISHLIST) {
+    bar.innerHTML = `<button class="btn btn-outline-teal px-4" onclick="loadMoreGuides()">${I18N.t('load_more') || 'Load more'} ↓</button>
+                     <div class="small text-muted mt-2">${ALL_GUIDES.length} / ${total || '?'}</div>`;
+  } else {
+    bar.innerHTML = '';
+  }
+}
+
+async function loadMoreGuides() {
+  SEARCH_PAGE += 1;
+  const btn = document.querySelector('#loadMoreBar button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+  await loadGuides(true);
 }
 
 function renderGuides(guides) {

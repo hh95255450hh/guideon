@@ -8,8 +8,32 @@ const packages = new SupabaseDB('tour_packages');
 exports.searchGuides = async (req, res) => {
   try {
     const { destination, governorate, language, date, specialisation, minRating, sortBy, minPrice, maxPrice } = req.query;
+    // Pagination — public API: ?page=1&pageSize=24
+    const pageSize = Math.min(Math.max(parseInt(req.query.pageSize) || 24, 1), 60);
+    const page     = Math.max(parseInt(req.query.page) || 1, 1);
 
-    let guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
+    // Push what we can to the DB: type/verified/suspended (eq), rating
+    // and price ranges, ordering. We still pull more than `pageSize`
+    // when array-text filters (destination/language/etc.) are in play
+    // because Supabase can't case-insensitive-substring-match inside a
+    // text[]/jsonb array without a custom RPC. The internal limit is
+    // capped so we never blow up node memory.
+    const hasArrayFilter = !!(destination || governorate || language || date || specialisation);
+    const dbLimit  = hasArrayFilter ? 200 : pageSize;
+    const dbOffset = hasArrayFilter ? 0   : (page - 1) * pageSize;
+
+    const orderField =
+      sortBy === 'price_asc' || sortBy === 'price_desc' ? 'pricePerDay' : 'rating';
+    const orderDir = sortBy === 'price_asc' ? 'asc' : 'desc';
+
+    const dbPage = await users.findPage({
+      eq:   { userType: 'guide', isVerified: true, isSuspended: false },
+      gte:  { rating: minRating, pricePerDay: minPrice },
+      lte:  { pricePerDay: maxPrice },
+      order:{ field: orderField, dir: orderDir },
+      limit: dbLimit, offset: dbOffset,
+    });
+    let guides = dbPage.rows;
 
     if (destination) {
       guides = guides.filter(g => (g.destinations || []).some(d => d.toLowerCase().includes(destination.toLowerCase())));
@@ -63,18 +87,30 @@ exports.searchGuides = async (req, res) => {
       } catch (e) { /* if packages table missing, fall back to specialisations only */ }
       guides = matched;
     }
-    if (minRating) guides = guides.filter(g => g.rating >= parseFloat(minRating));
-    if (minPrice)  guides = guides.filter(g => g.pricePerDay >= parseFloat(minPrice));
-    if (maxPrice)  guides = guides.filter(g => g.pricePerDay <= parseFloat(maxPrice));
+    // (rating + price ranges + ordering were pushed to the DB above)
 
-    if (sortBy === 'price_asc')  guides.sort((a, b) => a.pricePerDay - b.pricePerDay);
-    else if (sortBy === 'price_desc') guides.sort((a, b) => b.pricePerDay - a.pricePerDay);
-    else guides.sort((a, b) => b.rating - a.rating);
+    // For array-filter mode, slice to the requested page after JS filtering
+    let totalAfterFilter = guides.length;
+    let hasMore;
+    if (hasArrayFilter) {
+      const start = (page - 1) * pageSize;
+      hasMore = start + pageSize < guides.length;
+      guides = guides.slice(start, start + pageSize);
+    } else {
+      totalAfterFilter = dbPage.total;
+      hasMore = dbPage.hasMore;
+    }
 
     const safe = guides.map(({ password, availability, ...g }) =>
       sanitizeContact({ ...g, availableCount: (availability || []).length }, req.user)
     );
-    res.json({ success: true, count: safe.length, guides: safe });
+    res.json({
+      success: true,
+      count: safe.length,
+      total: totalAfterFilter,
+      page, pageSize, hasMore,
+      guides: safe,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });

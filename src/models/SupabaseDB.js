@@ -59,6 +59,59 @@ class SupabaseDB {
     return data || [];
   }
 
+  // Paginated query that pushes filters AND limit/offset to Postgres
+  // so we never pull every row into Node memory. Returns { rows, total,
+  // hasMore } — the count is computed by the DB in the same round-trip.
+  //
+  // opts:
+  //   eq:    { field: value, ... }           exact-match filters
+  //   ilike: { field: 'partial%' }           case-insensitive LIKE
+  //   gte:   { field: 0 }                    >= value
+  //   lte:   { field: 999 }                  <= value
+  //   inAny: { field: [...] }                IN (...)
+  //   order: { field: 'col', dir: 'desc' }   ordering (default: createdAt desc)
+  //   limit:  number (default 24, max 200)
+  //   offset: number (default 0)
+  async findPage(opts = {}) {
+    const limit  = Math.min(Math.max(parseInt(opts.limit) || 24, 1), 200);
+    const offset = Math.max(parseInt(opts.offset) || 0, 0);
+
+    let q = supabase.from(this.table).select('*', { count: 'exact' });
+
+    for (const [f, v] of Object.entries(opts.eq    || {})) {
+      q = v === null ? q.is(f, null) : q.eq(f, v);
+    }
+    for (const [f, v] of Object.entries(opts.ilike || {})) {
+      if (v != null && v !== '') q = q.ilike(f, `%${v}%`);
+    }
+    for (const [f, v] of Object.entries(opts.gte   || {})) {
+      if (v != null && v !== '' && !Number.isNaN(+v)) q = q.gte(f, +v);
+    }
+    for (const [f, v] of Object.entries(opts.lte   || {})) {
+      if (v != null && v !== '' && !Number.isNaN(+v)) q = q.lte(f, +v);
+    }
+    for (const [f, vs] of Object.entries(opts.inAny || {})) {
+      if (Array.isArray(vs) && vs.length) q = q.in(f, vs);
+    }
+
+    const ord = opts.order || { field: 'createdAt', dir: 'desc' };
+    q = q.order(ord.field, { ascending: ord.dir !== 'desc', nullsFirst: false });
+    q = q.range(offset, offset + limit - 1);
+
+    const { data, count, error } = await q;
+    if (error) {
+      console.error(`[DB:${this.table}] findPage:`, error.message);
+      return { rows: [], total: 0, hasMore: false, limit, offset };
+    }
+    const rows = data || [];
+    return {
+      rows,
+      total: count != null ? count : rows.length,
+      hasMore: count != null ? offset + rows.length < count : rows.length === limit,
+      limit, offset,
+    };
+  }
+
   // Fetch multiple rows by primary key in a single query
   async findByIds(ids) {
     if (!ids || !ids.length) return [];

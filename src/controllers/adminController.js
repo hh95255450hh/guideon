@@ -405,49 +405,77 @@ exports.stats = async (req, res) => {
   }
 };
 
+// Shared helper: pull a user-table page from Postgres directly (no full
+// table scan into Node memory). Honours ?page, ?pageSize, ?q (search
+// by name or email — pushed to the DB via ilike).
+async function userPage(req, extraEq = {}) {
+  const pageSize = Math.min(Math.max(parseInt(req.query.pageSize) || 50, 1), 200);
+  const page     = Math.max(parseInt(req.query.page) || 1, 1);
+  const q        = (req.query.q || '').trim();
+
+  // Without a search query we can use findPage directly. With a query
+  // we OR over name + email — Supabase needs `.or()` for that.
+  const baseEq = { ...extraEq };
+  const opts = {
+    eq: baseEq,
+    order: { field: 'createdAt', dir: 'desc' },
+    limit: pageSize, offset: (page - 1) * pageSize,
+  };
+  if (!q) return users.findPage(opts);
+
+  // Build OR clause for fullName ilike + email ilike, alongside the base eq filters.
+  // We craft the query manually because findPage doesn't expose .or().
+  const SupabaseClient = require('../config/supabase');
+  let query = SupabaseClient.from('users').select('*', { count: 'exact' });
+  for (const [f, v] of Object.entries(baseEq)) {
+    query = v === null ? query.is(f, null) : query.eq(f, v);
+  }
+  const safe = q.replace(/[%,)(]/g, '').slice(0, 80);
+  query = query.or(`fullName.ilike.%${safe}%,email.ilike.%${safe}%,companyName.ilike.%${safe}%`);
+  query = query.order('createdAt', { ascending: false });
+  query = query.range(opts.offset, opts.offset + pageSize - 1);
+  const { data, count, error } = await query;
+  if (error) { console.error('[admin.userPage]', error.message); return { rows: [], total: 0, hasMore: false, limit: pageSize, offset: opts.offset }; }
+  return { rows: data || [], total: count || 0, hasMore: opts.offset + (data?.length || 0) < (count || 0), limit: pageSize, offset: opts.offset };
+}
+
+function stripPassword(arr) {
+  return (arr || []).map(({ password, resetPasswordToken, emailVerifyToken, twoFactorSecret, ...rest }) => rest);
+}
+
 exports.pendingGuides = async (req, res) => {
   try {
-    const pending = await users.findAll(u => u.userType === 'guide' && !u.isVerified && !u.isSuspended);
-    res.json({ success: true, guides: pending.map(({ password, ...g }) => g) });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error.' });
-  }
+    const p = await userPage(req, { userType: 'guide', isVerified: false, isSuspended: false });
+    res.json({ success: true, guides: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
 
 exports.allGuides = async (req, res) => {
   try {
-    const guides = await users.findAll(u => u.userType === 'guide');
-    res.json({ success: true, guides: guides.map(({ password, ...g }) => g) });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error.' });
-  }
+    const p = await userPage(req, { userType: 'guide' });
+    res.json({ success: true, guides: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
 
 exports.allTourists = async (req, res) => {
   try {
-    const tourists = await users.findAll(u => u.userType === 'tourist');
-    res.json({ success: true, tourists: tourists.map(({ password, ...t }) => t) });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error.' });
-  }
+    const p = await userPage(req, { userType: 'tourist' });
+    res.json({ success: true, tourists: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
 
 exports.allCompanies = async (req, res) => {
   try {
-    const companies = await users.findAll(u => u.userType === 'company');
-    res.json({ success: true, companies: companies.map(({ password, ...c }) => c) });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error.' });
-  }
+    const p = await userPage(req, { userType: 'company' });
+    res.json({ success: true, companies: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
 
 exports.pendingCompanies = async (req, res) => {
   try {
-    const pending = await users.findAll(u => u.userType === 'company' && !u.isVerified && !u.isSuspended);
-    res.json({ success: true, companies: pending.map(({ password, ...c }) => c) });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error.' });
-  }
+    const p = await userPage(req, { userType: 'company', isVerified: false, isSuspended: false });
+    res.json({ success: true, companies: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
 
 exports.verifyGuide = async (req, res) => {
