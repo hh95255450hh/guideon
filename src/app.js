@@ -39,6 +39,15 @@ app.post('/api/payments/webhook',
 app.use(helmet({
   // Allow cross-origin popups (e.g. Google Sign-In) to communicate back via postMessage
   crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  // HSTS — tell browsers to always use HTTPS for guideon.om for a year
+  // (with subdomains). Safe because Railway redirects http→https.
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+  // Stop browsers from MIME-sniffing JSON/JS as HTML (XSS escape vector)
+  noSniff: true,
+  // Don't leak full URLs to other origins (privacy + token leak protection)
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  // Block Flash/other plugin embeds entirely
+  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
   contentSecurityPolicy: {
     directives: {
       defaultSrc:    ["'self'"],

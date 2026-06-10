@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=13">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=14">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1139,17 +1139,17 @@ async function loadFeatured() {
               <span class="heart-icon">${wishlisted ? '♥' : '♡'}</span>
             </button>
             ${g.photo
-              ? `<div class="big-avatar" style="background-image:url('${g.photo}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff"></div>`
+              ? `<div class="big-avatar" style="background-image:url('${window.gdSafeUrl(g.photo)}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff"></div>`
               : `<div class="big-avatar">${initials(g.fullName)}</div>`}
           </div>
           <div class="p-3">
             <div class="mb-1">
-              <h6 class="mb-0 fw-700">${g.fullName}</h6>
+              <h6 class="mb-0 fw-700">${window.gdEsc(g.fullName)}</h6>
               ${g.isVerified ? `<span class="verified-badge">✓ ${I18N.t('status_verified')}</span>` : ''}
             </div>
             <div class="rating small mb-1">${stars(Math.round(g.rating))} <span class="text-muted">${g.rating} · ${I18N.t('reviews_count', g.totalReviews)}</span></div>
-            <div class="mb-2">${g.languages.map(l=>`<span class="lang-badge me-1">${l}</span>`).join('')}</div>
-            <div class="mb-3 small text-muted">📍 ${g.destinations.join(' · ')}</div>
+            <div class="mb-2">${(g.languages||[]).map(l=>`<span class="lang-badge me-1">${window.gdEsc(l)}</span>`).join('')}</div>
+            <div class="mb-3 small text-muted">📍 ${window.gdEsc((g.destinations||[]).join(' · '))}</div>
             <button class="btn-view btn btn-sm w-100" onclick="location.href='/guide-profile.html?id=${g.id}'">${I18N.t('view_profile')}</button>
           </div>
         </div>
@@ -1344,7 +1344,7 @@ loadFeaturedCompanies();
 loadPopularTours();
 </script>
 <script src="/js/pwa.js?v=14"></script>
-<script src="/js/common-widgets.js?v=13"></script>
+<script src="/js/common-widgets.js?v=14"></script>
 <script src="/js/upgrade.js?v=3"></script>
 </body>
 </html>

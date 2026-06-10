@@ -8,6 +8,25 @@
   const WHATSAPP_NUMBER = '96895255450';
   const COOKIE_KEY = 'guideon-cookie-consent-v1';
 
+  // ─── Site-wide XSS defenses ──────────────────────────────────────────
+  // Exposed early so every inline template can call gdEsc(userField).
+  // Use it for ANY value that came from a user (name, bio, message…)
+  // before interpolating into innerHTML.
+  window.gdEsc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  };
+  // Allow only safe URL schemes for src/href in user-supplied images
+  // and links. Anything else (javascript:, data:text/html, vbscript:…)
+  // is replaced with an empty string so it can't execute.
+  window.gdSafeUrl = function (u) {
+    if (!u) return '';
+    const s = String(u).trim();
+    if (/^(https?:|mailto:|tel:|\/)/i.test(s)) return s.replace(/"/g, '%22');
+    return '';
+  };
+
   // ─── Shared session cache ────────────────────────────────────────────
   // Multiple scripts (navbar, notifications, verify banner) all need to
   // know if the user is signed in. Without coordination they each fire
