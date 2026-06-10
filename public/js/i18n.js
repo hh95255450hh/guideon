@@ -13,7 +13,7 @@ const TRANSLATIONS = {
     nav_handbook:     '📖 User Guide',
 
     /* ── HOMEPAGE ── */
-    hero_badge:       'Certified Ministry-Licensed Guides',
+    hero_badge:       'Ministry-Licensed Guides Available',
     hero_title:       'Discover Oman With a',
     hero_highlight:   'Verified Local Expert',
     hero_sub:         'Connect with certified tourist guides across the Sultanate of Oman.',
@@ -40,7 +40,7 @@ const TRANSLATIONS = {
     step3_title:      '3. Explore Oman',
     step3_desc:       'Enjoy an authentic, expertly guided experience. After the tour, leave a review to help future travellers.',
     sec_dests:        'Popular Destinations',
-    footer_desc:      'Connecting tourists with certified, Ministry-licensed guides across Oman. Authentic experiences, verified professionals.',
+    footer_desc:      'Connecting tourists with local tour guides across Oman. Ministry-licensed professionals are clearly identified by a Verified badge.',
     footer_platform:  'Platform',
     footer_dests:     'Destinations',
     footer_demo:      'Demo Accounts',
@@ -50,8 +50,8 @@ const TRANSLATIONS = {
 
     /* ── ABOUT SECTION ── */
     about_title:      'About Guideon',
-    about_p1:         "Guideon is Oman's leading platform connecting travellers with Ministry-licensed local guides. Founded in 2026, we make authentic Omani experiences accessible to everyone — from ancient forts to desert dunes.",
-    about_p2:         'Every guide on our platform is personally verified, licensed by the Ministry of Heritage & Tourism, and committed to delivering genuine, memorable journeys across the Sultanate.',
+    about_p1:         "Guideon is Oman's leading platform connecting travellers with local tour guides — including Ministry-of-Heritage-&-Tourism-licensed professionals clearly identified by a Verified badge. Founded in 2026, we make authentic Omani experiences accessible to everyone.",
+    about_p2:         'Each guide profile is reviewed by our team. Guides who present a valid Ministry of Heritage & Tourism licence carry a clear Verified badge so you can book with confidence.',
     about_join:       'Join the Community',
     pay_now:          'Pay Now',
     paid_label:       'Paid',
@@ -67,7 +67,7 @@ const TRANSLATIONS = {
     about_v3_title:   'Our Values',
     about_v3_desc:    'Authenticity, transparency, and community. We connect people, not just places — supporting local guides and their families.',
     about_v4_title:   'Ministry Certified',
-    about_v4_desc:    'Every guide holds an official Ministry of Heritage & Tourism licence — your guarantee of quality and professionalism.',
+    about_v4_desc:    'Look for the ✓ Verified badge — it confirms a guide has submitted a valid Ministry of Heritage & Tourism licence, reviewed by our team.',
 
     /* ── SEARCH PAGE ── */
     search_all_dest:  'All Destinations',
@@ -326,7 +326,7 @@ const TRANSLATIONS = {
     /* ── TOURHQ NEW SECTIONS ── */
     benefits_title:   'Why Choose Guideon?',
     benefit1_title:   'Largest Guide Network in Oman',
-    benefit1_desc:    'Connect with certified, Ministry-licensed guides across all major Oman destinations.',
+    benefit1_desc:    'Connect with local tour guides across all major Oman destinations. Verified guides display an official ✓ badge confirming their Ministry licence.',
     benefit2_title:   'Fully Customizable Itineraries',
     benefit2_desc:    'Every tour is tailored to your group size, language, budget, and interests.',
     benefit3_title:   'Book Directly with Local Guides',
@@ -1029,7 +1029,7 @@ const TRANSLATIONS = {
     // Tourists Q&A
     faq_t_q1:  'How do I book a tour?',
     faq_t_a1:  'Browse guides via the search page, select a tour package, choose a date and number of people, then click "Book Now." The guide confirms within 24 hours and you receive an email with a PDF voucher.',
-    faq_t_q2:  'Are all guides licensed?',
+    faq_t_q2:  'Which guides are licensed?',
     faq_t_a2:  "Yes — Guideon only approves guides who hold a valid licence from Oman's Ministry of Heritage and Tourism. Each guide profile shows a \"Ministry Licensed\" badge once verified.",
     faq_t_q3:  'What languages do guides speak?',
     faq_t_a3:  'Most guides speak both Arabic and English. Many also speak French, German, Spanish, Italian, or Russian. Filter by language in the search page.',
@@ -1080,7 +1080,7 @@ const TRANSLATIONS = {
     hiw_title:       'How Guideon Works',
     hiw_sub:         'Discover Oman with a certified local guide in 4 simple steps — safer, smarter, and more authentic than going alone.',
     hiw_s1_title:    'Search',
-    hiw_s1_desc:     'Filter by destination, language, date, or activity. Browse Ministry-licensed guides with verified reviews.',
+    hiw_s1_desc:     'Filter by destination, language, date, or activity. Browse guides with verified reviews — filter by Ministry-licensed status using the Verified badge.',
     hiw_s2_title:    'Choose a Tour',
     hiw_s2_desc:     'Pick a package, choose a variant (Standard / Premium / VIP) and add extras like hotel pickup or pro photography.',
     hiw_s3_title:    'Confirm',
@@ -1257,7 +1257,7 @@ const TRANSLATIONS = {
     /* ── ABOUT SECTION ── */
     about_title:      'عن Guideon',
     about_p1:         'Guideon هي المنصة الرائدة في عُمان التي تربط المسافرين بمرشدين سياحيين معتمدين من وزارة التراث والسياحة. تأسست عام ٢٠٢٦ لتجعل التجارب العُمانية الأصيلة متاحة للجميع — من القلاع الأثرية إلى الكثبان الرملية.',
-    about_p2:         'كل مرشد على منصتنا موثّق شخصياً، ويحمل ترخيصاً رسمياً من وزارة التراث والسياحة، وملتزم بتقديم رحلات حقيقية لا تُنسى في أرجاء السلطنة.',
+    about_p2:         'نراجع كلّ ملفّ مرشد قبل ظهوره على المنصّة. المرشدون الذين يقدّمون ترخيصاً ساري المفعول من وزارة التراث والسياحة يحملون شارة "✓ موثَّق" واضحة لتختار بثقة.',
     about_join:       'انضم إلى المجتمع',
     pay_now:          'ادفع الآن',
     paid_label:       'مدفوع',
@@ -1273,7 +1273,7 @@ const TRANSLATIONS = {
     about_v3_title:   'قيمنا',
     about_v3_desc:    'الأصالة والشفافية والمجتمع. نحن نربط الناس لا الأماكن فحسب — وندعم المرشدين المحليين وأسرهم.',
     about_v4_title:   'معتمد وزارياً',
-    about_v4_desc:    'كل مرشد يحمل ترخيصاً رسمياً من وزارة التراث والسياحة — ضمانك للجودة والاحترافية.',
+    about_v4_desc:    'ابحث عن شارة "✓ موثَّق" — تؤكّد أنّ المرشد قدّم ترخيصاً ساري المفعول من وزارة التراث والسياحة، روجِع من قِبَل فريقنا.',
 
     /* ── SEARCH PAGE ── */
     search_all_dest:  'جميع الوجهات',
@@ -2236,7 +2236,7 @@ const TRANSLATIONS = {
     // Tourists Q&A
     faq_t_q1:  'كيف أحجز رحلة؟',
     faq_t_a1:  'تصفّح المرشدين من صفحة البحث، اختر باقة الرحلة، حدّد التاريخ وعدد الأشخاص، ثم اضغط "احجز الآن". يقوم المرشد بالتأكيد خلال 24 ساعة وستصلك رسالة بريد إلكتروني مع قسيمة PDF.',
-    faq_t_q2:  'هل جميع المرشدين مرخصون؟',
+    faq_t_q2:  'كيف أعرف المرشدين المرخّصين؟',
     faq_t_a2:  'نعم — Guideon لا يعتمد إلا المرشدين الحاصلين على ترخيص ساري المفعول من وزارة التراث والسياحة العمانية. كل ملف مرشد يعرض شارة "مرخّص من الوزارة" بعد التحقق.',
     faq_t_q3:  'ما اللغات التي يتحدثها المرشدون؟',
     faq_t_a3:  'معظم المرشدين يتحدثون العربية والإنجليزية. كثير منهم يتحدث أيضاً الفرنسية والألمانية والإسبانية والإيطالية أو الروسية. صفّ حسب اللغة من صفحة البحث.',
@@ -2250,7 +2250,7 @@ const TRANSLATIONS = {
     faq_t_q6:  'هل يمكنني مراسلة المرشد قبل الحجز؟',
     faq_t_a6:  'نعم. بعد تسجيل الدخول، كل ملف مرشد فيه زر "مراسلة". اسأل عن التوفر والأسعار وأي طلبات خاصة قبل التأكيد.',
     faq_t_q7:  'هل من الآمن السفر مع شخص غريب؟',
-    faq_t_a7:  'كل مرشد في Guideon مرخّص وموثّق وعليه تقييمات من سياح سابقين. يمكنك قراءة جميع التقييمات في ملف المرشد. للمسافرين الفرديين، ننصح باختيار مرشدين لديهم 10+ تقييمات وتقييم 4.5+.',
+    faq_t_a7:  'المرشدون الذين يحملون شارة "✓ موثَّق" قدّموا ترخيصاً ساري المفعول من وزارة التراث والسياحة بعد مراجعة فريقنا. يمكنك قراءة كلّ التقييمات في ملف كل مرشد. ننصح باختيار مرشدين بشارة موثَّق + 10 تقييمات أو أكثر + متوسّط 4.5★ فأعلى.',
     faq_t_q8:  'ماذا أرتدي أو أحضر معي؟',
     faq_t_a8:  'يُفضَّل لبس محتشم يغطي الكتفين والركبتين، خاصة في المساجد. لرحلات الصحراء/الوديان، أحضر واقي شمس وأحذية مياه. كل صفحة رحلة تذكر التوصيات المحددة.',
     // Guides Q&A
@@ -2296,7 +2296,7 @@ const TRANSLATIONS = {
     hiw_s4_desc:     'قابل مرشدك في النقطة المتفق عليها، استكشف عُمان، ثم اترك تقييماً لمساعدة السياح الآخرين.',
     hiw_why_title:   'لماذا يثق المسافرون بـ Guideon',
     hiw_t1_title:    'مرشدون موثّقون',
-    hiw_t1_desc:     'جميع المرشدين يحملون تراخيص سارية من وزارة التراث والسياحة العمانية.',
+    hiw_t1_desc:     'المرشدون أصحاب شارة "✓ موثَّق" يحملون تراخيص سارية من وزارة التراث والسياحة، روجِعت من فريقنا قبل ظهور الشارة.',
     hiw_t2_title:    'دردشة مباشرة',
     hiw_t2_desc:     'تحدّث مع مرشدك قبل الحجز — اسأل واتفق على التفاصيل.',
     hiw_t3_title:    'حجز آمن',
