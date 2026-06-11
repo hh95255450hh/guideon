@@ -414,6 +414,7 @@ async function init() {
   coLoadBookings();
 
   // Messaging — load conversations + open the real-time channel
+  coInitMessages();  // build GDMessages instance now that COMPANY.id is known
   coLoadConvos();
   coConnectSSE();
   // Safety-net poll behind SSE
@@ -1116,178 +1117,34 @@ async function coBkStatus(id, status){
 }
 
 // ══════════════════════ MESSAGING (company) ══════════════════════
-let CO_CONVOS = [];
-let CO_ACTIVE_OTHER_ID = null;
-let CO_POLL = null;
-let CO_SSE = null;
-let CO_TYPING_TS = 0;
-let CO_TYPING_HIDE = null;
-
-function coEsc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function coFmtTime(iso){
-  const d = new Date(iso), diff = Date.now() - d;
-  if (diff < 60000) return '<1m';
-  if (diff < 3600000) return Math.floor(diff/60000)+'m';
-  if (diff < 86400000) return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-  return d.toLocaleDateString([], {day:'numeric',month:'short'});
+// Full implementation now lives in /js/gd-messages.js (shared with
+// guide & tourist dashboards). Here we just configure and expose
+// the original co* function names so onclick handlers keep working.
+let CO_MSG = null;
+function coInitMessages(){
+  CO_MSG = window.GDMessages({
+    prefix:      'coMsg',
+    myId:        COMPANY.id,
+    tickClass:   'co-tick',
+    badgeId:     'coMsgBadge',
+    bubbleMaxPx: 180,
+    typingText:  'يكتب…',
+    toast:       (m, l) => showToast(m, l === 'error' ? 'danger' : l),
+  });
 }
+function coLoadConvos()     { return CO_MSG && CO_MSG.loadConvos(); }
+function coRenderConvos()   { return CO_MSG && CO_MSG.renderConvos(); }
+function coOpenThread(i, n) { return CO_MSG && CO_MSG.openThread(i, n); }
+function coShowConvoList()  { return CO_MSG && CO_MSG.showConvoList(); }
+function coSendMsg(extra)   { return CO_MSG && CO_MSG.sendMsg(extra); }
+function coAttach(inp)      { return CO_MSG && CO_MSG.attach(inp); }
+function coTyping()         { return CO_MSG && CO_MSG.typing(); }
+function coConnectSSE()     { return CO_MSG && CO_MSG.connectSSE(); }
 
-function coConnectSSE(){
-  if (CO_SSE) return;
-  try {
-    CO_SSE = new EventSource('/api/messages/stream', { withCredentials:true });
-    CO_SSE.addEventListener('message', (e) => {
-      let m; try { m = JSON.parse(e.data); } catch { return; }
-      const otherId = m.fromId === COMPANY.id ? m.toId : m.fromId;
-      if (CO_ACTIVE_OTHER_ID && otherId === CO_ACTIVE_OTHER_ID) coLoadThread();
-      else coLoadConvos();
-    });
-    CO_SSE.addEventListener('typing', (e) => {
-      let t; try { t = JSON.parse(e.data); } catch { return; }
-      if (CO_ACTIVE_OTHER_ID && t.fromId === CO_ACTIVE_OTHER_ID) coShowTyping(t.isTyping);
-    });
-    CO_SSE.addEventListener('read', () => {
-      document.querySelectorAll('.co-tick').forEach(el => { el.textContent='✓✓'; el.style.color='#bfe3ff'; });
-    });
-  } catch {}
-}
-
-function coShowTyping(on){
-  const el = document.getElementById('coMsgTyping'); if (!el) return;
-  clearTimeout(CO_TYPING_HIDE);
-  if (on){ el.textContent='يكتب…'; el.style.display=''; CO_TYPING_HIDE=setTimeout(()=>el.style.display='none',4000); }
-  else el.style.display='none';
-}
-
-function coTyping(){
-  if (!CO_ACTIVE_OTHER_ID) return;
-  const now = Date.now();
-  if (now - CO_TYPING_TS < 2500) return;
-  CO_TYPING_TS = now;
-  fetch('/api/messages/typing', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ toId:CO_ACTIVE_OTHER_ID, isTyping:true }) }).catch(()=>{});
-}
-
-async function coAttach(inp){
-  const file = inp.files && inp.files[0]; inp.value='';
-  if (!file || !CO_ACTIVE_OTHER_ID) return;
-  if (file.size > 10*1024*1024){ showToast('الحد الأقصى 10 ميغابايت','danger'); return; }
-  try {
-    const fd = new FormData(); fd.append('file', file);
-    const ur = await fetch('/api/upload/message-attachment', { method:'POST', credentials:'include', body:fd });
-    const ud = await ur.json();
-    if (!ur.ok || !ud.success) throw new Error(ud.message||'فشل الرفع');
-    await coSendMsg({ attachmentUrl: ud.url, attachmentType:'image', attachmentName: ud.name });
-  } catch(e){ showToast(e.message||'فشل الرفع','danger'); }
-}
-
-async function coLoadConvos(){
-  try {
-    const r = await fetch('/api/messages/conversations', { credentials:'include' });
-    const d = await r.json();
-    CO_CONVOS = d.conversations || [];
-    coRenderConvos(); coUpdateBadge();
-  } catch {}
-}
-
-function coRenderConvos(){
-  const el = document.getElementById('coMsgConvoList');
-  if (!CO_CONVOS.length){ el.innerHTML = '<div class="text-center py-3 text-muted small">لا توجد محادثات بعد. ستظهر رسائل السياح هنا.</div>'; return; }
-  el.innerHTML = CO_CONVOS.map(c => {
-    const last = c.lastMessage || {};
-    const preview = (last.content||'').length > 46 ? last.content.slice(0,46)+'…' : (last.content || (last.attachmentType?'📷 صورة':''));
-    const time = coFmtTime(last.createdAt);
-    const unread = c.unread > 0 ? `<span class="badge bg-danger ms-1">${c.unread}</span>` : '';
-    const nm = (c.otherName||'؟');
-    return `<button class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2" onclick="coOpenThread('${c.otherId}', ${JSON.stringify(nm).replace(/"/g,'&quot;')})">
-      <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:38px;height:38px;background:#e2f0ee;color:var(--teal,#0f7b6c);font-weight:700">${nm.charAt(0).toUpperCase()}</div>
-      <div class="flex-grow-1 text-start" style="min-width:0">
-        <div class="d-flex justify-content-between"><span class="fw-600 small">${coEsc(nm)}${unread}</span><span class="text-muted" style="font-size:.72rem">${time}</span></div>
-        <div class="text-muted text-truncate" style="font-size:.8rem">${coEsc(preview)}</div>
-      </div>
-    </button>`;
-  }).join('');
-}
-
-function coUpdateBadge(){
-  const total = CO_CONVOS.reduce((s,c)=>s+(c.unread||0),0);
-  const b = document.getElementById('coMsgBadge');
-  if (total>0){ b.textContent=total; b.style.display=''; } else b.style.display='none';
-}
-
-async function coOpenThread(otherId, otherName){
-  CO_ACTIVE_OTHER_ID = otherId;
-  document.getElementById('coMsgThreadName').textContent = otherName;
-  document.getElementById('coMsgTyping').style.display = 'none';
-  document.getElementById('coMsgConvoView').style.display = 'none';
-  document.getElementById('coMsgThreadView').style.display = '';
-  await coLoadThread();
-  clearInterval(CO_POLL);
-  CO_POLL = setInterval(coLoadThread, 9000);
-}
-
-function coShowConvoList(){
-  clearInterval(CO_POLL);
-  CO_ACTIVE_OTHER_ID = null;
-  document.getElementById('coMsgThreadView').style.display = 'none';
-  document.getElementById('coMsgConvoView').style.display = '';
-  coLoadConvos();
-}
-
-async function coLoadThread(){
-  if (!CO_ACTIVE_OTHER_ID) return;
-  try {
-    const r = await fetch(`/api/messages/thread/${CO_ACTIVE_OTHER_ID}`, { credentials:'include' });
-    const d = await r.json();
-    coRenderThread(d.messages || []);
-    const dot = document.getElementById('coMsgOnline');
-    if (dot) dot.style.display = d.online ? '' : 'none';
-    // Update header name from the first inbound message if we opened via deep-link
-    if (document.getElementById('coMsgThreadName').textContent === '…') {
-      const inbound = (d.messages||[]).find(m => m.fromId === CO_ACTIVE_OTHER_ID);
-      if (inbound) document.getElementById('coMsgThreadName').textContent = inbound.fromName || 'سائح';
-    }
-    coUpdateBadge();
-  } catch {}
-}
-
-function coRenderThread(msgs){
-  const el = document.getElementById('coMsgThreadMessages');
-  const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
-  if (!msgs.length){ el.innerHTML = '<div class="text-center text-muted small mt-auto pt-4">ابدأ المحادثة 👋</div>'; return; }
-  let lastDay = '';
-  el.innerHTML = msgs.map(m => {
-    const isMine = m.fromId !== CO_ACTIVE_OTHER_ID;
-    const align = isMine ? 'align-self:flex-end;background:var(--teal,#0f7b6c);color:#fff' : 'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
-    const day = new Date(m.createdAt).toLocaleDateString([], {day:'numeric',month:'short',year:'numeric'});
-    let sep = '';
-    if (day !== lastDay){ lastDay=day; sep = `<div style="align-self:center;font-size:.68rem;color:#9aa3ab;background:#eef1f3;padding:1px 9px;border-radius:10px;margin:4px 0">${day}</div>`; }
-    let body = '';
-    if (m.attachmentUrl && m.attachmentType==='image') body += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" style="max-width:180px;max-height:180px;border-radius:9px;display:block;margin-bottom:${m.content?'4px':'0'}"></a>`;
-    else if (m.attachmentUrl) body += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${coEsc(m.attachmentName||'ملف')}</a>`;
-    if (m.content) body += `<div style="font-size:.9rem">${coEsc(m.content)}</div>`;
-    const tick = isMine ? `<span class="co-tick" style="margin-inline-start:5px;${m.isRead?'color:#bfe3ff':''}">${m.isRead?'✓✓':'✓'}</span>` : '';
-    return `${sep}<div style="max-width:78%;padding:7px 11px;border-radius:14px;${align}">${body}<div style="font-size:.7rem;opacity:.7;margin-top:2px;text-align:${isMine?'right':'left'}">${coFmtTime(m.createdAt)}${tick}</div></div>`;
-  }).join('');
-  if (wasAtBottom) el.scrollTop = el.scrollHeight;
-}
-
-async function coSendMsg(extra){
-  const input = document.getElementById('coMsgInput');
-  const content = (input.value||'').trim();
-  const payload = { toId: CO_ACTIVE_OTHER_ID, content, ...(extra||{}) };
-  if ((!content && !payload.attachmentUrl) || !CO_ACTIVE_OTHER_ID) return;
-  input.value = '';
-  try {
-    const r = await fetch('/api/messages', { method:'POST', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    if (!r.ok) throw new Error();
-    await coLoadThread();
-  } catch { showToast('تعذّر إرسال الرسالة','danger'); }
-}
-
-document.addEventListener('keydown', e => { if (e.key==='Enter' && document.activeElement?.id==='coMsgInput') coSendMsg(); });
 
 init();
 </script>
+<script src="/js/gd-messages.js?v=1"></script>
 <script src="/js/pwa.js?v=14" defer></script>
 <script src="/js/common-widgets.js?v=14"></script>
 </body>

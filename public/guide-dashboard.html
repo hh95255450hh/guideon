@@ -548,6 +548,7 @@ async function checkAuth() {
     loadGuideReviews();
     renderGallery();
     if (GUIDE.videoUrl) document.getElementById('videoUrlInput').value = GUIDE.videoUrl;
+    guideInitMessages();   // build GDMessages instance now that GUIDE.id is known
     guideLoadConvos();
     guideConnectSSE();
   } catch { window.location.href = '/login.html'; }
@@ -1608,253 +1609,31 @@ window.onLangChange = () => {
 
 checkAuth();
 
-/* ── GUIDE MESSAGES (real-time) ── */
-let GUIDE_CONVOS = [];
-let GUIDE_ACTIVE_OTHER_ID = null;
-let GUIDE_POLL = null;
-let GUIDE_SSE = null;
-let GUIDE_TYPING_TS = 0;
-let GUIDE_TYPING_HIDE = null;
-let GUIDE_PENDING_READ = false; // I sent a msg, waiting for it to be read
-
-// Short pleasant "ping" via WebAudio (no asset needed)
-function guideBeep() {
-  try {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    const ctx = new Ctx();
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.type = 'sine'; o.frequency.value = 680;
-    g.gain.setValueAtTime(0.0001, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
-    o.start(); o.stop(ctx.currentTime + 0.3);
-    setTimeout(() => ctx.close().catch(()=>{}), 500);
-  } catch {}
+/* ── GUIDE MESSAGES (real-time) ──
+   The full SSE / thread / send / typing implementation now lives in
+   /js/gd-messages.js, shared with tourist & company dashboards.
+   This block only carries the guide-specific config and thin globals
+   so existing onclick="guideXxx(...)" handlers keep working. */
+let GUIDE_MSG = null;
+function guideInitMessages() {
+  GUIDE_MSG = window.GDMessages({
+    prefix:      'guideMsg',
+    myId:        GUIDE.id,
+    tickClass:   'g-tick',
+    badgeId:     'guideMsgBadge',
+    bubbleMaxPx: 180,
+    toast:       (m, l) => toast(m, l),
+  });
 }
-
-// Open the real-time SSE channel (polling stays as a safety net)
-function guideConnectSSE() {
-  if (GUIDE_SSE) return;
-  try {
-    GUIDE_SSE = new EventSource('/api/messages/stream', { withCredentials: true });
-    GUIDE_SSE.addEventListener('message', (e) => {
-      let m; try { m = JSON.parse(e.data); } catch { return; }
-      const otherId  = m.fromId === GUIDE.id ? m.toId : m.fromId;
-      const incoming = m.toId === GUIDE.id;
-      if (GUIDE_ACTIVE_OTHER_ID && otherId === GUIDE_ACTIVE_OTHER_ID) {
-        guideLoadThread();
-        if (incoming) guideBeep();
-      } else {
-        if (incoming) guideBeep();
-        guideLoadConvos();
-      }
-    });
-    GUIDE_SSE.addEventListener('typing', (e) => {
-      let t; try { t = JSON.parse(e.data); } catch { return; }
-      if (GUIDE_ACTIVE_OTHER_ID && t.fromId === GUIDE_ACTIVE_OTHER_ID) guideShowTyping(t.isTyping);
-    });
-    GUIDE_SSE.addEventListener('read', () => {
-      // Recipient opened the thread → upgrade my single ticks to double
-      document.querySelectorAll('.g-tick').forEach(el => { el.textContent = '✓✓'; el.style.color = '#bfe3ff'; });
-      GUIDE_PENDING_READ = false;
-    });
-    // On error the browser auto-reconnects; the 9s poll covers any gap.
-  } catch {}
-}
-
-function guideShowTyping(on) {
-  const el = document.getElementById('guideMsgTyping');
-  if (!el) return;
-  clearTimeout(GUIDE_TYPING_HIDE);
-  if (on) {
-    el.textContent = (I18N.t('msg_typing') || 'typing…');
-    el.style.display = '';
-    GUIDE_TYPING_HIDE = setTimeout(() => { el.style.display = 'none'; }, 4000);
-  } else { el.style.display = 'none'; }
-}
-
-// Throttled "I'm typing" ping to the other user
-function guideTyping() {
-  if (!GUIDE_ACTIVE_OTHER_ID) return;
-  const now = Date.now();
-  if (now - GUIDE_TYPING_TS < 2500) return;
-  GUIDE_TYPING_TS = now;
-  fetch('/api/messages/typing', {
-    method: 'POST', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ toId: GUIDE_ACTIVE_OTHER_ID, isTyping: true }),
-  }).catch(()=>{});
-}
-
-// Attach an image: upload then send as a message
-async function guideAttach(inp) {
-  const file = inp.files && inp.files[0];
-  inp.value = '';
-  if (!file || !GUIDE_ACTIVE_OTHER_ID) return;
-  if (file.size > 10 * 1024 * 1024) { toast('Max 10 MB', 'error'); return; }
-  toast(I18N.t('uploading') || 'Uploading…');
-  try {
-    const fd = new FormData(); fd.append('file', file);
-    const ur = await fetch('/api/upload/message-attachment', { method: 'POST', credentials: 'include', body: fd });
-    const ud = await ur.json();
-    if (!ur.ok || !ud.success) throw new Error(ud.message || 'Upload failed');
-    await guideSendMsg({ attachmentUrl: ud.url, attachmentType: 'image', attachmentName: ud.name });
-  } catch (e) { toast(e.message || 'Upload failed', 'error'); }
-}
-
-async function guideLoadConvos() {
-  try {
-    const r = await fetch('/api/messages/conversations', { credentials: 'include' });
-    const d = await r.json();
-    GUIDE_CONVOS = d.conversations || [];
-    guideRenderConvos();
-    guideUpdateBadge();
-  } catch {}
-}
-
-function guideRenderConvos() {
-  const el = document.getElementById('guideMsgConvoList');
-  if (!GUIDE_CONVOS.length) {
-    el.innerHTML = `<div class="text-center py-3 text-muted small">${I18N.t('msg_no_convos')}</div>`;
-    return;
-  }
-  el.innerHTML = GUIDE_CONVOS.map(c => {
-    const preview = c.lastMessage.content.length > 50 ? c.lastMessage.content.slice(0, 50) + '…' : c.lastMessage.content;
-    const time = guideFmtTime(c.lastMessage.createdAt);
-    const unreadBadge = c.unread > 0 ? `<span class="badge bg-danger ms-1">${c.unread}</span>` : '';
-    return `<button class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2"
-      onclick="guideOpenThread('${c.otherId}', ${JSON.stringify(c.otherName).replace(/"/g,'&quot;').replace(/'/g,"&#39;")})">
-      <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-        style="width:38px;height:38px;background:#e2f0ee;color:var(--teal);font-weight:700">
-        ${c.otherName.charAt(0).toUpperCase()}
-      </div>
-      <div class="flex-grow-1 text-start" style="min-width:0">
-        <div class="d-flex justify-content-between">
-          <span class="fw-600 small">${c.otherName}${unreadBadge}</span>
-          <span class="text-muted" style="font-size:.72rem">${time}</span>
-        </div>
-        <div class="text-muted text-truncate" style="font-size:.8rem">${preview}</div>
-      </div>
-    </button>`;
-  }).join('');
-}
-
-function guideUpdateBadge() {
-  const total = GUIDE_CONVOS.reduce((s, c) => s + c.unread, 0);
-  const badge = document.getElementById('guideMsgBadge');
-  if (total > 0) { badge.textContent = total; badge.style.display = ''; }
-  else badge.style.display = 'none';
-}
-
-async function guideContactSupport() {
-  try {
-    const r = await fetch('/api/messages/support-agent', { credentials: 'include' });
-    const d = await r.json();
-    if (!d.success) throw new Error(d.message || 'Support unavailable');
-    const name = (window.I18N && I18N.lang === 'ar') ? (d.agent.nameAr || d.agent.name) : d.agent.name;
-    guideOpenThread(d.agent.id, name);
-  } catch (e) { toast(e.message || 'Could not reach support', 'error'); }
-}
-
-async function guideOpenThread(otherId, otherName) {
-  GUIDE_ACTIVE_OTHER_ID = otherId;
-  document.getElementById('guideMsgThreadName').textContent = otherName;
-  document.getElementById('guideMsgTyping').style.display = 'none';
-  document.getElementById('guideMsgConvoView').style.display = 'none';
-  document.getElementById('guideMsgThreadView').style.display = '';
-  await guideLoadThread();
-  clearInterval(GUIDE_POLL);
-  GUIDE_POLL = setInterval(guideLoadThread, 9000); // safety net behind SSE
-}
-
-function guideShowConvoList() {
-  clearInterval(GUIDE_POLL);
-  GUIDE_ACTIVE_OTHER_ID = null;
-  document.getElementById('guideMsgThreadView').style.display = 'none';
-  document.getElementById('guideMsgConvoView').style.display = '';
-  guideLoadConvos();
-}
-
-async function guideLoadThread() {
-  if (!GUIDE_ACTIVE_OTHER_ID) return;
-  try {
-    const r = await fetch(`/api/messages/thread/${GUIDE_ACTIVE_OTHER_ID}`, { credentials: 'include' });
-    const d = await r.json();
-    guideRenderThread(d.messages || []);
-    const dot = document.getElementById('guideMsgOnline');
-    if (dot) dot.style.display = d.online ? '' : 'none';
-    guideUpdateBadge();
-  } catch {}
-}
-
-function guideRenderThread(msgs) {
-  const el = document.getElementById('guideMsgThreadMessages');
-  const wasAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
-  if (!msgs.length) {
-    el.innerHTML = `<div class="text-center text-muted small mt-auto pt-4">${I18N.t('msg_empty')}</div>`;
-    return;
-  }
-  let lastDay = '';
-  el.innerHTML = msgs.map(m => {
-    const isMine = m.fromId !== GUIDE_ACTIVE_OTHER_ID;
-    const align = isMine ? 'align-self:flex-end;background:var(--teal);color:#fff' : 'align-self:flex-start;background:#fff;border:1px solid #e5e7eb';
-    // Date separator
-    const day = new Date(m.createdAt).toLocaleDateString([], { day:'numeric', month:'short', year:'numeric' });
-    let sep = '';
-    if (day !== lastDay) { lastDay = day; sep = `<div style="align-self:center;font-size:.68rem;color:#9aa3ab;background:#eef1f3;padding:1px 9px;border-radius:10px;margin:4px 0">${day}</div>`; }
-    // Attachment (image) or text
-    let bodyHtml = '';
-    if (m.attachmentUrl && m.attachmentType === 'image') {
-      bodyHtml += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" alt="image" style="max-width:180px;max-height:180px;border-radius:9px;display:block;margin-bottom:${m.content?'4px':'0'}"></a>`;
-    } else if (m.attachmentUrl) {
-      bodyHtml += `<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${guideEscHtml(m.attachmentName||'file')}</a>`;
-    }
-    if (m.content) bodyHtml += `<div style="font-size:.9rem">${guideEscHtml(m.content)}</div>`;
-    // Read receipt (only on my messages)
-    const tick = isMine ? `<span class="g-tick" style="margin-inline-start:5px;${m.isRead?'color:#bfe3ff':''}">${m.isRead ? '✓✓' : '✓'}</span>` : '';
-    return `${sep}<div style="max-width:78%;padding:7px 11px;border-radius:14px;${align}">
-      ${bodyHtml}
-      <div style="font-size:.7rem;opacity:.7;margin-top:2px;text-align:${isMine?'right':'left'}">${guideFmtTime(m.createdAt)}${tick}</div>
-    </div>`;
-  }).join('');
-  if (wasAtBottom) el.scrollTop = el.scrollHeight;
-}
-
-async function guideSendMsg(extra) {
-  const input = document.getElementById('guideMsgInput');
-  const content = (input.value || '').trim();
-  const payload = { toId: GUIDE_ACTIVE_OTHER_ID, content, ...(extra || {}) };
-  if ((!content && !payload.attachmentUrl) || !GUIDE_ACTIVE_OTHER_ID) return;
-  input.value = '';
-  try {
-    const r = await fetch('/api/messages', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!r.ok) throw new Error();
-    GUIDE_PENDING_READ = true;
-    await guideLoadThread();
-  } catch { toast(I18N.t('msg_send_fail'), 'error'); }
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.activeElement?.id === 'guideMsgInput') guideSendMsg();
-});
-
-function guideFmtTime(iso) {
-  const d = new Date(iso);
-  const diff = Date.now() - d;
-  if (diff < 60000) return '<1m';
-  if (diff < 3600000) return Math.floor(diff / 60000) + 'm';
-  if (diff < 86400000) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
-}
-
-function guideEscHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function guideLoadConvos()     { return GUIDE_MSG && GUIDE_MSG.loadConvos(); }
+function guideRenderConvos()   { return GUIDE_MSG && GUIDE_MSG.renderConvos(); }
+function guideOpenThread(i, n) { return GUIDE_MSG && GUIDE_MSG.openThread(i, n); }
+function guideShowConvoList()  { return GUIDE_MSG && GUIDE_MSG.showConvoList(); }
+function guideSendMsg(extra)   { return GUIDE_MSG && GUIDE_MSG.sendMsg(extra); }
+function guideAttach(inp)      { return GUIDE_MSG && GUIDE_MSG.attach(inp); }
+function guideTyping()         { return GUIDE_MSG && GUIDE_MSG.typing(); }
+function guideContactSupport() { return GUIDE_MSG && GUIDE_MSG.contactSupport(); }
+function guideConnectSSE()     { return GUIDE_MSG && GUIDE_MSG.connectSSE(); }
 </script>
 <style>
 .btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }
@@ -1863,6 +1642,7 @@ function guideEscHtml(s) {
 .cat-chip.active { background:var(--teal); color:#fff; border-color:var(--teal); box-shadow:0 2px 6px rgba(15,123,108,.25); }
 .cat-chip input { position:absolute; opacity:0; pointer-events:none; }
 </style>
+<script src="/js/gd-messages.js?v=1"></script>
 <script src="/js/pwa.js?v=14" defer></script>
 <script src="/js/common-widgets.js?v=14"></script>
 </body>
