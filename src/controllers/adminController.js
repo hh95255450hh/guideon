@@ -816,38 +816,38 @@ exports.stats = async (req, res) => {
   }
 };
 
-// Shared helper: pull a user-table page from Postgres directly (no full
-// table scan into Node memory). Honours ?page, ?pageSize, ?q (search
-// by name or email — pushed to the DB via ilike).
+// Shared helper: page through the users table. Honours ?page, ?pageSize
+// and ?q (search by name / email / company name).
+//
+// Uses findAllWhere (reliable equality fetch) then sorts/searches/slices
+// in JS. The earlier findPage path — which pushed order + count:'exact'
+// + range to Postgres — returned 0 rows on production, so we avoid it
+// here too. The users table is small; JS paging is more than fine.
 async function userPage(req, extraEq = {}) {
   const pageSize = Math.min(Math.max(parseInt(req.query.pageSize) || 50, 1), 200);
   const page     = Math.max(parseInt(req.query.page) || 1, 1);
-  const q        = (req.query.q || '').trim();
+  const q        = (req.query.q || '').trim().toLowerCase();
 
-  // Without a search query we can use findPage directly. With a query
-  // we OR over name + email — Supabase needs `.or()` for that.
-  const baseEq = { ...extraEq };
-  const opts = {
-    eq: baseEq,
-    order: { field: 'createdAt', dir: 'desc' },
-    limit: pageSize, offset: (page - 1) * pageSize,
-  };
-  if (!q) return users.findPage(opts);
+  // Equality filters (userType / isVerified / isSuspended) — server-side.
+  let rows = Object.keys(extraEq).length
+    ? await users.findAllWhere(extraEq)
+    : await users.readAll();
 
-  // Build OR clause for fullName ilike + email ilike, alongside the base eq filters.
-  // We craft the query manually because findPage doesn't expose .or().
-  const SupabaseClient = require('../config/supabase');
-  let query = SupabaseClient.from('users').select('*', { count: 'exact' });
-  for (const [f, v] of Object.entries(baseEq)) {
-    query = v === null ? query.is(f, null) : query.eq(f, v);
+  // Free-text search across name / email / company name (JS).
+  if (q) {
+    rows = rows.filter(u =>
+      [u.fullName, u.email, u.companyName].some(v => (v || '').toLowerCase().includes(q))
+    );
   }
-  const safe = q.replace(/[%,)(]/g, '').slice(0, 80);
-  query = query.or(`fullName.ilike.%${safe}%,email.ilike.%${safe}%,companyName.ilike.%${safe}%`);
-  query = query.order('createdAt', { ascending: false });
-  query = query.range(opts.offset, opts.offset + pageSize - 1);
-  const { data, count, error } = await query;
-  if (error) { console.error('[admin.userPage]', error.message); return { rows: [], total: 0, hasMore: false, limit: pageSize, offset: opts.offset }; }
-  return { rows: data || [], total: count || 0, hasMore: opts.offset + (data?.length || 0) < (count || 0), limit: pageSize, offset: opts.offset };
+
+  // Newest first.
+  rows.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+  const total   = rows.length;
+  const offset  = (page - 1) * pageSize;
+  const hasMore = offset + pageSize < total;
+  const slice   = rows.slice(offset, offset + pageSize);
+  return { rows: slice, total, hasMore, limit: pageSize, offset };
 }
 
 function stripPassword(arr) {
