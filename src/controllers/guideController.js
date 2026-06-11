@@ -12,28 +12,16 @@ exports.searchGuides = async (req, res) => {
     const pageSize = Math.min(Math.max(parseInt(req.query.pageSize) || 24, 1), 60);
     const page     = Math.max(parseInt(req.query.page) || 1, 1);
 
-    // Push what we can to the DB: type/verified/suspended (eq), rating
-    // and price ranges, ordering. We still pull more than `pageSize`
-    // when array-text filters (destination/language/etc.) are in play
-    // because Supabase can't case-insensitive-substring-match inside a
-    // text[]/jsonb array without a custom RPC. The internal limit is
-    // capped so we never blow up node memory.
-    const hasArrayFilter = !!(destination || governorate || language || date || specialisation);
-    const dbLimit  = hasArrayFilter ? 200 : pageSize;
-    const dbOffset = hasArrayFilter ? 0   : (page - 1) * pageSize;
-
-    const orderField =
-      sortBy === 'price_asc' || sortBy === 'price_desc' ? 'pricePerDay' : 'rating';
-    const orderDir = sortBy === 'price_asc' ? 'asc' : 'desc';
-
-    const dbPage = await users.findPage({
-      eq:   { userType: 'guide', isVerified: true, isSuspended: false },
-      gte:  { rating: minRating, pricePerDay: minPrice },
-      lte:  { pricePerDay: maxPrice },
-      order:{ field: orderField, dir: orderDir },
-      limit: dbLimit, offset: dbOffset,
-    });
-    let guides = dbPage.rows;
+    // Fetch verified, non-suspended guides with a single server-side
+    // equality filter (reliable across all rows), then apply the
+    // array/text/range filters + sort + pagination in JS. At GUIDEON's
+    // current scale this is well within memory; correctness first.
+    //
+    // (A previous attempt pushed ordering + count:'exact' to Postgres via
+    // findPage, but that path returned 0 rows on production data — the
+    // server-side .order() made the query fail and silently empty the
+    // result. Reverted to the proven findAllWhere fetch below.)
+    let guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
 
     if (destination) {
       guides = guides.filter(g => (g.destinations || []).some(d => d.toLowerCase().includes(destination.toLowerCase())));
@@ -87,19 +75,22 @@ exports.searchGuides = async (req, res) => {
       } catch (e) { /* if packages table missing, fall back to specialisations only */ }
       guides = matched;
     }
-    // (rating + price ranges + ordering were pushed to the DB above)
 
-    // For array-filter mode, slice to the requested page after JS filtering
-    let totalAfterFilter = guides.length;
-    let hasMore;
-    if (hasArrayFilter) {
-      const start = (page - 1) * pageSize;
-      hasMore = start + pageSize < guides.length;
-      guides = guides.slice(start, start + pageSize);
-    } else {
-      totalAfterFilter = dbPage.total;
-      hasMore = dbPage.hasMore;
-    }
+    // Rating + price range filters (JS — treat missing values safely)
+    if (minRating) guides = guides.filter(g => (parseFloat(g.rating) || 0) >= parseFloat(minRating));
+    if (minPrice)  guides = guides.filter(g => (parseFloat(g.pricePerDay) || 0) >= parseFloat(minPrice));
+    if (maxPrice)  guides = guides.filter(g => (parseFloat(g.pricePerDay) || 0) <= parseFloat(maxPrice));
+
+    // Sort
+    if (sortBy === 'price_asc')       guides.sort((a, b) => (a.pricePerDay || 0) - (b.pricePerDay || 0));
+    else if (sortBy === 'price_desc') guides.sort((a, b) => (b.pricePerDay || 0) - (a.pricePerDay || 0));
+    else                              guides.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+    // Paginate after all filtering/sorting
+    const totalAfterFilter = guides.length;
+    const start = (page - 1) * pageSize;
+    const hasMore = start + pageSize < guides.length;
+    guides = guides.slice(start, start + pageSize);
 
     const safe = guides.map(({ password, availability, ...g }) =>
       sanitizeContact({ ...g, availableCount: (availability || []).length }, req.user)
