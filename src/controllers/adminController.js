@@ -11,6 +11,7 @@ const reviews  = new SupabaseDB('reviews', 'reviewId');
 const messages    = new SupabaseDB('messages');
 const packages    = new SupabaseDB('tour_packages');
 const auditLog    = new SupabaseDB('admin_audit_log');
+const expenses    = new SupabaseDB('finance_expenses');
 
 // ── Recent activity feed ──────────────────────────────────────────────────────
 // Aggregates real events from existing tables (registrations, new tours,
@@ -327,9 +328,10 @@ exports.revenue = async (req, res) => {
       return res.json({ success: true, cached: true, data: _revenueCache.data });
     }
 
-    const [allUsers, allBookings] = await Promise.all([
+    const [allUsers, allBookings, allExpenses] = await Promise.all([
       users.readAll(),
       bookings.readAll(),
+      expenses.readAll().catch(() => []),  // table may not exist yet → empty
     ]);
 
     const userById = Object.fromEntries(allUsers.map(u => [u.id, u]));
@@ -539,6 +541,7 @@ exports.revenue = async (req, res) => {
       alerts,
       // Subscriptions: GUIDEON is commission-per-booking, no recurring plans.
       subscriptions: { enabled: false, note: 'النموذج عمولة لكل حجز — لا اشتراكات متكرّرة حالياً.' },
+      finance: buildFinanceSummary(allExpenses, { revTotal, platformEarnings: _round3(revTotal * COMMISSION_RATE), now, d30 }),
     };
 
     _revenueCache = { at: Date.now(), data, key: cacheKey };
@@ -546,6 +549,155 @@ exports.revenue = async (req, res) => {
   } catch (err) {
     console.error('[admin:revenue]', err);
     res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// ── Financial management: expense ledger (salaries / discounts / costs) ────────
+// Categories the UI offers. Anything else maps to "other".
+const EXPENSE_CATEGORIES = [
+  'salary', 'discount', 'marketing', 'operational',
+  'refund', 'commission_payout', 'tax', 'rent', 'software', 'other',
+];
+
+// Summary block folded into the revenue payload so the dashboard can show
+// net profit without a second request.
+function buildFinanceSummary(allExpenses, { revTotal, platformEarnings, now, d30 }) {
+  const list = Array.isArray(allExpenses) ? allExpenses : [];
+  const r3 = (n) => Math.round((Number(n) || 0) * 1000) / 1000;
+
+  const expTotal = r3(list.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0));
+  const exp30 = r3(list
+    .filter(e => e.spentAt && new Date(e.spentAt) >= d30)
+    .reduce((s, e) => s + (parseFloat(e.amount) || 0), 0));
+
+  // By category
+  const byCatMap = {};
+  for (const e of list) {
+    const c = EXPENSE_CATEGORIES.includes(e.category) ? e.category : 'other';
+    byCatMap[c] = (byCatMap[c] || 0) + (parseFloat(e.amount) || 0);
+  }
+  const byCategory = Object.entries(byCatMap)
+    .map(([category, amount]) => ({ category, amount: r3(amount) }))
+    .sort((a, b) => b.amount - a.amount);
+
+  // Monthly recurring (salaries/rent flagged recurring) — a forward run-rate
+  const recurringMonthly = r3(list
+    .filter(e => e.recurring)
+    .reduce((s, e) => s + (parseFloat(e.amount) || 0), 0));
+
+  // Net profit. The platform's *real* take is its commission, not gross
+  // booking value (the rest is owed to providers). So:
+  //   netProfit = platformEarnings(commission) − expenses
+  // We also expose gross net (revTotal − expenses) for those who treat
+  // the whole booking as revenue.
+  const netProfit      = r3((platformEarnings || 0) - expTotal);
+  const netGross       = r3((revTotal || 0) - expTotal);
+  const margin = platformEarnings > 0 ? r3((netProfit / platformEarnings) * 100) : 0;
+
+  return {
+    expTotal, exp30, recurringMonthly,
+    netProfit, netGross, margin,
+    byCategory,
+    count: list.length,
+  };
+}
+
+// GET /api/admin/expenses — full ledger, newest first
+exports.listExpenses = async (req, res) => {
+  try {
+    const list = await expenses.readAll();
+    list.sort((a, b) => new Date(b.spentAt || b.createdAt) - new Date(a.spentAt || a.createdAt));
+    res.json({ success: true, expenses: list, categories: EXPENSE_CATEGORIES });
+  } catch (err) {
+    console.error('[admin:listExpenses]', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/admin/expenses — record a new expense/salary/discount
+exports.createExpense = async (req, res) => {
+  try {
+    const { category, title, amount, spentAt, recurring, payee, relatedUserId, note, currency } = req.body || {};
+
+    if (!title || !String(title).trim()) {
+      return res.status(400).json({ success: false, message: 'العنوان مطلوب.' });
+    }
+    const amt = parseFloat(amount);
+    if (!(amt > 0)) {
+      return res.status(400).json({ success: false, message: 'المبلغ يجب أن يكون رقماً موجباً.' });
+    }
+    const cat = EXPENSE_CATEGORIES.includes(category) ? category : 'other';
+
+    const record = {
+      id: 'exp-' + uuidv4().slice(0, 10),
+      category: cat,
+      title: String(title).trim().slice(0, 160),
+      amount: Math.round(amt * 1000) / 1000,
+      currency: currency || 'OMR',
+      spentAt: spentAt ? String(spentAt).slice(0, 10) : new Date().toISOString().slice(0, 10),
+      recurring: !!recurring,
+      payee: payee ? String(payee).slice(0, 120) : null,
+      relatedUserId: relatedUserId || null,
+      note: note ? String(note).slice(0, 600) : null,
+      createdBy: req.session.userId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const saved = await expenses.insert(record);
+    _revenueCache = { at: 0, data: null, key: null }; // bust so net profit refreshes
+    audit.logAction(req, { action: 'createExpense', targetType: 'finance', targetId: record.id, details: { category: cat, title: record.title, amount: record.amount } });
+    res.status(201).json({ success: true, expense: saved || record });
+  } catch (err) {
+    console.error('[admin:createExpense]', err);
+    res.status(500).json({ success: false, message: 'تعذّر حفظ المصروف.' });
+  }
+};
+
+// PATCH /api/admin/expenses/:id — edit an expense
+exports.updateExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await expenses.findById(id);
+    if (!existing) return res.status(404).json({ success: false, message: 'المصروف غير موجود.' });
+
+    const changes = { updatedAt: new Date().toISOString() };
+    const b = req.body || {};
+    if (b.title != null)    changes.title = String(b.title).trim().slice(0, 160);
+    if (b.amount != null) {
+      const amt = parseFloat(b.amount);
+      if (!(amt > 0)) return res.status(400).json({ success: false, message: 'المبلغ غير صالح.' });
+      changes.amount = Math.round(amt * 1000) / 1000;
+    }
+    if (b.category != null) changes.category = EXPENSE_CATEGORIES.includes(b.category) ? b.category : 'other';
+    if (b.spentAt != null)  changes.spentAt = String(b.spentAt).slice(0, 10);
+    if (b.recurring != null) changes.recurring = !!b.recurring;
+    if (b.payee != null)    changes.payee = b.payee ? String(b.payee).slice(0, 120) : null;
+    if (b.note != null)     changes.note = b.note ? String(b.note).slice(0, 600) : null;
+
+    const saved = await expenses.update(id, changes);
+    _revenueCache = { at: 0, data: null, key: null };
+    audit.logAction(req, { action: 'updateExpense', targetType: 'finance', targetId: id, details: changes });
+    res.json({ success: true, expense: saved });
+  } catch (err) {
+    console.error('[admin:updateExpense]', err);
+    res.status(500).json({ success: false, message: 'تعذّر تحديث المصروف.' });
+  }
+};
+
+// DELETE /api/admin/expenses/:id
+exports.deleteExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await expenses.findById(id);
+    if (!existing) return res.status(404).json({ success: false, message: 'المصروف غير موجود.' });
+    await expenses.delete(id);
+    _revenueCache = { at: 0, data: null, key: null };
+    audit.logAction(req, { action: 'deleteExpense', targetType: 'finance', targetId: id, details: { title: existing.title, amount: existing.amount } });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[admin:deleteExpense]', err);
+    res.status(500).json({ success: false, message: 'تعذّر حذف المصروف.' });
   }
 };
 

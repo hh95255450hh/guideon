@@ -18,6 +18,12 @@ router.get('/compress-storage',        admin.compressStorage);
 router.get('/compress-storage/status', admin.compressStorageStatus);
 router.get('/stats/extended',     requirePermission('view_analytics'), admin.extendedStats);
 router.get('/revenue',            requirePermission('view_analytics'), admin.revenue);
+
+// Financial management — expense ledger (salaries / discounts / costs)
+router.get('/expenses',           requirePermission('view_analytics'), admin.listExpenses);
+router.post('/expenses',          requirePermission('manage_finance'), admin.createExpense);
+router.patch('/expenses/:id',     requirePermission('manage_finance'), admin.updateExpense);
+router.delete('/expenses/:id',    requirePermission('manage_finance'), admin.deleteExpense);
 router.get('/guides/pending',     requirePermission('view_users'), admin.pendingGuides);
 router.get('/guides',             requirePermission('view_users'), admin.allGuides);
 router.get('/tourists',           requirePermission('view_users'), admin.allTourists);

@@ -35,6 +35,7 @@ const PERMISSIONS = {
   VIEW_AUDIT_LOG:    'view_audit_log',
   EXPORT_DATA:       'export_data',
   VIEW_ANALYTICS:    'view_analytics',
+  MANAGE_FINANCE:    'manage_finance',   // add/edit expenses, salaries, discounts
 
   // Staff management
   MANAGE_STAFF:      'manage_staff',
@@ -84,14 +85,14 @@ const ROLES = {
     ],
   },
 
-  // Finance — bookings, revenue, exports
+  // Finance — bookings, revenue, exports, expense ledger
   finance: {
     label: 'Finance',
-    description: 'View all bookings, cancel/refund, export financial data',
+    description: 'View all bookings, cancel/refund, manage expenses, export financial data',
     permissions: [
       'view_users', 'view_bookings',
       'cancel_bookings', 'complete_bookings',
-      'view_analytics', 'export_data',
+      'view_analytics', 'export_data', 'manage_finance',
       'view_audit_log',
     ],
   },

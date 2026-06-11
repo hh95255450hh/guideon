@@ -147,6 +147,16 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .empty { text-align:center; color: var(--muted); padding: 30px; font-size: .85rem; }
+
+  /* ── Expense form ── */
+  .explbl { display:block; font-size:.74rem; font-weight:700; color:var(--muted); margin-bottom:5px; }
+  .expinput { width:100%; background:var(--card); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:9px 11px; font-size:.82rem; font-family:inherit; }
+  .expinput:focus { outline:none; border-color:var(--teal); }
+  .kpi.net-pos .value { color: var(--green); }
+  .kpi.net-neg .value { color: var(--red); }
+  .icon-btn { background:transparent; border:none; cursor:pointer; font-size:.95rem; padding:3px 6px; border-radius:6px; }
+  .icon-btn:hover { background:var(--card-2); }
+  .cat-tag { display:inline-block; padding:2px 9px; border-radius:14px; font-size:.7rem; font-weight:800; background:var(--teal-soft); color:var(--teal); white-space:nowrap; }
   @media print {
     .no-print { display: none !important; }
     body { background:#fff; color:#000; }
@@ -184,6 +194,13 @@
 <script>
 /* ════════════════════════ State ════════════════════════ */
 let DATA = null;
+let FIN = { expTotal: 0, exp30: 0, recurringMonthly: 0, netProfit: 0, netGross: 0, margin: 0, byCategory: [], count: 0 };
+let EXPENSES = [];
+let CAT_LABELS = {
+  salary: '💼 راتب', discount: '🏷️ خصم', marketing: '📢 تسويق', operational: '⚙️ تشغيلي',
+  rent: '🏢 إيجار', software: '💻 برمجيّات', refund: '↩️ استرداد',
+  commission_payout: '🤝 دفعة مزوّد', tax: '🧾 ضرائب', other: '📦 أخرى',
+};
 let CHARTS = {};
 let CURRENT_PERIOD = '7';
 let TXN_SORT = { key: 'date', dir: 'desc' };
@@ -221,6 +238,8 @@ async function loadAll(force) {
     const d = await r.json();
     if (!d.success) throw new Error(d.message || 'فشل التحميل');
     DATA = d.data;
+    if (DATA.finance) FIN = DATA.finance;
+    await loadExpenses();
     render();
   } catch (e) {
     document.getElementById('app').innerHTML =
@@ -248,6 +267,14 @@ function render() {
       ${kpiCard('📊 متوسّط قيمة الطلب', omr(o.aov), null, 'Average Order Value')}
       ${kpiCard('🏦 أرباح المنصّة', omr(o.platformEarnings), null, `عمولة ${(DATA.commissionRate*100).toFixed(0)}%`)}
       ${kpiCard('🤝 مستحقّات المزوّدين', omr(o.providerPayouts), null, 'بعد خصم العمولة')}
+    </div>
+
+    <!-- Financial bottom line -->
+    <div class="kpis">
+      ${kpiCard('💸 إجمالي المصروفات', omr(FIN.expTotal), null, `${fmt0(FIN.count)} بند · آخر 30 يوم: ${fmt(FIN.exp30)}`)}
+      ${kpiCard('🔁 مصروفات شهريّة متكرّرة', omr(FIN.recurringMonthly), null, 'رواتب · إيجار · اشتراكات')}
+      ${netCard('📈 صافي الربح', FIN.netProfit, `أرباح المنصّة − المصروفات · هامش ${FIN.margin}%`)}
+      ${netCard('🧮 الصافي الإجمالي', FIN.netGross, 'إجمالي الإيراد − المصروفات')}
     </div>
 
     <!-- Alerts -->
@@ -322,6 +349,93 @@ function render() {
       </div>
     </div>
 
+    <!-- ════════ Financial management: expenses / salaries / discounts ════════ -->
+    <div class="panel">
+      <div class="panel-head">
+        <div><h3>🏦 الإدارة المالية — المصروفات والرواتب</h3><div class="sub">سجّل كل ما يخرج من الصندوق: رواتب، خصومات، تسويق، إيجار…</div></div>
+        <button class="btn btn-primary" onclick="toggleExpForm()" id="expFormBtn">➕ إضافة مصروف</button>
+      </div>
+
+      <!-- Add/Edit form (hidden by default) -->
+      <div id="expForm" style="display:none; background:var(--card-2); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px">
+        <input type="hidden" id="expId">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px">
+          <div>
+            <label class="explbl">التصنيف</label>
+            <select id="expCategory" class="expinput">
+              <option value="salary">💼 راتب</option>
+              <option value="discount">🏷️ خصم / كوبون</option>
+              <option value="marketing">📢 تسويق وإعلانات</option>
+              <option value="operational">⚙️ تشغيلي</option>
+              <option value="rent">🏢 إيجار</option>
+              <option value="software">💻 برمجيّات / اشتراكات</option>
+              <option value="refund">↩️ استرداد</option>
+              <option value="commission_payout">🤝 دفعة لمزوّد</option>
+              <option value="tax">🧾 ضرائب ورسوم</option>
+              <option value="other">📦 أخرى</option>
+            </select>
+          </div>
+          <div>
+            <label class="explbl">العنوان *</label>
+            <input id="expTitle" class="expinput" placeholder="مثال: راتب محمد — يونيو">
+          </div>
+          <div>
+            <label class="explbl">المبلغ (ر.ع) *</label>
+            <input id="expAmount" class="expinput" type="number" step="0.001" min="0" placeholder="0.000">
+          </div>
+          <div>
+            <label class="explbl">التاريخ</label>
+            <input id="expDate" class="expinput" type="date">
+          </div>
+          <div>
+            <label class="explbl">المستفيد (اختياري)</label>
+            <input id="expPayee" class="expinput" placeholder="اسم الموظّف / المورّد">
+          </div>
+          <div style="display:flex; align-items:flex-end; gap:8px; padding-bottom:6px">
+            <label style="display:flex; align-items:center; gap:7px; cursor:pointer; font-size:.85rem; font-weight:700">
+              <input type="checkbox" id="expRecurring" style="width:18px; height:18px"> شهري متكرّر 🔁
+            </label>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <label class="explbl">ملاحظة (اختياري)</label>
+          <input id="expNote" class="expinput" style="width:100%" placeholder="تفاصيل إضافيّة…">
+        </div>
+        <div style="margin-top:14px; display:flex; gap:10px">
+          <button class="btn btn-primary" onclick="saveExpense()" id="expSaveBtn">💾 حفظ</button>
+          <button class="btn" onclick="cancelExpForm()">إلغاء</button>
+          <span class="sub" id="expFormMsg" style="align-self:center"></span>
+        </div>
+      </div>
+
+      <!-- Expenses by category bars + table -->
+      <div class="grid cols-2" style="margin-bottom:0">
+        <div>
+          <div class="sub" style="margin-bottom:10px; font-weight:700">التوزيع حسب التصنيف</div>
+          <div id="expByCat"></div>
+        </div>
+        <div>
+          <div class="filters no-print" style="margin-bottom:10px">
+            <input id="expSearch" placeholder="🔍 بحث في المصروفات" oninput="renderExpenses()" style="flex:1; min-width:160px">
+            <select id="expFilterCat" onchange="renderExpenses()">
+              <option value="">كل التصنيفات</option>
+              <option value="salary">راتب</option><option value="discount">خصم</option>
+              <option value="marketing">تسويق</option><option value="operational">تشغيلي</option>
+              <option value="rent">إيجار</option><option value="software">برمجيّات</option>
+              <option value="refund">استرداد</option><option value="commission_payout">دفعة مزوّد</option>
+              <option value="tax">ضرائب</option><option value="other">أخرى</option>
+            </select>
+          </div>
+          <div class="tbl-wrap" style="max-height:360px; overflow-y:auto">
+            <table>
+              <thead><tr><th>التصنيف</th><th>العنوان</th><th>المبلغ</th><th>التاريخ</th><th></th></tr></thead>
+              <tbody id="expBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Transactions -->
     <div class="panel">
       <div class="panel-head">
@@ -368,6 +482,8 @@ function render() {
   wireToggles();
   renderCharts();
   renderTxns();
+  renderExpenses();
+  renderExpByCat();
 }
 
 function kpiCard(label, valueHtml, growth, sub) {
@@ -381,6 +497,16 @@ function kpiCard(label, valueHtml, growth, sub) {
     <div class="label">${label}</div>
     <div class="value">${valueHtml}</div>
     ${delta || (sub ? `<div class="sub" style="margin-top:6px">${esc(sub)}</div>` : '')}
+  </div>`;
+}
+
+function netCard(label, value, sub) {
+  const cls = value > 0 ? 'net-pos' : (value < 0 ? 'net-neg' : '');
+  const sign = value < 0 ? '−' : '';
+  return `<div class="kpi ${cls}">
+    <div class="label">${label}</div>
+    <div class="value">${sign}<span class="money">${fmt(Math.abs(value))}</span> <small style="color:var(--muted);font-weight:700">ر.ع</small></div>
+    <div class="sub" style="margin-top:6px">${esc(sub)}</div>
   </div>`;
 }
 
@@ -560,6 +686,8 @@ function exportCSV() {
     `"Guideon Revenue Report","${new Date().toISOString()}"`,
     `"Total Revenue (OMR)","${o.revTotal}"`,
     `"Platform Earnings (OMR)","${o.platformEarnings}"`,
+    `"Total Expenses (OMR)","${FIN.expTotal}"`,
+    `"Net Profit (OMR)","${FIN.netProfit}"`,
     `"Transactions","${o.txnCount}"`,
     `"Average Order Value (OMR)","${o.aov}"`,
     '', // blank line
@@ -571,6 +699,141 @@ function exportCSV() {
   a.download = `guideon-revenue-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+/* ════════════════════════ Expenses (financial management) ════════════════════════ */
+async function loadExpenses() {
+  try {
+    const r = await fetch('/api/admin/expenses', { credentials: 'include' });
+    if (!r.ok) { EXPENSES = []; return; }
+    const d = await r.json();
+    EXPENSES = d.expenses || [];
+  } catch { EXPENSES = []; }
+}
+
+function toggleExpForm() {
+  const f = document.getElementById('expForm');
+  const show = f.style.display === 'none';
+  f.style.display = show ? 'block' : 'none';
+  if (show) {
+    // Fresh "add" mode
+    document.getElementById('expId').value = '';
+    document.getElementById('expTitle').value = '';
+    document.getElementById('expAmount').value = '';
+    document.getElementById('expPayee').value = '';
+    document.getElementById('expNote').value = '';
+    document.getElementById('expRecurring').checked = false;
+    document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('expSaveBtn').textContent = '💾 حفظ';
+    document.getElementById('expFormMsg').textContent = '';
+  }
+}
+function cancelExpForm() { document.getElementById('expForm').style.display = 'none'; }
+
+function editExpense(id) {
+  const e = EXPENSES.find(x => x.id === id);
+  if (!e) return;
+  document.getElementById('expForm').style.display = 'block';
+  document.getElementById('expId').value = e.id;
+  document.getElementById('expCategory').value = e.category;
+  document.getElementById('expTitle').value = e.title;
+  document.getElementById('expAmount').value = e.amount;
+  document.getElementById('expDate').value = (e.spentAt || '').slice(0, 10);
+  document.getElementById('expPayee').value = e.payee || '';
+  document.getElementById('expNote').value = e.note || '';
+  document.getElementById('expRecurring').checked = !!e.recurring;
+  document.getElementById('expSaveBtn').textContent = '💾 تحديث';
+  document.getElementById('expForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function saveExpense() {
+  const id = document.getElementById('expId').value;
+  const msg = document.getElementById('expFormMsg');
+  const payload = {
+    category:  document.getElementById('expCategory').value,
+    title:     document.getElementById('expTitle').value.trim(),
+    amount:    parseFloat(document.getElementById('expAmount').value),
+    spentAt:   document.getElementById('expDate').value,
+    payee:     document.getElementById('expPayee').value.trim(),
+    note:      document.getElementById('expNote').value.trim(),
+    recurring: document.getElementById('expRecurring').checked,
+  };
+  if (!payload.title) { msg.textContent = '⚠️ العنوان مطلوب'; msg.style.color = 'var(--red)'; return; }
+  if (!(payload.amount > 0)) { msg.textContent = '⚠️ المبلغ غير صالح'; msg.style.color = 'var(--red)'; return; }
+
+  const btn = document.getElementById('expSaveBtn');
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const url = id ? `/api/admin/expenses/${id}` : '/api/admin/expenses';
+    const method = id ? 'PATCH' : 'POST';
+    const r = await fetch(url, {
+      method, credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'فشل الحفظ');
+    cancelExpForm();
+    await loadAll(true);  // reload everything → net profit recomputed
+  } catch (e) {
+    msg.textContent = '⚠️ ' + e.message; msg.style.color = 'var(--red)';
+  } finally {
+    btn.disabled = false; btn.textContent = id ? '💾 تحديث' : '💾 حفظ';
+  }
+}
+
+async function deleteExpense(id) {
+  const e = EXPENSES.find(x => x.id === id);
+  if (!confirm(`حذف "${e ? e.title : 'المصروف'}"؟`)) return;
+  try {
+    const r = await fetch(`/api/admin/expenses/${id}`, { method: 'DELETE', credentials: 'include' });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'فشل الحذف');
+    await loadAll(true);
+  } catch (e) { alert(e.message); }
+}
+
+function getFilteredExpenses() {
+  const q = (document.getElementById('expSearch')?.value || '').trim().toLowerCase();
+  const cat = document.getElementById('expFilterCat')?.value || '';
+  let rows = EXPENSES.slice();
+  if (q)   rows = rows.filter(e => [e.title, e.payee, e.note].join(' ').toLowerCase().includes(q));
+  if (cat) rows = rows.filter(e => e.category === cat);
+  return rows;
+}
+
+function renderExpenses() {
+  const body = document.getElementById('expBody');
+  if (!body) return;
+  const rows = getFilteredExpenses();
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="5" class="empty">لا مصروفات بعد — اضغط «إضافة مصروف»</td></tr>'; return; }
+  body.innerHTML = rows.map(e => `
+    <tr>
+      <td><span class="cat-tag">${esc(CAT_LABELS[e.category] || e.category)}</span>${e.recurring ? ' 🔁' : ''}</td>
+      <td title="${esc(e.note || '')}">${esc(e.title)}${e.payee ? `<div class="sub">${esc(e.payee)}</div>` : ''}</td>
+      <td class="money" style="color:var(--red)">−${fmt(e.amount)}</td>
+      <td>${e.spentAt ? new Date(e.spentAt).toLocaleDateString('en-GB') : '—'}</td>
+      <td style="white-space:nowrap">
+        <button class="icon-btn" onclick="editExpense('${e.id}')" title="تعديل">✏️</button>
+        <button class="icon-btn" onclick="deleteExpense('${e.id}')" title="حذف">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderExpByCat() {
+  const el = document.getElementById('expByCat');
+  if (!el) return;
+  const cats = FIN.byCategory || [];
+  if (!cats.length) { el.innerHTML = '<div class="empty">لا بيانات</div>'; return; }
+  const max = Math.max(...cats.map(c => c.amount), 1);
+  el.innerHTML = cats.map(c => `
+    <div class="bar-row">
+      <span class="nm">${esc(CAT_LABELS[c.category] || c.category)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(c.amount / max * 100).toFixed(1)}%; background:linear-gradient(90deg,#ef4444,#f87171)"></div></div>
+      <span class="amt">${fmt(c.amount)}</span>
+    </div>
+  `).join('');
 }
 
 loadAll();
