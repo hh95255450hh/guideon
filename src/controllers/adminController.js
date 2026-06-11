@@ -290,6 +290,265 @@ function toCSV(rows, columns) {
 }
 
 // GET /api/admin/stats/extended — richer analytics
+// ── Revenue analytics ─────────────────────────────────────────────────────────
+// Powers the Admin Revenue Dashboard (admin-revenue.html). Computes every
+// money metric from the bookings table in a single pass. "Revenue" = the
+// platform's view of paid bookings; a booking counts toward revenue only
+// when isPaid is true (Thawani-confirmed) — pending/failed are tracked
+// separately for the funnel + alerts.
+//
+// Money lives in OMR (3-decimal). All figures are rounded to 3 places.
+//
+// Cached 30s: the admin refreshes often, and this scans the whole bookings
+// table — caching protects Supabase egress as data grows.
+let _revenueCache = { at: 0, data: null, key: null };
+const REVENUE_CACHE_MS = 30 * 1000;
+
+function _round3(n) { return Math.round((Number(n) || 0) * 1000) / 1000; }
+
+// Inclusive day-key (YYYY-MM-DD) in UTC — stable regardless of server TZ.
+function _dayKey(d) {
+  const dt = new Date(d);
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`;
+}
+function _monthKey(d) {
+  const dt = new Date(d);
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+exports.revenue = async (req, res) => {
+  try {
+    // The commission rate the platform keeps per paid booking. Single source
+    // of truth; if you change billing, change it here. Pinned by payments.test.js.
+    const COMMISSION_RATE = parseFloat(process.env.PLATFORM_COMMISSION_RATE || '0.10');
+
+    const cacheKey = 'revenue';
+    if (_revenueCache.data && Date.now() - _revenueCache.at < REVENUE_CACHE_MS && _revenueCache.key === cacheKey) {
+      return res.json({ success: true, cached: true, data: _revenueCache.data });
+    }
+
+    const [allUsers, allBookings] = await Promise.all([
+      users.readAll(),
+      bookings.readAll(),
+    ]);
+
+    const userById = Object.fromEntries(allUsers.map(u => [u.id, u]));
+    const now = new Date();
+
+    // ── A paid booking is one revenue event. Pick the money date: paidAt if
+    //    present, else createdAt (older rows pre-date the paidAt column). ──
+    const paid = allBookings.filter(b => b.isPaid && (b.totalAmount != null));
+    const moneyDate = (b) => b.paidAt || b.createdAt || now.toISOString();
+
+    // ── Period helpers ──
+    const within = (b, fromDate) => new Date(moneyDate(b)) >= fromDate;
+    const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const d7   = new Date(now);  d7.setUTCDate(now.getUTCDate() - 7);
+    const d30  = new Date(now);  d30.setUTCDate(now.getUTCDate() - 30);
+    const d365 = new Date(now);  d365.setUTCFullYear(now.getUTCFullYear() - 1);
+    // Previous comparable windows (for growth %)
+    const d14  = new Date(now);  d14.setUTCDate(now.getUTCDate() - 14);
+    const d60  = new Date(now);  d60.setUTCDate(now.getUTCDate() - 60);
+
+    const sumAmount = (arr) => _round3(arr.reduce((s, b) => s + (parseFloat(b.totalAmount) || 0), 0));
+
+    const revToday   = sumAmount(paid.filter(b => within(b, startOfToday)));
+    const rev7        = sumAmount(paid.filter(b => within(b, d7)));
+    const rev30       = sumAmount(paid.filter(b => within(b, d30)));
+    const rev365      = sumAmount(paid.filter(b => within(b, d365)));
+    const revTotal    = sumAmount(paid);
+
+    // Previous periods for growth comparison
+    const revPrev7  = sumAmount(paid.filter(b => within(b, d14) && !within(b, d7)));
+    const revPrev30 = sumAmount(paid.filter(b => within(b, d60) && !within(b, d30)));
+    const growth = (cur, prev) => prev > 0 ? _round3(((cur - prev) / prev) * 100) : (cur > 0 ? 100 : 0);
+
+    // ── Transactions count + AOV ──
+    const txnCount = paid.length;
+    const aov = txnCount ? _round3(revTotal / txnCount) : 0;
+
+    // ── Funnel: paid vs pending vs failed/cancelled ──
+    const pendingPay = allBookings.filter(b => !b.isPaid && b.status === 'confirmed').length;
+    const cancelled  = allBookings.filter(b => b.status === 'cancelled').length;
+
+    // ── Time-series: daily revenue (last 30 days) ──
+    const dailyMap = {};
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now); d.setUTCDate(now.getUTCDate() - i);
+      dailyMap[_dayKey(d)] = 0;
+    }
+    for (const b of paid) {
+      const k = _dayKey(moneyDate(b));
+      if (k in dailyMap) dailyMap[k] += (parseFloat(b.totalAmount) || 0);
+    }
+    const daily = Object.entries(dailyMap).map(([date, revenue]) => ({ date, revenue: _round3(revenue) }));
+
+    // ── Time-series: monthly revenue (last 12 months) ──
+    const monthMap = {};
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+      monthMap[_monthKey(d)] = 0;
+    }
+    for (const b of paid) {
+      const k = _monthKey(moneyDate(b));
+      if (k in monthMap) monthMap[k] += (parseFloat(b.totalAmount) || 0);
+    }
+    const monthly = Object.entries(monthMap).map(([month, revenue]) => ({ month, revenue: _round3(revenue) }));
+
+    // ── Revenue by source: individual guide vs tour company ──
+    let revGuides = 0, revCompanies = 0;
+    for (const b of paid) {
+      const provider = userById[b.guideId];
+      const amt = parseFloat(b.totalAmount) || 0;
+      if (provider && provider.userType === 'company') revCompanies += amt;
+      else revGuides += amt;
+    }
+    const bySource = [
+      { source: 'guides',    label: 'مرشدون أفراد',     revenue: _round3(revGuides) },
+      { source: 'companies', label: 'شركات سياحيّة',    revenue: _round3(revCompanies) },
+    ];
+
+    // ── Top earners (providers by paid revenue) ──
+    const earnerMap = {};
+    for (const b of paid) {
+      const amt = parseFloat(b.totalAmount) || 0;
+      if (!earnerMap[b.guideId]) earnerMap[b.guideId] = { revenue: 0, txns: 0 };
+      earnerMap[b.guideId].revenue += amt;
+      earnerMap[b.guideId].txns    += 1;
+    }
+    const topEarners = Object.entries(earnerMap)
+      .map(([id, v]) => {
+        const u = userById[id];
+        return {
+          id,
+          name: u ? (u.companyName || u.fullName || 'Unknown') : 'Unknown',
+          type: u ? u.userType : 'guide',
+          revenue: _round3(v.revenue),
+          txns: v.txns,
+        };
+      })
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 10);
+
+    // ── Revenue by destination ──
+    const destMap = {};
+    for (const b of paid) {
+      if (!b.destination) continue;
+      destMap[b.destination] = (destMap[b.destination] || 0) + (parseFloat(b.totalAmount) || 0);
+    }
+    const byDestination = Object.entries(destMap)
+      .map(([destination, revenue]) => ({ destination, revenue: _round3(revenue) }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 10);
+
+    // ── Payment methods. The platform currently routes everything through
+    //    Thawani (cards + Thawani wallet). We don't yet persist the card
+    //    network, so we report by gateway. Failed = confirmed-but-unpaid. ──
+    const methods = [
+      { method: 'Thawani', revenue: revTotal, count: txnCount, failed: pendingPay },
+    ];
+
+    // ── Recent transactions (latest 100 paid) for the table ──
+    const transactions = paid
+      .slice()
+      .sort((a, b) => new Date(moneyDate(b)) - new Date(moneyDate(a)))
+      .slice(0, 100)
+      .map(b => {
+        const tourist  = userById[b.touristId];
+        const provider = userById[b.guideId];
+        return {
+          id: b.id,
+          ref: b.paymentRef || b.paymentSessionId || '—',
+          tourist: tourist ? tourist.fullName : 'Unknown',
+          provider: provider ? (provider.companyName || provider.fullName) : 'Unknown',
+          destination: b.destination || '—',
+          amount: _round3(b.totalAmount),
+          commission: _round3((parseFloat(b.totalAmount) || 0) * COMMISSION_RATE),
+          status: b.isPaid ? 'paid' : (b.status === 'cancelled' ? 'cancelled' : 'pending'),
+          method: 'Thawani',
+          date: moneyDate(b),
+        };
+      });
+
+    // ── Pending (confirmed-but-unpaid) shown in the table too, flagged ──
+    const pendingTxns = allBookings
+      .filter(b => !b.isPaid && b.status === 'confirmed' && b.totalAmount != null)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 50)
+      .map(b => {
+        const tourist  = userById[b.touristId];
+        const provider = userById[b.guideId];
+        return {
+          id: b.id,
+          ref: b.paymentSessionId || '—',
+          tourist: tourist ? tourist.fullName : 'Unknown',
+          provider: provider ? (provider.companyName || provider.fullName) : 'Unknown',
+          destination: b.destination || '—',
+          amount: _round3(b.totalAmount),
+          commission: _round3((parseFloat(b.totalAmount) || 0) * COMMISSION_RATE),
+          status: 'pending',
+          method: 'Thawani',
+          date: b.createdAt,
+        };
+      });
+
+    // ── Alerts: anomaly detection on the daily series ──
+    const alerts = [];
+    const last7Vals  = daily.slice(-7).map(d => d.revenue);
+    const prev7Vals  = daily.slice(-14, -7).map(d => d.revenue);
+    const avg = (a) => a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0;
+    const last7Avg = avg(last7Vals), prev7Avg = avg(prev7Vals);
+    if (prev7Avg > 0 && last7Avg < prev7Avg * 0.6) {
+      alerts.push({ level: 'danger', code: 'revenue_drop',
+        message: `انخفاض حادّ في الإيرادات: متوسّط آخر 7 أيّام ${_round3(last7Avg)} ر.ع مقابل ${_round3(prev7Avg)} ر.ع للأسبوع السابق.` });
+    }
+    if (prev7Avg > 0 && last7Avg > prev7Avg * 1.8) {
+      alerts.push({ level: 'success', code: 'revenue_spike',
+        message: `ارتفاع كبير في الإيرادات: +${growth(last7Avg, prev7Avg)}% مقارنةً بالأسبوع السابق. 🎉` });
+    }
+    // Payment-failure pressure: many confirmed bookings never get paid
+    const confirmedTotal = allBookings.filter(b => b.status === 'confirmed' || b.isPaid).length;
+    if (confirmedTotal >= 10 && pendingPay / confirmedTotal > 0.4) {
+      alerts.push({ level: 'warning', code: 'payment_failures',
+        message: `${pendingPay} حجزاً مؤكَّداً لم يُدفع (${_round3((pendingPay / confirmedTotal) * 100)}%). تحقّق من بوّابة الدفع أو ذكّر السيّاح.` });
+    }
+    if (!alerts.length) {
+      alerts.push({ level: 'info', code: 'all_clear', message: 'كل المؤشّرات ضمن النطاق الطبيعي. ✅' });
+    }
+
+    const data = {
+      currency: 'OMR',
+      commissionRate: COMMISSION_RATE,
+      generatedAt: now.toISOString(),
+      overview: {
+        revTotal, revToday, rev7, rev30, rev365,
+        growth7:  growth(rev7,  revPrev7),
+        growth30: growth(rev30, revPrev30),
+        txnCount, aov,
+        pendingPay, cancelled,
+        platformEarnings: _round3(revTotal * COMMISSION_RATE),
+        providerPayouts:  _round3(revTotal * (1 - COMMISSION_RATE)),
+      },
+      daily,
+      monthly,
+      bySource,
+      topEarners,
+      byDestination,
+      methods,
+      transactions: [...transactions, ...pendingTxns],
+      alerts,
+      // Subscriptions: GUIDEON is commission-per-booking, no recurring plans.
+      subscriptions: { enabled: false, note: 'النموذج عمولة لكل حجز — لا اشتراكات متكرّرة حالياً.' },
+    };
+
+    _revenueCache = { at: Date.now(), data, key: cacheKey };
+    res.json({ success: true, cached: false, data });
+  } catch (err) {
+    console.error('[admin:revenue]', err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 exports.extendedStats = async (req, res) => {
   try {
     const [allUsers, allBookings, allReviews] = await Promise.all([

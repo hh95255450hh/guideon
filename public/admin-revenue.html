@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<title>لوحة الإيرادات — Guideon Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js"></script>
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     Revenue dashboard — self-contained design system (no Bootstrap).
+     Dark by default (finance dashboards read better dark); the
+     ☀️/🌙 toggle flips to a light theme and persists the choice.
+     ───────────────────────────────────────────────────────────── */
+  :root {
+    --bg:        #0e1525;
+    --bg-2:      #151d31;
+    --card:      #1a2336;
+    --card-2:    #1f2940;
+    --border:    #2a3552;
+    --text:      #e8edf7;
+    --muted:     #8a97b4;
+    --teal:      #14b8a6;
+    --teal-soft: rgba(20,184,166,.14);
+    --gold:      #f5b942;
+    --green:     #22c55e;
+    --red:       #ef4444;
+    --blue:      #3b82f6;
+    --purple:    #a855f7;
+    --shadow:    0 8px 30px rgba(0,0,0,.35);
+    --radius:    16px;
+  }
+  [data-theme="light"] {
+    --bg:        #eef2f8;
+    --bg-2:      #e3e9f3;
+    --card:      #ffffff;
+    --card-2:    #f7f9fc;
+    --border:    #e2e8f0;
+    --text:      #0f1c34;
+    --muted:     #64748b;
+    --teal-soft: rgba(20,184,166,.10);
+    --shadow:    0 6px 24px rgba(15,28,62,.08);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'Tajawal', 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px; line-height: 1.5; transition: background .25s, color .25s;
+  }
+  a { color: var(--teal); text-decoration: none; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 22px; }
+
+  /* ── Top bar ── */
+  .topbar {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .topbar .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.15rem; }
+  .topbar .brand img { height: 36px; }
+  .topbar .spacer { flex: 1; }
+  .btn {
+    background: var(--card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px 14px; font-size: .82rem; font-weight: 700;
+    cursor: pointer; transition: .15s; display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit;
+  }
+  .btn:hover { border-color: var(--teal); }
+  .btn-primary { background: var(--teal); color: #06231f; border-color: var(--teal); }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .seg { display: inline-flex; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .seg button {
+    background: transparent; border: none; color: var(--muted); padding: 8px 14px;
+    font-size: .8rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: .15s;
+  }
+  .seg button.active { background: var(--teal); color: #06231f; }
+
+  /* ── KPI cards ── */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 18px; }
+  .kpi {
+    background: linear-gradient(160deg, var(--card), var(--card-2));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .kpi::after { content:''; position:absolute; inset-inline-end:-20px; top:-20px; width:90px; height:90px; border-radius:50%; background: var(--teal-soft); }
+  .kpi .label { color: var(--muted); font-size: .78rem; font-weight: 700; margin-bottom: 8px; display:flex; align-items:center; gap:6px; }
+  .kpi .value { font-size: 1.7rem; font-weight: 800; letter-spacing: -.5px; }
+  .kpi .value small { font-size: .9rem; font-weight: 700; color: var(--muted); margin-inline-start: 3px; }
+  .kpi .delta { font-size: .76rem; font-weight: 800; margin-top: 6px; display: inline-flex; align-items: center; gap: 3px; }
+  .delta.up   { color: var(--green); }
+  .delta.down { color: var(--red); }
+  .delta.flat { color: var(--muted); }
+
+  /* ── Grid + panels ── */
+  .grid { display: grid; gap: 16px; }
+  .grid.cols-2 { grid-template-columns: 2fr 1fr; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1000px) { .grid.cols-2, .grid.cols-3 { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .panel h3 { margin: 0 0 4px; font-size: 1rem; font-weight: 800; display:flex; align-items:center; gap:8px; }
+  .panel .sub { color: var(--muted); font-size: .78rem; margin-bottom: 14px; }
+  .panel-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+
+  /* ── Table ── */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+  th, td { padding: 10px 12px; text-align: start; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 700; font-size: .74rem; text-transform: uppercase; letter-spacing: .4px; cursor: pointer; user-select: none; }
+  th:hover { color: var(--text); }
+  tbody tr:hover { background: var(--card-2); }
+  .pill { display:inline-block; padding: 2px 10px; border-radius: 20px; font-size: .72rem; font-weight: 800; }
+  .pill.paid      { background: rgba(34,197,94,.16);  color: #4ade80; }
+  .pill.pending   { background: rgba(245,185,66,.16);  color: var(--gold); }
+  .pill.cancelled { background: rgba(239,68,68,.16);   color: #f87171; }
+  .money { font-variant-numeric: tabular-nums; font-weight: 800; }
+
+  /* ── Filters ── */
+  .filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom: 14px; }
+  .filters input, .filters select {
+    background: var(--card-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 9px; padding: 8px 12px; font-size: .8rem; font-family: inherit;
+  }
+  .filters input::placeholder { color: var(--muted); }
+
+  /* ── Alerts ── */
+  .alert { display:flex; gap:10px; align-items:flex-start; padding: 12px 14px; border-radius: 12px; margin-bottom: 10px; font-size: .84rem; font-weight: 600; border:1px solid transparent; }
+  .alert .ico { font-size: 1.1rem; line-height: 1; }
+  .alert.danger  { background: rgba(239,68,68,.10);  border-color: rgba(239,68,68,.3);  color: #fca5a5; }
+  .alert.warning { background: rgba(245,185,66,.10); border-color: rgba(245,185,66,.3); color: var(--gold); }
+  .alert.success { background: rgba(34,197,94,.10);  border-color: rgba(34,197,94,.3);  color: #86efac; }
+  .alert.info    { background: rgba(59,130,246,.10); border-color: rgba(59,130,246,.3); color: #93c5fd; }
+
+  .bar-row { display:flex; align-items:center; gap:10px; margin-bottom: 11px; }
+  .bar-row .nm { width: 120px; font-size: .8rem; font-weight: 700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar-track { flex:1; height: 9px; background: var(--card-2); border-radius: 6px; overflow:hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--teal), #0ea5a0); }
+  .bar-row .amt { width: 92px; text-align: end; font-weight: 800; font-variant-numeric: tabular-nums; font-size: .8rem; }
+
+  .skeleton { background: linear-gradient(90deg, var(--card-2) 25%, var(--border) 50%, var(--card-2) 75%); background-size: 200% 100%; animation: sh 1.3s infinite; border-radius: 8px; }
+  @keyframes sh { to { background-position: -200% 0; } }
+
+  .loading-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height: 60vh; gap: 16px; color: var(--muted); }
+  .spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--teal); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty { text-align:center; color: var(--muted); padding: 30px; font-size: .85rem; }
+  @media print {
+    .no-print { display: none !important; }
+    body { background:#fff; color:#000; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── Top bar ── -->
+  <div class="topbar no-print">
+    <div class="brand"><img src="/logo.png" alt="Guideon"> لوحة الإيرادات</div>
+    <div class="spacer"></div>
+    <div class="seg" id="periodSeg">
+      <button data-period="today">اليوم</button>
+      <button data-period="7" class="active">7 أيّام</button>
+      <button data-period="30">30 يوم</button>
+      <button data-period="365">سنة</button>
+    </div>
+    <button class="btn" onclick="exportCSV()">⬇️ CSV</button>
+    <button class="btn" onclick="window.print()">🖨️ PDF</button>
+    <button class="btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <button class="btn" onclick="loadAll(true)" id="refreshBtn">🔄 تحديث</button>
+    <a class="btn" href="/admin.html">← لوحة الإدارة</a>
+  </div>
+
+  <div id="app">
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <div>جارٍ تحميل بيانات الإيرادات…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════ State ════════════════════════ */
+let DATA = null;
+let CHARTS = {};
+let CURRENT_PERIOD = '7';
+let TXN_SORT = { key: 'date', dir: 'desc' };
+
+const fmt   = (n) => (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const fmt0  = (n) => (Number(n) || 0).toLocaleString('en-US');
+const esc   = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const omr   = (n) => `<span class="money">${fmt(n)}</span> <small style="color:var(--muted);font-weight:700">ر.ع</small>`;
+
+/* ════════════════════════ Theme ════════════════════════ */
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'light' ? 'dark' : 'light';
+  if (next === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  else document.documentElement.removeAttribute('data-theme');
+  localStorage.setItem('rev_theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙' : '☀️';
+  // Re-render charts with new palette
+  if (DATA) renderCharts();
+}
+(function initTheme() {
+  const saved = localStorage.getItem('rev_theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+
+/* ════════════════════════ Data load ════════════════════════ */
+async function loadAll(force) {
+  const btn = document.getElementById('refreshBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ …'; }
+  try {
+    const r = await fetch('/api/admin/revenue' + (force ? '?t=' + Date.now() : ''), { credentials: 'include' });
+    if (r.status === 401 || r.status === 403) { location.href = '/login.html'; return; }
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'فشل التحميل');
+    DATA = d.data;
+    render();
+  } catch (e) {
+    document.getElementById('app').innerHTML =
+      `<div class="empty">⚠️ ${esc(e.message)}<br><br><button class="btn" onclick="loadAll(true)">إعادة المحاولة</button></div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 تحديث'; }
+  }
+}
+
+/* ════════════════════════ Render ════════════════════════ */
+function render() {
+  const o = DATA.overview;
+  const themeBtn = document.getElementById('themeBtn');
+  themeBtn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '🌙' : '☀️';
+
+  const periodRev = { today: o.revToday, '7': o.rev7, '30': o.rev30, '365': o.rev365 }[CURRENT_PERIOD];
+  const periodGrowth = CURRENT_PERIOD === '30' ? o.growth30 : (CURRENT_PERIOD === '7' ? o.growth7 : null);
+
+  document.getElementById('app').innerHTML = `
+    <!-- KPI cards -->
+    <div class="kpis">
+      ${kpiCard('💰 إجمالي الإيرادات', omr(o.revTotal), null, 'كلّ العمليّات المدفوعة')}
+      ${kpiCard('📅 إيراد الفترة', omr(periodRev), periodGrowth, periodLabel())}
+      ${kpiCard('🧾 عدد العمليّات', fmt0(o.txnCount), null, `معلّقة: ${fmt0(o.pendingPay)} · ملغاة: ${fmt0(o.cancelled)}`)}
+      ${kpiCard('📊 متوسّط قيمة الطلب', omr(o.aov), null, 'Average Order Value')}
+      ${kpiCard('🏦 أرباح المنصّة', omr(o.platformEarnings), null, `عمولة ${(DATA.commissionRate*100).toFixed(0)}%`)}
+      ${kpiCard('🤝 مستحقّات المزوّدين', omr(o.providerPayouts), null, 'بعد خصم العمولة')}
+    </div>
+
+    <!-- Alerts -->
+    <div class="panel">
+      <div class="panel-head"><h3>🔔 التنبيهات الذكيّة</h3></div>
+      ${DATA.alerts.map(a => `
+        <div class="alert ${a.level}">
+          <span class="ico">${{danger:'🚨',warning:'⚠️',success:'🎉',info:'✅'}[a.level]||'ℹ️'}</span>
+          <span>${esc(a.message)}</span>
+        </div>`).join('')}
+    </div>
+
+    <!-- Revenue over time + by source -->
+    <div class="grid cols-2">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>📈 الإيرادات عبر الزمن</h3><div class="sub">المبالغ بالريال العُماني</div></div>
+          <div class="seg" id="chartScale">
+            <button data-scale="daily" class="active">يومي (30)</button>
+            <button data-scale="monthly">شهري (12)</button>
+          </div>
+        </div>
+        <div id="chartRevenue"></div>
+      </div>
+      <div class="panel">
+        <h3>🥧 الإيرادات حسب المصدر</h3>
+        <div class="sub">أفراد مقابل شركات</div>
+        <div id="chartSource"></div>
+      </div>
+    </div>
+
+    <!-- Top earners + destinations -->
+    <div class="grid cols-2">
+      <div class="panel">
+        <h3>🏆 أعلى المزوّدين دخلاً</h3>
+        <div class="sub">أفضل 10 حسب الإيراد المدفوع</div>
+        <div id="topEarners">${barList(DATA.topEarners.map(e => ({ name: e.name, value: e.revenue, meta: `${e.txns} عمليّة · ${e.type === 'company' ? 'شركة' : 'مرشد'}` })))}</div>
+      </div>
+      <div class="panel">
+        <h3>📍 الإيرادات حسب الوجهة</h3>
+        <div class="sub">أفضل 10 وجهات</div>
+        <div id="byDest">${barList(DATA.byDestination.map(e => ({ name: e.destination, value: e.revenue })))}</div>
+      </div>
+    </div>
+
+    <!-- Payment methods -->
+    <div class="grid cols-2">
+      <div class="panel">
+        <h3>💳 طرق الدفع</h3>
+        <div class="sub">التوزيع حسب البوّابة</div>
+        <div id="chartMethods"></div>
+        <div style="margin-top:14px">
+          ${DATA.methods.map(m => `
+            <div class="bar-row">
+              <span class="nm">${esc(m.method)}</span>
+              <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+              <span class="amt">${fmt(m.revenue)}</span>
+            </div>
+            <div class="sub" style="margin-bottom:14px">${fmt0(m.count)} عمليّة ناجحة · ${fmt0(m.failed)} لم تُدفع</div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="panel">
+        <h3>♻️ الاشتراكات المتكرّرة (MRR)</h3>
+        <div class="sub">${esc(DATA.subscriptions.note)}</div>
+        <div class="empty" style="padding:40px 20px">
+          <div style="font-size:2.4rem;margin-bottom:8px">🧾</div>
+          النموذج الحالي: <strong>عمولة لكل حجز</strong><br>
+          لا يوجد اشتراكات شهريّة متكرّرة بعد.<br><br>
+          <span class="sub">عند إطلاق باقات اشتراك للمرشدين/الشركات،<br>ستظهر هنا: MRR · Churn · عدد المشتركين.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions -->
+    <div class="panel">
+      <div class="panel-head">
+        <div><h3>🧾 سجلّ العمليّات المالية</h3><div class="sub">آخر العمليّات المدفوعة والمعلّقة</div></div>
+      </div>
+      <div class="filters no-print">
+        <input id="fSearch" placeholder="🔍 بحث (سائح، مزوّد، وجهة، مرجع)" oninput="renderTxns()" style="min-width:240px">
+        <select id="fStatus" onchange="renderTxns()">
+          <option value="">كل الحالات</option>
+          <option value="paid">ناجحة</option>
+          <option value="pending">معلّقة</option>
+          <option value="cancelled">ملغاة</option>
+        </select>
+        <input id="fMin" type="number" placeholder="أدنى مبلغ" oninput="renderTxns()" style="width:110px">
+        <input id="fMax" type="number" placeholder="أعلى مبلغ" oninput="renderTxns()" style="width:110px">
+        <input id="fFrom" type="date" onchange="renderTxns()">
+        <input id="fTo" type="date" onchange="renderTxns()">
+        <span class="sub" id="txnCount" style="margin-inline-start:auto"></span>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th onclick="sortTxn('ref')">المرجع</th>
+            <th onclick="sortTxn('tourist')">السائح</th>
+            <th onclick="sortTxn('provider')">المزوّد</th>
+            <th onclick="sortTxn('destination')">الوجهة</th>
+            <th onclick="sortTxn('amount')">المبلغ</th>
+            <th onclick="sortTxn('commission')">العمولة</th>
+            <th onclick="sortTxn('status')">الحالة</th>
+            <th onclick="sortTxn('method')">الطريقة</th>
+            <th onclick="sortTxn('date')">التاريخ</th>
+          </tr></thead>
+          <tbody id="txnBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="sub no-print" style="text-align:center;margin-top:20px">
+      آخر تحديث: ${new Date(DATA.generatedAt).toLocaleString('ar')} · عملة العرض: ${esc(DATA.currency)}
+    </div>
+  `;
+
+  // Wire chart-scale + period toggles
+  wireToggles();
+  renderCharts();
+  renderTxns();
+}
+
+function kpiCard(label, valueHtml, growth, sub) {
+  let delta = '';
+  if (growth != null) {
+    const cls = growth > 0 ? 'up' : (growth < 0 ? 'down' : 'flat');
+    const arrow = growth > 0 ? '▲' : (growth < 0 ? '▼' : '—');
+    delta = `<div class="delta ${cls}">${arrow} ${Math.abs(growth)}%</div>`;
+  }
+  return `<div class="kpi">
+    <div class="label">${label}</div>
+    <div class="value">${valueHtml}</div>
+    ${delta || (sub ? `<div class="sub" style="margin-top:6px">${esc(sub)}</div>` : '')}
+  </div>`;
+}
+
+function periodLabel() {
+  return { today: 'اليوم', '7': 'آخر 7 أيّام', '30': 'آخر 30 يوم', '365': 'آخر سنة' }[CURRENT_PERIOD];
+}
+
+function barList(items) {
+  if (!items.length) return '<div class="empty">لا توجد بيانات بعد</div>';
+  const max = Math.max(...items.map(i => i.value), 1);
+  return items.map(i => `
+    <div class="bar-row">
+      <span class="nm" title="${esc(i.name)}">${esc(i.name)}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${(i.value / max * 100).toFixed(1)}%"></div></div>
+      <span class="amt">${fmt(i.value)}</span>
+    </div>
+    ${i.meta ? `<div class="sub" style="margin:-6px 0 10px 130px">${esc(i.meta)}</div>` : ''}
+  `).join('');
+}
+
+/* ════════════════════════ Charts ════════════════════════ */
+function chartTheme() {
+  const light = document.documentElement.getAttribute('data-theme') === 'light';
+  const text = light ? '#475569' : '#8a97b4';
+  return { text, light };
+}
+
+function renderCharts() {
+  Object.values(CHARTS).forEach(c => { try { c.destroy(); } catch {} });
+  CHARTS = {};
+  const { text } = chartTheme();
+  const scaleEl = document.querySelector('#chartScale button.active');
+  const scale = scaleEl ? scaleEl.dataset.scale : 'daily';
+  renderRevenueChart(scale, text);
+  renderSourceChart(text);
+  renderMethodsChart(text);
+}
+
+function renderRevenueChart(scale, text) {
+  const series = scale === 'monthly' ? DATA.monthly : DATA.daily;
+  const cats = series.map(s => scale === 'monthly' ? s.month : s.date.slice(5));
+  const vals = series.map(s => s.revenue);
+  CHARTS.rev = new ApexCharts(document.querySelector('#chartRevenue'), {
+    chart: { type: 'area', height: 300, toolbar: { show: false }, fontFamily: 'inherit', animations: { speed: 400 } },
+    series: [{ name: 'الإيراد', data: vals }],
+    xaxis: { categories: cats, labels: { style: { colors: text, fontSize: '11px' } }, axisBorder: { show: false }, axisTicks: { show: false } },
+    yaxis: { labels: { style: { colors: text }, formatter: v => fmt0(Math.round(v)) } },
+    colors: ['#14b8a6'],
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: .45, opacityTo: .05, stops: [0, 95] } },
+    stroke: { curve: 'smooth', width: 3 },
+    dataLabels: { enabled: false },
+    grid: { borderColor: 'rgba(138,151,180,.15)', strokeDashArray: 4 },
+    tooltip: { theme: 'dark', y: { formatter: v => fmt(v) + ' ر.ع' } },
+  });
+  CHARTS.rev.render();
+}
+
+function renderSourceChart(text) {
+  const labels = DATA.bySource.map(s => s.label);
+  const vals = DATA.bySource.map(s => s.revenue);
+  if (vals.every(v => v === 0)) { document.querySelector('#chartSource').innerHTML = '<div class="empty">لا إيرادات بعد</div>'; return; }
+  CHARTS.src = new ApexCharts(document.querySelector('#chartSource'), {
+    chart: { type: 'donut', height: 300, fontFamily: 'inherit' },
+    series: vals, labels,
+    colors: ['#14b8a6', '#f5b942'],
+    legend: { position: 'bottom', labels: { colors: text } },
+    dataLabels: { enabled: true, formatter: (v) => v.toFixed(1) + '%' },
+    plotOptions: { pie: { donut: { size: '62%', labels: { show: true, total: { show: true, label: 'الإجمالي', color: text, formatter: () => fmt0(Math.round(vals.reduce((a,b)=>a+b,0))) + ' ر.ع' } } } } },
+    tooltip: { theme: 'dark', y: { formatter: v => fmt(v) + ' ر.ع' } },
+    stroke: { width: 0 },
+  });
+  CHARTS.src.render();
+}
+
+function renderMethodsChart(text) {
+  const labels = DATA.methods.map(m => m.method);
+  const vals = DATA.methods.map(m => m.revenue);
+  if (vals.every(v => v === 0)) { document.querySelector('#chartMethods').innerHTML = '<div class="empty">لا عمليّات بعد</div>'; return; }
+  CHARTS.mth = new ApexCharts(document.querySelector('#chartMethods'), {
+    chart: { type: 'donut', height: 220, fontFamily: 'inherit' },
+    series: vals, labels,
+    colors: ['#3b82f6', '#a855f7', '#22c55e', '#f5b942'],
+    legend: { position: 'bottom', labels: { colors: text } },
+    dataLabels: { enabled: true, formatter: (v) => v.toFixed(0) + '%' },
+    plotOptions: { pie: { donut: { size: '60%' } } },
+    tooltip: { theme: 'dark', y: { formatter: v => fmt(v) + ' ر.ع' } },
+    stroke: { width: 0 },
+  });
+  CHARTS.mth.render();
+}
+
+function wireToggles() {
+  document.querySelectorAll('#periodSeg button').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === CURRENT_PERIOD);
+    b.onclick = () => { CURRENT_PERIOD = b.dataset.period; render(); };
+  });
+  const scaleSeg = document.getElementById('chartScale');
+  if (scaleSeg) scaleSeg.querySelectorAll('button').forEach(b => {
+    b.onclick = () => {
+      scaleSeg.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      const { text } = chartTheme();
+      try { CHARTS.rev.destroy(); } catch {}
+      renderRevenueChart(b.dataset.scale, text);
+    };
+  });
+}
+
+/* ════════════════════════ Transactions table ════════════════════════ */
+function getFilteredTxns() {
+  const q   = (document.getElementById('fSearch')?.value || '').trim().toLowerCase();
+  const st  = document.getElementById('fStatus')?.value || '';
+  const min = parseFloat(document.getElementById('fMin')?.value);
+  const max = parseFloat(document.getElementById('fMax')?.value);
+  const from = document.getElementById('fFrom')?.value;
+  const to   = document.getElementById('fTo')?.value;
+
+  let rows = DATA.transactions.slice();
+  if (q)  rows = rows.filter(t => [t.tourist, t.provider, t.destination, t.ref, t.id].join(' ').toLowerCase().includes(q));
+  if (st) rows = rows.filter(t => t.status === st);
+  if (!isNaN(min)) rows = rows.filter(t => t.amount >= min);
+  if (!isNaN(max)) rows = rows.filter(t => t.amount <= max);
+  if (from) rows = rows.filter(t => new Date(t.date) >= new Date(from));
+  if (to)   rows = rows.filter(t => new Date(t.date) <= new Date(to + 'T23:59:59'));
+
+  const dir = TXN_SORT.dir === 'asc' ? 1 : -1;
+  rows.sort((a, b) => {
+    let va = a[TXN_SORT.key], vb = b[TXN_SORT.key];
+    if (TXN_SORT.key === 'date') { va = new Date(va); vb = new Date(vb); }
+    if (typeof va === 'string') return va.localeCompare(vb) * dir;
+    return (va - vb) * dir;
+  });
+  return rows;
+}
+
+function renderTxns() {
+  const rows = getFilteredTxns();
+  const body = document.getElementById('txnBody');
+  const cnt = document.getElementById('txnCount');
+  if (cnt) cnt.textContent = `${fmt0(rows.length)} عمليّة`;
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="9" class="empty">لا توجد عمليّات مطابقة</td></tr>'; return; }
+  const statusLbl = { paid: 'ناجحة', pending: 'معلّقة', cancelled: 'ملغاة' };
+  body.innerHTML = rows.map(t => `
+    <tr>
+      <td style="font-family:monospace;font-size:.74rem">${esc(String(t.ref).slice(0, 14))}</td>
+      <td>${esc(t.tourist)}</td>
+      <td>${esc(t.provider)}</td>
+      <td>${esc(t.destination)}</td>
+      <td class="money">${fmt(t.amount)}</td>
+      <td class="money" style="color:var(--teal)">${fmt(t.commission)}</td>
+      <td><span class="pill ${t.status}">${statusLbl[t.status] || t.status}</span></td>
+      <td>${esc(t.method)}</td>
+      <td>${new Date(t.date).toLocaleDateString('en-GB')}</td>
+    </tr>
+  `).join('');
+}
+
+function sortTxn(key) {
+  if (TXN_SORT.key === key) TXN_SORT.dir = TXN_SORT.dir === 'asc' ? 'desc' : 'asc';
+  else { TXN_SORT.key = key; TXN_SORT.dir = 'desc'; }
+  renderTxns();
+}
+
+/* ════════════════════════ Export ════════════════════════ */
+function exportCSV() {
+  const rows = getFilteredTxns();
+  const headers = ['Reference', 'Tourist', 'Provider', 'Destination', 'Amount(OMR)', 'Commission(OMR)', 'Status', 'Method', 'Date'];
+  const lines = [headers.join(',')];
+  for (const t of rows) {
+    const cells = [t.ref, t.tourist, t.provider, t.destination, t.amount, t.commission, t.status, t.method, t.date]
+      .map(v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`);
+    lines.push(cells.join(','));
+  }
+  // Summary block at the top
+  const o = DATA.overview;
+  const summary = [
+    `"Guideon Revenue Report","${new Date().toISOString()}"`,
+    `"Total Revenue (OMR)","${o.revTotal}"`,
+    `"Platform Earnings (OMR)","${o.platformEarnings}"`,
+    `"Transactions","${o.txnCount}"`,
+    `"Average Order Value (OMR)","${o.aov}"`,
+    '', // blank line
+  ];
+  const csv = '﻿' + summary.join('\n') + '\n' + lines.join('\n'); // BOM for Excel Arabic
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `guideon-revenue-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+loadAll();
+</script>
+</body>
+</html>

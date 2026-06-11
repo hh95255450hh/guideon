@@ -17,6 +17,7 @@ router.get('/whatsapp-test', admin.whatsappTest);
 router.get('/compress-storage',        admin.compressStorage);
 router.get('/compress-storage/status', admin.compressStorageStatus);
 router.get('/stats/extended',     requirePermission('view_analytics'), admin.extendedStats);
+router.get('/revenue',            requirePermission('view_analytics'), admin.revenue);
 router.get('/guides/pending',     requirePermission('view_users'), admin.pendingGuides);
 router.get('/guides',             requirePermission('view_users'), admin.allGuides);
 router.get('/tourists',           requirePermission('view_users'), admin.allTourists);
