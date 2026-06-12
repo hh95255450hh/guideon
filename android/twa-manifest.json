@@ -1,0 +1,58 @@
+{
+  "packageId": "guide.guideon.twa",
+  "host": "guideon.om",
+  "name": "Guideon",
+  "launcherName": "Guideon",
+  "display": "standalone",
+  "themeColor": "#0f7b6c",
+  "themeColorDark": "#0f7b6c",
+  "navigationColor": "#0f7b6c",
+  "navigationColorDark": "#0f7b6c",
+  "navigationDividerColor": "#0f7b6c",
+  "navigationDividerColorDark": "#0f7b6c",
+  "backgroundColor": "#0f7b6c",
+  "enableNotifications": true,
+  "startUrl": "/?source=twa",
+  "iconUrl": "https://guideon.om/icon-512.png",
+  "maskableIconUrl": "https://guideon.om/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "guideon"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Find a Guide",
+      "shortName": "Search",
+      "url": "/search.html?source=shortcut",
+      "chosenIconUrl": "https://guideon.om/icon-192.png"
+    },
+    {
+      "name": "Plan a Trip",
+      "shortName": "Plan Trip",
+      "url": "/plan-trip.html?source=shortcut",
+      "chosenIconUrl": "https://guideon.om/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://guideon.om/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://guideon.om/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [
+    {
+      "name": "release",
+      "value": "60:E9:36:37:C7:67:C7:C6:8D:70:F2:D5:54:E7:DA:00:00:32:54:9D:B2:50:F4:E3:62:A2:C0:AD:BF:61:F1:83"
+    }
+  ]
+}

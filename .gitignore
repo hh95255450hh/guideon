@@ -27,3 +27,9 @@ app/*.zip
 الاوراق الرسمية/
 *.pdf
 !public/guides/*.pdf
+
+# Android signing keystore — NEVER commit
+android/android.keystore
+android/*.keystore
+android/app/
+android/.gradle/
