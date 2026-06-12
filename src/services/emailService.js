@@ -594,6 +594,11 @@ async function send(to, subject, html) {
 // Generic branded, bilingual email built from any notify() payload —
 // so every in-app notification can also be delivered by email.
 function notificationEmail({ icon = '🔔', title = '', titleAr = '', body = '', bodyAr = '', link = '' }) {
+  // Callers pass app-relative links like '/admin.html#x'. Emails are opened
+  // outside the browser, so relative URLs don't resolve — clients render
+  // them as raw "[/admin.html]" text next to the button. Absolutize here so
+  // every notification button becomes a real, clickable https://guideon.om link.
+  if (link && link.startsWith('/')) link = APP_URL + link;
   const ar = `
     <h1 style="margin:0 0 10px;font-size:22px;font-weight:800;color:#1a1a1a;">${icon} ${titleAr || title}</h1>
     <p style="margin:0 0 18px;font-size:15px;color:#555;line-height:1.85;">${String(bodyAr || body || '').replace(/\n/g,'<br>')}</p>
