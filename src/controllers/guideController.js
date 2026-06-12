@@ -244,9 +244,10 @@ exports.updateAssets = async (req, res) => {
       // profile that tourists see.
       const msg = String(e?.message || '');
       if (/Could not find the '\w+' column|column \S+ does not exist|schema cache/i.test(msg)) {
+        console.error('[updateAssets] schema mismatch — run migration 032:', msg);
         return res.status(500).json({
           success: false,
-          message: 'Database is missing the guideAssets column — run migration 032 in Supabase.',
+          message: "Couldn't save your media right now. Please try again shortly. — تعذّر حفظ الوسائط حالياً، حاول لاحقاً.",
         });
       }
       throw e;
@@ -254,7 +255,7 @@ exports.updateAssets = async (req, res) => {
     res.json({ success: true, message: 'Assets updated.', guideAssets });
   } catch (err) {
     console.error('[updateAssets]', err.message);
-    res.status(500).json({ success: false, message: 'Server error: ' + err.message });
+    res.status(500).json({ success: false, message: "Couldn't save your changes. Please try again. — تعذّر حفظ التغييرات، حاول مجدداً." });
   }
 };
 

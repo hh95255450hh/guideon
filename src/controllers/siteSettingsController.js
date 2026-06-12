@@ -45,6 +45,6 @@ exports.update = async (req, res) => {
     res.json({ success: true, message: 'Saved.', value });
   } catch (err) {
     console.error('[site-settings:update]', err.message);
-    res.status(500).json({ success: false, message: 'Failed to save: ' + err.message });
+    res.status(500).json({ success: false, message: "Couldn't save right now. Please try again. — تعذّر الحفظ، حاول مجدداً." });
   }
 };

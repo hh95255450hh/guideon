@@ -212,7 +212,7 @@ exports.create = async (req, res) => {
 
     // Map specific Postgres errors to actionable messages.
     if (/duration_days_check/i.test(msg)) {
-      return res.status(400).json({ success: false, message: 'Please set the duration (at least one of days / hours / minutes must be > 0). If the form looks correct, ask admin to run migration 015.' });
+      return res.status(400).json({ success: false, message: 'Please set the duration — at least one of days / hours / minutes must be greater than 0. — يرجى تحديد المدّة (يوم/ساعة/دقيقة واحدة على الأقل).' });
     }
     if (/duration_nonzero/i.test(msg)) {
       return res.status(400).json({ success: false, message: 'Please set the duration — a tour must have at least 1 minute, hour, or day.' });

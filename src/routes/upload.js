@@ -65,16 +65,12 @@ router.post('/photo', requireLogin, safeMulter(upload.single('photo')), async (r
   } catch (e) {
     console.error('[upload:photo]', e.message);
     const msg = String(e.message || '');
-    if (/row-level security|RLS|policy/i.test(msg)) {
-      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016. (Server: ' + msg + ')' });
-    }
-    if (/Bucket not found|does not exist/i.test(msg)) {
-      return res.status(500).json({ success: false, message: 'Storage bucket missing — admin must run migration 016.' });
-    }
     if (/exceeded|too large/i.test(msg)) {
-      return res.status(400).json({ success: false, message: 'File is too large. Maximum 10 MB.' });
+      return res.status(400).json({ success: false, message: 'File is too large. Maximum 10 MB. — حجم الملف كبير جداً (الحدّ 10 ميغابايت).' });
     }
-    res.status(500).json({ success: false, message: 'Upload failed: ' + msg });
+    // Storage/RLS/bucket problems are operational — log the detail, show a
+    // calm message. The admin sees the real cause in the server logs.
+    res.status(500).json({ success: false, message: "Couldn't upload the image right now. Please try again in a moment. — تعذّر رفع الصورة حالياً، حاول مرّة أخرى." });
   }
 });
 
@@ -133,9 +129,9 @@ router.post('/image', requireLogin, safeMulter(upload.single('photo')), async (r
     console.error('[upload:image]', e.message);
     const msg = String(e.message || '');
     if (/row-level security|RLS|policy/i.test(msg)) {
-      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016.' });
+      return res.status(500).json({ success: false, message: "Couldn't upload right now. Please try again in a moment. — تعذّر الرفع حالياً، حاول مجدداً." });
     }
-    res.status(500).json({ success: false, message: 'Upload failed: ' + msg });
+    res.status(500).json({ success: false, message: "Couldn't upload right now. Please try again in a moment. — تعذّر الرفع حالياً، حاول مجدداً." });
   }
 });
 
@@ -167,12 +163,12 @@ router.post('/video-file', requireLogin, safeMulter(uploadVid.single('video')), 
     console.error('[upload:video-file]', e.message);
     const msg = String(e.message || '');
     if (/row-level security|RLS|policy/i.test(msg)) {
-      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016.' });
+      return res.status(500).json({ success: false, message: "Couldn't upload right now. Please try again in a moment. — تعذّر الرفع حالياً، حاول مجدداً." });
     }
     if (/exceeded|too large|maximum/i.test(msg)) {
       return res.status(400).json({ success: false, message: 'Video too large — maximum 50 MB.' });
     }
-    res.status(500).json({ success: false, message: 'Upload failed: ' + msg });
+    res.status(500).json({ success: false, message: "Couldn't upload right now. Please try again in a moment. — تعذّر الرفع حالياً، حاول مجدداً." });
   }
 });
 
@@ -191,7 +187,7 @@ router.post('/message-attachment', requireLogin, safeMulter(upload.single('file'
     console.error('[upload:message-attachment]', e.message);
     const msg = String(e.message || '');
     if (/row-level security|RLS|policy/i.test(msg)) {
-      return res.status(500).json({ success: false, message: 'Storage permissions error — admin must run migration 016.' });
+      return res.status(500).json({ success: false, message: "Couldn't upload right now. Please try again in a moment. — تعذّر الرفع حالياً، حاول مجدداً." });
     }
     if (/exceeded|too large/i.test(msg)) {
       return res.status(400).json({ success: false, message: 'File is too large. Maximum 10 MB.' });

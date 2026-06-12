@@ -178,7 +178,8 @@ exports.register = async (req, res) => {
       return res.status(409).json({ success: false, message: 'Email already registered. Please log in.' });
     }
     if (msg.includes('column')) {
-      return res.status(500).json({ success: false, message: 'Database schema mismatch — please contact support. (Admin: run migration 012)' });
+      console.error('[register] schema mismatch — run migration 012:', msg);
+      return res.status(500).json({ success: false, message: 'Something went wrong creating your account. Please try again or contact support. — تعذّر إنشاء الحساب، حاول مجدداً أو تواصل مع الدعم.' });
     }
     res.status(500).json({ success: false, message: 'Server error. Please try again or contact support via WhatsApp.' });
   }
@@ -431,23 +432,14 @@ exports.updateProfile = async (req, res) => {
     }
     if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });
     const { password, ...safe } = updated;
-    res.json({
-      success: true,
-      message: droppedCols.length
-        ? `Profile updated. (Note: ${droppedCols.join(', ')} not yet supported in DB — run migration 034.)`
-        : 'Profile updated.',
-      user: safe,
-    });
+    if (droppedCols.length) {
+      // Admin-actionable detail goes to the logs, not the user's screen.
+      console.warn('[updateProfile] columns not yet in DB (run migration 034):', droppedCols.join(', '));
+    }
+    res.json({ success: true, message: 'Profile updated. — تم تحديث الملف.', user: safe });
   } catch (err) {
     console.error('[updateProfile]', err.message);
-    const msg = String(err.message || '');
-    if (/Could not find the '\w+' column|column \S+ does not exist|schema cache/i.test(msg)) {
-      return res.status(500).json({
-        success: false,
-        message: 'الحفظ فشل: عمود في قاعدة البيانات مفقود — يرجى تشغيل migration 034. (Schema cache issue: ' + msg + ')',
-      });
-    }
-    res.status(500).json({ success: false, message: 'لم نتمكن من حفظ التعديلات. Server error: ' + msg });
+    res.status(500).json({ success: false, message: "Couldn't save your changes. Please try again. — تعذّر حفظ التعديلات، حاول مجدداً." });
   }
 };
 
