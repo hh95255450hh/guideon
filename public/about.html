@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<link rel="preload" as="script" href="/js/common-widgets.js?v=14">
+<link rel="stylesheet" href="/css/gd-instant.css?v=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About Guideon — Oman's Tour-Guide Marketplace | Vision for Digital Thought</title>
+<meta name="description" content="Guideon is Oman's marketplace connecting tourists with licensed local tour guides and registered tourism companies. Operated by Vision for Digital Thought, Seeb, Oman.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<meta property="og:title" content="About Guideon — Oman's Tour-Guide Marketplace">
+<meta property="og:description" content="Connecting travellers with verified local guides across the Sultanate of Oman.">
+<meta property="og:image" content="https://guideon.om/logo.png">
+<meta property="og:url" content="https://guideon.om/about.html">
+<link rel="canonical" href="https://guideon.om/about.html">
+<script>
+/* Bootstrap CSS picker — see i18n.js for the swap logic on lang change */
+(function(){
+  var s = localStorage.getItem('gd_lang');
+  var nav = (navigator.language||'en').slice(0,2).toLowerCase();
+  var lang = s || (['en','ar','zh','hi','es','fr','bn','pt','ru','ur'].indexOf(nav)>=0 ? nav : 'en');
+  var rtl = lang === 'ar' || lang === 'ur';
+  var l = document.createElement('link');
+  l.id = rtl ? 'bs-rtl' : 'bs-ltr';
+  l.rel = 'stylesheet';
+  l.href = rtl ? '/css/bootstrap.rtl.min.css' : '/css/bootstrap.min.css';
+  document.head.appendChild(l);
+})();
+</script>
+<link rel="stylesheet" href="/css/style.css?v=40">
+<style>
+  .about-hero {
+    background: linear-gradient(135deg, var(--teal-dark, #0a5c50), var(--teal, #0f7b6c));
+    color: #fff; padding: 64px 20px 56px; text-align: center;
+  }
+  .about-hero img { height: 64px; margin-bottom: 18px; }
+  .about-hero h1 { font-size: 2.3rem; font-weight: 800; margin-bottom: 12px; }
+  .about-hero p { font-size: 1.1rem; opacity: .92; max-width: 680px; margin: 0 auto; line-height: 1.7; }
+  .about-wrap { max-width: 920px; margin: 0 auto; padding: 48px 20px 80px; }
+  .about-wrap h2 { font-size: 1.5rem; font-weight: 800; color: var(--navy-dark, #0f1c3e); margin: 38px 0 14px; }
+  .about-wrap p, .about-wrap li { line-height: 1.8; color: #333; font-size: 1.02rem; }
+  .about-wrap ul { padding-inline-start: 22px; }
+  .lang-section { display: none; }
+  .lang-section.active { display: block; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 30px 0; }
+  .stat-box { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 22px 16px; text-align: center; box-shadow: 0 3px 12px rgba(15,28,62,.05); }
+  .stat-box .n { font-size: 1.9rem; font-weight: 800; color: var(--teal, #0f7b6c); }
+  .stat-box .l { color: var(--muted, #64748b); font-size: .85rem; font-weight: 600; margin-top: 4px; }
+
+  .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin: 24px 0; }
+  .value-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 22px; }
+  .value-card .ic { font-size: 1.8rem; margin-bottom: 10px; }
+  .value-card h3 { font-size: 1.08rem; font-weight: 800; color: var(--navy-dark, #0f1c3e); margin-bottom: 6px; }
+  .value-card p { font-size: .95rem; color: #555; margin: 0; }
+
+  .entity-card {
+    background: linear-gradient(160deg, #f8fafc, #eef4f3);
+    border: 1px solid #d8e3e0; border-radius: 16px; padding: 26px 28px; margin: 30px 0;
+  }
+  .entity-card h3 { font-size: 1.15rem; font-weight: 800; color: var(--navy-dark, #0f1c3e); margin: 0 0 14px; }
+  .entity-card table { width: 100%; border-collapse: collapse; }
+  .entity-card td { padding: 8px 4px; border-bottom: 1px solid #e2e8e6; font-size: .95rem; vertical-align: top; }
+  .entity-card td:first-child { color: var(--muted, #64748b); font-weight: 700; width: 42%; }
+  .entity-card td:last-child { color: var(--navy-dark, #0f1c3e); font-weight: 600; }
+  .badge-verified { display:inline-block; background: rgba(16,185,129,.12); color:#059669; font-weight:800; font-size:.78rem; padding:3px 10px; border-radius:20px; }
+</style>
+<script src="/js/image-compress.js?v=3"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="44"></a>
+    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()">🌐 عربي</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════ ENGLISH ═══════════════════ -->
+<div class="lang-section active" id="about-en">
+  <div class="about-hero">
+    <img src="/logo.png" alt="Guideon">
+    <h1>About Guideon</h1>
+    <p>Oman's trusted marketplace connecting travellers with licensed local tour guides and registered tourism companies across the Sultanate.</p>
+  </div>
+  <div class="about-wrap">
+    <h2>Who we are</h2>
+    <p>Guideon is an online platform that makes it simple to discover, compare, and book authentic guided experiences across Oman — from the forts of Nizwa and the fjords of Musandam to the dunes of the Wahiba Sands and the frankincense coast of Dhofar.</p>
+    <p>We connect tourists directly with local experts: independent tour guides and licensed tourism companies who know Oman intimately. Every booking, message, and payment happens securely on the platform.</p>
+
+    <div class="stat-row">
+      <div class="stat-box"><div class="n">11</div><div class="l">Governorates covered</div></div>
+      <div class="stat-box"><div class="n">10</div><div class="l">Interface languages</div></div>
+      <div class="stat-box"><div class="n">100%</div><div class="l">Verified companies</div></div>
+      <div class="stat-box"><div class="n">24/7</div><div class="l">Secure messaging</div></div>
+    </div>
+
+    <h2>Our mission</h2>
+    <p>To put Oman's local guides at the heart of every traveller's journey — giving visitors authentic, safe, and well-organised experiences while helping Omani guides and tourism businesses grow a sustainable income.</p>
+
+    <h2>What makes us different</h2>
+    <div class="value-grid">
+      <div class="value-card"><div class="ic">✅</div><h3>Verified providers</h3><p>All tourism companies hold Ministry of Heritage &amp; Tourism licenses, and the majority of individual guides are Ministry-certified — look for the ✓ Verified badge.</p></div>
+      <div class="value-card"><div class="ic">🔒</div><h3>Secure by design</h3><p>Encrypted payments, protected contact details, and on-platform messaging keep both travellers and guides safe.</p></div>
+      <div class="value-card"><div class="ic">🌍</div><h3>Built for everyone</h3><p>A fully bilingual Arabic/English interface with support for 10 languages, so visitors from anywhere feel at home.</p></div>
+      <div class="value-card"><div class="ic">🇴🇲</div><h3>Proudly Omani</h3><p>Designed and operated in Oman, for Oman — supporting local guides and the national tourism vision.</p></div>
+    </div>
+
+    <h2>Company information</h2>
+    <p>Guideon is operated by <strong>Vision for Digital Thought</strong>, a registered Omani business.</p>
+    <div class="entity-card">
+      <h3>🏢 Legal entity <span class="badge-verified">Verified · National Registry</span></h3>
+      <table>
+        <tr><td>Trading name</td><td>Guideon</td></tr>
+        <tr><td>Legal entity</td><td>Vision for Digital Thought</td></tr>
+        <tr><td>Legal structure</td><td>Sole Proprietorship (Merchant / Individual Firm)</td></tr>
+        <tr><td>D-U-N-S® Number</td><td>850403864</td></tr>
+        <tr><td>Registered address</td><td>North Al Mabilah, Seeb, Muscat Governorate 112, Sultanate of Oman</td></tr>
+        <tr><td>Contact email</td><td><a href="mailto:hh92hh@guideon.om">hh92hh@guideon.om</a></td></tr>
+        <tr><td>Phone / WhatsApp</td><td><a href="https://wa.me/96895255450">+968 9525 5450</a></td></tr>
+        <tr><td>Website</td><td><a href="https://guideon.om">guideon.om</a></td></tr>
+      </table>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/search.html" class="btn btn-teal btn-lg" style="padding:12px 32px">Find a Guide →</a>
+      <a href="/contact.html" class="btn btn-outline-secondary btn-lg ms-2" style="padding:12px 32px">Contact Us</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ ARABIC ═══════════════════ -->
+<div class="lang-section" id="about-ar" dir="rtl">
+  <div class="about-hero">
+    <img src="/logo.png" alt="Guideon">
+    <h1>عن Guideon</h1>
+    <p>المنصّة العُمانيّة الموثوقة التي تربط المسافرين بمرشدين سياحيين محليين معتمدين وشركات سياحيّة مسجّلة في جميع أنحاء السلطنة.</p>
+  </div>
+  <div class="about-wrap">
+    <h2>من نحن</h2>
+    <p>Guideon منصّة إلكترونيّة تجعل اكتشاف ومقارنة وحجز التجارب السياحيّة الأصيلة في عُمان أمراً سهلاً — من قلاع نزوى وأخوار مسندم إلى رمال الشرقيّة وساحل اللبان في ظفار.</p>
+    <p>نربط السيّاح مباشرةً بالخبراء المحليين: مرشدون مستقلّون وشركات سياحيّة مرخّصة يعرفون عُمان عن قرب. كلّ حجز ورسالة ودفعة تتمّ بأمان داخل المنصّة.</p>
+
+    <div class="stat-row">
+      <div class="stat-box"><div class="n">11</div><div class="l">محافظة مغطّاة</div></div>
+      <div class="stat-box"><div class="n">10</div><div class="l">لغات للواجهة</div></div>
+      <div class="stat-box"><div class="n">100%</div><div class="l">شركات موثّقة</div></div>
+      <div class="stat-box"><div class="n">24/7</div><div class="l">مراسلة آمنة</div></div>
+    </div>
+
+    <h2>رسالتنا</h2>
+    <p>أن نضع المرشدين المحليين في قلب رحلة كلّ مسافر — لنمنح الزوّار تجارب أصيلة وآمنة ومنظّمة، ونساعد المرشدين والشركات السياحيّة العُمانيّة على بناء دخل مستدام.</p>
+
+    <h2>ما الذي يميّزنا</h2>
+    <div class="value-grid">
+      <div class="value-card"><div class="ic">✅</div><h3>مزوّدون موثّقون</h3><p>جميع الشركات السياحيّة تحمل تراخيص وزارة التراث والسياحة، وغالبيّة المرشدين الأفراد معتمدون من الوزارة — ابحث عن شارة ✓ موثّق.</p></div>
+      <div class="value-card"><div class="ic">🔒</div><h3>آمن بالتصميم</h3><p>مدفوعات مشفّرة، وبيانات تواصل محميّة، ومراسلة داخل المنصّة تحفظ سلامة الطرفين.</p></div>
+      <div class="value-card"><div class="ic">🌍</div><h3>للجميع</h3><p>واجهة ثنائيّة اللغة عربي/إنجليزي مع دعم 10 لغات، ليشعر الزائر من أيّ مكان بأنّه في بيته.</p></div>
+      <div class="value-card"><div class="ic">🇴🇲</div><h3>عُمانيّة بكلّ فخر</h3><p>صُمّمت وتُدار في عُمان، لعُمان — دعماً للمرشدين المحليين ورؤية السياحة الوطنيّة.</p></div>
+    </div>
+
+    <h2>معلومات الشركة</h2>
+    <p>تُدار منصّة Guideon بواسطة <strong>Vision for Digital Thought</strong>، وهي مؤسّسة عُمانيّة مسجّلة.</p>
+    <div class="entity-card">
+      <h3>🏢 الكيان القانوني <span class="badge-verified">موثّق · السجلّ الوطني</span></h3>
+      <table>
+        <tr><td>الاسم التجاري</td><td>Guideon</td></tr>
+        <tr><td>الكيان القانوني</td><td>Vision for Digital Thought</td></tr>
+        <tr><td>الشكل القانوني</td><td>مؤسّسة فرديّة (Sole Proprietorship)</td></tr>
+        <tr><td>رقم D-U-N-S®</td><td>850403864</td></tr>
+        <tr><td>العنوان المسجّل</td><td>شمال المعبيلة، السيب، محافظة مسقط 112، سلطنة عُمان</td></tr>
+        <tr><td>البريد الإلكتروني</td><td><a href="mailto:hh92hh@guideon.om">hh92hh@guideon.om</a></td></tr>
+        <tr><td>الهاتف / واتساب</td><td><a href="https://wa.me/96895255450">+968 9525 5450</a></td></tr>
+        <tr><td>الموقع</td><td><a href="https://guideon.om">guideon.om</a></td></tr>
+      </table>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/search.html" class="btn btn-teal btn-lg" style="padding:12px 32px">ابحث عن مرشد ←</a>
+      <a href="/contact.html" class="btn btn-outline-secondary btn-lg ms-2" style="padding:12px 32px">تواصل معنا</a>
+    </div>
+  </div>
+</div>
+
+<script src="/js/i18n.js?v=45"></script>
+<script src="/js/common-widgets.js?v=14"></script>
+<script src="/js/pwa.js?v=14" defer></script>
+<script>
+function syncLang() {
+  const isAr = document.documentElement.lang === 'ar';
+  document.getElementById('about-en').classList.toggle('active', !isAr);
+  document.getElementById('about-ar').classList.toggle('active',  isAr);
+}
+document.addEventListener('DOMContentLoaded', syncLang);
+const _origToggle = I18N.toggle;
+I18N.toggle = function () { _origToggle.call(I18N); syncLang(); };
+</script>
+</body>
+</html>

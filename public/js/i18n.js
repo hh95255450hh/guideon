@@ -36,12 +36,17 @@ const PACKS = Object.create(null);
 // network request instead of triggering duplicates.
 const PENDING = Object.create(null);
 
+// Bump PACK_VERSION whenever any /i18n/*.json changes. The JSON packs are
+// served with a 1-year immutable cache, so without this query string a
+// content change would never reach returning visitors.
+const PACK_VERSION = 2;
+
 async function loadPack(code) {
   if (PACKS[code]) return PACKS[code];
   if (PENDING[code]) return PENDING[code];
   PENDING[code] = (async () => {
     try {
-      const r = await fetch(`/i18n/${code}.json`, { credentials: 'omit' });
+      const r = await fetch(`/i18n/${code}.json?v=${PACK_VERSION}`, { credentials: 'omit' });
       if (!r.ok) throw new Error(`pack ${code} HTTP ${r.status}`);
       const dict = await r.json();
       PACKS[code] = dict;
