@@ -476,13 +476,13 @@ function renderGuides(guides) {
       <div class="col-md-6 col-lg-4">
         <div class="guide-card h-100 guide-card-wrap">
           <!-- Airbnb-style header with avatar -->
-          <div class="guide-card-header" ${g.photo ? `style="background-image:linear-gradient(rgba(15,28,62,.25),rgba(15,28,62,.45)),url('${g.photo}');background-size:cover;background-position:center"` : ''}>
+          <div class="guide-card-header"${g.photo ? ` data-photo="${window.gdSafeUrl(g.photo)}" data-photo-overlay="1"` : ''}>
             ${badge}
             <button class="wishlist-btn ${wishlisted ? 'saved' : ''}" data-id="${g.id}" onclick="toggleWishlist('${g.id}')" title="${I18N.t('saved_guides')}">
               <span class="heart-icon">${wishlisted ? '♥' : '♡'}</span>
             </button>
             ${g.photo
-              ? `<div class="big-avatar" style="background-image:url('${window.gdSafeUrl(g.photo)}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff"></div>`
+              ? `<div class="big-avatar" data-photo="${window.gdSafeUrl(g.photo)}" style="background-size:cover;background-position:center;color:transparent;border:3px solid #fff"></div>`
               : `<div class="big-avatar">${initials(g.fullName)}</div>`}
           </div>
 
@@ -508,6 +508,37 @@ function renderGuides(guides) {
         </div>
       </div>`;
   }).join('');
+
+  lazyLoadCardPhotos();
+}
+
+// Lazy-load card photos via IntersectionObserver so off-screen guide
+// photos never hit the network — a real Egress saving on long result
+// lists, since CSS background-images can't use native loading="lazy".
+let _photoObserver;
+function lazyLoadCardPhotos() {
+  const targets = document.querySelectorAll('[data-photo]');
+  if (!('IntersectionObserver' in window)) {
+    // Old browser: just load them all immediately.
+    targets.forEach(applyPhoto);
+    return;
+  }
+  if (!_photoObserver) {
+    _photoObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => { if (e.isIntersecting) { applyPhoto(e.target); obs.unobserve(e.target); } });
+    }, { rootMargin: '300px' }); // start loading a bit before they scroll in
+  }
+  targets.forEach(el => _photoObserver.observe(el));
+}
+function applyPhoto(el) {
+  const url = el.getAttribute('data-photo');
+  if (!url) return;
+  el.style.backgroundImage = el.hasAttribute('data-photo-overlay')
+    ? `linear-gradient(rgba(15,28,62,.25),rgba(15,28,62,.45)),url('${url}')`
+    : `url('${url}')`;
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+  el.removeAttribute('data-photo');
 }
 
 function clearFilters() {
