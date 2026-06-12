@@ -35,6 +35,13 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/cancellation.html', changefreq: 'yearly', priority: 0.4 },
     ];
 
+    // Programmatic SEO landing pages — one per place + per category.
+    try {
+      const { PLACES, CATEGORIES } = require('../services/seoLanding');
+      PLACES.forEach(p => staticPages.push({ loc: `/tour-guides/${p.slug}`, changefreq: 'weekly', priority: 0.85 }));
+      CATEGORIES.forEach(c => staticPages.push({ loc: `/tours/${c.slug}`, changefreq: 'weekly', priority: 0.8 }));
+    } catch (e) { /* optional */ }
+
     // Region & blog detail pages from static JSON
     try {
       const fs = require('fs'); const path = require('path');

@@ -176,6 +176,11 @@ app.use((req, res, next) => {
 // run BEFORE express.static so scrapers get server-rendered tags.
 app.use(require('./middleware/seoMeta'));
 
+// Programmatic SEO landing pages (/tour-guides/:place, /tours/:category).
+// Before express.static so the clean URLs resolve; unknown slugs call next()
+// and fall through to static/404.
+app.use(require('./routes/seoLanding'));
+
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   dotfiles: 'allow', // serve /.well-known/assetlinks.json for TWA / Play Store
   setHeaders: (res, filePath) => {

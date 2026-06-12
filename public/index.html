@@ -900,6 +900,8 @@ window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath
   .gf-bottom .madein .flag svg { display: block; width: 100%; height: 100%; }
   .gf-bottom-links { display: flex; gap: 18px; }
   .gf-bottom-links a { color: rgba(255,255,255,.55); text-decoration: none; transition: color .15s; }
+  .gf-seo-links a { color: rgba(255,255,255,.6); text-decoration: none; transition: color .15s; }
+  .gf-seo-links a:hover { color: #fff; }
   .gf-bottom-links a:hover { color: #fff; }
 </style>
 
@@ -987,6 +989,24 @@ window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath
       </div>
     </div>
 
+    <!-- SEO internal links: feed crawlers into the programmatic landing pages -->
+    <div class="gf-seo-links" style="border-top:1px solid rgba(255,255,255,.12);padding-top:18px;margin-top:8px">
+      <div style="font-weight:700;font-size:.85rem;opacity:.8;margin-bottom:8px" data-i18n="footer_popular">Popular tour guides in Oman</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem">
+        <a href="/tour-guides/muscat">Muscat</a>
+        <a href="/tour-guides/nizwa">Nizwa</a>
+        <a href="/tour-guides/salalah">Salalah</a>
+        <a href="/tour-guides/musandam">Musandam</a>
+        <a href="/tour-guides/wahiba-sands">Wahiba Sands</a>
+        <a href="/tour-guides/jabal-akhdar">Jabal Akhdar</a>
+        <a href="/tour-guides/sur">Sur</a>
+        <a href="/tours/desert">Desert tours</a>
+        <a href="/tours/mountain">Mountain tours</a>
+        <a href="/tours/cultural">Cultural tours</a>
+        <a href="/tours/marine">Marine tours</a>
+      </div>
+    </div>
+
     <div class="gf-bar">
       <div class="gf-pay">
         <span class="gf-pay-lbl" data-i18n="payment_accept">Secure payments</span>
@@ -1056,7 +1076,7 @@ window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath
 
 <script defer src="/js/bootstrap.bundle.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<script src="/js/i18n.js?v=46"></script>
+<script src="/js/i18n.js?v=47"></script>
 <script src="/js/oman-locations.js?v=1"></script>
 <script src="/js/dynamic-homepage.js?v=1" defer></script>
 <script src="/js/chatbot.js?v=13" defer></script>
