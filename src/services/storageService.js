@@ -104,6 +104,21 @@ async function uploadBuffer({ buffer, originalName, folder = 'misc', contentType
     }
   }
 
+  // Security: never let a user-supplied mimetype make a stored file serve
+  // as HTML/JS (e.g. a fake "x.png" containing markup whose mimetype is
+  // text/html, if Sharp compression fails). Derive the Content-Type from
+  // the final extension via an allow-list; anything unknown is forced to a
+  // non-executable octet-stream so the browser downloads rather than renders.
+  // Note: SVG is deliberately excluded — it can embed <script>, so an
+  // uploaded .svg falls through to octet-stream (downloads, never renders).
+  const SAFE_TYPES = {
+    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
+    '.webp': 'image/webp', '.gif': 'image/gif',
+    '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime',
+    '.m4v': 'video/x-m4v', '.ogg': 'video/ogg', '.pdf': 'application/pdf',
+  };
+  finalType = SAFE_TYPES[finalExt] || 'application/octet-stream';
+
   const filename = `${folder}/${uuidv4()}${finalExt}`;
 
   const { error } = await supabase.storage
