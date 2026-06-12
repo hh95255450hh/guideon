@@ -63,7 +63,17 @@ async function send(req, res) {
       createdAt: new Date().toISOString(),
     };
     if (attachmentUrl) {
-      record.attachmentUrl  = String(attachmentUrl).slice(0, 1000);
+      // Security: the recipient's client renders this inside <a href> and
+      // <img src>. Escaping handles quotes, but a "javascript:" / "data:"
+      // scheme would still execute on click (stored XSS). Only accept an
+      // https URL or a site-relative path — reject everything else, since
+      // legitimate attachments always come back from our uploader as an
+      // https Supabase Storage URL.
+      const raw = String(attachmentUrl).slice(0, 1000).trim();
+      if (!/^https:\/\//i.test(raw) && !raw.startsWith('/')) {
+        return res.status(400).json({ success: false, message: 'Invalid attachment URL.' });
+      }
+      record.attachmentUrl  = raw;
       record.attachmentType = attachmentType === 'file' ? 'file' : 'image';
       record.attachmentName = (attachmentName || '').slice(0, 200);
     }

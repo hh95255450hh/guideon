@@ -318,10 +318,14 @@
 
         // Attachment (image or file) then optional text
         let body = '';
-        if (m.attachmentUrl && m.attachmentType === 'image') {
-          body += `<a href="${escHtml(m.attachmentUrl)}" target="_blank" rel="noopener"><img src="${escHtml(m.attachmentUrl)}" alt="image" style="max-width:${BUBBLE_MAX_PX}px;max-height:${BUBBLE_MAX_PX}px;border-radius:9px;display:block;margin-bottom:${m.content ? '4px' : '0'}"></a>`;
-        } else if (m.attachmentUrl) {
-          body += `<a href="${escHtml(m.attachmentUrl)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${escHtml(m.attachmentName || 'file')}</a>`;
+        // Defense-in-depth: only follow http(s)/relative URLs. Blocks a
+        // javascript:/data: scheme from executing even if one slipped past
+        // the server-side check. gdSafeUrl returns '' for unsafe schemes.
+        const safeUrl = (window.gdSafeUrl ? gdSafeUrl(m.attachmentUrl) : escHtml(m.attachmentUrl));
+        if (safeUrl && m.attachmentType === 'image') {
+          body += `<a href="${escHtml(safeUrl)}" target="_blank" rel="noopener"><img src="${escHtml(safeUrl)}" alt="image" style="max-width:${BUBBLE_MAX_PX}px;max-height:${BUBBLE_MAX_PX}px;border-radius:9px;display:block;margin-bottom:${m.content ? '4px' : '0'}"></a>`;
+        } else if (safeUrl) {
+          body += `<a href="${escHtml(safeUrl)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${escHtml(m.attachmentName || 'file')}</a>`;
         }
         if (m.content) body += `<div style="font-size:.92rem">${escHtml(m.content)}</div>`;
 
