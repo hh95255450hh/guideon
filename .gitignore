@@ -22,3 +22,8 @@ app/*.zip
 صور/
 صور
 
+
+# Official business documents — never commit (private)
+الاوراق الرسمية/
+*.pdf
+!public/guides/*.pdf
