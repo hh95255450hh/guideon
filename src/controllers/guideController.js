@@ -4,6 +4,7 @@ const { sanitizeContact } = require('../utils/sanitizeContact');
 const users    = new SupabaseDB('users');
 const reviews  = new SupabaseDB('reviews', 'reviewId');
 const packages = new SupabaseDB('tour_packages');
+const bookings = new SupabaseDB('bookings');
 
 exports.searchGuides = async (req, res) => {
   try {
@@ -331,5 +332,111 @@ exports.topGuides = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/guides/me/analytics — personal performance dashboard for a guide.
+// All figures derive from this guide's own bookings + reviews. Cached 60s
+// per guide to keep the dashboard snappy and protect DB egress.
+const _guideAnalyticsCache = new Map(); // guideId -> { at, data }
+const GUIDE_ANALYTICS_TTL = 60 * 1000;
+
+exports.analytics = async (req, res) => {
+  try {
+    const guideId = req.session.userId;
+
+    const cached = _guideAnalyticsCache.get(guideId);
+    if (cached && Date.now() - cached.at < GUIDE_ANALYTICS_TTL) {
+      return res.json({ success: true, cached: true, data: cached.data });
+    }
+
+    const r3 = (n) => Math.round((Number(n) || 0) * 1000) / 1000;
+    const now = new Date();
+
+    const [myBookings, myReviews] = await Promise.all([
+      bookings.findAllByField('guideId', guideId),
+      reviews.findAllByField('guideId', guideId).catch(() => []),
+    ]);
+
+    // ── Status funnel ──
+    const byStatus = { pending: 0, quoted: 0, confirmed: 0, in_progress: 0, completed: 0, cancelled: 0 };
+    for (const b of myBookings) {
+      const s = b.status || 'pending';
+      byStatus[s] = (byStatus[s] || 0) + 1;
+    }
+    const total      = myBookings.length;
+    const paid       = myBookings.filter(b => b.isPaid);
+    const completed  = myBookings.filter(b => b.status === 'completed');
+    const cancelled  = byStatus.cancelled || 0;
+
+    // ── Earnings (paid bookings) ──
+    const grossEarnings = r3(paid.reduce((s, b) => s + (parseFloat(b.totalAmount) || 0), 0));
+    const COMMISSION = parseFloat(process.env.PLATFORM_COMMISSION_RATE || '0.10');
+    const netEarnings = r3(grossEarnings * (1 - COMMISSION));
+    const aov = paid.length ? r3(grossEarnings / paid.length) : 0;
+
+    // ── Conversion: confirmed-or-better / total requests ──
+    const accepted = myBookings.filter(b => ['confirmed', 'in_progress', 'completed'].includes(b.status)).length;
+    const conversion = total ? r3((accepted / total) * 100) : 0;
+
+    // ── Bookings + earnings over last 6 months ──
+    const monthMap = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+      const k = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+      monthMap[k] = { month: k, bookings: 0, earnings: 0 };
+    }
+    for (const b of myBookings) {
+      const d = new Date(b.paidAt || b.createdAt || now);
+      const k = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+      if (monthMap[k]) {
+        monthMap[k].bookings += 1;
+        if (b.isPaid) monthMap[k].earnings += (parseFloat(b.totalAmount) || 0);
+      }
+    }
+    const monthly = Object.values(monthMap).map(m => ({ ...m, earnings: r3(m.earnings) }));
+
+    // ── Top destinations (this guide) ──
+    const destMap = {};
+    for (const b of myBookings) {
+      if (!b.destination) continue;
+      destMap[b.destination] = (destMap[b.destination] || 0) + 1;
+    }
+    const topDestinations = Object.entries(destMap)
+      .map(([destination, count]) => ({ destination, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    // ── Ratings ──
+    const ratingCount = myReviews.length;
+    const avgRating = ratingCount
+      ? r3(myReviews.reduce((s, rv) => s + (rv.rating || 0), 0) / ratingCount)
+      : 0;
+    const ratingDist = [1, 2, 3, 4, 5].map(star => ({
+      star,
+      count: myReviews.filter(rv => Math.round(rv.rating || 0) === star).length,
+    }));
+
+    const data = {
+      currency: 'OMR',
+      overview: {
+        total, completed: completed.length, cancelled,
+        grossEarnings, netEarnings, aov,
+        conversion, avgRating, ratingCount,
+        upcoming: byStatus.confirmed + byStatus.in_progress,
+        pending: byStatus.pending + byStatus.quoted,
+      },
+      byStatus,
+      monthly,
+      topDestinations,
+      ratingDist,
+      generatedAt: now.toISOString(),
+    };
+
+    _guideAnalyticsCache.set(guideId, { at: Date.now(), data });
+    res.json({ success: true, cached: false, data });
+  } catch (err) {
+    console.error('[guide:analytics]', err.message);
+    res.status(500).json({ success: false, message: "Couldn't load analytics right now. — تعذّر تحميل التحليلات حالياً." });
   }
 };

@@ -4,6 +4,8 @@ const { requireGuide } = require('../middleware/auth');
 
 router.get('/', guide.searchGuides);
 router.get('/top', guide.topGuides);
+// Must come before '/:id' so 'me' isn't captured as a guide id.
+router.get('/me/analytics', requireGuide, guide.analytics);
 router.get('/:id', guide.getGuide);
 router.put('/me/availability', requireGuide, guide.updateAvailability);
 router.put('/me/profile', requireGuide, guide.updateProfile);

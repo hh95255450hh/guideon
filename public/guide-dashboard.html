@@ -153,6 +153,28 @@
           <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff"><div class="num" id="anPending">—</div><div class="lbl">Pending OMR</div></div></div>
           <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#fa709a,#fee140);color:#fff"><div class="num" id="anPaid">—</div><div class="lbl">Earned OMR</div></div></div>
         </div>
+        <!-- Visual trends (ApexCharts) -->
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-lg-7">
+            <div class="border rounded-3 p-3 h-100">
+              <h6 class="fw-700 mb-2">📈 <span data-i18n="an_trend">Bookings & earnings (6 months)</span></h6>
+              <div id="anTrendChart" style="min-height:240px"></div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-5">
+            <div class="border rounded-3 p-3 h-100">
+              <h6 class="fw-700 mb-2">⭐ <span data-i18n="an_ratings">Ratings breakdown</span></h6>
+              <div id="anRatingChart" style="min-height:240px"></div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="border rounded-3 p-3">
+              <h6 class="fw-700 mb-2">📍 <span data-i18n="an_dests">Your top destinations</span></h6>
+              <div id="anDestChart" style="min-height:120px"></div>
+            </div>
+          </div>
+        </div>
+
         <h6 class="fw-700 mb-2">🏆 Achievements</h6>
         <div id="achievementsList" class="d-flex flex-wrap gap-2 mb-4">Loading…</div>
         <h6 class="fw-700 mb-2">📈 Per-Tour Performance</h6>
@@ -501,7 +523,7 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=45"></script>
+<script src="/js/i18n.js?v=46"></script>
 <script src="/js/chatbot.js?v=13" defer></script>
 <script>
 let GUIDE = null;
@@ -546,6 +568,7 @@ async function checkAuth() {
     buildCalendar();
     loadBookings();
     loadAnalytics();
+    loadAnalyticsCharts();
     if (typeof loadMyTours === 'function') loadMyTours();
     // Wire up category chips (multi-select)
     document.querySelectorAll('#tourCategoryChips .cat-chip').forEach(chip => {
@@ -1043,6 +1066,78 @@ async function loadAnalytics() {
         <td class="text-end"><span class="badge ${t.conversion > 5 ? 'bg-success' : t.conversion > 0 ? 'bg-warning text-dark' : 'bg-light text-dark'}">${t.conversion}%</span></td>
       </tr>`).join('') : '<tr><td colspan="4" class="text-center text-muted py-3">No tours yet.</td></tr>';
   } catch (e) { /* ignore */ }
+}
+
+// ── Visual analytics (charts) — uses the richer per-guide endpoint ──
+let _anCharts = {};
+function _waitForApex(ms = 4000) {
+  return new Promise(resolve => {
+    if (typeof ApexCharts !== 'undefined') return resolve(true);
+    const start = Date.now();
+    const t = setInterval(() => {
+      if (typeof ApexCharts !== 'undefined') { clearInterval(t); resolve(true); }
+      else if (Date.now() - start > ms) { clearInterval(t); resolve(false); }
+    }, 100);
+  });
+}
+async function loadAnalyticsCharts() {
+  try {
+    const r = await fetch('/api/guides/me/analytics', { credentials: 'include' });
+    const j = await r.json();
+    if (!j.success) return;
+    const d = j.data;
+    if (!(await _waitForApex())) return; // CDN blocked/slow — skip silently
+    Object.values(_anCharts).forEach(c => { try { c.destroy(); } catch {} });
+    _anCharts = {};
+
+    // Monthly bookings (bars) + earnings (line)
+    const months = d.monthly.map(m => m.month.slice(2)); // YY-MM
+    _anCharts.trend = new ApexCharts(document.querySelector('#anTrendChart'), {
+      chart: { height: 250, type: 'line', toolbar: { show: false }, fontFamily: 'inherit' },
+      series: [
+        { name: 'Bookings', type: 'column', data: d.monthly.map(m => m.bookings) },
+        { name: 'Earnings (OMR)', type: 'line', data: d.monthly.map(m => m.earnings) },
+      ],
+      stroke: { width: [0, 3], curve: 'smooth' },
+      colors: ['#0f7b6c', '#f5b942'],
+      xaxis: { categories: months },
+      yaxis: [{ title: { text: 'Bookings' } }, { opposite: true, title: { text: 'OMR' } }],
+      dataLabels: { enabled: false },
+      legend: { position: 'top' },
+      grid: { borderColor: 'rgba(0,0,0,.06)' },
+    });
+    _anCharts.trend.render();
+
+    // Rating distribution
+    _anCharts.rating = new ApexCharts(document.querySelector('#anRatingChart'), {
+      chart: { height: 250, type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+      series: [{ name: 'Reviews', data: d.ratingDist.map(x => x.count) }],
+      xaxis: { categories: d.ratingDist.map(x => x.star + '★') },
+      colors: ['#f5b942'],
+      plotOptions: { bar: { distributed: false, borderRadius: 4, horizontal: false } },
+      dataLabels: { enabled: true },
+      legend: { show: false },
+      grid: { borderColor: 'rgba(0,0,0,.06)' },
+    });
+    _anCharts.rating.render();
+
+    // Top destinations
+    const dest = d.topDestinations;
+    if (dest.length) {
+      _anCharts.dest = new ApexCharts(document.querySelector('#anDestChart'), {
+        chart: { height: Math.max(120, dest.length * 36), type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+        series: [{ name: 'Bookings', data: dest.map(x => x.count) }],
+        xaxis: { categories: dest.map(x => x.destination) },
+        colors: ['#14b8a6'],
+        plotOptions: { bar: { horizontal: true, borderRadius: 4 } },
+        dataLabels: { enabled: true },
+        grid: { borderColor: 'rgba(0,0,0,.06)' },
+      });
+      _anCharts.dest.render();
+    } else {
+      document.querySelector('#anDestChart').innerHTML = '<div class="text-center text-muted py-3 small">No bookings yet.</div>';
+    }
+  } catch (e) { /* charts are non-critical */ }
 }
 
 async function loadBookings() {
@@ -1655,6 +1750,7 @@ function guideConnectSSE()     { return GUIDE_MSG && GUIDE_MSG.connectSSE(); }
 .cat-chip input { position:absolute; opacity:0; pointer-events:none; }
 </style>
 <script src="/js/gd-messages.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1/dist/apexcharts.min.js" defer></script>
 <script src="/js/pwa.js?v=14" defer></script>
 <script src="/js/common-widgets.js?v=14"></script>
 </body>
