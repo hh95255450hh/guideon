@@ -11,7 +11,7 @@ const validateRegister = [
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required.'),
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters.'),
   body('fullName').trim().isLength({ min: 2, max: 100 }).withMessage('Full name is required (2-100 chars).'),
-  body('userType').isIn(['tourist', 'guide', 'company']).withMessage('Invalid user type.'),
+  body('userType').isIn(['tourist', 'guide', 'company', 'team']).withMessage('Invalid user type.'),
   handleValidation,
 ];
 
