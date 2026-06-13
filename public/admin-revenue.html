@@ -918,7 +918,7 @@ async function saveRates() {
   if (vat > 0 && !vatNumber) { msg.textContent = '⚠️ أدخل الرقم الضريبي لتفعيل الضريبة'; msg.style.color = 'var(--red)'; return; }
   const btn = document.getElementById('rateSaveBtn'); btn.disabled = true; btn.textContent = '⏳ …';
   try {
-    const r = await fetch('/api/admin/site-settings/commission', {
+    const r = await fetch('/api/site-settings/commission', {
       method: 'PUT', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ value: { guide, company, team, vat, vatNumber } }),  // server accepts "15" as 15%
