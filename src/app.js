@@ -181,6 +181,9 @@ app.use(require('./middleware/seoMeta'));
 // and fall through to static/404.
 app.use(require('./routes/seoLanding'));
 
+// Public invoice verification page (QR target on guide invoices).
+app.get('/invoice/verify/:token', require('./controllers/accountingController').verify);
+
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   dotfiles: 'allow', // serve /.well-known/assetlinks.json for TWA / Play Store
   setHeaders: (res, filePath) => {
