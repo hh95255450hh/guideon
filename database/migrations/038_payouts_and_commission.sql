@@ -20,5 +20,5 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS "commissionRate" NUMERIC(5,4);
 -- Default commission rates the admin can edit from the dashboard.
 -- Stored in the existing site_settings key/value store.
 INSERT INTO site_settings (key, value)
-VALUES ('commission', '{"guide": 0.10, "company": 0.15}'::jsonb)
+VALUES ('commission', '{"guide": 0.10, "company": 0.15, "vat": 0, "vatNumber": ""}'::jsonb)
 ON CONFLICT (key) DO NOTHING;

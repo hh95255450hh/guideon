@@ -20,13 +20,15 @@ const r3 = (n) => Math.round((Number(n) || 0) * 1000) / 1000;
 exports.earnings = async (req, res) => {
   try {
     const guideId = req.session.userId;
-    const me   = await users.findById(guideId);
-    const rate = await commission.resolveRate(me);   // this provider's rate
+    const me    = await users.findById(guideId);
+    const RATES = await commission.getRates();
+    const rate  = commission.rateFor(me, RATES);     // this provider's rate
+    const vat   = RATES.vat;
     const mine = (await bookings.findAllByField('guideId', guideId))
       .filter(b => b.totalAmount != null);
 
     const paid = mine.filter(b => b.isPaid);
-    const sum  = (arr) => r3(arr.reduce((s, b) => s + invoice.breakdown(b, rate).net, 0));
+    const sum  = (arr) => r3(arr.reduce((s, b) => s + invoice.breakdown(b, rate, vat).net, 0));
 
     const completedPaid = paid.filter(b => b.status === 'completed' && !b.paidOutAt);
     const inFlight      = paid.filter(b => b.status !== 'completed' && !b.paidOutAt);
@@ -40,7 +42,7 @@ exports.earnings = async (req, res) => {
       lifetimeGross: r3(paid.reduce((s, b) => s + (parseFloat(b.totalAmount) || 0), 0)),
       bookingsPaid:  paid.length,
       commissionRate: rate,
-      vatRate:        invoice.VAT_RATE,
+      vatRate:        vat,
     };
 
     // Ledger (latest 100), each row with the full money breakdown.
@@ -49,7 +51,7 @@ exports.earnings = async (req, res) => {
       .sort((a, b) => new Date(b.paidAt || b.createdAt) - new Date(a.paidAt || a.createdAt))
       .slice(0, 100)
       .map(b => {
-        const br = invoice.breakdown(b, rate);
+        const br = invoice.breakdown(b, rate, vat);
         return {
           id: b.id,
           invoiceNo: invoice.invoiceNumber(b),
@@ -86,8 +88,8 @@ exports.invoicePdf = async (req, res) => {
       users.findById(guideId),
       booking.touristId ? users.findById(booking.touristId) : null,
     ]);
-    const rate = await commission.resolveRate(guide);
-    const pdf = await invoice.generateGuideInvoice(booking, guide, tourist, rate);
+    const R = await commission.getRates();
+    const pdf = await invoice.generateGuideInvoice(booking, guide, tourist, commission.rateFor(guide, R), R.vat, R.vatNumber);
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `inline; filename="${invoice.invoiceNumber(booking)}.pdf"`);
     res.send(pdf);
@@ -112,8 +114,8 @@ exports.statementPdf = async (req, res) => {
         return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}` === ym;
       });
 
-    const rate = await commission.resolveRate(guide);
-    const pdf = await invoice.generateStatement(guide, mine, ym, rate);
+    const R = await commission.getRates();
+    const pdf = await invoice.generateStatement(guide, mine, ym, commission.rateFor(guide, R), R.vat);
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `inline; filename="guideon-statement-${ym}.pdf"`);
     res.send(pdf);
@@ -147,7 +149,8 @@ exports.verify = async (req, res) => {
       return res.status(404).type('html').send(page(false, `<p><span class="badge bad">✗ Not found</span></p>`));
     }
     const guide = booking.guideId ? await users.findById(booking.guideId) : null;
-    const br = invoice.breakdown(booking, await commission.resolveRate(guide));
+    const R = await commission.getRates();
+    const br = invoice.breakdown(booking, commission.rateFor(guide, R), R.vat);
     res.type('html').send(page(true, `
       <p><span class="badge ok">✓ Genuine Guideon invoice</span></p>
       <div class="row"><span>Invoice No</span><strong>${invoice.invoiceNumber(booking)}</strong></div>

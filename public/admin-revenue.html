@@ -454,6 +454,20 @@ function render() {
             <input id="rateCompany" class="expinput" type="number" step="0.5" min="0" max="90" placeholder="15">
           </div>
         </div>
+
+        <!-- VAT (Oman 5%) — optional, off until registered -->
+        <div style="display:grid; grid-template-columns:1fr 1.4fr; gap:14px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border)">
+          <div>
+            <label class="explbl">ضريبة القيمة المضافة (%)</label>
+            <input id="rateVat" class="expinput" type="number" step="0.5" min="0" max="25" placeholder="0">
+          </div>
+          <div>
+            <label class="explbl">الرقم الضريبي (VATIN)</label>
+            <input id="rateVatNum" class="expinput" placeholder="OMxxxxxxxxxxxxxxx">
+          </div>
+        </div>
+        <div class="sub" style="margin-top:8px">🧾 اتركها <strong>0</strong> حتّى تُسجّل في الضريبة. عند الإدخال، تتحوّل الفواتير إلى <strong>فواتير ضريبيّة</strong> رسميّة تلقائياً (تحتاج الرقم الضريبي لتظهر كـTax Invoice).</div>
+
         <div style="margin-top:14px; display:flex; gap:10px; align-items:center">
           <button class="btn btn-primary" onclick="saveRates()" id="rateSaveBtn">💾 حفظ النسب</button>
           <span class="sub" id="rateMsg"></span>
@@ -881,23 +895,30 @@ async function loadRates() {
   try {
     const r = await fetch('/api/site-settings/commission', { credentials: 'include' });
     const d = await r.json();
-    const v = d.value || { guide: 0.10, company: 0.15 };
+    const v = d.value || { guide: 0.10, company: 0.15, vat: 0, vatNumber: '' };
+    const pct = (n) => ((n || 0) * 100).toFixed(1).replace(/\.0$/, '');
     const g = document.getElementById('rateGuide'), c = document.getElementById('rateCompany');
-    if (g) g.value = (v.guide * 100).toFixed(1).replace(/\.0$/, '');
-    if (c) c.value = (v.company * 100).toFixed(1).replace(/\.0$/, '');
+    const vt = document.getElementById('rateVat'), vn = document.getElementById('rateVatNum');
+    if (g) g.value = pct(v.guide);
+    if (c) c.value = pct(v.company);
+    if (vt) vt.value = pct(v.vat);
+    if (vn) vn.value = v.vatNumber || '';
   } catch {}
 }
 async function saveRates() {
   const msg = document.getElementById('rateMsg');
   const guide = parseFloat(document.getElementById('rateGuide').value);
   const company = parseFloat(document.getElementById('rateCompany').value);
+  const vat = parseFloat(document.getElementById('rateVat').value) || 0;
+  const vatNumber = document.getElementById('rateVatNum').value.trim();
   if (!(guide >= 0) || !(company >= 0)) { msg.textContent = '⚠️ قيم غير صالحة'; msg.style.color = 'var(--red)'; return; }
+  if (vat > 0 && !vatNumber) { msg.textContent = '⚠️ أدخل الرقم الضريبي لتفعيل الضريبة'; msg.style.color = 'var(--red)'; return; }
   const btn = document.getElementById('rateSaveBtn'); btn.disabled = true; btn.textContent = '⏳ …';
   try {
     const r = await fetch('/api/admin/site-settings/commission', {
       method: 'PUT', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value: { guide, company } }),  // server accepts "15" as 15%
+      body: JSON.stringify({ value: { guide, company, vat, vatNumber } }),  // server accepts "15" as 15%
     });
     const d = await r.json();
     if (!r.ok || !d.success) throw new Error(d.message || 'فشل الحفظ');

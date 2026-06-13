@@ -14,29 +14,33 @@ const SupabaseDB = require('../models/SupabaseDB');
 const settings = new SupabaseDB('site_settings', 'key');
 
 const ENV_DEFAULT = parseFloat(process.env.PLATFORM_COMMISSION_RATE || '0.10');
+const ENV_VAT     = parseFloat(process.env.VAT_RATE || '0');
+const ENV_VATNUM  = process.env.VAT_NUMBER || '';
 
 let _cache = { at: 0, rates: null };
 const TTL = 60 * 1000;
 
-function _clamp(n, fallback) {
+function _clamp(n, fallback, max = 0.9) {
   const v = parseFloat(n);
-  if (Number.isNaN(v) || v < 0 || v > 0.9) return fallback; // sane bounds: 0–90%
+  if (Number.isNaN(v) || v < 0 || v > max) return fallback;
   return v;
 }
 
-// Returns { guide, company } as fractions. Falls back to env default if the
-// setting row is missing or the table doesn't exist yet.
+// Returns { guide, company, vat, vatNumber }. guide/company/vat are fractions.
+// Falls back to env defaults if the setting row / table is missing.
 async function getRates() {
   if (_cache.rates && Date.now() - _cache.at < TTL) return _cache.rates;
-  let rates = { guide: ENV_DEFAULT, company: ENV_DEFAULT };
+  let rates = { guide: ENV_DEFAULT, company: ENV_DEFAULT, vat: ENV_VAT, vatNumber: ENV_VATNUM };
   try {
     const row = await settings.findById('commission');
     const v = row && row.value ? row.value : {};
     rates = {
-      guide:   _clamp(v.guide,   ENV_DEFAULT),
-      company: _clamp(v.company, ENV_DEFAULT),
+      guide:     _clamp(v.guide,   ENV_DEFAULT),
+      company:   _clamp(v.company, ENV_DEFAULT),
+      vat:       _clamp(v.vat,     ENV_VAT, 0.25),   // VAT capped at 25%
+      vatNumber: typeof v.vatNumber === 'string' ? v.vatNumber : ENV_VATNUM,
     };
-  } catch { /* table missing → env default */ }
+  } catch { /* table missing → env defaults */ }
   _cache = { at: Date.now(), rates };
   return rates;
 }

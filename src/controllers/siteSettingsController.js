@@ -38,17 +38,23 @@ exports.update = async (req, res) => {
     let value = req.body.value || req.body;
     // Commission rates: validate + normalise to fractions in [0, 0.9].
     if (key === 'commission') {
-      const norm = (n) => {
+      const norm = (n, max = 0.9) => {
         let v = parseFloat(n);
         if (Number.isNaN(v)) return null;
         if (v > 1) v = v / 100;            // accept "15" meaning 15%
-        return Math.min(Math.max(v, 0), 0.9);
+        return Math.min(Math.max(v, 0), max);
       };
       const g = norm(value.guide), c = norm(value.company);
       if (g == null || c == null) {
         return res.status(400).json({ success: false, message: 'Guide and company rates are required (e.g. 10 and 15).' });
       }
-      value = { guide: g, company: c };
+      // VAT is optional (defaults to 0 = off). Capped at 25%.
+      const vat = value.vat != null && value.vat !== '' ? norm(value.vat, 0.25) : 0;
+      value = {
+        guide: g, company: c,
+        vat: vat == null ? 0 : vat,
+        vatNumber: typeof value.vatNumber === 'string' ? value.vatNumber.trim().slice(0, 40) : '',
+      };
     }
     const existing = await settings.findById(key);
     if (existing) {

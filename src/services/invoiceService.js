@@ -95,10 +95,10 @@ function footer(doc, note) {
 }
 
 // ════════════════════ Per-booking earnings invoice ════════════════════
-async function generateGuideInvoice(booking, guide, tourist, rate) {
-  const b = breakdown(booking, rate);
+async function generateGuideInvoice(booking, guide, tourist, rate, vatRate = VAT_RATE, vatNumber = VAT_NUMBER) {
+  const b = breakdown(booking, rate, vatRate);
   const invNo = invoiceNumber(booking);
-  const isTax = VAT_RATE > 0 && VAT_NUMBER;
+  const isTax = vatRate > 0 && !!vatNumber;
   const docTitle = isTax ? 'TAX INVOICE' : 'EARNINGS INVOICE';
 
   // QR → verification page
@@ -120,7 +120,7 @@ async function generateGuideInvoice(booking, guide, tourist, rate) {
       header(doc, docTitle, [
         `No: ${invNo}`,
         `Issued: ${issued.toLocaleDateString('en-GB')}`,
-        isTax ? `VATIN: ${VAT_NUMBER}` : 'Self-billed',
+        isTax ? `VATIN: ${vatNumber}` : 'Self-billed',
       ]);
 
       // Self-billing note
@@ -158,7 +158,7 @@ async function generateGuideInvoice(booking, guide, tourist, rate) {
       let ry = y + 18;
       row('Gross booking value', omr(b.gross), ry); ry += 26;
       row(`Platform service fee (${(b.rate * 100).toFixed(0)}%)`, `- ${omr(b.commission)}`, ry); ry += 26;
-      if (isTax) { row(`VAT on fee (${(VAT_RATE * 100).toFixed(0)}%)`, `- ${omr(b.vat)}`, ry); ry += 26; }
+      if (isTax) { row(`VAT on fee (${(vatRate * 100).toFixed(0)}%)`, `- ${omr(b.vat)}`, ry); ry += 26; }
       doc.moveTo(70, ry + 2).lineTo(doc.page.width - 70, ry + 2).strokeColor(LIGHT).stroke();
       row('Net payout to guide', omr(b.net), ry + 12, true, GREEN);
 
@@ -177,7 +177,7 @@ async function generateGuideInvoice(booking, guide, tourist, rate) {
       }
 
       footer(doc, isTax
-        ? `Tax invoice · VATIN ${VAT_NUMBER} · Guideon`
+        ? `Tax invoice · VATIN ${vatNumber} · Guideon`
         : 'Earnings invoice (no VAT charged) · Guideon');
       doc.end();
     } catch (e) { reject(e); }
@@ -185,7 +185,7 @@ async function generateGuideInvoice(booking, guide, tourist, rate) {
 }
 
 // ════════════════════ Monthly payout statement ════════════════════
-function generateStatement(guide, bookings, ym /* YYYY-MM */, rate) {
+function generateStatement(guide, bookings, ym /* YYYY-MM */, rate, vatRate = VAT_RATE) {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -201,7 +201,7 @@ function generateStatement(guide, bookings, ym /* YYYY-MM */, rate) {
 
       // Totals
       const tot = bookings.reduce((acc, bk) => {
-        const b = breakdown(bk, rate);
+        const b = breakdown(bk, rate, vatRate);
         acc.gross += b.gross; acc.commission += b.commission; acc.vat += b.vat; acc.net += b.net;
         return acc;
       }, { gross: 0, commission: 0, vat: 0, net: 0 });
@@ -218,7 +218,7 @@ function generateStatement(guide, bookings, ym /* YYYY-MM */, rate) {
       };
       scol('Gross (OMR)', tot.gross, 70);
       scol('Platform fee', tot.commission, 200);
-      if (VAT_RATE > 0) scol('VAT', tot.vat, 330);
+      if (vatRate > 0) scol('VAT', tot.vat, 330);
       doc.fillColor(GREEN).font('Helvetica').fontSize(9).text('NET PAYOUT (OMR)', doc.page.width - 200, y + 18, { width: 140 });
       doc.fillColor(GREEN).font('Helvetica-Bold').fontSize(18).text(r3(tot.net).toFixed(3), doc.page.width - 200, y + 32, { width: 140 });
 
@@ -235,7 +235,7 @@ function generateStatement(guide, bookings, ym /* YYYY-MM */, rate) {
       const sorted = bookings.slice().sort((a, b) => new Date(a.paidAt || a.createdAt) - new Date(b.paidAt || b.createdAt));
       for (const bk of sorted) {
         if (y > doc.page.height - 90) { doc.addPage(); y = 60; }
-        const b = breakdown(bk, rate);
+        const b = breakdown(bk, rate, vatRate);
         doc.fillColor(GREY).text(new Date(bk.paidAt || bk.createdAt).toLocaleDateString('en-GB'), 50, y);
         doc.text(String(bk.destination || '—').slice(0, 26), 120, y);
         doc.text(b.gross.toFixed(3), 300, y, { width: 70, align: 'right' });
