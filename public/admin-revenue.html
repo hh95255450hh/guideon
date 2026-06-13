@@ -444,14 +444,18 @@ function render() {
       <div class="panel">
         <h3>⚙️ نسب العمولة</h3>
         <div class="sub">تختلف الشركات عن المرشدين الأفراد — عدّلها دون إعادة نشر</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:14px">
           <div>
-            <label class="explbl">عمولة المرشد الفرد (%)</label>
+            <label class="explbl">عمولة المرشد (%)</label>
             <input id="rateGuide" class="expinput" type="number" step="0.5" min="0" max="90" placeholder="10">
           </div>
           <div>
             <label class="explbl">عمولة الشركة (%)</label>
             <input id="rateCompany" class="expinput" type="number" step="0.5" min="0" max="90" placeholder="15">
+          </div>
+          <div>
+            <label class="explbl">عمولة الفريق (%)</label>
+            <input id="rateTeam" class="expinput" type="number" step="0.5" min="0" max="90" placeholder="10">
           </div>
         </div>
 
@@ -895,30 +899,29 @@ async function loadRates() {
   try {
     const r = await fetch('/api/site-settings/commission', { credentials: 'include' });
     const d = await r.json();
-    const v = d.value || { guide: 0.10, company: 0.15, vat: 0, vatNumber: '' };
+    const v = d.value || { guide: 0.10, company: 0.15, team: 0.10, vat: 0, vatNumber: '' };
     const pct = (n) => ((n || 0) * 100).toFixed(1).replace(/\.0$/, '');
-    const g = document.getElementById('rateGuide'), c = document.getElementById('rateCompany');
-    const vt = document.getElementById('rateVat'), vn = document.getElementById('rateVatNum');
-    if (g) g.value = pct(v.guide);
-    if (c) c.value = pct(v.company);
-    if (vt) vt.value = pct(v.vat);
-    if (vn) vn.value = v.vatNumber || '';
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    set('rateGuide', pct(v.guide)); set('rateCompany', pct(v.company));
+    set('rateTeam', pct(v.team != null ? v.team : 0.10));
+    set('rateVat', pct(v.vat)); set('rateVatNum', v.vatNumber || '');
   } catch {}
 }
 async function saveRates() {
   const msg = document.getElementById('rateMsg');
   const guide = parseFloat(document.getElementById('rateGuide').value);
   const company = parseFloat(document.getElementById('rateCompany').value);
+  const team = parseFloat(document.getElementById('rateTeam').value);
   const vat = parseFloat(document.getElementById('rateVat').value) || 0;
   const vatNumber = document.getElementById('rateVatNum').value.trim();
-  if (!(guide >= 0) || !(company >= 0)) { msg.textContent = '⚠️ قيم غير صالحة'; msg.style.color = 'var(--red)'; return; }
+  if (!(guide >= 0) || !(company >= 0) || !(team >= 0)) { msg.textContent = '⚠️ قيم غير صالحة'; msg.style.color = 'var(--red)'; return; }
   if (vat > 0 && !vatNumber) { msg.textContent = '⚠️ أدخل الرقم الضريبي لتفعيل الضريبة'; msg.style.color = 'var(--red)'; return; }
   const btn = document.getElementById('rateSaveBtn'); btn.disabled = true; btn.textContent = '⏳ …';
   try {
     const r = await fetch('/api/admin/site-settings/commission', {
       method: 'PUT', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value: { guide, company, vat, vatNumber } }),  // server accepts "15" as 15%
+      body: JSON.stringify({ value: { guide, company, team, vat, vatNumber } }),  // server accepts "15" as 15%
     });
     const d = await r.json();
     if (!r.ok || !d.success) throw new Error(d.message || 'فشل الحفظ');

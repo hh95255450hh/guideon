@@ -30,13 +30,14 @@ function _clamp(n, fallback, max = 0.9) {
 // Falls back to env defaults if the setting row / table is missing.
 async function getRates() {
   if (_cache.rates && Date.now() - _cache.at < TTL) return _cache.rates;
-  let rates = { guide: ENV_DEFAULT, company: ENV_DEFAULT, vat: ENV_VAT, vatNumber: ENV_VATNUM };
+  let rates = { guide: ENV_DEFAULT, company: ENV_DEFAULT, team: ENV_DEFAULT, vat: ENV_VAT, vatNumber: ENV_VATNUM };
   try {
     const row = await settings.findById('commission');
     const v = row && row.value ? row.value : {};
     rates = {
       guide:     _clamp(v.guide,   ENV_DEFAULT),
       company:   _clamp(v.company, ENV_DEFAULT),
+      team:      _clamp(v.team,    ENV_DEFAULT),
       vat:       _clamp(v.vat,     ENV_VAT, 0.25),   // VAT capped at 25%
       vatNumber: typeof v.vatNumber === 'string' ? v.vatNumber : ENV_VATNUM,
     };
@@ -52,6 +53,7 @@ function rateFor(user, rates) {
     if (v != null) return v;
   }
   if (user && user.userType === 'company') return rates.company;
+  if (user && user.userType === 'team')    return rates.team;
   return rates.guide;
 }
 

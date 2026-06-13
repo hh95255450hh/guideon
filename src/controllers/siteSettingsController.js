@@ -48,10 +48,11 @@ exports.update = async (req, res) => {
       if (g == null || c == null) {
         return res.status(400).json({ success: false, message: 'Guide and company rates are required (e.g. 10 and 15).' });
       }
+      const team = value.team != null && value.team !== '' ? norm(value.team) : g;
       // VAT is optional (defaults to 0 = off). Capped at 25%.
       const vat = value.vat != null && value.vat !== '' ? norm(value.vat, 0.25) : 0;
       value = {
-        guide: g, company: c,
+        guide: g, company: c, team: team == null ? g : team,
         vat: vat == null ? 0 : vat,
         vatNumber: typeof value.vatNumber === 'string' ? value.vatNumber.trim().slice(0, 40) : '',
       };

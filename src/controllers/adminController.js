@@ -786,6 +786,26 @@ exports.settlePayout = async (req, res) => {
   }
 };
 
+// ── Event teams (admin) ──
+exports.allTeams = async (req, res) => {
+  try {
+    const p = await userPage(req, { userType: 'team' });
+    res.json({ success: true, teams: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
+};
+exports.verifyTeam = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const team = await users.findById(id);
+    if (!team || team.userType !== 'team') {
+      return res.status(404).json({ success: false, message: 'Team not found.' });
+    }
+    await users.update(id, { isVerified: true });
+    audit.logAction(req, { action: 'verifyTeam', targetType: 'user', targetId: id, details: { name: team.teamName } });
+    res.json({ success: true, message: `${team.teamName} has been verified and is now public.` });
+  } catch (err) { res.status(500).json({ success: false, message: 'Server error.' }); }
+};
+
 exports.extendedStats = async (req, res) => {
   try {
     const [allUsers, allBookings, allReviews] = await Promise.all([

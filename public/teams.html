@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>فرق الفعاليّات في عُمان — Guideon</title>
+<meta name="description" content="اكتشف فرق الفعاليّات والأنشطة في عُمان واحجز فعاليّاتهم القادمة — عروض ثقافيّة، رياضة، موسيقى، مغامرات والمزيد.">
+<link rel="canonical" href="https://guideon.om/teams.html">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<script>
+(function(){var s=localStorage.getItem('gd_lang');var nav=(navigator.language||'en').slice(0,2).toLowerCase();var lang=s||(['en','ar','zh','hi','es','fr','bn','pt','ru','ur'].indexOf(nav)>=0?nav:'en');var rtl=lang==='ar'||lang==='ur';var l=document.createElement('link');l.id=rtl?'bs-rtl':'bs-ltr';l.rel='stylesheet';l.href=rtl?'/css/bootstrap.rtl.min.css':'/css/bootstrap.min.css';document.head.appendChild(l);})();
+</script>
+<link rel="stylesheet" href="/css/style.css?v=40">
+<style>
+  .hero{background:linear-gradient(135deg,#0a5c50,#0f7b6c);color:#fff;padding:48px 0 36px;text-align:center}
+  .ev-card,.team-card{background:#fff;border:1px solid #e7eaee;border-radius:14px;overflow:hidden;height:100%;transition:.15s}
+  .ev-card:hover,.team-card:hover{box-shadow:0 8px 24px rgba(15,28,62,.10);transform:translateY(-2px)}
+  .cover{height:140px;background:#e2f0ee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:2.2rem}
+  .cat-tag{display:inline-block;background:#f0faf8;color:#0f7b6c;border:1px solid #d6efe9;border-radius:14px;padding:2px 10px;font-size:.72rem;font-weight:700}
+  .chip{cursor:pointer;border:1px solid #dee2e6;border-radius:20px;padding:6px 14px;font-size:.82rem;font-weight:700;background:#fff}
+  .chip.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+</style>
+<script src="/js/image-compress.js?v=3"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="48"></a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="/search.html" class="btn btn-sm btn-outline-light">ابحث عن مرشد</a>
+      <a href="/register.html?type=team" class="btn btn-sm btn-gold">سجّل فريقك 🎪</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1 class="fw-800">🎪 فرق الفعاليّات في عُمان</h1>
+  <p class="opacity-90 mb-0">اكتشف الفرق المحليّة وفعاليّاتهم القادمة — ثقافة، رياضة، موسيقى، مغامرات والمزيد</p>
+</div>
+
+<div class="container py-4">
+  <div class="d-flex gap-2 flex-wrap mb-4" id="catChips"></div>
+
+  <h4 class="fw-700 mb-3">🗓️ الفعاليّات القادمة</h4>
+  <div class="row g-3 mb-5" id="eventsGrid"><div class="col-12 text-center text-muted py-4">جارٍ التحميل…</div></div>
+
+  <h4 class="fw-700 mb-3">👥 الفرق</h4>
+  <div class="row g-3" id="teamsGrid"><div class="col-12 text-center text-muted py-4">جارٍ التحميل…</div></div>
+</div>
+
+<script src="/js/i18n.js?v=48"></script>
+<script src="/js/common-widgets.js?v=14"></script>
+<script>
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CAT={cultural:'🎭 ثقافيّة',sports:'⚽ رياضيّة',music:'🎵 موسيقيّة',adventure:'🏔️ مغامرات',kids:'🧒 أطفال',food:'🍽️ طعام',arts:'🎨 فنون',other:'📦 أخرى'};
+let CURRENT='';
+
+function chips(){
+  const el=document.getElementById('catChips');
+  el.innerHTML=[['','الكل'],...Object.entries(CAT)].map(([k,v])=>
+    `<span class="chip ${k===CURRENT?'active':''}" onclick="setCat('${k}')">${v}</span>`).join('');
+}
+function setCat(c){ CURRENT=c; chips(); load(); }
+
+async function load(){
+  const q = CURRENT?('?category='+CURRENT):'';
+  try{
+    const [ev,tm]=await Promise.all([
+      fetch('/api/teams/events'+q).then(r=>r.json()),
+      fetch('/api/teams'+q).then(r=>r.json()),
+    ]);
+    renderEvents(ev.events||[]);
+    renderTeams(tm.teams||[]);
+  }catch{}
+}
+function renderEvents(list){
+  const el=document.getElementById('eventsGrid');
+  if(!list.length){ el.innerHTML='<div class="col-12 text-center text-muted py-4">لا فعاليّات قادمة في هذا التصنيف بعد.</div>'; return; }
+  el.innerHTML=list.map(e=>`
+    <div class="col-md-6 col-lg-4">
+      <div class="ev-card">
+        <div class="cover" ${e.coverImage?`style="background-image:url('${esc(e.coverImage)}')"`:''}>${e.coverImage?'':'🎟️'}</div>
+        <div class="p-3">
+          <span class="cat-tag">${esc(CAT[e.category]||e.category)}</span>
+          <h6 class="fw-700 mt-2 mb-1">${esc(e.title)}</h6>
+          <div class="small text-muted">${esc(e.teamName)} · ${e.eventDate?new Date(e.eventDate).toLocaleDateString('en-GB'):'—'}</div>
+          <div class="small mt-1">📍 ${esc(e.governorate||e.location||'عُمان')} · ${e.ticketPrice>0?`<strong>${e.ticketPrice} ر.ع</strong>`:'<span style="color:#16a34a;font-weight:700">مجّاني</span>'}</div>
+          ${e.description?`<p class="small text-muted mt-2 mb-0" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(e.description)}</p>`:''}
+          <a class="btn btn-sm btn-teal w-100 mt-2" href="/team-profile.html?id=${esc(e.teamId)}">عرض التفاصيل</a>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function renderTeams(list){
+  const el=document.getElementById('teamsGrid');
+  if(!list.length){ el.innerHTML='<div class="col-12 text-center text-muted py-4">لا فرق موثّقة في هذا التصنيف بعد.</div>'; return; }
+  el.innerHTML=list.map(t=>`
+    <div class="col-md-6 col-lg-3">
+      <a href="/team-profile.html?id=${esc(t.id)}" style="text-decoration:none;color:inherit">
+        <div class="team-card text-center p-3">
+          <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 10px;background:#e2f0ee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#0f7b6c" ${t.photo?`style="background-image:url('${esc(t.photo)}')"`:''}>${t.photo?'':'🎪'}</div>
+          <h6 class="fw-700 mb-1">${esc(t.teamName)}</h6>
+          <span class="cat-tag">${esc(CAT[t.teamCategory]||t.teamCategory||'')}</span>
+          <div class="small text-muted mt-2">📍 ${esc(t.teamGovernorate||'عُمان')}${t.membersCount?` · ${t.membersCount} عضو`:''}</div>
+        </div>
+      </a>
+    </div>`).join('');
+}
+chips(); load();
+</script>
+</body>
+</html>

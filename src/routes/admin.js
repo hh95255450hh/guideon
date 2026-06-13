@@ -33,6 +33,8 @@ router.get('/guides',             requirePermission('view_users'), admin.allGuid
 router.get('/tourists',           requirePermission('view_users'), admin.allTourists);
 router.get('/companies/pending',  requirePermission('view_users'), admin.pendingCompanies);
 router.get('/companies',          requirePermission('view_users'), admin.allCompanies);
+router.get('/teams',              requirePermission('view_users'), admin.allTeams);
+router.patch('/teams/:id/verify', requirePermission('verify_companies'), admin.verifyTeam);
 router.get('/bookings',           requirePermission('view_bookings'), admin.allBookings);
 
 // Verification

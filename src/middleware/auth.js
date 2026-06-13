@@ -46,6 +46,17 @@ exports.requireProvider = (req, res, next) => {
   next();
 };
 
+// Event teams — a separate provider vertical that runs events/activities.
+exports.requireTeam = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, message: 'Please log in to continue.' });
+  }
+  if (req.session.userType !== 'team') {
+    return res.status(403).json({ success: false, message: 'Team access required.' });
+  }
+  next();
+};
+
 exports.requireTourist = (req, res, next) => {
   if (!req.session.userId) {
     return res.status(401).json({ success: false, message: 'Please log in to continue.' });

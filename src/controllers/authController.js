@@ -44,7 +44,8 @@ exports.register = async (req, res) => {
   try {
     const { fullName, email, password, userType, phone, nationality, preferredLanguage,
             hasMinistryLicence, licenceNumber, languages, specialisations, destinations, pricePerDay, bio,
-            companyName, companyRegNo, companyServices, companyDestinations, companyDescription } = req.body;
+            companyName, companyRegNo, companyServices, companyDestinations, companyDescription,
+            teamName, teamCategory, teamDescription, teamGovernorate, membersCount, foundedYear } = req.body;
 
     if (!fullName || !email || !password || !userType) {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
@@ -59,6 +60,9 @@ exports.register = async (req, res) => {
     if (userType === 'company' && !companyName) {
       return res.status(400).json({ success: false, message: 'Company name is required.' });
     }
+    if (userType === 'team' && !teamName) {
+      return res.status(400).json({ success: false, message: 'Team name is required. — اسم الفريق مطلوب.' });
+    }
 
     const existing = await users.findByField('email', email.toLowerCase());
     if (existing) {
@@ -66,7 +70,7 @@ exports.register = async (req, res) => {
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    const prefix = userType === 'guide' ? 'guide' : userType === 'company' ? 'company' : userType === 'admin' ? 'admin' : 'tourist';
+    const prefix = userType === 'guide' ? 'guide' : userType === 'company' ? 'company' : userType === 'team' ? 'team' : userType === 'admin' ? 'admin' : 'tourist';
     const id = prefix + '-' + uuidv4().slice(0, 8);
 
     const verifyToken = randomToken();
@@ -108,6 +112,18 @@ exports.register = async (req, res) => {
         companyServices: svcArr,
         companyDestinations: destArr,
         companyDescription: companyDescription || '',
+        isVerified: false, photo: '',
+      };
+    } else if (userType === 'team') {
+      record = {
+        ...base,
+        teamName: teamName || '',
+        teamCategory: teamCategory || 'other',
+        teamDescription: teamDescription || '',
+        teamGovernorate: teamGovernorate || '',
+        membersCount: parseInt(membersCount) || null,
+        foundedYear: parseInt(foundedYear) || null,
+        teamSocials: {},
         isVerified: false, photo: '',
       };
     } else {
@@ -165,6 +181,15 @@ exports.register = async (req, res) => {
     } else if (userType === 'company') {
       emailService.sendCompanyWelcome({ email: record.email, name: record.fullName, companyName: record.companyName }).catch(() => {});
       emailService.sendAdminNewCompany({ companyName: record.companyName, email: record.email, companyRegNo: record.companyRegNo }).catch(() => {});
+    } else if (userType === 'team') {
+      emailService.notifyAdmins(`[Guideon] 🎪 New event team: ${record.teamName}`, emailService.notificationEmail({
+        icon: '🎪',
+        title:   `New event team registered: "${record.teamName}"`,
+        titleAr: `فريق فعاليّات جديد: "${record.teamName}"`,
+        body:    `Category: ${record.teamCategory} · ${record.teamGovernorate || '—'} · ${record.email}`,
+        bodyAr:  `التصنيف: ${record.teamCategory} · ${record.teamGovernorate || '—'} · ${record.email}`,
+        link: '/admin.html',
+      })).catch(() => {});
     }
 
     const safe = { ...record };

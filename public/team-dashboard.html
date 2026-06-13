@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f7b6c">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<title>لوحة الفريق — Guideon</title>
+<script>
+(function(){var s=localStorage.getItem('gd_lang');var nav=(navigator.language||'en').slice(0,2).toLowerCase();var lang=s||(['en','ar','zh','hi','es','fr','bn','pt','ru','ur'].indexOf(nav)>=0?nav:'en');var rtl=lang==='ar'||lang==='ur';var l=document.createElement('link');l.id=rtl?'bs-rtl':'bs-ltr';l.rel='stylesheet';l.href=rtl?'/css/bootstrap.rtl.min.css':'/css/bootstrap.min.css';document.head.appendChild(l);})();
+</script>
+<link rel="stylesheet" href="/css/style.css?v=40">
+<style>
+  .dash-header{background:linear-gradient(135deg,#0a5c50,#0f7b6c);color:#fff;padding:30px 0}
+  .info-card{background:#fff;border:1px solid #e7eaee;border-radius:16px;padding:22px;margin-bottom:20px;box-shadow:0 3px 12px rgba(15,28,62,.05)}
+  .ev-card{border:1px solid #e7eaee;border-radius:12px;overflow:hidden;background:#fff}
+  .ev-card .cover{height:120px;background:#e2f0ee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:2rem}
+  .cat-tag{display:inline-block;background:#f0faf8;color:#0f7b6c;border:1px solid #d6efe9;border-radius:14px;padding:2px 10px;font-size:.72rem;font-weight:700}
+  .pill{display:inline-block;padding:2px 9px;border-radius:12px;font-size:.7rem;font-weight:800}
+  .pill.pub{background:rgba(34,197,94,.15);color:#16a34a}.pill.draft{background:#eef1f4;color:#64748b}
+</style>
+<script src="/js/image-compress.js?v=3"></script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="48"></a>
+    <div class="ms-auto d-flex gap-2 align-items-center">
+      <button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()">🌐 EN</button>
+      <span class="text-white opacity-75 small" id="navName"></span>
+      <a href="#" class="btn btn-sm btn-outline-light" id="publicLink" target="_blank">👁️ صفحتي</a>
+      <button class="btn btn-sm btn-danger" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+</nav>
+
+<div class="dash-header">
+  <div class="container">
+    <h2 class="fw-800 mb-1">🎪 لوحة الفريق</h2>
+    <div class="opacity-75" id="teamTagline">أدِر ملفّ فريقك وفعاليّاتك</div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div id="verifyBanner"></div>
+
+  <div class="row g-4">
+    <!-- Profile -->
+    <div class="col-lg-5">
+      <div class="info-card">
+        <h5 class="fw-700 mb-3">📝 ملفّ الفريق</h5>
+        <div class="text-center mb-3">
+          <div id="teamPhoto" style="width:90px;height:90px;border-radius:50%;background:#e2f0ee center/cover no-repeat;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#0f7b6c;font-weight:800">🎪</div>
+          <input type="file" id="photoFile" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
+          <button class="btn btn-sm btn-outline-secondary mt-2" onclick="document.getElementById('photoFile').click()">📷 شعار الفريق</button>
+        </div>
+        <div class="mb-2"><label class="form-label small fw-600">اسم الفريق</label><input class="form-control" id="fTeamName"></div>
+        <div class="row g-2">
+          <div class="col-6"><label class="form-label small fw-600">التصنيف</label>
+            <select class="form-select" id="fCategory">
+              <option value="cultural">🎭 ثقافيّة</option><option value="sports">⚽ رياضيّة</option>
+              <option value="music">🎵 موسيقيّة</option><option value="adventure">🏔️ مغامرات</option>
+              <option value="kids">🧒 أطفال</option><option value="food">🍽️ طعام</option>
+              <option value="arts">🎨 فنون</option><option value="other">📦 أخرى</option>
+            </select>
+          </div>
+          <div class="col-6"><label class="form-label small fw-600">المحافظة</label><input class="form-control" id="fGov"></div>
+          <div class="col-6"><label class="form-label small fw-600">عدد الأعضاء</label><input class="form-control" id="fMembers" type="number" min="1"></div>
+          <div class="col-6"><label class="form-label small fw-600">سنة التأسيس</label><input class="form-control" id="fFounded" type="number"></div>
+        </div>
+        <div class="mt-2"><label class="form-label small fw-600">نبذة</label><textarea class="form-control" id="fDesc" rows="3"></textarea></div>
+        <div class="mt-2"><label class="form-label small fw-600">الهاتف / واتساب</label><input class="form-control" id="fPhone"></div>
+        <h6 class="fw-700 mt-3 mb-2">روابط التواصل</h6>
+        <div class="row g-2">
+          <div class="col-6"><input class="form-control form-control-sm" id="sInstagram" placeholder="📷 Instagram"></div>
+          <div class="col-6"><input class="form-control form-control-sm" id="sYoutube" placeholder="▶️ YouTube"></div>
+          <div class="col-6"><input class="form-control form-control-sm" id="sTiktok" placeholder="🎵 TikTok"></div>
+          <div class="col-6"><input class="form-control form-control-sm" id="sWebsite" placeholder="🌐 Website"></div>
+        </div>
+        <button class="btn btn-teal w-100 mt-3" onclick="saveProfile()" id="saveBtn">💾 حفظ الملف</button>
+        <div class="small text-muted mt-2" id="profMsg"></div>
+      </div>
+    </div>
+
+    <!-- Events -->
+    <div class="col-lg-7">
+      <div class="info-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-700 mb-0">🎟️ فعاليّاتي</h5>
+          <button class="btn btn-sm btn-teal" onclick="openEvent()">➕ فعاليّة جديدة</button>
+        </div>
+        <div id="eventsList"><div class="text-center text-muted py-4">جارٍ التحميل…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event modal -->
+<div class="modal fade" id="evModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:var(--teal);color:#fff">
+        <h5 class="modal-title" id="evModalTitle">فعاليّة جديدة</h5>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="evId">
+        <div class="text-center mb-3">
+          <div id="evCover" style="height:120px;border-radius:10px;background:#e2f0ee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:1.8rem">🖼️</div>
+          <input type="file" id="evCoverFile" accept="image/*" style="display:none" onchange="uploadCover(this)">
+          <button class="btn btn-sm btn-outline-secondary mt-2" onclick="document.getElementById('evCoverFile').click()">📷 صورة الغلاف</button>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-8"><label class="form-label small fw-600">عنوان الفعاليّة *</label><input class="form-control" id="evTitle"></div>
+          <div class="col-md-4"><label class="form-label small fw-600">التصنيف</label>
+            <select class="form-select" id="evCategory">
+              <option value="cultural">🎭 ثقافيّة</option><option value="sports">⚽ رياضيّة</option>
+              <option value="music">🎵 موسيقيّة</option><option value="adventure">🏔️ مغامرات</option>
+              <option value="kids">🧒 أطفال</option><option value="food">🍽️ طعام</option>
+              <option value="arts">🎨 فنون</option><option value="other">📦 أخرى</option>
+            </select>
+          </div>
+          <div class="col-md-4"><label class="form-label small fw-600">التاريخ</label><input class="form-control" id="evDate" type="date"></div>
+          <div class="col-md-4"><label class="form-label small fw-600">من</label><input class="form-control" id="evStart" type="time"></div>
+          <div class="col-md-4"><label class="form-label small fw-600">إلى</label><input class="form-control" id="evEnd" type="time"></div>
+          <div class="col-md-6"><label class="form-label small fw-600">المحافظة</label><input class="form-control" id="evGov"></div>
+          <div class="col-md-6"><label class="form-label small fw-600">المكان / الموقع</label><input class="form-control" id="evLocation"></div>
+          <div class="col-md-6"><label class="form-label small fw-600">سعر التذكرة (ر.ع) · 0 = مجّاني</label><input class="form-control" id="evPrice" type="number" min="0" step="0.5"></div>
+          <div class="col-md-6"><label class="form-label small fw-600">السعة (عدد المقاعد)</label><input class="form-control" id="evCapacity" type="number" min="1"></div>
+          <div class="col-12"><label class="form-label small fw-600">الوصف</label><textarea class="form-control" id="evDesc" rows="3"></textarea></div>
+          <div class="col-12">
+            <label class="d-flex align-items-center gap-2"><input type="checkbox" id="evPublished"> <span class="fw-600">نشر الفعاليّة (تظهر للجمهور)</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">إلغاء</button>
+        <button class="btn btn-teal" onclick="saveEvent()" id="evSaveBtn">💾 حفظ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/i18n.js?v=48"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/image-compress.js?v=3"></script>
+<script src="/js/common-widgets.js?v=14"></script>
+<script>
+let TEAM = null, EVENTS = [];
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function doLogout(){ fetch('/api/auth/logout',{method:'POST',credentials:'include'}).finally(()=>location.href='/login.html'); }
+
+async function init(){
+  try{
+    const r = await fetch('/api/auth/me',{credentials:'include'});
+    const d = await r.json();
+    if(!d.success || d.user.userType!=='team'){ location.href='/login.html'; return; }
+    TEAM = d.user;
+    document.getElementById('navName').textContent = TEAM.teamName || TEAM.fullName;
+    document.getElementById('publicLink').href = '/team-profile.html?id='+TEAM.id;
+    fillProfile();
+    if(!TEAM.isVerified){
+      document.getElementById('verifyBanner').innerHTML =
+        '<div class="alert alert-warning small">⏳ فريقك قيد المراجعة من الإدارة. ستظهر صفحتك للجمهور بعد التوثيق.</div>';
+    }
+    loadEvents();
+  }catch{ location.href='/login.html'; }
+}
+
+function fillProfile(){
+  const s = TEAM.teamSocials || {};
+  document.getElementById('fTeamName').value = TEAM.teamName||'';
+  document.getElementById('fCategory').value = TEAM.teamCategory||'other';
+  document.getElementById('fGov').value = TEAM.teamGovernorate||'';
+  document.getElementById('fMembers').value = TEAM.membersCount||'';
+  document.getElementById('fFounded').value = TEAM.foundedYear||'';
+  document.getElementById('fDesc').value = TEAM.teamDescription||'';
+  document.getElementById('fPhone').value = TEAM.phone||'';
+  document.getElementById('sInstagram').value = s.instagram||'';
+  document.getElementById('sYoutube').value = s.youtube||'';
+  document.getElementById('sTiktok').value = s.tiktok||'';
+  document.getElementById('sWebsite').value = s.website||'';
+  if(TEAM.photo){ document.getElementById('teamPhoto').style.backgroundImage=`url('${TEAM.photo}')`; document.getElementById('teamPhoto').textContent=''; }
+}
+
+async function saveProfile(){
+  const btn=document.getElementById('saveBtn'); btn.disabled=true;
+  const body={
+    teamName:document.getElementById('fTeamName').value, teamCategory:document.getElementById('fCategory').value,
+    teamGovernorate:document.getElementById('fGov').value, membersCount:document.getElementById('fMembers').value,
+    foundedYear:document.getElementById('fFounded').value, teamDescription:document.getElementById('fDesc').value,
+    phone:document.getElementById('fPhone').value,
+    teamSocials:{ instagram:document.getElementById('sInstagram').value, youtube:document.getElementById('sYoutube').value,
+      tiktok:document.getElementById('sTiktok').value, website:document.getElementById('sWebsite').value },
+  };
+  try{
+    const r=await fetch('/api/teams/me/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    const m=document.getElementById('profMsg');
+    if(r.ok&&d.success){ m.textContent='✓ حُفظ'; m.style.color='#16a34a'; TEAM={...TEAM,...body}; }
+    else { m.textContent='⚠️ '+(d.message||'خطأ'); m.style.color='#dc2626'; }
+  }catch(e){}finally{ btn.disabled=false; }
+}
+
+async function uploadPhoto(inp){
+  const f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
+  const file = window.gdCompressImage ? await gdCompressImage(f,{maxDim:600,targetKB:300}) : f;
+  const fd=new FormData(); fd.append('photo',file,file.name);
+  const r=await fetch('/api/upload/photo',{method:'POST',credentials:'include',body:fd});
+  const d=await r.json();
+  if(d.success){ TEAM.photo=d.photo; document.getElementById('teamPhoto').style.backgroundImage=`url('${d.photo}')`; document.getElementById('teamPhoto').textContent=''; }
+}
+
+const CAT_LABEL={cultural:'🎭 ثقافيّة',sports:'⚽ رياضيّة',music:'🎵 موسيقيّة',adventure:'🏔️ مغامرات',kids:'🧒 أطفال',food:'🍽️ طعام',arts:'🎨 فنون',other:'📦 أخرى'};
+async function loadEvents(){
+  try{
+    const r=await fetch('/api/teams/me/events',{credentials:'include'});
+    const d=await r.json();
+    EVENTS=d.events||[];
+    const el=document.getElementById('eventsList');
+    if(!EVENTS.length){ el.innerHTML='<div class="text-center text-muted py-4">لا فعاليّات بعد — اضغط «فعاليّة جديدة»</div>'; return; }
+    el.innerHTML='<div class="row g-3">'+EVENTS.map(e=>`
+      <div class="col-md-6">
+        <div class="ev-card">
+          <div class="cover" ${e.coverImage?`style="background-image:url('${esc(e.coverImage)}')"`:''}>${e.coverImage?'':'🎟️'}</div>
+          <div class="p-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <strong>${esc(e.title)}</strong>
+              <span class="pill ${e.isPublished?'pub':'draft'}">${e.isPublished?'منشورة':'مسودّة'}</span>
+            </div>
+            <div class="small text-muted my-1">${esc(CAT_LABEL[e.category]||e.category)} · ${e.eventDate?new Date(e.eventDate).toLocaleDateString('en-GB'):'—'}</div>
+            <div class="small">${e.ticketPrice>0?e.ticketPrice+' ر.ع':'مجّاني'} · ${esc(e.governorate||'—')}</div>
+            <div class="mt-2 d-flex gap-2">
+              <button class="btn btn-sm btn-outline-secondary flex-grow-1" onclick="openEvent('${e.id}')">✏️ تعديل</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="delEvent('${e.id}')">🗑️</button>
+            </div>
+          </div>
+        </div>
+      </div>`).join('')+'</div>';
+  }catch{}
+}
+
+let EV_COVER='';
+function openEvent(id){
+  const e = id ? EVENTS.find(x=>x.id===id) : null;
+  document.getElementById('evModalTitle').textContent = e?'تعديل الفعاليّة':'فعاليّة جديدة';
+  document.getElementById('evId').value = e?e.id:'';
+  document.getElementById('evTitle').value=e?e.title:'';
+  document.getElementById('evCategory').value=e?e.category:'cultural';
+  document.getElementById('evDate').value=e?(e.eventDate||''):'';
+  document.getElementById('evStart').value=e?(e.startTime||''):'';
+  document.getElementById('evEnd').value=e?(e.endTime||''):'';
+  document.getElementById('evGov').value=e?(e.governorate||''):'';
+  document.getElementById('evLocation').value=e?(e.location||''):'';
+  document.getElementById('evPrice').value=e?(e.ticketPrice||0):0;
+  document.getElementById('evCapacity').value=e?(e.capacity||''):'';
+  document.getElementById('evDesc').value=e?(e.description||''):'';
+  document.getElementById('evPublished').checked=e?!!e.isPublished:false;
+  EV_COVER = e?(e.coverImage||''):'';
+  const cv=document.getElementById('evCover');
+  if(EV_COVER){ cv.style.backgroundImage=`url('${EV_COVER}')`; cv.textContent=''; } else { cv.style.backgroundImage=''; cv.textContent='🖼️'; }
+  new bootstrap.Modal(document.getElementById('evModal')).show();
+}
+async function uploadCover(inp){
+  const f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
+  const file = window.gdCompressImage ? await gdCompressImage(f,{maxDim:1400,targetKB:700}) : f;
+  const fd=new FormData(); fd.append('photo',file,file.name);
+  const r=await fetch('/api/upload/image',{method:'POST',credentials:'include',body:fd});
+  const d=await r.json();
+  if(d.success){ EV_COVER=d.url; const cv=document.getElementById('evCover'); cv.style.backgroundImage=`url('${d.url}')`; cv.textContent=''; }
+}
+async function saveEvent(){
+  const id=document.getElementById('evId').value;
+  const body={
+    title:document.getElementById('evTitle').value, category:document.getElementById('evCategory').value,
+    eventDate:document.getElementById('evDate').value, startTime:document.getElementById('evStart').value,
+    endTime:document.getElementById('evEnd').value, governorate:document.getElementById('evGov').value,
+    location:document.getElementById('evLocation').value, ticketPrice:document.getElementById('evPrice').value,
+    capacity:document.getElementById('evCapacity').value, description:document.getElementById('evDesc').value,
+    coverImage:EV_COVER, isPublished:document.getElementById('evPublished').checked,
+  };
+  if(!body.title){ alert('عنوان الفعاليّة مطلوب'); return; }
+  const btn=document.getElementById('evSaveBtn'); btn.disabled=true;
+  try{
+    const url = id?`/api/teams/me/events/${id}`:'/api/teams/me/events';
+    const r=await fetch(url,{method:id?'PUT':'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(!r.ok||!d.success) throw new Error(d.message||'فشل الحفظ');
+    bootstrap.Modal.getInstance(document.getElementById('evModal')).hide();
+    loadEvents();
+  }catch(e){ alert(e.message); }finally{ btn.disabled=false; }
+}
+async function delEvent(id){
+  if(!confirm('حذف هذه الفعاليّة؟')) return;
+  const r=await fetch(`/api/teams/me/events/${id}`,{method:'DELETE',credentials:'include'});
+  if(r.ok) loadEvents();
+}
+
+init();
+</script>
+</body>
+</html>

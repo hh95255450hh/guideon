@@ -31,6 +31,7 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/qr.html',           changefreq: 'monthly',priority: 0.4 },
       { loc: '/regions.html',      changefreq: 'monthly',priority: 0.9 },
       { loc: '/trails.html',       changefreq: 'monthly',priority: 0.8 },
+      { loc: '/teams.html',        changefreq: 'daily',  priority: 0.85 },
       { loc: '/blog.html',         changefreq: 'weekly', priority: 0.8 },
       { loc: '/cancellation.html', changefreq: 'yearly', priority: 0.4 },
     ];
