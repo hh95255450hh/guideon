@@ -32,16 +32,31 @@ exports.update = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Admin only.' });
     }
     const { key } = req.params;
-    if (!['hero','carousel','activities','theme','footer','navbar'].includes(key)) {
+    if (!['hero','carousel','activities','theme','footer','navbar','commission'].includes(key)) {
       return res.status(400).json({ success: false, message: 'Unknown setting key.' });
     }
-    const value = req.body.value || req.body;
+    let value = req.body.value || req.body;
+    // Commission rates: validate + normalise to fractions in [0, 0.9].
+    if (key === 'commission') {
+      const norm = (n) => {
+        let v = parseFloat(n);
+        if (Number.isNaN(v)) return null;
+        if (v > 1) v = v / 100;            // accept "15" meaning 15%
+        return Math.min(Math.max(v, 0), 0.9);
+      };
+      const g = norm(value.guide), c = norm(value.company);
+      if (g == null || c == null) {
+        return res.status(400).json({ success: false, message: 'Guide and company rates are required (e.g. 10 and 15).' });
+      }
+      value = { guide: g, company: c };
+    }
     const existing = await settings.findById(key);
     if (existing) {
       await settings.update(key, { value, updated_by: req.session.userId, updatedAt: new Date().toISOString() });
     } else {
       await settings.insert({ key, value, updated_by: req.session.userId, updatedAt: new Date().toISOString() });
     }
+    if (key === 'commission') { try { require('../services/commission').bustCache(); } catch {} }
     res.json({ success: true, message: 'Saved.', value });
   } catch (err) {
     console.error('[site-settings:update]', err.message);

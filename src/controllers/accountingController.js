@@ -9,6 +9,7 @@
  */
 const SupabaseDB = require('../models/SupabaseDB');
 const invoice = require('../services/invoiceService');
+const commission = require('../services/commission');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
@@ -19,11 +20,13 @@ const r3 = (n) => Math.round((Number(n) || 0) * 1000) / 1000;
 exports.earnings = async (req, res) => {
   try {
     const guideId = req.session.userId;
+    const me   = await users.findById(guideId);
+    const rate = await commission.resolveRate(me);   // this provider's rate
     const mine = (await bookings.findAllByField('guideId', guideId))
       .filter(b => b.totalAmount != null);
 
     const paid = mine.filter(b => b.isPaid);
-    const sum  = (arr) => r3(arr.reduce((s, b) => s + invoice.breakdown(b).net, 0));
+    const sum  = (arr) => r3(arr.reduce((s, b) => s + invoice.breakdown(b, rate).net, 0));
 
     const completedPaid = paid.filter(b => b.status === 'completed' && !b.paidOutAt);
     const inFlight      = paid.filter(b => b.status !== 'completed' && !b.paidOutAt);
@@ -36,7 +39,7 @@ exports.earnings = async (req, res) => {
       lifetimeNet:   sum(paid),
       lifetimeGross: r3(paid.reduce((s, b) => s + (parseFloat(b.totalAmount) || 0), 0)),
       bookingsPaid:  paid.length,
-      commissionRate: invoice.COMMISSION_RATE,
+      commissionRate: rate,
       vatRate:        invoice.VAT_RATE,
     };
 
@@ -46,7 +49,7 @@ exports.earnings = async (req, res) => {
       .sort((a, b) => new Date(b.paidAt || b.createdAt) - new Date(a.paidAt || a.createdAt))
       .slice(0, 100)
       .map(b => {
-        const br = invoice.breakdown(b);
+        const br = invoice.breakdown(b, rate);
         return {
           id: b.id,
           invoiceNo: invoice.invoiceNumber(b),
@@ -83,7 +86,8 @@ exports.invoicePdf = async (req, res) => {
       users.findById(guideId),
       booking.touristId ? users.findById(booking.touristId) : null,
     ]);
-    const pdf = await invoice.generateGuideInvoice(booking, guide, tourist);
+    const rate = await commission.resolveRate(guide);
+    const pdf = await invoice.generateGuideInvoice(booking, guide, tourist, rate);
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `inline; filename="${invoice.invoiceNumber(booking)}.pdf"`);
     res.send(pdf);
@@ -108,7 +112,8 @@ exports.statementPdf = async (req, res) => {
         return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}` === ym;
       });
 
-    const pdf = await invoice.generateStatement(guide, mine, ym);
+    const rate = await commission.resolveRate(guide);
+    const pdf = await invoice.generateStatement(guide, mine, ym, rate);
     res.set('Content-Type', 'application/pdf');
     res.set('Content-Disposition', `inline; filename="guideon-statement-${ym}.pdf"`);
     res.send(pdf);
@@ -141,8 +146,8 @@ exports.verify = async (req, res) => {
     if (!booking) {
       return res.status(404).type('html').send(page(false, `<p><span class="badge bad">✗ Not found</span></p>`));
     }
-    const br = invoice.breakdown(booking);
     const guide = booking.guideId ? await users.findById(booking.guideId) : null;
+    const br = invoice.breakdown(booking, await commission.resolveRate(guide));
     res.type('html').send(page(true, `
       <p><span class="badge ok">✓ Genuine Guideon invoice</span></p>
       <div class="row"><span>Invoice No</span><strong>${invoice.invoiceNumber(booking)}</strong></div>

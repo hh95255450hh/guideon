@@ -39,12 +39,15 @@ const r3  = (n) => Math.round((Number(n) || 0) * 1000) / 1000;
 const omr = (n) => `${r3(n).toFixed(3)} OMR`;
 
 // ── Money breakdown for one booking ──
-function breakdown(booking) {
+// `rate` is the commission fraction for this booking's provider; defaults to
+// the env constant so legacy callers keep working. Pass the resolved rate
+// (commission.rateFor) to honour per-type / per-user rates.
+function breakdown(booking, rate = COMMISSION_RATE, vatRate = VAT_RATE) {
   const gross      = r3(booking.totalAmount);
-  const commission = r3(gross * COMMISSION_RATE);
-  const vat        = r3(commission * VAT_RATE);
+  const commission = r3(gross * (rate != null ? rate : COMMISSION_RATE));
+  const vat        = r3(commission * vatRate);
   const net        = r3(gross - commission - vat);
-  return { gross, commission, vat, net };
+  return { gross, commission, vat, net, rate: rate != null ? rate : COMMISSION_RATE };
 }
 
 // Stable, unique invoice number per booking (no DB needed).
@@ -92,8 +95,8 @@ function footer(doc, note) {
 }
 
 // ════════════════════ Per-booking earnings invoice ════════════════════
-async function generateGuideInvoice(booking, guide, tourist) {
-  const b = breakdown(booking);
+async function generateGuideInvoice(booking, guide, tourist, rate) {
+  const b = breakdown(booking, rate);
   const invNo = invoiceNumber(booking);
   const isTax = VAT_RATE > 0 && VAT_NUMBER;
   const docTitle = isTax ? 'TAX INVOICE' : 'EARNINGS INVOICE';
@@ -154,7 +157,7 @@ async function generateGuideInvoice(booking, guide, tourist) {
       };
       let ry = y + 18;
       row('Gross booking value', omr(b.gross), ry); ry += 26;
-      row(`Platform service fee (${(COMMISSION_RATE * 100).toFixed(0)}%)`, `- ${omr(b.commission)}`, ry); ry += 26;
+      row(`Platform service fee (${(b.rate * 100).toFixed(0)}%)`, `- ${omr(b.commission)}`, ry); ry += 26;
       if (isTax) { row(`VAT on fee (${(VAT_RATE * 100).toFixed(0)}%)`, `- ${omr(b.vat)}`, ry); ry += 26; }
       doc.moveTo(70, ry + 2).lineTo(doc.page.width - 70, ry + 2).strokeColor(LIGHT).stroke();
       row('Net payout to guide', omr(b.net), ry + 12, true, GREEN);
@@ -182,7 +185,7 @@ async function generateGuideInvoice(booking, guide, tourist) {
 }
 
 // ════════════════════ Monthly payout statement ════════════════════
-function generateStatement(guide, bookings, ym /* 'YYYY-MM' */) {
+function generateStatement(guide, bookings, ym /* YYYY-MM */, rate) {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -198,7 +201,7 @@ function generateStatement(guide, bookings, ym /* 'YYYY-MM' */) {
 
       // Totals
       const tot = bookings.reduce((acc, bk) => {
-        const b = breakdown(bk);
+        const b = breakdown(bk, rate);
         acc.gross += b.gross; acc.commission += b.commission; acc.vat += b.vat; acc.net += b.net;
         return acc;
       }, { gross: 0, commission: 0, vat: 0, net: 0 });
@@ -232,7 +235,7 @@ function generateStatement(guide, bookings, ym /* 'YYYY-MM' */) {
       const sorted = bookings.slice().sort((a, b) => new Date(a.paidAt || a.createdAt) - new Date(b.paidAt || b.createdAt));
       for (const bk of sorted) {
         if (y > doc.page.height - 90) { doc.addPage(); y = 60; }
-        const b = breakdown(bk);
+        const b = breakdown(bk, rate);
         doc.fillColor(GREY).text(new Date(bk.paidAt || bk.createdAt).toLocaleDateString('en-GB'), 50, y);
         doc.text(String(bk.destination || '—').slice(0, 26), 120, y);
         doc.text(b.gross.toFixed(3), 300, y, { width: 70, align: 'right' });

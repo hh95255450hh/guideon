@@ -12,6 +12,7 @@ const messages    = new SupabaseDB('messages');
 const packages    = new SupabaseDB('tour_packages');
 const auditLog    = new SupabaseDB('admin_audit_log');
 const expenses    = new SupabaseDB('finance_expenses');
+const commission  = require('../services/commission');
 
 // ── Recent activity feed ──────────────────────────────────────────────────────
 // Aggregates real events from existing tables (registrations, new tours,
@@ -319,9 +320,10 @@ function _monthKey(d) {
 
 exports.revenue = async (req, res) => {
   try {
-    // The commission rate the platform keeps per paid booking. Single source
-    // of truth; if you change billing, change it here. Pinned by payments.test.js.
-    const COMMISSION_RATE = parseFloat(process.env.PLATFORM_COMMISSION_RATE || '0.10');
+    // Commission rates differ by provider type (guide vs company) and can be
+    // overridden per provider. Resolve per booking via commission.rateFor.
+    const RATES = await commission.getRates();
+    const COMMISSION_RATE = RATES.guide; // representative default for headline %
 
     const cacheKey = 'revenue';
     if (_revenueCache.data && Date.now() - _revenueCache.at < REVENUE_CACHE_MS && _revenueCache.key === cacheKey) {
@@ -359,6 +361,13 @@ exports.revenue = async (req, res) => {
     const rev30       = sumAmount(paid.filter(b => within(b, d30)));
     const rev365      = sumAmount(paid.filter(b => within(b, d365)));
     const revTotal    = sumAmount(paid);
+
+    // Per-provider commission resolution. Each provider (guide/company) may
+    // have a different rate; sum the exact commission across paid bookings.
+    const providerRateFor = (b) => commission.rateFor(userById[b.guideId], RATES);
+    const platformEarningsExact = _round3(
+      paid.reduce((s, b) => s + (parseFloat(b.totalAmount) || 0) * providerRateFor(b), 0)
+    );
 
     // Previous periods for growth comparison
     const revPrev7  = sumAmount(paid.filter(b => within(b, d14) && !within(b, d7)));
@@ -465,7 +474,7 @@ exports.revenue = async (req, res) => {
           provider: provider ? (provider.companyName || provider.fullName) : 'Unknown',
           destination: b.destination || '—',
           amount: _round3(b.totalAmount),
-          commission: _round3((parseFloat(b.totalAmount) || 0) * COMMISSION_RATE),
+          commission: _round3((parseFloat(b.totalAmount) || 0) * providerRateFor(b)),
           status: b.isPaid ? 'paid' : (b.status === 'cancelled' ? 'cancelled' : 'pending'),
           method: 'Thawani',
           date: moneyDate(b),
@@ -487,7 +496,7 @@ exports.revenue = async (req, res) => {
           provider: provider ? (provider.companyName || provider.fullName) : 'Unknown',
           destination: b.destination || '—',
           amount: _round3(b.totalAmount),
-          commission: _round3((parseFloat(b.totalAmount) || 0) * COMMISSION_RATE),
+          commission: _round3((parseFloat(b.totalAmount) || 0) * providerRateFor(b)),
           status: 'pending',
           method: 'Thawani',
           date: b.createdAt,
@@ -528,8 +537,8 @@ exports.revenue = async (req, res) => {
         growth30: growth(rev30, revPrev30),
         txnCount, aov,
         pendingPay, cancelled,
-        platformEarnings: _round3(revTotal * COMMISSION_RATE),
-        providerPayouts:  _round3(revTotal * (1 - COMMISSION_RATE)),
+        platformEarnings: platformEarningsExact,
+        providerPayouts:  _round3(revTotal - platformEarningsExact),
       },
       daily,
       monthly,
@@ -541,7 +550,7 @@ exports.revenue = async (req, res) => {
       alerts,
       // Subscriptions: GUIDEON is commission-per-booking, no recurring plans.
       subscriptions: { enabled: false, note: 'النموذج عمولة لكل حجز — لا اشتراكات متكرّرة حالياً.' },
-      finance: buildFinanceSummary(allExpenses, { revTotal, platformEarnings: _round3(revTotal * COMMISSION_RATE), now, d30 }),
+      finance: buildFinanceSummary(allExpenses, { revTotal, platformEarnings: platformEarningsExact, now, d30 }),
     };
 
     _revenueCache = { at: Date.now(), data, key: cacheKey };
@@ -698,6 +707,82 @@ exports.deleteExpense = async (req, res) => {
   } catch (err) {
     console.error('[admin:deleteExpense]', err);
     res.status(500).json({ success: false, message: 'تعذّر حذف المصروف.' });
+  }
+};
+
+// ── Provider payouts ──────────────────────────────────────────────────────────
+// "Available" = paid + completed bookings that haven't been settled yet.
+// Net payout uses each provider's resolved commission rate.
+// GET /api/admin/payouts — providers with an outstanding balance
+exports.listPayouts = async (req, res) => {
+  try {
+    const RATES = await commission.getRates();
+    const [allUsers, allBookings] = await Promise.all([users.readAll(), bookings.readAll()]);
+    const userById = Object.fromEntries(allUsers.map(u => [u.id, u]));
+
+    const due = {}; // providerId -> { gross, net, count }
+    for (const b of allBookings) {
+      if (!b.isPaid || b.status !== 'completed' || b.paidOutAt || b.totalAmount == null) continue;
+      const provider = userById[b.guideId];
+      const rate = commission.rateFor(provider, RATES);
+      const gross = parseFloat(b.totalAmount) || 0;
+      const net = gross * (1 - rate); // VAT on the platform fee handled in invoices
+      if (!due[b.guideId]) due[b.guideId] = { gross: 0, net: 0, count: 0 };
+      due[b.guideId].gross += gross; due[b.guideId].net += net; due[b.guideId].count += 1;
+    }
+
+    const payouts = Object.entries(due).map(([id, v]) => {
+      const u = userById[id];
+      return {
+        providerId: id,
+        name: u ? (u.companyName || u.fullName || 'Unknown') : 'Unknown',
+        type: u ? u.userType : 'guide',
+        email: u ? u.email : '',
+        rate: commission.rateFor(u, RATES),
+        bookings: v.count,
+        gross: Math.round(v.gross * 1000) / 1000,
+        net:   Math.round(v.net * 1000) / 1000,
+      };
+    }).sort((a, b) => b.net - a.net);
+
+    const totalDue = Math.round(payouts.reduce((s, p) => s + p.net, 0) * 1000) / 1000;
+    res.json({ success: true, payouts, totalDue, rates: RATES });
+  } catch (err) {
+    console.error('[admin:listPayouts]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/admin/payouts/:providerId/settle  { ref? }
+// Marks all of a provider's available bookings as paid out.
+exports.settlePayout = async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const ref = (req.body && req.body.ref ? String(req.body.ref) : '').slice(0, 120);
+    const mine = (await bookings.findAllByField('guideId', providerId))
+      .filter(b => b.isPaid && b.status === 'completed' && !b.paidOutAt && b.totalAmount != null);
+    if (!mine.length) return res.status(400).json({ success: false, message: 'No settleable bookings for this provider.' });
+
+    const now = new Date().toISOString();
+    let settled = 0;
+    for (const b of mine) {
+      try {
+        await bookings.update(b.id, { paidOutAt: now, payoutRef: ref || null, payoutBy: req.session.userId });
+        settled++;
+      } catch (e) {
+        // paidOutAt column missing → migration 038 not run yet
+        if (/column|schema cache|paidOutAt/i.test(String(e.message))) {
+          return res.status(500).json({ success: false, message: 'Payout tracking needs migration 038 — run it in Supabase, then retry.' });
+        }
+        throw e;
+      }
+    }
+    _revenueCache = { at: 0, data: null, key: null };
+    audit.logAction(req, { action: 'settlePayout', targetType: 'user', targetId: providerId, details: { bookings: settled, ref } });
+    res.json({ success: true, settled });
+  } catch (err) {
+    console.error('[admin:settlePayout]', err.message);
+    res.status(500).json({ success: false, message: 'Could not settle the payout.' });
   }
 };
 
