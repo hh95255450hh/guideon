@@ -193,6 +193,7 @@
     <button class="admin-tab" onclick="showTab('activity',this)" data-i18n="tab_activity">📋 Activity</button>
     <button class="admin-tab" onclick="showTab('guides',this)" data-i18n="tab_guides">🎒 All Guides</button>
     <button class="admin-tab" onclick="showTab('companies',this)" data-i18n="tab_companies">🏢 Companies</button>
+    <button class="admin-tab" onclick="showTab('teams',this)" data-i18n="tab_teams_admin">🎪 الفرق</button>
     <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">👤 Tourists</button>
     <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">📋 Bookings</button>
     <button class="admin-tab" onclick="showTab('admins',this)" data-i18n="tab_admins">👑 Admins</button>
@@ -271,6 +272,29 @@
           <th data-i18n="actions_col">Actions</th>
         </tr></thead>
         <tbody id="companiesTable"><tr><td colspan="8" class="text-center text-muted py-4">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════════════ EVENT TEAMS ════════════════ -->
+  <div id="tab-teams" class="d-none">
+    <div class="filter-bar" id="teamFilters">
+      <button class="filter-btn on" onclick="filterTeams('all',this)">الكل</button>
+      <button class="filter-btn" onclick="filterTeams('verified',this)">✅ موثّقة</button>
+      <button class="filter-btn" onclick="filterTeams('pending',this)">⏳ قيد المراجعة</button>
+    </div>
+    <div class="t-card">
+      <table class="table table-hover align-middle mb-0">
+        <thead><tr>
+          <th>الفريق</th>
+          <th>التصنيف</th>
+          <th>المحافظة</th>
+          <th>التواصل</th>
+          <th>التسجيل</th>
+          <th>الحالة</th>
+          <th>إجراءات</th>
+        </tr></thead>
+        <tbody id="teamsTable"><tr><td colspan="7" class="text-center text-muted py-4">جارٍ التحميل…</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -649,7 +673,7 @@ function doLogout() {
 
 // ── Tab switch ───────────────────────────────────────────────
 let ACTIVE_TAB = 'pending';
-const TABS = ['activity','pending','guides','companies','tourists','bookings','admins','staff','messages','chatmod','content','broadcast','analytics','audit','export'];
+const TABS = ['activity','pending','guides','companies','teams','tourists','bookings','admins','staff','messages','chatmod','content','broadcast','analytics','audit','export'];
 function showTab(name, btn) {
   ACTIVE_TAB = name;
   TABS.forEach(t => document.getElementById('tab-'+t).classList.toggle('d-none', t !== name));
@@ -658,6 +682,7 @@ function showTab(name, btn) {
   if      (name==='activity')  loadActivity();
   else if (name==='guides')    loadGuides();
   else if (name==='companies') loadCompanies();
+  else if (name==='teams')     loadTeams();
   else if (name==='tourists')  loadTourists();
   else if (name==='bookings')  loadAllBookings();
   else if (name==='admins')    loadAdmins();
@@ -1287,6 +1312,63 @@ function renderCompanies() {
       </td>
     </tr>`).join('')
   : `<tr><td colspan="8" class="text-center text-muted py-4">${I18N.t('no_companies')}</td></tr>`;
+}
+
+// ── Event Teams ───────────────────────────────────────────────
+let ALL_TEAMS = [];
+let TEAM_FILTER = 'all';
+const TEAM_CAT = {cultural:'🎭 ثقافيّة',sports:'⚽ رياضيّة',music:'🎵 موسيقيّة',adventure:'🏔️ مغامرات',kids:'🧒 أطفال',food:'🍽️ طعام',arts:'🎨 فنون',other:'📦 أخرى'};
+async function loadTeams() {
+  try {
+    const r = await fetch('/api/admin/teams', { credentials: 'include' });
+    const d = await r.json();
+    ALL_TEAMS = d.teams || [];
+    renderTeams();
+  } catch {}
+}
+function filterTeams(f, btn) {
+  TEAM_FILTER = f;
+  document.querySelectorAll('#teamFilters .filter-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderTeams();
+}
+function renderTeams() {
+  let list = ALL_TEAMS;
+  if (TEAM_FILTER === 'verified') list = list.filter(t => t.isVerified && !t.isSuspended);
+  if (TEAM_FILTER === 'pending')  list = list.filter(t => !t.isVerified && !t.isSuspended);
+  document.getElementById('teamsTable').innerHTML = list.length ? list.map(t => `
+    <tr>
+      <td>
+        <div class="fw-700">🎪 ${t.teamName || t.fullName || '—'}</div>
+        <div class="small text-muted">${(t.teamDescription||'').slice(0,60)}</div>
+        <a class="small" href="/team-profile.html?id=${t.id}" target="_blank" style="color:var(--teal)">عرض الصفحة ↗</a>
+      </td>
+      <td class="small">${TEAM_CAT[t.teamCategory] || t.teamCategory || '—'}</td>
+      <td class="small">${t.teamGovernorate || '—'}${t.membersCount ? `<br><span class="text-muted">${t.membersCount} عضو</span>` : ''}</td>
+      <td>${contactLinks(t)}</td>
+      <td class="small">${fdate(t.createdAt)}</td>
+      <td>
+        ${t.isVerified && !t.isSuspended ? `<span class="chip chip-verified">موثّق</span>` : ''}
+        ${t.isSuspended ? `<span class="chip chip-suspended">موقوف</span>` : ''}
+        ${!t.isVerified && !t.isSuspended ? `<span class="chip chip-pending">قيد المراجعة</span>` : ''}
+      </td>
+      <td class="d-flex gap-1 flex-wrap py-2">
+        ${!t.isVerified && !t.isSuspended ? `<button class="btn-approve" onclick="verifyTeam('${t.id}','${(t.teamName||t.fullName||'').replace(/'/g,'')}')">توثيق ✓</button>` : ''}
+        <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${t.id}', ${JSON.stringify(t.teamName||t.fullName).replace(/"/g,'&quot;')})" title="مراسلة">💬</button>
+        ${!t.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${(t.teamName||t.fullName||'').replace(/'/g,'')}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${t.id}','${(t.teamName||t.fullName||'').replace(/'/g,'')}')">تفعيل</button>`}
+        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${t.id}', ${JSON.stringify(t.teamName||t.fullName).replace(/"/g,'&quot;')})" title="حذف">🗑</button>
+      </td>
+    </tr>`).join('')
+  : `<tr><td colspan="7" class="text-center text-muted py-4">لا فرق بعد.</td></tr>`;
+}
+async function verifyTeam(id, name) {
+  if (!confirm(`توثيق الفريق "${name}"؟ سيظهر للجمهور.`)) return;
+  try {
+    const r = await fetch(`/api/admin/teams/${id}/verify`, { method: 'PATCH', credentials: 'include' });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.message || 'فشل التوثيق');
+    loadTeams();
+  } catch (e) { alert(e.message); }
 }
 
 // ── Tourists ──────────────────────────────────────────────────
