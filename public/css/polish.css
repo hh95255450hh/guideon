@@ -26,7 +26,7 @@
 
 /* ── Back-to-top button ── */
 #gdTop {
-  position: fixed; bottom: 22px; inset-inline-start: 22px; z-index: 1500;
+  position: fixed; bottom: 84px; inset-inline-end: 22px; z-index: 1500;
   width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer;
   background: var(--teal, #0f7b6c); color: #fff; font-size: 1.2rem; line-height: 1;
   box-shadow: 0 6px 20px rgba(15,123,108,.4);
@@ -68,3 +68,66 @@ img.gd-fade.gd-loaded { opacity: 1; }
   #gdProgress, .gd-skel { animation: none !important; }
   * { scroll-behavior: auto !important; }
 }
+
+/* ═══════════════════ Omani luxury identity ═══════════════════ */
+/* Subtle dotted "falaj" texture for section backgrounds (opt-in: .gd-pattern) */
+.gd-pattern { position: relative; }
+.gd-pattern::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .04;
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 22px 22px; color: var(--teal, #0f7b6c);
+}
+/* Environment gradient accents (opt-in) */
+.gd-grad-sand { background: linear-gradient(135deg,#f7f1e6,#fbf6ec) !important; }
+.gd-grad-sea  { background: linear-gradient(135deg,#0a5c50,#0f7b6c) !important; color:#fff; }
+
+/* ═══════════════════ 3D tilt cards ═══════════════════ */
+.gd-tilt { transform-style: preserve-3d; transition: transform .12s ease; will-change: transform; }
+.gd-tilt::after {
+  content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background: radial-gradient(circle at var(--mx,50%) var(--my,0%), rgba(255,255,255,.22), transparent 45%);
+  opacity:0; transition:opacity .2s;
+}
+.gd-tilt.gd-tilting::after { opacity:1; }
+
+/* ═══════════════════ Count-up stats ═══════════════════ */
+[data-count] { font-variant-numeric: tabular-nums; }
+
+/* ═══════════════════ DARK MODE ═══════════════════ */
+/* Flip the design tokens; surfaces and text follow. Toggle adds
+   data-theme="dark" on <html>. */
+html[data-theme="dark"] {
+  --bg: #0e1525; --navy: #16223f; --navy-dark: #0b1220;
+  --teal-light: #11281f; --gold-light: #2a230f;
+  --text: #e8edf7; --muted: #8a97b4; --border: #2a3552;
+  --shadow: 0 2px 14px rgba(0,0,0,.5); --shadow-lg: 0 10px 40px rgba(0,0,0,.55);
+}
+html[data-theme="dark"] body { background: #0e1525; color: #e8edf7; }
+/* Common light surfaces → dark */
+html[data-theme="dark"] .guide-card, html[data-theme="dark"] .gcard,
+html[data-theme="dark"] .ev-card, html[data-theme="dark"] .team-card,
+html[data-theme="dark"] .info-card, html[data-theme="dark"] .value-card,
+html[data-theme="dark"] .stat-box, html[data-theme="dark"] .card,
+html[data-theme="dark"] .auth-card, html[data-theme="dark"] .t-card,
+html[data-theme="dark"] .legal-wrap, html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .dropdown-menu, html[data-theme="dark"] .list-group-item {
+  background: #1a2336 !important; color: #e8edf7 !important; border-color: #2a3552 !important;
+}
+html[data-theme="dark"] .bg-white, html[data-theme="dark"] [style*="background:#fff"],
+html[data-theme="dark"] [style*="background:#fafbfc"], html[data-theme="dark"] [style*="background:#fafafa"] {
+  background: #1a2336 !important;
+}
+html[data-theme="dark"] .text-muted { color: #8a97b4 !important; }
+html[data-theme="dark"] .form-control, html[data-theme="dark"] .form-select {
+  background: #141d31; color: #e8edf7; border-color: #2a3552;
+}
+html[data-theme="dark"] .form-control::placeholder { color: #6b7895; }
+html[data-theme="dark"] .navbar { background: linear-gradient(135deg,#0b1220,#16223f) !important; }
+html[data-theme="dark"] section[style*="background:#fafbfc"],
+html[data-theme="dark"] section[style*="background:#fff"] { background: #0e1525 !important; }
+/* Theme toggle button */
+#gdTheme {
+  background: transparent; border: 1.5px solid rgba(255,255,255,.4); color: #fff;
+  width: 38px; height: 34px; border-radius: 8px; cursor: pointer; font-size: 1rem; line-height: 1;
+}
+#gdTheme:hover { background: rgba(255,255,255,.12); }

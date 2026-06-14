@@ -69,10 +69,82 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
+    // ── Dark-mode toggle button — inject into the navbar (or float) ──
+    if (!document.getElementById('gdTheme')) {
+      var tbtn = document.createElement('button');
+      tbtn.id = 'gdTheme';
+      tbtn.setAttribute('aria-label', 'Toggle dark mode');
+      tbtn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+      tbtn.onclick = window.gdToggleTheme;
+      var host = document.querySelector('.navbar-controls, .navbar .ms-auto, nav .ms-auto');
+      if (host) { host.insertBefore(tbtn, host.firstChild); tbtn.style.marginInlineEnd = '6px'; }
+      else { // float it (above back-to-top)
+        tbtn.style.cssText += ';position:fixed;bottom:138px;inset-inline-end:22px;z-index:1500;border-color:rgba(15,123,108,.5);color:var(--teal,#0f7b6c)';
+        document.body.appendChild(tbtn);
+      }
+    }
+
     // ── Image fade-in (opt-in via .gd-fade) ──
     document.querySelectorAll('img.gd-fade').forEach(function (img) {
       if (img.complete) img.classList.add('gd-loaded');
       else img.addEventListener('load', function () { img.classList.add('gd-loaded'); }, { once: true });
     });
+
+    // ── Count-up numbers (opt-in via [data-count="42"]) ──
+    var counters = document.querySelectorAll('[data-count]');
+    if (counters.length) {
+      var animate = function (el) {
+        var target = parseFloat(el.getAttribute('data-count')) || 0;
+        var suffix = el.getAttribute('data-count-suffix') || '';
+        if (reduce) { el.textContent = target.toLocaleString() + suffix; return; }
+        var dur = 1400, start = performance.now();
+        var step = function (now) {
+          var p = Math.min((now - start) / dur, 1);
+          var eased = 1 - Math.pow(1 - p, 3);           // easeOutCubic
+          var val = target * eased;
+          el.textContent = (target % 1 === 0 ? Math.round(val) : val.toFixed(1)).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      };
+      if (!('IntersectionObserver' in window)) { counters.forEach(animate); }
+      else {
+        var cio = new IntersectionObserver(function (entries, obs) {
+          entries.forEach(function (e) { if (e.isIntersecting) { animate(e.target); obs.unobserve(e.target); } });
+        }, { threshold: 0.4 });
+        counters.forEach(function (el) { cio.observe(el); });
+      }
+    }
+
+    // ── 3D tilt (opt-in via .gd-tilt) — pointer devices only ──
+    if (!reduce && window.matchMedia('(hover: hover)').matches) {
+      document.querySelectorAll('.gd-tilt').forEach(function (card) {
+        var max = 7; // degrees
+        card.addEventListener('pointermove', function (e) {
+          var r = card.getBoundingClientRect();
+          var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+          card.style.transform = 'perspective(800px) rotateY(' + ((px - .5) * max * 2) + 'deg) rotateX(' + ((.5 - py) * max * 2) + 'deg) translateZ(0)';
+          card.style.setProperty('--mx', (px * 100) + '%');
+          card.style.setProperty('--my', (py * 100) + '%');
+          card.classList.add('gd-tilting');
+        });
+        card.addEventListener('pointerleave', function () {
+          card.style.transform = ''; card.classList.remove('gd-tilting');
+        });
+      });
+    }
   });
+
+  // ── Dark mode — apply ASAP (before paint) to avoid a flash ──
+  try {
+    var saved = localStorage.getItem('gd_theme');
+    if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  } catch (e) {}
+  window.gdToggleTheme = function () {
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (dark) { document.documentElement.removeAttribute('data-theme'); try { localStorage.setItem('gd_theme', 'light'); } catch (e) {} }
+    else { document.documentElement.setAttribute('data-theme', 'dark'); try { localStorage.setItem('gd_theme', 'dark'); } catch (e) {} }
+    var btn = document.getElementById('gdTheme');
+    if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+  };
 })();
