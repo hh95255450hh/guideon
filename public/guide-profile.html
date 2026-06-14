@@ -334,6 +334,11 @@
             <h5 class="mb-0">⭐ <span data-i18n="gp_rating_summary">Tourist Reviews</span></h5>
             <span class="small text-muted" id="reviewCountLabel"></span>
           </div>
+          <!-- AI review summary (filled by loadAiReviewSummary) -->
+          <div id="aiReviewSummary" class="mb-3" style="display:none;background:#f0faf8;border:1px solid #d6efe9;border-radius:12px;padding:12px 14px">
+            <div class="fw-700 small mb-1" style="color:#0f7b6c">✨ خلاصة آراء الزوّار</div>
+            <div id="aiReviewSummaryText" class="small text-dark"></div>
+          </div>
           <!-- Rating summary bar -->
           <div id="ratingSummary" class="mb-4"></div>
           <!-- Review list -->
@@ -705,6 +710,7 @@ function renderAll() {
   // Reviews
   renderRatingSummary();
   renderReviews();
+  loadAiReviewSummary(GUIDE.id);
 
   // Nav + booking access + messaging
   setupNav();
@@ -941,6 +947,18 @@ function renderRatingSummary() {
       <div style="flex:1">${bars}</div>
     </div>`;
   document.getElementById('reviewCountLabel').textContent = I18N.t('reviews_count', g.totalReviews);
+}
+
+async function loadAiReviewSummary(guideId){
+  try{
+    const lang = localStorage.getItem('gd_lang') || 'ar';
+    const r = await fetch(`/api/ai/reviews-summary/${encodeURIComponent(guideId)}?lang=${lang}`, { credentials:'include' });
+    const d = await r.json();
+    if(d && d.success && d.summary){
+      document.getElementById('aiReviewSummaryText').textContent = d.summary;
+      document.getElementById('aiReviewSummary').style.display = 'block';
+    }
+  }catch(e){ /* AI off or not enough reviews — silently skip */ }
 }
 
 function renderReviews() {

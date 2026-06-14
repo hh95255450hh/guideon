@@ -12,6 +12,7 @@
     "qr:marketing": "node scripts/generate-marketing-qr.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
     "@sentry/node": "^8.45.0",
     "@supabase/supabase-js": "^2.105.4",
     "bcryptjs": "^2.4.3",

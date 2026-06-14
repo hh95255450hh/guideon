@@ -214,6 +214,7 @@ app.use('/api/reviews',  reviewRoutes);
 app.use('/api/admin',    adminRoutes);
 app.use('/api/trips',    tripRoutes);
 app.use('/api/chat',     chatRoutes);
+app.use('/api/ai',       require('./routes/ai'));
 app.use('/api/payments', paymentRoutes);
 app.use('/api/upload',   uploadRoutes);
 app.use('/api/messages', messagesRoutes);
