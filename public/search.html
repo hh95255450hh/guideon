@@ -414,7 +414,7 @@ async function loadGuides(append = false) {
   history.replaceState(null, '', '?' + params.toString());
   renderFilterTags(params);
 
-  document.getElementById('guideGrid').innerHTML = `<div class="col-12 text-center py-5 text-muted">${I18N.t('loading_guides')}</div>`;
+  if (!append) document.getElementById('guideGrid').innerHTML = skeletonCards(6);
 
   try {
     const r = await fetch('/api/guides?' + params, { credentials: 'include' });
@@ -451,6 +451,24 @@ async function loadMoreGuides() {
   const btn = document.querySelector('#loadMoreBar button');
   if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
   await loadGuides(true);
+}
+
+// Shimmer placeholder cards shown while results load — feels faster than a spinner.
+function skeletonCards(n) {
+  let html = '';
+  for (let i = 0; i < n; i++) html += `
+    <div class="col-md-6 col-lg-4">
+      <div class="guide-card h-100">
+        <div class="gd-skel" style="height:150px;border-radius:14px 14px 0 0"></div>
+        <div class="p-3">
+          <div class="gd-skel" style="height:18px;width:60%;margin-bottom:10px"></div>
+          <div class="gd-skel" style="height:13px;width:40%;margin-bottom:14px"></div>
+          <div class="gd-skel" style="height:24px;width:80%;margin-bottom:14px"></div>
+          <div class="gd-skel" style="height:36px;width:100%"></div>
+        </div>
+      </div>
+    </div>`;
+  return html;
 }
 
 function renderGuides(guides) {
