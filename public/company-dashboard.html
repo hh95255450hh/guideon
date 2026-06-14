@@ -352,6 +352,13 @@
         <div class="mb-3">
           <label class="form-label fw-600 small" data-i18n="pkg_desc_lbl">الوصف</label>
           <textarea class="form-control" id="pkgDescription" rows="3" placeholder="صف هذه الرحلة للسياح..."></textarea>
+          <button type="button" class="btn btn-sm btn-outline-teal mt-2" id="aiPkgBtn" onclick="aiImprovePkg()">✨ حسّن وصف الرحلة بالذكاء</button>
+          <div id="aiPkgBox" class="mt-2" style="display:none;background:#f0faf8;border:1px solid #d6efe9;border-radius:10px;padding:12px">
+            <div class="small fw-700 mb-2" style="color:#0f7b6c">✨ اقتراح محسّن (عربي):</div>
+            <div id="aiPkgAr" class="small text-dark mb-2" style="white-space:pre-wrap;line-height:1.6"></div>
+            <button type="button" class="btn btn-sm btn-teal" onclick="aiApplyPkg()">استخدم هذا النص</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('aiPkgBox').style.display='none'">إلغاء</button>
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label fw-600 small">🗺️ خريطة الرحلة <span class="text-muted fw-400">(اختياري)</span></label>
@@ -1182,6 +1189,29 @@ function aiApplyDesc(){
   const ar = document.getElementById('aiImproveAr').textContent;
   if(ar){ document.getElementById('eDescription').value = ar; }
   document.getElementById('aiImproveBox').style.display = 'none';
+}
+
+// ── AI: improve a single tour-package description ──
+async function aiImprovePkg(){
+  const txt = document.getElementById('pkgDescription').value.trim();
+  if(txt.length < 10){ alert('اكتب وصفاً مبدئيّاً للرحلة أوّلاً (بضع كلمات على الأقل).'); return; }
+  const btn = document.getElementById('aiPkgBtn');
+  btn.disabled = true; btn.textContent = '✨ جارٍ التحسين…';
+  try{
+    const r = await fetch('/api/ai/improve',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ text:txt, role:'company' })});
+    const d = await r.json();
+    if(!d.success) throw new Error(d.message||'تعذّر التحسين');
+    document.getElementById('aiPkgAr').textContent = d.ar || '';
+    document.getElementById('aiPkgBox').style.display = 'block';
+  }catch(e){ alert(e.message || 'تعذّر التحسين حالياً'); }
+  finally{ btn.disabled=false; btn.textContent='✨ حسّن وصف الرحلة بالذكاء'; }
+}
+function aiApplyPkg(){
+  const ar = document.getElementById('aiPkgAr').textContent;
+  if(ar){ document.getElementById('pkgDescription').value = ar; }
+  document.getElementById('aiPkgBox').style.display = 'none';
 }
 
 init();
