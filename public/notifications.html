@@ -97,8 +97,12 @@ function applyLabels() {
   const ar = isAr();
   document.documentElement.lang = ar ? 'ar' : 'en';
   document.documentElement.dir  = ar ? 'rtl' : 'ltr';
-  document.getElementById('bs-rtl').media = ar ? 'all' : 'not all';
-  document.getElementById('bs-ltr').media = ar ? 'not all' : 'all';
+  // The head picker injects only ONE of these (bs-rtl OR bs-ltr) — guard
+  // against the missing one, or this throws and aborts load() (stuck "Loading").
+  var rtlLink = document.getElementById('bs-rtl');
+  var ltrLink = document.getElementById('bs-ltr');
+  if (rtlLink) rtlLink.media = ar ? 'all' : 'not all';
+  if (ltrLink) ltrLink.media = ar ? 'not all' : 'all';
   document.getElementById('pageTitle').textContent = ar ? '🔔 الإشعارات' : '🔔 Notifications';
   document.getElementById('markAllBtn').textContent = ar ? 'تعليم الكل كمقروء' : 'Mark all read';
   document.title = ar ? 'الإشعارات — Guideon' : 'Notifications — Guideon';
