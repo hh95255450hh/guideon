@@ -1,0 +1,37 @@
+name: guideon
+description: Guideon — Oman's tour-guide marketplace. Official mobile app.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  # Networking + cookie-session auth (matches the web backend's express-session)
+  dio: ^5.4.0
+  cookie_jar: ^4.0.8
+  dio_cookie_manager: ^3.1.1
+  path_provider: ^2.1.2
+  # State + storage
+  provider: ^6.1.1
+  shared_preferences: ^2.2.2
+  # UI
+  cached_network_image: ^3.3.1
+  intl: ^0.19.0
+  url_launcher: ^6.2.4
+  # Push notifications (backend already exposes /auth/fcm-token)
+  firebase_core: ^2.27.0
+  firebase_messaging: ^14.7.19
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
