@@ -195,6 +195,13 @@
             <div class="col-12">
               <label class="form-label fw-600 small" data-i18n="company_desc_lbl">وصف الشركة *</label>
               <textarea class="form-control" id="eDescription" rows="4" data-i18n-ph="company_desc_ph" placeholder="حدّث السياح عن شركتك وخبرتك وما يميزك..."></textarea>
+              <button type="button" class="btn btn-sm btn-outline-teal mt-2" id="aiImproveBtn" onclick="aiImproveDesc()">✨ حسّن وصفي بالذكاء الاصطناعي</button>
+              <div id="aiImproveBox" class="mt-2" style="display:none;background:#f0faf8;border:1px solid #d6efe9;border-radius:10px;padding:12px">
+                <div class="small fw-700 mb-2" style="color:#0f7b6c">✨ اقتراح محسّن (عربي):</div>
+                <div id="aiImproveAr" class="small text-dark mb-2" style="white-space:pre-wrap;line-height:1.6"></div>
+                <button type="button" class="btn btn-sm btn-teal" onclick="aiApplyDesc()">استخدم هذا النص</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('aiImproveBox').style.display='none'">إلغاء</button>
+              </div>
             </div>
           </div>
           <div class="d-flex gap-2 mt-3">
@@ -1153,6 +1160,29 @@ function coAttach(inp)      { return CO_MSG && CO_MSG.attach(inp); }
 function coTyping()         { return CO_MSG && CO_MSG.typing(); }
 function coConnectSSE()     { return CO_MSG && CO_MSG.connectSSE(); }
 
+
+// ── AI: improve company description ──
+async function aiImproveDesc(){
+  const txt = document.getElementById('eDescription').value.trim();
+  if(txt.length < 10){ alert('اكتب وصفاً مبدئيّاً أوّلاً (بضع كلمات على الأقل).'); return; }
+  const btn = document.getElementById('aiImproveBtn');
+  btn.disabled = true; btn.textContent = '✨ جارٍ التحسين…';
+  try{
+    const r = await fetch('/api/ai/improve',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ text:txt, role:'company' })});
+    const d = await r.json();
+    if(!d.success) throw new Error(d.message||'تعذّر التحسين');
+    document.getElementById('aiImproveAr').textContent = d.ar || '';
+    document.getElementById('aiImproveBox').style.display = 'block';
+  }catch(e){ alert(e.message || 'تعذّر التحسين حالياً'); }
+  finally{ btn.disabled=false; btn.textContent='✨ حسّن وصفي بالذكاء الاصطناعي'; }
+}
+function aiApplyDesc(){
+  const ar = document.getElementById('aiImproveAr').textContent;
+  if(ar){ document.getElementById('eDescription').value = ar; }
+  document.getElementById('aiImproveBox').style.display = 'none';
+}
 
 init();
 </script>
