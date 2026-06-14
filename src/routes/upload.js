@@ -27,18 +27,30 @@ function safeMulter(mw, label) {
     if (err.name === 'MulterError') {
       return res.status(400).json({ success:false, code:err.code, message: err.message });
     }
+    if (err.code === 'UNSUPPORTED_FILE_TYPE') {
+      return res.status(400).json({ success:false, code:err.code, message: err.message });
+    }
     // Non-multer error — let the global handler deal with it.
     next(err);
   });
 }
 
+// Accept everything storageService can decode + transcode. HEIC/HEIF are the
+// iPhone default format; Sharp converts them (and AVIF/TIFF) to browser-
+// friendly WebP on the way in, so we must NOT reject them at the door. Reject
+// unknown types with a CLEAR error instead of multer's silent drop (which
+// surfaced as a confusing "No file uploaded").
+const ALLOWED_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.heic', '.heif', '.avif', '.tif', '.tiff'];
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
-    const ok = ['.jpg', '.jpeg', '.png', '.webp'].includes(
-      path.extname(file.originalname).toLowerCase()
-    );
-    cb(null, ok);
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    if (ALLOWED_IMAGE_EXTS.includes(ext) || (file.mimetype || '').startsWith('image/')) {
+      return cb(null, true);
+    }
+    const err = new Error('Unsupported image type — use JPG, PNG, WebP, or HEIC. — صيغة غير مدعومة، استخدم JPG أو PNG أو HEIC.');
+    err.code = 'UNSUPPORTED_FILE_TYPE';
+    cb(err);
   },
   // Bumped from 10 MB → 25 MB. Modern phone cameras shoot 5–15 MB JPEGs.
   // The client-side compressor (gdCompressImage) usually shrinks these to
