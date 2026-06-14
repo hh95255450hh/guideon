@@ -1059,6 +1059,12 @@ function coBkDate(d){
   try { return new Date(d + 'T00:00:00').toLocaleDateString('ar', {weekday:'short',day:'numeric',month:'long',year:'numeric'}); }
   catch { return d; }
 }
+// HTML-escape user content in booking cards (was referenced but never defined,
+// which threw "coEsc is not defined" and broke the bookings list).
+function coEsc(s){
+  if (window.gdEsc) return window.gdEsc(s);
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 function coRenderBookings(){
   const el = document.getElementById('coBookingsList');
