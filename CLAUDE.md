@@ -61,6 +61,17 @@ git add -A && git commit && git push   # Railway auto-deploys main
 
 ## Conventions & hard-won gotchas
 
+- **Never put a literal `{}` in a `sed` replacement run via `find … -exec sed …
+  {} \;`** — `find` substitutes its `{}` placeholder (the filename) into the
+  WHOLE command, including your replacement text, corrupting code (it once
+  turned `catch(e){}` into `catch(e)<filepath>` in every page's `<head>`).
+  Use a Node script to edit many files, or a `for` loop, instead.
+- **i18n pages: when you change `public/i18n/*.json`, bump `PACK_VERSION` in
+  `i18n.js` AND the `i18n.js?vNN` query in every HTML** (packs are immutable-
+  cached). Same for any `?vNN` asset (polish.css/js, common-widgets.js).
+- **`common-widgets.js` is loaded on most pages and injects the global polish
+  layer (`polish.css`/`polish.js`) + unified nav + widgets.** Bump its `?vNN`
+  when you change it.
 - **Never use `SupabaseDB.findPage()` for guide search or admin user lists.**
   Its `.order()` + `count:'exact'` + `.range()` pushdown **returned 0 rows on
   production** and took the platform down. Use `findAllWhere(eq)` / `readAll()`
