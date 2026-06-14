@@ -149,8 +149,90 @@
     return wrap;
   }
 
+  // Builds just the dropdown panel (no bell button) — used when we adopt an
+  // existing navbar bell instead of injecting our own.
+  function buildPanelOnly() {
+    const panel = document.createElement('div');
+    panel.className = 'gd-bell-panel';
+    panel.id = 'gdBellPanel';
+    panel.style.display = 'none';
+    panel.innerHTML = `
+      <div class="gd-bell-header">
+        <h6 id="gdBellHeading">Notifications</h6>
+        <button class="gd-bell-mark-all" id="gdMarkAll">Mark all read</button>
+      </div>
+      <div class="gd-bell-list" id="gdBellList">
+        <div class="gd-bell-empty"><div class="ico">⏳</div>Loading…</div>
+      </div>
+      <div class="gd-bell-footer">
+        <a href="/notifications.html" id="gdBellViewAll">View all notifications →</a>
+      </div>`;
+    return panel;
+  }
+
+  // Position a body-mounted panel right under the given bell button.
+  function positionPanel(bell, panel) {
+    const r = bell.getBoundingClientRect();
+    const isAr = document.documentElement.dir === 'rtl';
+    panel.style.position = 'fixed';
+    panel.style.top = (r.bottom + 8) + 'px';
+    if (window.innerWidth <= 576) {
+      panel.style.left = '50%';
+      panel.style.right = 'auto';
+      panel.style.transform = 'translateX(-50%)';
+      panel.style.width = '94vw';
+    } else {
+      panel.style.transform = 'none';
+      panel.style.width = '360px';
+      if (isAr) { panel.style.left = Math.max(8, r.left) + 'px'; panel.style.right = 'auto'; }
+      else { panel.style.right = Math.max(8, window.innerWidth - r.right) + 'px'; panel.style.left = 'auto'; }
+    }
+  }
+
+  // Adopt the unified navbar's existing bell (#gdNavBell) as the dropdown
+  // trigger, so there's ONE bell that opens the panel (no full-page redirect,
+  // no duplicate bell).
+  function adoptNavBell(bell) {
+    if (document.getElementById('gdBellPanel')) return;
+    bell.style.position = 'relative';
+    const badge = document.createElement('span');
+    badge.className = 'gd-bell-badge';
+    badge.id = 'gdBellBadge';
+    badge.textContent = '0';
+    bell.appendChild(badge);
+
+    const panel = buildPanelOnly();
+    document.body.appendChild(panel);
+
+    const toggle = (e) => {
+      if (e) e.stopPropagation();
+      isOpen = !isOpen;
+      if (isOpen) { positionPanel(bell, panel); localizeChrome(); loadList(); panel.style.display = 'flex'; }
+      else panel.style.display = 'none';
+    };
+    window.gdToggleNotifPanel = toggle;
+
+    document.addEventListener('click', (e) => {
+      if (isOpen && !e.target.closest('#gdBellPanel') && !e.target.closest('#gdNavBell')) {
+        isOpen = false; panel.style.display = 'none';
+      }
+    });
+    window.addEventListener('resize', () => { if (isOpen) positionPanel(bell, panel); });
+
+    document.getElementById('gdMarkAll').addEventListener('click', async () => {
+      const mark = document.getElementById('gdMarkAll');
+      mark.disabled = true;
+      try { await fetch('/api/notifications/read-all', { method: 'POST', credentials: 'include' }); updateBadge(0); await loadList(); } catch (e) {}
+      mark.disabled = false;
+    });
+  }
+
   // Try several common spots in the navbar to inject the bell.
   function inject() {
+    // Prefer adopting the unified navbar's bell if it's present.
+    const navBell = document.getElementById('gdNavBell');
+    if (navBell) { adoptNavBell(navBell); return; }
+
     const wrap = buildBell();
     if (!wrap) return;
 

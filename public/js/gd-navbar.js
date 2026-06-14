@@ -725,7 +725,13 @@
     const bell = document.getElementById('gdNavBell');
     if (user && bell) {
       bell.style.display = 'inline-flex';
-      bell.addEventListener('click', () => location.href = '/notifications.html');
+      // notifications.js adopts this bell and exposes gdToggleNotifPanel to open
+      // the dropdown. Fall back to the full page only if that script hasn't
+      // loaded yet (e.g. very first click before init).
+      bell.addEventListener('click', (e) => {
+        if (typeof window.gdToggleNotifPanel === 'function') window.gdToggleNotifPanel(e);
+        else location.href = '/notifications.html';
+      });
     }
 
     // Sync <html dir/lang>

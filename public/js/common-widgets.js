@@ -259,7 +259,7 @@
   function loadNotifications() {
     if (document.querySelector('script[data-gd-notif]')) return;
     const s = document.createElement('script');
-    s.src = '/js/notifications.js?v=4';
+    s.src = '/js/notifications.js?v=5';
     s.async = true;
     s.dataset.gdNotif = '1';
     document.body.appendChild(s);
@@ -271,7 +271,7 @@
     if (document.querySelector('script[data-gd-nav]')) return;
     if (document.body && document.body.dataset.noGdNav !== undefined) return;
     const s = document.createElement('script');
-    s.src = '/js/gd-navbar.js?v=10';
+    s.src = '/js/gd-navbar.js?v=11';
     s.dataset.gdNav = '1';
     document.body.appendChild(s);
   }
