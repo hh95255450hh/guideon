@@ -7,8 +7,19 @@
       )).catch(() => {});
     }
 
+    // Self-heal stale clients: when a new service worker takes control
+    // (e.g. an old caching SW is being replaced by the current no-cache one),
+    // reload ONCE so the page picks up fresh assets instead of cached ones.
+    let reloadedForSW = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloadedForSW) return;
+      reloadedForSW = true;
+      window.location.reload();
+    });
+
     navigator.serviceWorker.register('/sw.js')
       .then(reg => {
+        reg.update().catch(() => {});            // force an update check now
         if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
         reg.addEventListener('updatefound', () => {
           const w = reg.installing;

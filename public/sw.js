@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Guideon-v3';
+const CACHE_NAME = 'Guideon-v4';
 
 // ── Install ───────────────────────────────────────────────────────────────────
 self.addEventListener('install', event => {

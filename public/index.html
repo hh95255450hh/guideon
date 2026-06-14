@@ -1099,7 +1099,7 @@ window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath
 <script src="/js/chatbot.js?v=13" defer></script>
 <script src="/js/seo.js" defer></script>
 <script src="/js/newsletter.js" defer></script>
-<script>seoSet({type:'website'}); seoOrganization();</script>
+<script>document.addEventListener('DOMContentLoaded',function(){if(window.seoSet)seoSet({type:'website'});if(window.seoOrganization)seoOrganization();});</script>
 <script>
 function toast(msg, type='') {
   const el = document.createElement('div');
@@ -1509,7 +1509,7 @@ loadFeaturedCompanies();
 loadFeaturedTeams();
 loadPopularTours();
 </script>
-<script src="/js/pwa.js?v=14" defer></script>
+<script src="/js/pwa.js?v=15" defer></script>
 <script src="/js/common-widgets.js?v=18"></script>
 <script src="/js/upgrade.js?v=3"></script>
 </body>
