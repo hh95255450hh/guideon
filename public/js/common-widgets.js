@@ -346,7 +346,7 @@
   if (!window.__gdPolishLoaded) {
     window.__gdPolishLoaded = true;
     var s = document.createElement('script');
-    s.src = '/js/polish.js?v=3'; s.defer = true;
+    s.src = '/js/polish.js?v=4'; s.defer = true;
     document.head.appendChild(s);
   }
 })();

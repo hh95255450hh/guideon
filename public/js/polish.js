@@ -69,19 +69,36 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
-    // ── Dark-mode toggle button — inject into the navbar (or float) ──
-    if (!document.getElementById('gdTheme')) {
+    // ── Dark-mode toggle button — try the navbar, retrying because the
+    //    unified nav is injected asynchronously; fall back to a floating
+    //    button so it's always available. ──
+    function placeThemeBtn() {
+      if (document.getElementById('gdTheme')) return true;
+      var host = document.querySelector('.navbar-controls, .navbar .ms-auto, nav .ms-auto, .navbar .container');
       var tbtn = document.createElement('button');
       tbtn.id = 'gdTheme';
       tbtn.setAttribute('aria-label', 'Toggle dark mode');
       tbtn.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
       tbtn.onclick = window.gdToggleTheme;
-      var host = document.querySelector('.navbar-controls, .navbar .ms-auto, nav .ms-auto');
-      if (host) { host.insertBefore(tbtn, host.firstChild); tbtn.style.marginInlineEnd = '6px'; }
-      else { // float it (above back-to-top)
-        tbtn.style.cssText += ';position:fixed;bottom:138px;inset-inline-end:22px;z-index:1500;border-color:rgba(15,123,108,.5);color:var(--teal,#0f7b6c)';
-        document.body.appendChild(tbtn);
-      }
+      if (host) { host.insertBefore(tbtn, host.firstChild); tbtn.style.marginInlineEnd = '8px'; return true; }
+      return false;
+    }
+    if (!placeThemeBtn()) {
+      var tries = 0;
+      var ti = setInterval(function () {
+        if (placeThemeBtn() || ++tries > 12) clearInterval(ti);
+      }, 250);
+      // Guaranteed fallback after 1s: float it prominently so it's never missing.
+      setTimeout(function () {
+        if (!document.getElementById('gdTheme')) {
+          var b = document.createElement('button');
+          b.id = 'gdTheme'; b.setAttribute('aria-label', 'Toggle dark mode');
+          b.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+          b.onclick = window.gdToggleTheme;
+          b.style.cssText = 'position:fixed;top:14px;inset-inline-end:14px;z-index:3000;width:40px;height:40px;border-radius:50%;border:none;background:var(--teal,#0f7b6c);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;font-size:1.1rem';
+          document.body.appendChild(b);
+        }
+      }, 1000);
     }
 
     // ── Image fade-in (opt-in via .gd-fade) ──
