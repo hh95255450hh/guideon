@@ -88,6 +88,27 @@
 .tl-c-confirm{background:#16a34a} .tl-c-trip_start{background:#0891b2} .tl-c-trip_end{background:#475569} .tl-c-review{background:#d97706}
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<script>
+/* Lightweight toast. Was referenced 8× (image upload, save, reset) but never
+   defined — every call threw a ReferenceError, which silently aborted the
+   region image upload BEFORE the request was sent (the call sits outside the
+   try/catch). That's why "رفع صورة" did nothing while pasting a URL worked. */
+window.showToast = function (msg, type) {
+  try {
+    var colors = { success:'#16a34a', danger:'#dc2626', info:'#0f7b6c', warning:'#d97706' };
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;'
+      + 'background:' + (colors[type] || colors.info) + ';color:#fff;padding:12px 20px;border-radius:10px;'
+      + 'font-weight:700;font-size:.9rem;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:90vw;text-align:center;'
+      + 'opacity:0;transition:opacity .2s';
+    document.body.appendChild(t);
+    requestAnimationFrame(function(){ t.style.opacity = '1'; });
+    setTimeout(function(){ t.style.opacity = '0'; setTimeout(function(){ t.remove(); }, 250); },
+      type === 'danger' ? 5000 : 2600);
+  } catch (e) { /* never let a toast break the caller */ }
+};
+</script>
 </head>
 <body>
 
