@@ -208,11 +208,17 @@
 
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0 fw-700" id="resultCount">...</h5>
-    <a href="/" class="text-muted small" data-i18n="back_home">← Back to Home</a>
+    <div class="d-flex gap-2 align-items-center">
+      <button class="btn btn-sm btn-outline-teal" id="mapToggle" onclick="toggleMap()">🗺️ <span id="mapToggleLabel">الخريطة</span></button>
+      <a href="/" class="text-muted small" data-i18n="back_home">← Back to Home</a>
+    </div>
   </div>
 
   <!-- Active filter tags -->
   <div id="activeFilters" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+  <!-- Interactive map (hidden until toggled) -->
+  <div id="searchMap" style="display:none;height:380px;border-radius:16px;overflow:hidden;margin-bottom:20px;border:1px solid #e7eaee;box-shadow:0 4px 16px rgba(15,28,62,.08)"></div>
 
   <div class="row g-4" id="guideGrid">
     <div class="col-12 text-center py-5 text-muted" data-i18n="loading_guides">Loading guides...</div>
@@ -421,6 +427,7 @@ async function loadGuides(append = false) {
     const data = await r.json();
     const newGuides = data.guides || [];
     ALL_GUIDES = append ? ALL_GUIDES.concat(newGuides) : newGuides;
+    window.ALL_GUIDES = ALL_GUIDES;
     SEARCH_HAS_MORE = !!data.hasMore;
     updateWishlistBar();
     renderGuides(SHOWING_WISHLIST ? ALL_GUIDES.filter(g => isWishlisted(g.id)) : ALL_GUIDES);
@@ -451,6 +458,61 @@ async function loadMoreGuides() {
   const btn = document.querySelector('#loadMoreBar button');
   if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
   await loadGuides(true);
+}
+
+// ── Interactive map (Airbnb-style) ──
+let _map = null, _markers = [], _mapReady = false;
+function toggleMap() {
+  const box = document.getElementById('searchMap');
+  const open = box.style.display === 'none';
+  box.style.display = open ? 'block' : 'none';
+  document.getElementById('mapToggle').classList.toggle('btn-teal', open);
+  document.getElementById('mapToggle').classList.toggle('btn-outline-teal', !open);
+  if (open) initMap();
+}
+async function initMap() {
+  if (_mapReady) { updateMap(); return; }
+  try {
+    const L = await window.gdMap.loadLeaflet();
+    _map = L.map('searchMap', { scrollWheelZoom: false }).setView(window.OMAN_CENTER || [21.5, 57.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 18,
+    }).addTo(_map);
+    _mapReady = true;
+    updateMap();
+  } catch (e) { console.warn('[map]', e.message); }
+}
+function updateMap() {
+  if (!_mapReady || !_map || !window.L) return;
+  _markers.forEach(m => _map.removeLayer(m));
+  _markers = [];
+  const list = (window.ALL_GUIDES || []).filter(g => !SHOWING_WISHLIST || isWishlisted(g.id));
+  const seen = {};
+  const bounds = [];
+  list.forEach(g => {
+    let c = window.gdCoordsFor(g.destinations || []);
+    if (!c) return;
+    // jitter overlapping markers at the same wilayat so they don't stack
+    const key = c.join(',');
+    seen[key] = (seen[key] || 0) + 1;
+    const n = seen[key] - 1;
+    const lat = c[0] + (n ? (Math.cos(n) * 0.03) : 0);
+    const lng = c[1] + (n ? (Math.sin(n) * 0.03) : 0);
+    const icon = window.L.divIcon({
+      className: 'gd-price-pin',
+      html: `<div style="background:var(--teal,#0f7b6c);color:#fff;font-weight:800;font-size:.72rem;padding:4px 9px;border-radius:14px;box-shadow:0 3px 10px rgba(0,0,0,.3);white-space:nowrap">${g.pricePerDay ? g.pricePerDay + ' OMR' : '★ ' + (g.rating || '—')}</div>`,
+      iconSize: null,
+    });
+    const m = window.L.marker([lat, lng], { icon }).addTo(_map);
+    m.bindPopup(`<div style="text-align:center;min-width:140px">
+      <strong>${window.gdEsc(g.fullName)}</strong><br>
+      <span style="color:#666;font-size:.85rem">⭐ ${g.rating || '—'} · ${(g.destinations || [])[0] || ''}</span><br>
+      <a href="/guide-profile.html?id=${g.id}" style="color:var(--teal);font-weight:700">View profile →</a>
+    </div>`);
+    _markers.push(m);
+    bounds.push([lat, lng]);
+  });
+  if (bounds.length) _map.fitBounds(bounds, { padding: [40, 40], maxZoom: 9 });
 }
 
 // Shimmer placeholder cards shown while results load — feels faster than a spinner.
@@ -528,6 +590,7 @@ function renderGuides(guides) {
   }).join('');
 
   lazyLoadCardPhotos();
+  if (document.getElementById('searchMap')?.style.display !== 'none') updateMap();
 }
 
 // Lazy-load card photos via IntersectionObserver so off-screen guide
@@ -614,6 +677,8 @@ loadGuides();
 .btn-teal { background: var(--teal) !important; color: #fff !important; border: none; }
 </style>
 <script src="/js/pwa.js?v=14" defer></script>
+<script src="/js/oman-coords.js?v=1"></script>
+<script src="/js/gd-map.js?v=1"></script>
 <script src="/js/common-widgets.js?v=16"></script>
 </body>
 </html>
