@@ -39,7 +39,7 @@ const PENDING = Object.create(null);
 // Bump PACK_VERSION whenever any /i18n/*.json changes. The JSON packs are
 // served with a 1-year immutable cache, so without this query string a
 // content change would never reach returning visitors.
-const PACK_VERSION = 5;
+const PACK_VERSION = 6;
 
 async function loadPack(code) {
   if (PACKS[code]) return PACKS[code];

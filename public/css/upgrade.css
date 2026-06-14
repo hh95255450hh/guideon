@@ -231,3 +231,22 @@ section.py-5 { position: relative; }
   body.reveal-on .reveal { opacity: 1 !important; transform: none !important; }
   * { transition: none !important; }
 }
+
+/* ─── COVERFLOW CAROUSELS (companies + event teams) ───────────────────── */
+.companies-swiper, .teams-swiper { padding: 24px 0 50px; overflow: hidden; }
+.companies-swiper .swiper-slide, .teams-swiper .swiper-slide {
+  width: 330px; max-width: 84vw; height: auto;
+  opacity: .45; transition: opacity .35s ease, filter .35s ease; filter: saturate(.85);
+}
+.companies-swiper .swiper-slide-active, .teams-swiper .swiper-slide-active { opacity: 1; filter: none; }
+.companies-swiper .swiper-slide-next, .companies-swiper .swiper-slide-prev,
+.teams-swiper .swiper-slide-next, .teams-swiper .swiper-slide-prev { opacity: .7; }
+.companies-swiper .swiper-slide .guide-card, .teams-swiper .swiper-slide .guide-card {
+  height: 100%; border-radius: 20px; box-shadow: 0 10px 30px rgba(15,28,62,.12);
+}
+.companies-swiper .swiper-slide-active .guide-card, .teams-swiper .swiper-slide-active .guide-card { box-shadow: 0 26px 60px rgba(15,28,62,.28); }
+.companies-swiper .guide-card-header, .teams-swiper .guide-card-header { height: 210px; }
+.companies-swiper .swiper-pagination, .teams-swiper .swiper-pagination { bottom: 8px; }
+.companies-swiper .swiper-pagination-bullet, .teams-swiper .swiper-pagination-bullet { background: #9fb0ad; opacity: .5; width: 8px; height: 8px; }
+.companies-swiper .swiper-pagination-bullet-active, .teams-swiper .swiper-pagination-bullet-active { background: var(--teal); opacity: 1; width: 22px; border-radius: 4px; }
+@media (max-width: 480px){ .companies-swiper .swiper-slide, .teams-swiper .swiper-slide { width: 270px; } }
