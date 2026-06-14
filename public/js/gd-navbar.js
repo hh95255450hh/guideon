@@ -310,9 +310,16 @@
 
     const company = [
       { label: tr('My Public Profile','ملف الشركة (للسياح)'), href: '/company-profile.html?id=' + user.id, icon: 'building' },
+      { label: tr('Bookings','الحجوزات'),                      href: '/company-dashboard.html#coBookingsSection', icon: 'bookings' },
       { label: tr('Add a Tour Package','إضافة حزمة سياحية'),   href: '/company-dashboard.html#add',        icon: 'plus' },
       { label: tr('My Packages','حزمي السياحية'),              href: '/company-dashboard.html#packages',   icon: 'tour' },
       { label: tr('Reviews','التقييمات'),                       href: '/company-dashboard.html#reviews',    icon: 'star' },
+    ];
+
+    const team = [
+      { label: tr('My Public Page','صفحتي العامة'),  href: '/team-profile.html?id=' + user.id,   icon: 'building' },
+      { label: tr('My Events','فعاليّاتي'),           href: '/team-dashboard.html#eventsList',     icon: 'tour' },
+      { label: tr('Edit Team Profile','تعديل الملف'), href: '/team-dashboard.html',                icon: 'user' },
     ];
 
     const admin = [
@@ -333,6 +340,7 @@
     if (t === 'tourist') role = tourist;
     else if (t === 'guide') role = guide;
     else if (t === 'company') role = company;
+    else if (t === 'team') role = team;
 
     const out = [
       { section: tr('My Account','حسابي'),     items: common },
