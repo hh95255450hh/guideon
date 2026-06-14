@@ -116,22 +116,25 @@
       }
     }
 
-    // ── 3D tilt (opt-in via .gd-tilt) — pointer devices only ──
+    // ── 3D tilt (opt-in via .gd-tilt) via event delegation, so it also works
+    //    on cards rendered after load (search results, carousels). Pointer
+    //    devices only. ──
     if (!reduce && window.matchMedia('(hover: hover)').matches) {
-      document.querySelectorAll('.gd-tilt').forEach(function (card) {
-        var max = 7; // degrees
-        card.addEventListener('pointermove', function (e) {
-          var r = card.getBoundingClientRect();
-          var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
-          card.style.transform = 'perspective(800px) rotateY(' + ((px - .5) * max * 2) + 'deg) rotateX(' + ((.5 - py) * max * 2) + 'deg) translateZ(0)';
-          card.style.setProperty('--mx', (px * 100) + '%');
-          card.style.setProperty('--my', (py * 100) + '%');
-          card.classList.add('gd-tilting');
-        });
-        card.addEventListener('pointerleave', function () {
-          card.style.transform = ''; card.classList.remove('gd-tilting');
-        });
-      });
+      var MAX = 7; // degrees
+      document.addEventListener('pointermove', function (e) {
+        var card = e.target.closest && e.target.closest('.gd-tilt');
+        if (!card) return;
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        card.style.transform = 'perspective(800px) rotateY(' + ((px - .5) * MAX * 2) + 'deg) rotateX(' + ((.5 - py) * MAX * 2) + 'deg) translateZ(0)';
+        card.style.setProperty('--mx', (px * 100) + '%');
+        card.style.setProperty('--my', (py * 100) + '%');
+        card.classList.add('gd-tilting');
+      }, { passive: true });
+      document.addEventListener('pointerout', function (e) {
+        var card = e.target.closest && e.target.closest('.gd-tilt');
+        if (card && !card.contains(e.relatedTarget)) { card.style.transform = ''; card.classList.remove('gd-tilting'); }
+      }, { passive: true });
     }
   });
 

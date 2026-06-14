@@ -340,13 +340,13 @@
 (function () {
   if (!document.getElementById('gd-polish-css')) {
     var l = document.createElement('link');
-    l.id = 'gd-polish-css'; l.rel = 'stylesheet'; l.href = '/css/polish.css?v=2';
+    l.id = 'gd-polish-css'; l.rel = 'stylesheet'; l.href = '/css/polish.css?v=3';
     document.head.appendChild(l);
   }
   if (!window.__gdPolishLoaded) {
     window.__gdPolishLoaded = true;
     var s = document.createElement('script');
-    s.src = '/js/polish.js?v=2'; s.defer = true;
+    s.src = '/js/polish.js?v=3'; s.defer = true;
     document.head.appendChild(s);
   }
 })();

@@ -82,7 +82,7 @@ img.gd-fade.gd-loaded { opacity: 1; }
 .gd-grad-sea  { background: linear-gradient(135deg,#0a5c50,#0f7b6c) !important; color:#fff; }
 
 /* ═══════════════════ 3D tilt cards ═══════════════════ */
-.gd-tilt { transform-style: preserve-3d; transition: transform .12s ease; will-change: transform; }
+.gd-tilt { position: relative; transform-style: preserve-3d; transition: transform .12s ease; will-change: transform; }
 .gd-tilt::after {
   content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
   background: radial-gradient(circle at var(--mx,50%) var(--my,0%), rgba(255,255,255,.22), transparent 45%);

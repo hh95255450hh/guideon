@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=16">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=17">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -16,7 +16,7 @@
 <script>
 /* Bootstrap CSS picker — see i18n.js for the swap logic on lang change */
 (function(){
-  var s = localStorage.getItem('gd_lang');try{if(localStorage.getItem('gd_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e)public/about.html
+  var s = localStorage.getItem('gd_lang');try{if(localStorage.getItem('gd_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}
   var nav = (navigator.language||'en').slice(0,2).toLowerCase();
   var lang = s || (['en','ar','zh','hi','es','fr','bn','pt','ru','ur'].indexOf(nav)>=0 ? nav : 'en');
   var rtl = lang === 'ar' || lang === 'ur';
@@ -88,7 +88,7 @@
     <p>Guideon is an online platform that makes it simple to discover, compare, and book authentic guided experiences across Oman — from the forts of Nizwa and the fjords of Musandam to the dunes of the Wahiba Sands and the frankincense coast of Dhofar.</p>
     <p>We connect tourists directly with local experts: independent tour guides and licensed tourism companies who know Oman intimately. Every booking, message, and payment happens securely on the platform.</p>
 
-    <div class="stat-row">
+    <div class="stat-row reveal-stagger">
       <div class="stat-box"><div class="n">11</div><div class="l">Governorates covered</div></div>
       <div class="stat-box"><div class="n">10</div><div class="l">Interface languages</div></div>
       <div class="stat-box"><div class="n">100%</div><div class="l">Verified companies</div></div>
@@ -99,11 +99,11 @@
     <p>To put Oman's local guides at the heart of every traveller's journey — giving visitors authentic, safe, and well-organised experiences while helping Omani guides and tourism businesses grow a sustainable income.</p>
 
     <h2>What makes us different</h2>
-    <div class="value-grid">
-      <div class="value-card"><div class="ic">✅</div><h3>Verified providers</h3><p>All tourism companies hold Ministry of Heritage &amp; Tourism licenses, and the majority of individual guides are Ministry-certified — look for the ✓ Verified badge.</p></div>
-      <div class="value-card"><div class="ic">🔒</div><h3>Secure by design</h3><p>Encrypted payments, protected contact details, and on-platform messaging keep both travellers and guides safe.</p></div>
-      <div class="value-card"><div class="ic">🌍</div><h3>Built for everyone</h3><p>A fully bilingual Arabic/English interface with support for 10 languages, so visitors from anywhere feel at home.</p></div>
-      <div class="value-card"><div class="ic">🇴🇲</div><h3>Proudly Omani</h3><p>Designed and operated in Oman, for Oman — supporting local guides and the national tourism vision.</p></div>
+    <div class="value-grid reveal-stagger">
+      <div class="value-card gd-tilt"><div class="ic">✅</div><h3>Verified providers</h3><p>All tourism companies hold Ministry of Heritage &amp; Tourism licenses, and the majority of individual guides are Ministry-certified — look for the ✓ Verified badge.</p></div>
+      <div class="value-card gd-tilt"><div class="ic">🔒</div><h3>Secure by design</h3><p>Encrypted payments, protected contact details, and on-platform messaging keep both travellers and guides safe.</p></div>
+      <div class="value-card gd-tilt"><div class="ic">🌍</div><h3>Built for everyone</h3><p>A fully bilingual Arabic/English interface with support for 10 languages, so visitors from anywhere feel at home.</p></div>
+      <div class="value-card gd-tilt"><div class="ic">🇴🇲</div><h3>Proudly Omani</h3><p>Designed and operated in Oman, for Oman — supporting local guides and the national tourism vision.</p></div>
     </div>
 
     <h2>Company information</h2>
@@ -141,7 +141,7 @@
     <p>Guideon منصّة إلكترونيّة تجعل اكتشاف ومقارنة وحجز التجارب السياحيّة الأصيلة في عُمان أمراً سهلاً — من قلاع نزوى وأخوار مسندم إلى رمال الشرقيّة وساحل اللبان في ظفار.</p>
     <p>نربط السيّاح مباشرةً بالخبراء المحليين: مرشدون مستقلّون وشركات سياحيّة مرخّصة يعرفون عُمان عن قرب. كلّ حجز ورسالة ودفعة تتمّ بأمان داخل المنصّة.</p>
 
-    <div class="stat-row">
+    <div class="stat-row reveal-stagger">
       <div class="stat-box"><div class="n">11</div><div class="l">محافظة مغطّاة</div></div>
       <div class="stat-box"><div class="n">10</div><div class="l">لغات للواجهة</div></div>
       <div class="stat-box"><div class="n">100%</div><div class="l">شركات موثّقة</div></div>
@@ -152,11 +152,11 @@
     <p>أن نضع المرشدين المحليين في قلب رحلة كلّ مسافر — لنمنح الزوّار تجارب أصيلة وآمنة ومنظّمة، ونساعد المرشدين والشركات السياحيّة العُمانيّة على بناء دخل مستدام.</p>
 
     <h2>ما الذي يميّزنا</h2>
-    <div class="value-grid">
-      <div class="value-card"><div class="ic">✅</div><h3>مزوّدون موثّقون</h3><p>جميع الشركات السياحيّة تحمل تراخيص وزارة التراث والسياحة، وغالبيّة المرشدين الأفراد معتمدون من الوزارة — ابحث عن شارة ✓ موثّق.</p></div>
-      <div class="value-card"><div class="ic">🔒</div><h3>آمن بالتصميم</h3><p>مدفوعات مشفّرة، وبيانات تواصل محميّة، ومراسلة داخل المنصّة تحفظ سلامة الطرفين.</p></div>
-      <div class="value-card"><div class="ic">🌍</div><h3>للجميع</h3><p>واجهة ثنائيّة اللغة عربي/إنجليزي مع دعم 10 لغات، ليشعر الزائر من أيّ مكان بأنّه في بيته.</p></div>
-      <div class="value-card"><div class="ic">🇴🇲</div><h3>عُمانيّة بكلّ فخر</h3><p>صُمّمت وتُدار في عُمان، لعُمان — دعماً للمرشدين المحليين ورؤية السياحة الوطنيّة.</p></div>
+    <div class="value-grid reveal-stagger">
+      <div class="value-card gd-tilt"><div class="ic">✅</div><h3>مزوّدون موثّقون</h3><p>جميع الشركات السياحيّة تحمل تراخيص وزارة التراث والسياحة، وغالبيّة المرشدين الأفراد معتمدون من الوزارة — ابحث عن شارة ✓ موثّق.</p></div>
+      <div class="value-card gd-tilt"><div class="ic">🔒</div><h3>آمن بالتصميم</h3><p>مدفوعات مشفّرة، وبيانات تواصل محميّة، ومراسلة داخل المنصّة تحفظ سلامة الطرفين.</p></div>
+      <div class="value-card gd-tilt"><div class="ic">🌍</div><h3>للجميع</h3><p>واجهة ثنائيّة اللغة عربي/إنجليزي مع دعم 10 لغات، ليشعر الزائر من أيّ مكان بأنّه في بيته.</p></div>
+      <div class="value-card gd-tilt"><div class="ic">🇴🇲</div><h3>عُمانيّة بكلّ فخر</h3><p>صُمّمت وتُدار في عُمان، لعُمان — دعماً للمرشدين المحليين ورؤية السياحة الوطنيّة.</p></div>
     </div>
 
     <h2>معلومات الشركة</h2>
@@ -183,7 +183,7 @@
 </div>
 
 <script src="/js/i18n.js?v=50"></script>
-<script src="/js/common-widgets.js?v=16"></script>
+<script src="/js/common-widgets.js?v=17"></script>
 <script src="/js/pwa.js?v=14" defer></script>
 <script>
 function syncLang() {
