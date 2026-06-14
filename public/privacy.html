@@ -252,7 +252,7 @@
 <script src="/js/common-widgets.js?v=14"></script>
 <script>
 function syncLang() {
-  const isAr = document.documentElement.lang === 'ar';
+  const isAr = ((window.I18N && I18N.lang) || localStorage.getItem('gd_lang') || (navigator.language||'en').slice(0,2)) === 'ar';
   document.getElementById('legal-en').classList.toggle('active', !isAr);
   document.getElementById('legal-ar').classList.toggle('active',  isAr);
 }
