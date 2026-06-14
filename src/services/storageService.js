@@ -48,8 +48,11 @@ async function compressImage(buffer, folder, originalName) {
   if (!sharp) return null;
   const ext = path.extname(originalName || '').toLowerCase();
   if (PASS_THROUGH_EXTS.has(ext)) return null;
-  // Tiny files (< 60 KB) usually aren't worth re-encoding; keep them.
-  if (buffer.length < 60 * 1024) return null;
+  // Formats browsers can't display (iPhone HEIC/HEIF, AVIF, TIFF) MUST be
+  // transcoded to WebP no matter how small — storing them raw yields a broken
+  // image. Only skip the "too tiny to bother" shortcut for already-web formats.
+  const NON_DISPLAYABLE = new Set(['.heic', '.heif', '.avif', '.tif', '.tiff']);
+  if (buffer.length < 60 * 1024 && !NON_DISPLAYABLE.has(ext)) return null;
 
   const preset = presetFor(folder);
   try {
