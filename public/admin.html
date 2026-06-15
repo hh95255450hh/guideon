@@ -1148,15 +1148,17 @@ function renderCharts(s, errMsg) {
 // ── Pending Approvals ─────────────────────────────────────────
 async function loadPending() {
   try {
-    const [gr, cr] = await Promise.all([
+    const [gr, cr, tr] = await Promise.all([
       fetch('/api/admin/guides/pending',{credentials:'include'}).then(r=>r.json()),
       fetch('/api/admin/companies/pending',{credentials:'include'}).then(r=>r.json()),
+      fetch('/api/admin/teams/pending',{credentials:'include'}).then(r=>r.json()).catch(()=>({teams:[]})),
     ]);
     const guides    = gr.guides    || [];
     const companies = cr.companies || [];
+    const teams     = tr.teams     || [];
     const el        = document.getElementById('pendingList');
 
-    if (!guides.length && !companies.length) {
+    if (!guides.length && !companies.length && !teams.length) {
       el.innerHTML = `<div class="empty-state"><div class="icon">✅</div><h5>${I18N.t('all_caught_up')}</h5><p class="text-muted">${I18N.t('no_pending_all')}</p></div>`;
       return;
     }
@@ -1218,6 +1220,33 @@ async function loadPending() {
             <div class="d-flex flex-column gap-2 ms-2">
               <button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">${I18N.t('approve_btn2')}</button>
               <button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">${I18N.t('suspend_btn')}</button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    if (teams.length) {
+      html += `<div class="section-divider"><span>🎪 ${I18N.t('pending_teams_sec') || 'فرق بانتظار التوثيق'} (${teams.length})</span></div>`;
+      html += teams.map(t => `
+        <div class="pend-card">
+          <div class="d-flex align-items-start gap-3">
+            <div class="avatar company-avatar">🎪</div>
+            <div style="flex:1;min-width:0">
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <span class="fw-800">${t.teamName || t.fullName}</span>
+                <span class="mot-badge mot-company">🎪 ${I18N.t('tab_teams') || 'فريق'}</span>
+              </div>
+              <div class="small text-muted mb-2">${t.fullName ? t.fullName + ' · ' : ''}${t.email}${t.phone ? ' · ' + t.phone : ''}</div>
+              <div class="row g-2 small">
+                ${t.teamCategory ? `<div class="col-auto"><strong>${I18N.t('category') || 'التصنيف'}:</strong> ${t.teamCategory}</div>` : ''}
+                ${t.teamGovernorate ? `<div class="col-auto"><strong>${I18N.t('governorate') || 'المحافظة'}:</strong> ${t.teamGovernorate}</div>` : ''}
+                ${t.membersCount ? `<div class="col-auto"><strong>${I18N.t('members') || 'الأعضاء'}:</strong> ${t.membersCount}</div>` : ''}
+              </div>
+              ${t.teamDescription ? `<div class="small text-muted mt-2" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${t.teamDescription}</div>` : ''}
+            </div>
+            <div class="d-flex flex-column gap-2 ms-2">
+              <button class="btn-approve" onclick="verifyTeam('${t.id}','${(t.teamName||t.fullName||'').replace(/'/g,'')}')">${I18N.t('approve_btn2') || 'توثيق ✓'}</button>
+              <button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${t.teamName||t.fullName}')">${I18N.t('suspend_btn') || 'تعليق'}</button>
             </div>
           </div>
         </div>`).join('');
@@ -1388,7 +1417,7 @@ async function verifyTeam(id, name) {
     const r = await fetch(`/api/admin/teams/${id}/verify`, { method: 'PATCH', credentials: 'include' });
     const d = await r.json();
     if (!r.ok || !d.success) throw new Error(d.message || 'فشل التوثيق');
-    loadTeams();
+    loadTeams(); loadPending(); loadStats();
   } catch (e) { alert(e.message); }
 }
 

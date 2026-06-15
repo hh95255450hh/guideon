@@ -793,6 +793,13 @@ exports.allTeams = async (req, res) => {
     res.json({ success: true, teams: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
+exports.pendingTeams = async (req, res) => {
+  try {
+    const p = await userPage(req, { userType: 'team' },
+      t => t.isVerified !== true && t.isSuspended !== true);
+    res.json({ success: true, teams: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
+};
 exports.verifyTeam = async (req, res) => {
   try {
     const { id } = req.params;
