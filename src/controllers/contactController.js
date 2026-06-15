@@ -11,7 +11,7 @@ const PUBLIC_URL    = process.env.PUBLIC_URL    || 'https://guideon.om';
 // Pin the email logo to the canonical https URL. Going through PUBLIC_URL/
 // EMAIL_LOGO_URL env vars meant a single misconfigured value broke the logo in
 // every email (the broken-image icon recipients reported).
-const LOGO_URL      = 'https://guideon.om/logo.png';
+const LOGO_URL      = 'https://guideon.om/logo.png?e=3';
 
 function esc(s) {
   return String(s || '').replace(/[&<>"']/g, c =>

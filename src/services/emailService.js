@@ -18,8 +18,9 @@ const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'hh92hh@guideon.om';
 const APP_URL   = process.env.APP_URL         || 'https://guideon.om';
 const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://guideon.om';
 // Pinned to the canonical https URL so a misconfigured PUBLIC_URL/EMAIL_LOGO_URL
-// env var can't break the logo in every outgoing email.
-const LOGO_URL  = 'https://guideon.om/logo.png';
+// env var can't break the logo. The ?e= query busts Gmail's image-proxy cache,
+// which can hold a previously-failed fetch and keep showing a broken icon.
+const LOGO_URL  = 'https://guideon.om/logo.png?e=3';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL   || 'hh92hh@guideon.om';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
@@ -44,7 +45,7 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1
       <!-- Header with real logo -->
       <tr>
         <td style="background:linear-gradient(135deg,#0f1c3e 0%,#1a2c5b 50%,#0f7b6c 100%);padding:32px 40px;text-align:center;">
-          <img src="${LOGO_URL}" alt="Guideon" width="180" height="auto" style="display:inline-block;max-width:180px;height:auto;margin-bottom:6px;border:0;outline:none;text-decoration:none;">
+          <img src="${LOGO_URL}" alt="Guideon" width="180" style="display:inline-block;max-width:180px;height:auto;margin-bottom:6px;border:0;outline:none;text-decoration:none;">
           <div style="color:rgba(255,255,255,0.85);font-size:11px;letter-spacing:2px;margin-top:8px;font-weight:600;">
             DISCOVER OMAN WITH A LOCAL GUIDE
           </div>
