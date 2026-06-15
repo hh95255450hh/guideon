@@ -17,7 +17,9 @@ const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.om>';
 const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'hh92hh@guideon.om';
 const APP_URL   = process.env.APP_URL         || 'https://guideon.om';
 const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://guideon.om';
-const LOGO_URL  = process.env.EMAIL_LOGO_URL  || `${PUBLIC_URL}/logo.png`;
+// Pinned to the canonical https URL so a misconfigured PUBLIC_URL/EMAIL_LOGO_URL
+// env var can't break the logo in every outgoing email.
+const LOGO_URL  = 'https://guideon.om/logo.png';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL   || 'hh92hh@guideon.om';
 
 // ── Layout ────────────────────────────────────────────────────────────────────

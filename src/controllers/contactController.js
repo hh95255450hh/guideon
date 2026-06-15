@@ -8,7 +8,10 @@ const emailService = require('../services/emailService');
 const CONTACT_INBOX = process.env.CONTACT_INBOX || 'hh92hh@guideon.om';
 const APP_URL       = process.env.APP_URL       || 'https://guideon.om';
 const PUBLIC_URL    = process.env.PUBLIC_URL    || 'https://guideon.om';
-const LOGO_URL      = process.env.EMAIL_LOGO_URL || `${PUBLIC_URL}/logo.png`;
+// Pin the email logo to the canonical https URL. Going through PUBLIC_URL/
+// EMAIL_LOGO_URL env vars meant a single misconfigured value broke the logo in
+// every email (the broken-image icon recipients reported).
+const LOGO_URL      = 'https://guideon.om/logo.png';
 
 function esc(s) {
   return String(s || '').replace(/[&<>"']/g, c =>
