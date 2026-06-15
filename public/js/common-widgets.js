@@ -340,7 +340,7 @@
 (function () {
   if (!document.getElementById('gd-polish-css')) {
     var l = document.createElement('link');
-    l.id = 'gd-polish-css'; l.rel = 'stylesheet'; l.href = '/css/polish.css?v=3';
+    l.id = 'gd-polish-css'; l.rel = 'stylesheet'; l.href = '/css/polish.css?v=4';
     document.head.appendChild(l);
   }
   if (!window.__gdPolishLoaded) {

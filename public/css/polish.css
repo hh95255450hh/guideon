@@ -1,3 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+/* ─────────────────────────────────────────────────────────────────────────
+   MODERN TYPE — a clean geometric Arabic+Latin face (Tajawal) replaces the
+   system font site-wide for a more professional, contemporary feel. Falls
+   back to Segoe UI / system fonts if the web font fails to load.
+   ───────────────────────────────────────────────────────────────────────── */
+body,
+.navbar, .btn, .form-control, .form-select,
+input, select, textarea, button,
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Tajawal', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif !important;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: .1px;
+}
+
+/* Softer, more modern elevation on the common card surfaces. */
+.card, .info-card, .pend-card, .stat-item, .dash-stat,
+.guide-card, .ev-card, .team-card, .planner-card, .day-card {
+  box-shadow: 0 1px 2px rgba(15,28,62,.04), 0 6px 20px rgba(15,28,62,.05);
+}
+
+/* Buttons: subtle modern lift + smooth transition (skips reduced-motion). */
+@media (hover:hover) and (prefers-reduced-motion: no-preference) {
+  .btn { transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-teal:hover, .btn-primary:hover { box-shadow: 0 6px 18px rgba(15,123,108,.28); }
+}
+
 /* ─────────────────────────────────────────────────────────────────────────
    Guideon polish layer — additive motion + micro-interactions.
    Everything here is opt-in or gracefully degrades:
