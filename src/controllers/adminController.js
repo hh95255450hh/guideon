@@ -928,7 +928,7 @@ exports.stats = async (req, res) => {
 // in JS. The earlier findPage path — which pushed order + count:'exact'
 // + range to Postgres — returned 0 rows on production, so we avoid it
 // here too. The users table is small; JS paging is more than fine.
-async function userPage(req, extraEq = {}) {
+async function userPage(req, extraEq = {}, jsFilter = null) {
   const pageSize = Math.min(Math.max(parseInt(req.query.pageSize) || 50, 1), 200);
   const page     = Math.max(parseInt(req.query.page) || 1, 1);
   const q        = (req.query.q || '').trim().toLowerCase();
@@ -937,6 +937,11 @@ async function userPage(req, extraEq = {}) {
   let rows = Object.keys(extraEq).length
     ? await users.findAllWhere(extraEq)
     : await users.readAll();
+
+  // Optional JS post-filter — used for boolean conditions where an `eq` filter
+  // would wrongly drop NULL rows (e.g. a freshly-registered guide whose
+  // isVerified/isSuspended isn't a strict `false`). See CLAUDE.md gotcha.
+  if (jsFilter) rows = rows.filter(jsFilter);
 
   // Free-text search across name / email / company name (JS).
   if (q) {
@@ -961,7 +966,8 @@ function stripPassword(arr) {
 
 exports.pendingGuides = async (req, res) => {
   try {
-    const p = await userPage(req, { userType: 'guide', isVerified: false, isSuspended: false });
+    const p = await userPage(req, { userType: 'guide' },
+      g => g.isVerified !== true && g.isSuspended !== true);
     res.json({ success: true, guides: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
@@ -989,7 +995,8 @@ exports.allCompanies = async (req, res) => {
 
 exports.pendingCompanies = async (req, res) => {
   try {
-    const p = await userPage(req, { userType: 'company', isVerified: false, isSuspended: false });
+    const p = await userPage(req, { userType: 'company' },
+      c => c.isVerified !== true && c.isSuspended !== true);
     res.json({ success: true, companies: stripPassword(p.rows), total: p.total, page: parseInt(req.query.page) || 1, pageSize: p.limit, hasMore: p.hasMore });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error.' }); }
 };
