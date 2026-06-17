@@ -19,26 +19,27 @@ exports.publicStats = async (req, res) => {
       return res.json({ success: true, cached: true, stats: cache.data });
     }
 
-    const [allUsers, allReviews, allBookings] = await Promise.all([
-      users.readAll(),
+    // IMPORTANT: users.readAll() (select * on the whole users table) fails on
+    // production — large rows over the DB link time out and return [], which
+    // poisoned the cache with all-zero stats. Filtered queries (findAllWhere by
+    // userType) are reliable, so fetch only the guide rows we actually need.
+    const [guideRows, allReviews, allBookings] = await Promise.all([
+      users.findAllWhere({ userType: 'guide' }),
       reviews.readAll(),
       bookings.readAll(),
     ]);
 
-    // A transient DB read failure makes readAll() return [] — which would
-    // compute all-zero stats and POISON the 5-minute cache (homepage shows 0
-    // guides / 0 destinations). There is ALWAYS at least one user, so an empty
-    // users array means the read failed: don't compute or cache it. Serve the
-    // last good cache if we have one, otherwise signal a soft failure so the
-    // client keeps its fallback numbers.
-    if (!allUsers.length) {
+    // If even the guide query came back empty it almost certainly failed (the
+    // platform has verified guides). Don't poison the cache — serve the last
+    // good value, or a soft failure so the client keeps its fallback numbers.
+    if (!guideRows.length) {
       if (cache.data) return res.json({ success: true, cached: true, stats: cache.data });
       return res.json({ success: false, stats: null });
     }
 
     // Certified guides: same rule the public search uses (verified, not suspended)
-    const verifiedGuides = allUsers.filter(
-      u => u.userType === 'guide' && u.isVerified && !u.isSuspended
+    const verifiedGuides = guideRows.filter(
+      u => u.isVerified && !u.isSuspended
     );
     const guides = verifiedGuides.length;
 
