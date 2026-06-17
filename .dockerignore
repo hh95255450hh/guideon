@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+mobile
+android
+deck
+mtcit-docs
+*.md
+test
+.claude
+الاوراق الرسمية

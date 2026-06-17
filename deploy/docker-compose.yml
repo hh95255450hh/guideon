@@ -1,0 +1,39 @@
+# ── Guideon — production stack for an Oman Data Park VPS ─────────────────────
+# Brings up the Guideon app + an Nginx reverse proxy (TLS).
+#
+# The data layer (PostgreSQL + Storage) is provided by a SELF-HOSTED SUPABASE
+# stack running on the same server — see MIGRATION-GUIDE.md §3. That stack
+# exposes the Supabase REST/Storage API locally (default http://localhost:8000),
+# which is what SUPABASE_URL points to below. This keeps ALL application code
+# unchanged — only the env vars differ.
+#
+# Usage:
+#   1. Copy ../.env.production.example to .env and fill in the values.
+#   2. docker compose up -d --build
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: guideon-app
+    restart: unless-stopped
+    env_file: .env
+    expose:
+      - "3000"
+    # The app reaches the self-hosted Supabase via the host network.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: guideon-nginx
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/guideon.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
