@@ -23,6 +23,6 @@ EXPOSE 3000
 
 # Simple healthcheck against the health route.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -qO- http://localhost:3000/api/health || exit 1
+  CMD wget -qO- http://localhost:3000/health || exit 1
 
 CMD ["node", "src/app.js"]
