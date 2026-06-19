@@ -96,7 +96,7 @@ Difficulty: Easy | Moderate | Hard
 1. Browse guides ("Find a Guide") or tours, filter by region, language, date and budget.
 2. Open a guide/tour, pick a date and number of travelers (cannot exceed the guide's max group size).
 3. Confirm the booking — the guide accepts, then on the day starts the tour and marks it complete.
-4. After the tour, leave a verified review. Support: hh92hh@guideon.om · Instagram @guideonoman.
+4. After the tour, leave a verified review. Support: admin@guideon.om · Instagram @guideonoman.
 
 ## Answering style
 - Be genuinely helpful and try to answer EVERY question. Only decline content that is unsafe or unrelated to helping a traveler.
@@ -231,8 +231,8 @@ const LOCAL_KB = [
   {
     en: /contact|support|help|email|whatsapp|reach/i,
     ar: ['تواصل', 'دعم', 'مساعدة', 'ايميل', 'إيميل', 'واتساب'],
-    reply_en: "Need help? 💬 Reach the Guideon team at **hh92hh@guideon.om** or via Instagram **@guideonoman**. For booking issues, use the in-app chat with your guide or the support inbox.",
-    reply_ar: "تحتاج مساعدة؟ 💬 تواصل مع فريق Guideon عبر **hh92hh@guideon.om** أو إنستغرام **@guideonoman**. لمشاكل الحجز، استخدم المحادثة داخل التطبيق مع مرشدك أو صندوق الدعم."
+    reply_en: "Need help? 💬 Reach the Guideon team at **admin@guideon.om** or via Instagram **@guideonoman**. For booking issues, use the in-app chat with your guide or the support inbox.",
+    reply_ar: "تحتاج مساعدة؟ 💬 تواصل مع فريق Guideon عبر **admin@guideon.om** أو إنستغرام **@guideonoman**. لمشاكل الحجز، استخدم المحادثة داخل التطبيق مع مرشدك أو صندوق الدعم."
   },
   {
     en: /best|top|recommend|destination|place/i,

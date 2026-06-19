@@ -208,7 +208,6 @@
     'Find a Guide':  { ar:'ابحث عن مرشد', zh:'寻找导游',    hi:'गाइड खोजें',  es:'Buscar guía',     fr:'Trouver un guide', bn:'গাইড খুঁজুন', pt:'Encontrar guia',     ru:'Найти гида',      ur:'گائیڈ تلاش کریں' },
     'Plan a Trip':   { ar:'خطط رحلة',     zh:'规划行程',    hi:'यात्रा प्लान करें', es:'Planifica un viaje', fr:'Planifier un voyage', bn:'ভ্রমণ পরিকল্পনা', pt:'Planejar viagem',   ru:'Спланировать поездку', ur:'سفر کی منصوبہ بندی' },
     'Regions':       { ar:'المناطق',      zh:'地区',        hi:'क्षेत्र',          es:'Regiones',        fr:'Régions',           bn:'অঞ্চল',         pt:'Regiões',            ru:'Регионы',         ur:'علاقے' },
-    'Trails':        { ar:'المسارات',     zh:'步道',        hi:'पगडंडियाँ',     es:'Senderos',        fr:'Sentiers',          bn:'পথ',           pt:'Trilhas',            ru:'Маршруты',        ur:'پیدل راستے' },
     'Blog':          { ar:'المدوّنة',     zh:'博客',        hi:'ब्लॉग',         es:'Blog',            fr:'Blog',              bn:'ব্লগ',          pt:'Blog',               ru:'Блог',            ur:'بلاگ' },
     'Home':          { ar:'الرئيسية',     zh:'首页',        hi:'मुख्य',         es:'Inicio',          fr:'Accueil',           bn:'হোম',          pt:'Início',             ru:'Главная',         ur:'صفحۂ اول' },
     'How It Works':  { ar:'كيف يعمل',     zh:'如何使用',    hi:'यह कैसे काम करता है', es:'Cómo funciona', fr:'Comment ça marche', bn:'কিভাবে কাজ করে', pt:'Como funciona', ru:'Как это работает', ur:'یہ کیسے کام کرتا ہے' },
@@ -380,7 +379,6 @@
         <nav class="gd-nav-links" id="gdNavLinks">
           <a href="/search.html"      data-key="find">${tr('Find a Guide','ابحث عن مرشد','nav_find')}</a>
           <a href="/regions.html"     data-key="regions">${tr('Regions','المناطق')}</a>
-          <a href="/trails.html"      data-key="trails">${tr('Trails','المسارات')}</a>
           <a href="/plan-trip.html"   data-key="plan">${tr('Plan a Trip','خطط رحلة')}</a>
           <a href="/blog.html"        data-key="blog">${tr('Blog','المدوّنة')}</a>
         </nav>
@@ -450,7 +448,6 @@
           <a href="/"               ${activeAttr('/')}><span style="font-size:18px">🏠</span> ${tr('Home','الرئيسية')}</a>
           <a href="/search.html"    ${activeAttr('/search')}>${svg('search')} ${tr('Find a Guide','ابحث عن مرشد','nav_find')}</a>
           <a href="/regions.html"   ${activeAttr('/regions')}>${svg('map')} ${tr('Explore Regions','استكشف المناطق')}</a>
-          <a href="/trails.html"    ${activeAttr('/trails')}>${svg('sparkle')} ${tr('Hiking Trails','مسارات المشي')}</a>
           <a href="/plan-trip.html" ${activeAttr('/plan-trip')}>${svg('sparkle')} ${tr('Plan a Trip','خطط رحلة')}</a>
           <a href="/blog.html"      ${activeAttr('/blog')}>${svg('star')} ${tr('Blog','المدوّنة')}</a>
           <a href="/how-it-works.html">${svg('map')} ${tr('How It Works','كيف يعمل')}</a>

@@ -33,3 +33,7 @@ android/android.keystore
 android/*.keystore
 android/app/
 android/.gradle/
+
+.env.production
+deploy/_*.sh
+deploy/*.tgz

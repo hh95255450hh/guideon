@@ -102,7 +102,7 @@ exports.emailTest = async (req, res) => {
     const cfg = email.emailConfig();
     const to = (req.query.to && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(req.query.to))
       ? req.query.to.trim()
-      : (cfg.alertRecipients[0] || 'hh92hh@guideon.om');
+      : (cfg.alertRecipients[0] || 'admin@guideon.om');
     const html = email.notificationEmail({
       icon: '✅', title: 'Guideon test email', titleAr: 'رسالة تجريبية من Guideon',
       body: 'This is a test email — your Guideon email delivery is working correctly.',

@@ -14,14 +14,14 @@ function getResend() {
 // Sender MUST be a domain verified in Resend. guideon.om is now the verified
 // sending domain; replies still go to the business inbox via REPLY_TO.
 const FROM      = process.env.EMAIL_FROM      || 'Guideon <noreply@guideon.om>';
-const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'hh92hh@guideon.om';
+const REPLY_TO  = process.env.EMAIL_REPLY_TO  || 'admin@guideon.om';
 const APP_URL   = process.env.APP_URL         || 'https://guideon.om';
 const PUBLIC_URL= process.env.PUBLIC_URL      || 'https://guideon.om';
 // Pinned to the canonical https URL so a misconfigured PUBLIC_URL/EMAIL_LOGO_URL
 // env var can't break the logo. The ?e= query busts Gmail's image-proxy cache,
 // which can hold a previously-failed fetch and keep showing a broken icon.
-const LOGO_URL  = 'https://guideon.om/logo.png?e=3';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL   || 'hh92hh@guideon.om';
+const LOGO_URL  = 'https://guideon.om/logo.png?e=4';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL   || 'admin@guideon.om';
 
 // ── Layout ────────────────────────────────────────────────────────────────────
 function layout(body, preheader = '') {
@@ -64,7 +64,7 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1
           <p style="margin:0 0 10px;font-size:12px;color:#888;line-height:1.7;">
             <a href="${APP_URL}" style="color:#0f7b6c;text-decoration:none;font-weight:600;">guideon.om</a>
             &nbsp;&middot;&nbsp;
-            <a href="mailto:hh92hh@guideon.om" style="color:#0f7b6c;text-decoration:none;">hh92hh@guideon.om</a>
+            <a href="mailto:admin@guideon.om" style="color:#0f7b6c;text-decoration:none;">admin@guideon.om</a>
             &nbsp;&middot;&nbsp;
             <a href="tel:+96895255450" style="color:#0f7b6c;text-decoration:none;">+968 9525 5450</a>
           </p>
@@ -578,7 +578,7 @@ async function send(to, subject, html) {
       text: htmlToText(html),
       reply_to: REPLY_TO,
       headers: {
-        'List-Unsubscribe': `<mailto:hh92hh@guideon.om?subject=Unsubscribe>, <${APP_URL}/api/newsletter/unsubscribe>`,
+        'List-Unsubscribe': `<mailto:admin@guideon.om?subject=Unsubscribe>, <${APP_URL}/api/newsletter/unsubscribe>`,
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         'X-Entity-Ref-ID': `guideon-${Date.now()}`,
         'X-Mailer': 'Guideon Platform',
@@ -618,7 +618,7 @@ function notificationEmail({ icon = '🔔', title = '', titleAr = '', body = '',
 // to ADMIN_EMAIL. Disabled entirely with ADMIN_ALERTS_ENABLED=false.
 function notifyAdmins(subject, html) {
   if (process.env.ADMIN_ALERTS_ENABLED === 'false') return Promise.resolve();
-  const list = (process.env.ADMIN_ALERT_EMAIL || process.env.ADMIN_EMAIL || 'hh92hh@guideon.om')
+  const list = (process.env.ADMIN_ALERT_EMAIL || process.env.ADMIN_EMAIL || 'admin@guideon.om')
     .split(',').map(s => s.trim()).filter(Boolean);
   return Promise.all(list.map(to => send(to, subject, html).catch(() => {})));
 }

@@ -1,7 +1,7 @@
 # ── Guideon application image ───────────────────────────────────────────────
 # Runs the Node.js/Express app. Designed for an Ubuntu VPS (e.g. Oman Data Park)
 # behind a reverse proxy (Nginx) that terminates TLS.
-FROM node:20-slim
+FROM node:22-slim
 
 # System deps for sharp (image processing) — Debian slim is missing some libs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
