@@ -20,6 +20,14 @@ function resolveProvider() {
     return { key: process.env.OPENROUTER_API_KEY, baseURL: 'https://openrouter.ai/api/v1',
              model: process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free', name: 'openrouter' };
   }
+  // Anthropic (Claude) via its OpenAI-compatible endpoint — the platform's
+  // primary AI provider. Lets the bot use Claude with the existing OpenAI-SDK
+  // code path (incl. streaming) unchanged. Override the chat model with
+  // CHAT_MODEL (e.g. a cheaper/faster model for the public widget).
+  if (valid(process.env.ANTHROPIC_API_KEY) && process.env.ANTHROPIC_API_KEY.startsWith('sk-ant')) {
+    return { key: process.env.ANTHROPIC_API_KEY, baseURL: 'https://api.anthropic.com/v1',
+             model: process.env.CHAT_MODEL || 'claude-haiku-4-5', name: 'anthropic' };
+  }
   if (valid(process.env.OPENAI_API_KEY) && process.env.OPENAI_API_KEY.startsWith('sk-')) {
     return { key: process.env.OPENAI_API_KEY, baseURL: undefined,
              model: process.env.OPENAI_MODEL || 'gpt-4o-mini', name: 'openai' };
@@ -301,7 +309,6 @@ const chat = async (req, res, next) => {
     const completion = await getOpenAI().chat.completions.create({
       model:       aiModel(),
       max_tokens:  500,
-      temperature: 0.7,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT + (liveData ? '\n\n' + liveData : '') },
         ...history,
@@ -373,7 +380,6 @@ const chatStream = async (req, res) => {
     const stream = await getOpenAI().chat.completions.create({
       model: aiModel(),
       max_tokens: 500,
-      temperature: 0.7,
       stream: true,
       messages: [{ role: 'system', content: SYSTEM_PROMPT + (liveData ? '\n\n' + liveData : '') }, ...history],
     });
