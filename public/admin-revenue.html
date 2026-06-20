@@ -410,31 +410,29 @@ function render() {
         </div>
       </div>
 
-      <!-- Expenses by category bars + table -->
-      <div class="grid cols-2" style="margin-bottom:0">
-        <div>
-          <div class="sub" style="margin-bottom:10px; font-weight:700">التوزيع حسب التصنيف</div>
-          <div id="expByCat"></div>
-        </div>
-        <div>
-          <div class="filters no-print" style="margin-bottom:10px">
-            <input id="expSearch" placeholder="🔍 بحث في المصروفات" oninput="renderExpenses()" style="flex:1; min-width:160px">
-            <select id="expFilterCat" onchange="renderExpenses()">
-              <option value="">كل التصنيفات</option>
-              <option value="salary">راتب</option><option value="discount">خصم</option>
-              <option value="marketing">تسويق</option><option value="operational">تشغيلي</option>
-              <option value="rent">إيجار</option><option value="software">برمجيّات</option>
-              <option value="refund">استرداد</option><option value="commission_payout">دفعة مزوّد</option>
-              <option value="tax">ضرائب</option><option value="other">أخرى</option>
-            </select>
-          </div>
-          <div class="tbl-wrap" style="max-height:360px; overflow-y:auto">
-            <table>
-              <thead><tr><th>التصنيف</th><th>العنوان</th><th>المبلغ</th><th>التاريخ</th><th></th></tr></thead>
-              <tbody id="expBody"></tbody>
-            </table>
-          </div>
-        </div>
+      <!-- Category distribution (compact, on top) -->
+      <div style="margin-bottom:18px">
+        <div class="sub" style="margin-bottom:10px; font-weight:700">التوزيع حسب التصنيف</div>
+        <div id="expByCat"></div>
+      </div>
+
+      <!-- Full-width expenses table — the focus of this panel -->
+      <div class="filters no-print" style="margin-bottom:12px">
+        <input id="expSearch" placeholder="🔍 بحث في المصروفات" oninput="renderExpenses()" style="flex:1; min-width:220px">
+        <select id="expFilterCat" onchange="renderExpenses()">
+          <option value="">كل التصنيفات</option>
+          <option value="salary">راتب</option><option value="discount">خصم</option>
+          <option value="marketing">تسويق</option><option value="operational">تشغيلي</option>
+          <option value="rent">إيجار</option><option value="software">برمجيّات</option>
+          <option value="refund">استرداد</option><option value="commission_payout">دفعة مزوّد</option>
+          <option value="tax">ضرائب</option><option value="other">أخرى</option>
+        </select>
+      </div>
+      <div class="tbl-wrap" style="max-height:620px; overflow-y:auto">
+        <table style="width:100%; font-size:1rem">
+          <thead><tr><th>التصنيف</th><th>العنوان</th><th>المبلغ</th><th>التاريخ</th><th></th></tr></thead>
+          <tbody id="expBody"></tbody>
+        </table>
       </div>
     </div>
 
