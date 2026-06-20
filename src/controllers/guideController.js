@@ -263,12 +263,15 @@ exports.updateAssets = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const guideId = req.session.userId;
-    const { bio, phone, pricePerDay, languages, specialisations, destinations } = req.body;
+    const { bio, phone, pricePerDay, languages, specialisations, destinations, maxConcurrentTours } = req.body;
 
     const changes = {};
     if (bio !== undefined)        changes.bio = bio;
     if (phone !== undefined)      changes.phone = phone;
     if (pricePerDay !== undefined) changes.pricePerDay = parseFloat(pricePerDay);
+    // Company concurrency capacity — how many tours it can run at the same time
+    // (it has multiple guides). Only meaningful for companies; min 1.
+    if (maxConcurrentTours !== undefined) changes.maxConcurrentTours = Math.max(1, parseInt(maxConcurrentTours) || 1);
     if (languages)      changes.languages      = Array.isArray(languages)      ? languages      : languages.split(',').map(s => s.trim());
     if (specialisations) changes.specialisations = Array.isArray(specialisations) ? specialisations : specialisations.split(',').map(s => s.trim());
     if (destinations)   changes.destinations   = Array.isArray(destinations)   ? destinations   : destinations.split(',').map(s => s.trim());

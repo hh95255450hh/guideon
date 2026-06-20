@@ -417,6 +417,7 @@ exports.updateProfile = async (req, res) => {
     const {
       fullName, phone, nationality, preferredLanguage,
       companyName, companyRegNo, companyServices, companyDestinations, companyDescription, packages, videoUrl,
+      maxConcurrentTours,
     } = req.body;
     const changes = {};
     if (fullName)                 changes.fullName = fullName;
@@ -431,6 +432,12 @@ exports.updateProfile = async (req, res) => {
     if (companyDescription !== undefined) changes.companyDescription = companyDescription;
     if (packages !== undefined)           changes.packages = packages;
     if (videoUrl !== undefined)           changes.videoUrl = videoUrl;
+    // Company concurrency capacity: how many tours it can run simultaneously
+    // (it has multiple guides). Empty/0 = unlimited; otherwise min 1.
+    if (maxConcurrentTours !== undefined) {
+      const n = parseInt(maxConcurrentTours);
+      changes.maxConcurrentTours = (Number.isFinite(n) && n > 0) ? n : null;
+    }
 
     // Resilient update: drop any field the DB doesn't have a column for and
     // retry, so an outstanding migration on one new field (e.g. `packages`)

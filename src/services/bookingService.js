@@ -68,6 +68,14 @@ async function createBooking(touristId, body) {
     throw new BookingError(400, 'Provider is not verified.', 'PROVIDER_NOT_VERIFIED');
   }
 
+  // Concurrency capacity: a COMPANY runs several guides, so it can accept
+  // multiple overlapping tours at the same time — up to a self-set cap
+  // (maxConcurrentTours); if unset, it is treated as unlimited. An individual
+  // guide can only run one tour per time slot (capacity = 1).
+  const providerCapacity = guide.userType === 'company'
+    ? (parseInt(guide.maxConcurrentTours) > 0 ? parseInt(guide.maxConcurrentTours) : Infinity)
+    : 1;
+
   const tourTime = rules.normalizeTourTime(reqTourTime || 'full_day');
   let packageData = null;
   let totalAmount;
@@ -96,11 +104,13 @@ async function createBooking(touristId, body) {
       if (!matchSlot) throw new BookingError(400, 'Selected time slot is not available.', 'SLOT_UNAVAILABLE');
 
       const existing = await bookings.findAllByField('guideId', guideId);
-      const hasOverlap = existing.some(b =>
+      const overlapCount = existing.filter(b =>
         b.status !== 'cancelled' && b.tourDate === tourDate && b.startTime && b.endTime &&
         rules.timeRangesOverlap(reqStartTime, matchSlot.endTime, b.startTime, b.endTime)
-      );
-      if (hasOverlap) throw new BookingError(409, 'This time slot was just booked. Please choose another.', 'SLOT_TAKEN');
+      ).length;
+      // Block only when the provider's concurrent-tour capacity is reached
+      // (companies can run several at once; a guide's capacity is 1).
+      if (overlapCount >= providerCapacity) throw new BookingError(409, 'This time slot is fully booked. Please choose another.', 'SLOT_TAKEN');
 
       totalAmount = parseFloat(matchSlot.price) || 0;
       slotData = { startTime: matchSlot.startTime, endTime: matchSlot.endTime, durationMin: matchSlot.durationMin };
@@ -112,10 +122,12 @@ async function createBooking(touristId, body) {
       }
       const existing = await bookings.findAllByField('guideId', guideId);
       const conflicts = rules.conflictingSlots(tourTime);
-      const hasConflict = existing.some(b =>
+      const conflictCount = existing.filter(b =>
         b.status !== 'cancelled' && b.tourDate === tourDate && conflicts.includes(b.tourTime || 'full_day')
-      );
-      if (hasConflict) throw new BookingError(409, 'This time slot was just booked. Please choose another.', 'SLOT_TAKEN');
+      ).length;
+      // Companies can run several overlapping tours (up to their capacity);
+      // an individual guide is blocked on the first conflict (capacity = 1).
+      if (conflictCount >= providerCapacity) throw new BookingError(409, 'This time slot is fully booked. Please choose another.', 'SLOT_TAKEN');
 
       totalAmount = rules.calculateDayRatePrice(guide.pricePerDay, tourTime);
     }

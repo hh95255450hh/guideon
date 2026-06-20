@@ -178,6 +178,11 @@
               <label class="form-label fw-600 small" data-i18n="phone_lbl">Phone</label>
               <input type="tel" class="form-control" id="ePhone" data-i18n-ph="phone_ph" placeholder="+968 XXXX XXXX">
             </div>
+            <div class="col-md-6">
+              <label class="form-label fw-600 small">عدد الرحلات المتزامنة <span class="text-muted fw-400">(طاقة الشركة)</span></label>
+              <input type="number" min="1" step="1" class="form-control" id="eMaxConcurrent" placeholder="مثال: 5">
+              <div class="form-text">كم رحلة تنفّذها شركتك في نفس الوقت (حسب عدد مرشديك). فارغ = بلا حدّ.</div>
+            </div>
             <div class="col-12">
               <label class="form-label fw-600 small" data-i18n="video_url_lbl">YouTube Video URL</label>
               <input type="url" class="form-control" id="eVideoUrl" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=...">
@@ -656,6 +661,7 @@ function toggleEdit() {
     document.getElementById('eCompanyName').value  = COMPANY.companyName  || '';
     document.getElementById('eRegNo').value        = COMPANY.companyRegNo || '';
     document.getElementById('ePhone').value        = COMPANY.phone        || '';
+    document.getElementById('eMaxConcurrent').value = COMPANY.maxConcurrentTours || '';
     document.getElementById('eVideoUrl').value     = COMPANY.videoUrl     || '';
     document.getElementById('eDescription').value  = COMPANY.companyDescription || '';
     document.getElementById('eServices').value     = (COMPANY.companyServices     || []).join(', ');
@@ -680,6 +686,7 @@ async function saveProfile() {
     companyDescription:  document.getElementById('eDescription').value.trim(),
     companyServices:     split(document.getElementById('eServices').value),
     companyDestinations: split(document.getElementById('eDestinations').value),
+    maxConcurrentTours:  document.getElementById('eMaxConcurrent').value.trim(),
   };
 
   try {
