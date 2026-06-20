@@ -321,8 +321,81 @@ async function generatePaymentVoucher(payment, payee) {
   });
 }
 
+// ════════════════════ Custom invoice (admin → provider) ════════════════════
+// A proper multi-line invoice the admin issues to a guide / company / team.
+//   invoice   = { id, number?, items:[{desc,amount}], note, createdAt }
+//   recipient = { name, type, email }
+function invoiceDocNumber(id, when) {
+  const yr = new Date(when || Date.now()).getUTCFullYear();
+  const short = String(id || '').replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
+  return `GDN-BILL-${yr}-${short}`;
+}
+async function generateInvoice(invoice, recipient, vatRate = VAT_RATE, vatNumber = VAT_NUMBER) {
+  const docNo  = invoice.number || invoiceDocNumber(invoice.id, invoice.createdAt);
+  const issued = new Date(invoice.createdAt || Date.now());
+  const isTax  = vatRate > 0 && !!vatNumber;
+  const items  = Array.isArray(invoice.items) ? invoice.items : [];
+  const subtotal = r3(items.reduce((s, it) => s + (Number(it.amount) || 0), 0));
+  const vat   = r3(subtotal * (vatRate || 0));
+  const total = r3(subtotal + vat);
+  let qrBuf = null;
+  if (QRCode) { try { qrBuf = await QRCode.toBuffer(`${APP_URL} · ${docNo}`, { margin: 1, width: 200 }); } catch { qrBuf = null; } }
+
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'A4', margin: 50 });
+      const chunks = [];
+      doc.on('data', c => chunks.push(c));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      header(doc, isTax ? 'TAX INVOICE' : 'INVOICE', [docNo, issued.toISOString().slice(0, 10), isTax ? ('VATIN ' + vatNumber) : 'فاتورة']);
+
+      let y = 140;
+      doc.fillColor(GREY).fontSize(9).font('Helvetica').text('BILL TO — إلى', 50, y);
+      doc.fillColor(DARK).fontSize(14).font('Helvetica-Bold').text(recipient.name || '—', 50, y + 14);
+      doc.fillColor(GREY).fontSize(10).font('Helvetica')
+         .text(`${({ guide: 'Guide / مرشد', company: 'Company / شركة', team: 'Team / فريق' }[recipient.type] || '')}${recipient.email ? '  ·  ' + recipient.email : ''}`, 50, y + 34);
+      y += 70;
+
+      const W = doc.page.width, xAmt = W - 50;
+      doc.rect(50, y, W - 100, 24).fill(GREEN);
+      doc.fillColor('white').fontSize(10).font('Helvetica-Bold').text('Description — البيان', 60, y + 7);
+      doc.text('Amount (OMR)', xAmt - 150, y + 7, { width: 140, align: 'right' });
+      y += 24;
+      items.forEach((it, i) => {
+        if (i % 2) doc.rect(50, y, W - 100, 22).fill('#f6f9f8');
+        doc.fillColor(DARK).fontSize(10).font('Helvetica').text(it.desc || '—', 60, y + 6, { width: W - 260 });
+        doc.fillColor(DARK).text(r3(it.amount).toFixed(3), xAmt - 150, y + 6, { width: 140, align: 'right' });
+        y += 22;
+      });
+      y += 14;
+
+      const totRow = (k, v, bold) => {
+        doc.fillColor(bold ? DARK : GREY).fontSize(bold ? 12 : 10).font(bold ? 'Helvetica-Bold' : 'Helvetica')
+           .text(k, xAmt - 320, y, { width: 170, align: 'right' });
+        doc.fillColor(bold ? GREEN : DARK).font('Helvetica-Bold').text(v, xAmt - 150, y, { width: 140, align: 'right' });
+        y += bold ? 26 : 20;
+      };
+      totRow('Subtotal — المجموع', omr(subtotal));
+      if (vatRate > 0) totRow(`VAT (${(vatRate * 100).toFixed(0)}%)`, omr(vat));
+      totRow('TOTAL — الإجمالي', omr(total), true);
+
+      if (invoice.note) {
+        y += 8;
+        doc.fillColor(GREY).fontSize(9).font('Helvetica').text('Note — ملاحظة: ' + invoice.note, 50, y, { width: W - 100 });
+      }
+      if (qrBuf) { try { doc.image(qrBuf, 50, doc.page.height - 150, { width: 80 }); } catch (_) {} }
+
+      footer(doc, 'Guideon — Invoice · operated by Vision for Digital Thought · guideon.om');
+      doc.end();
+    } catch (e) { reject(e); }
+  });
+}
+
 module.exports = {
   breakdown, invoiceNumber, verifyToken, decodeToken,
   generateGuideInvoice, generateStatement, generatePaymentVoucher, paymentVoucherNumber,
+  generateInvoice, invoiceDocNumber,
   COMMISSION_RATE, VAT_RATE,
 };

@@ -35,6 +35,12 @@ router.post('/treasury',          requirePermission('manage_finance'), admin.add
 router.delete('/treasury/:id',    requirePermission('manage_finance'), admin.deleteTreasuryTxn);
 router.get('/treasury/:id/voucher', requirePermission('view_analytics'), admin.treasuryVoucher);
 router.get('/providers',          requirePermission('view_analytics'), admin.providersByType);
+
+// Invoices — admin-issued invoices for providers
+router.get('/invoices',           requirePermission('view_analytics'), admin.listInvoices);
+router.post('/invoices',          requirePermission('manage_finance'), admin.createInvoice);
+router.get('/invoices/:id/pdf',   requirePermission('view_analytics'), admin.invoicePdf);
+router.delete('/invoices/:id',    requirePermission('manage_finance'), admin.deleteInvoice);
 router.get('/guides/pending',     requirePermission('view_users'), admin.pendingGuides);
 router.get('/guides',             requirePermission('view_users'), admin.allGuides);
 router.get('/tourists',           requirePermission('view_users'), admin.allTourists);

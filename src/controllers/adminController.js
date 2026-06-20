@@ -13,6 +13,7 @@ const packages    = new SupabaseDB('tour_packages');
 const auditLog    = new SupabaseDB('admin_audit_log');
 const expenses    = new SupabaseDB('finance_expenses');
 const treasuryDB  = new SupabaseDB('treasury_transactions');
+const invoicesDB  = new SupabaseDB('invoices');
 const commission  = require('../services/commission');
 
 // ── Recent activity feed ──────────────────────────────────────────────────────
@@ -1789,5 +1790,93 @@ exports.treasuryVoucher = async (req, res) => {
   } catch (err) {
     console.error('[admin:treasuryVoucher]', err.message);
     res.status(500).json({ success: false, message: 'تعذّر توليد الفاتورة.' });
+  }
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+//  INVOICES — admin-issued invoices for guides / companies / teams (line items)
+// ════════════════════════════════════════════════════════════════════════════
+// POST /api/admin/invoices  { recipientId, items:[{desc,amount}], note }
+exports.createInvoice = async (req, res) => {
+  try {
+    const { recipientId, items, note } = req.body;
+    const list = Array.isArray(items)
+      ? items.map(it => ({ desc: String(it.desc || '').slice(0, 200), amount: _round3(it.amount) }))
+             .filter(it => it.amount > 0)
+      : [];
+    if (!recipientId) return res.status(400).json({ success: false, message: 'اختر المستفيد.' });
+    if (!list.length) return res.status(400).json({ success: false, message: 'أضف بنداً واحداً على الأقلّ بمبلغ صحيح.' });
+    const u = await users.findById(recipientId).catch(() => null);
+    if (!u) return res.status(404).json({ success: false, message: 'المستفيد غير موجود.' });
+
+    const RATES = await commission.getRates();
+    const subtotal = _round3(list.reduce((s, it) => s + it.amount, 0));
+    const vatRate  = RATES.vat || 0;
+    const vat      = _round3(subtotal * vatRate);
+    const total    = _round3(subtotal + vat);
+    const id = 'inv-' + uuidv4().slice(0, 8);
+    const invoice = require('../services/invoiceService');
+    const number = invoice.invoiceDocNumber(id, new Date().toISOString());
+    const row = {
+      id, number, recipientId,
+      recipientName: u.companyName || u.teamName || u.fullName || '', recipientType: u.userType,
+      items: list, subtotal, vatRate, vat, total,
+      note: String(note || '').slice(0, 300),
+      createdAt: new Date().toISOString(), createdBy: req.session.userId,
+    };
+    await invoicesDB.insert(row);
+    audit.logAction(req, { action: 'createInvoice', targetType: 'invoice', targetId: id, details: { recipient: row.recipientName, total } });
+    res.json({ success: true, invoice: row });
+  } catch (err) {
+    console.error('[admin:createInvoice]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/admin/invoices — list issued invoices
+exports.listInvoices = async (req, res) => {
+  try {
+    const all = await invoicesDB.readAll().catch(() => []);
+    const invoices = all
+      .map(i => ({ id: i.id, number: i.number, recipientName: i.recipientName, recipientType: i.recipientType, total: _round3(i.total), createdAt: i.createdAt }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({ success: true, invoices });
+  } catch (err) {
+    console.error('[admin:listInvoices]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/admin/invoices/:id/pdf — download an issued invoice
+exports.invoicePdf = async (req, res) => {
+  try {
+    const all = await invoicesDB.readAll().catch(() => []);
+    const inv = all.find(x => x.id === req.params.id);
+    if (!inv) return res.status(404).json({ success: false, message: 'الفاتورة غير موجودة.' });
+    const RATES = await commission.getRates();
+    const invoice = require('../services/invoiceService');
+    const pdf = await invoice.generateInvoice(
+      { id: inv.id, number: inv.number, items: inv.items, note: inv.note, createdAt: inv.createdAt },
+      { name: inv.recipientName, type: inv.recipientType, email: '' },
+      inv.vatRate != null ? inv.vatRate : (RATES.vat || 0), RATES.vatNumber || ''
+    );
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${inv.number}.pdf"`);
+    res.send(pdf);
+  } catch (err) {
+    console.error('[admin:invoicePdf]', err.message);
+    res.status(500).json({ success: false, message: 'تعذّر توليد الفاتورة.' });
+  }
+};
+
+// DELETE /api/admin/invoices/:id
+exports.deleteInvoice = async (req, res) => {
+  try {
+    await invoicesDB.delete(req.params.id);
+    audit.logAction(req, { action: 'deleteInvoice', targetType: 'invoice', targetId: req.params.id });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[admin:deleteInvoice]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
