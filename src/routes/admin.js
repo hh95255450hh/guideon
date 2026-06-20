@@ -33,6 +33,8 @@ router.post('/payouts/:providerId/settle', requirePermission('manage_finance'), 
 router.get('/treasury',           requirePermission('view_analytics'), admin.treasury);
 router.post('/treasury',          requirePermission('manage_finance'), admin.addTreasuryTxn);
 router.delete('/treasury/:id',    requirePermission('manage_finance'), admin.deleteTreasuryTxn);
+router.get('/treasury/:id/voucher', requirePermission('view_analytics'), admin.treasuryVoucher);
+router.get('/providers',          requirePermission('view_analytics'), admin.providersByType);
 router.get('/guides/pending',     requirePermission('view_users'), admin.pendingGuides);
 router.get('/guides',             requirePermission('view_users'), admin.allGuides);
 router.get('/tourists',           requirePermission('view_users'), admin.allTourists);

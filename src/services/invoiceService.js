@@ -251,8 +251,78 @@ function generateStatement(guide, bookings, ym /* YYYY-MM */, rate, vatRate = VA
   });
 }
 
+// ════════════════════ Payment voucher (treasury → provider) ════════════════
+// A professional "Payment Voucher / إشعار دفع" PDF issued automatically when the
+// company sends money to a guide / company / team from the treasury.
+//   payment = { id, amount, description, createdAt, ref }
+//   payee   = { name, type, email }
+function paymentVoucherNumber(id, when) {
+  const yr = new Date(when || Date.now()).getUTCFullYear();
+  const short = String(id || '').replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
+  return `GDN-PV-${yr}-${short}`;
+}
+async function generatePaymentVoucher(payment, payee) {
+  const voucherNo = paymentVoucherNumber(payment.id, payment.createdAt);
+  const issued = new Date(payment.createdAt || Date.now());
+  const typeLabel = { guide: 'Guide / مرشد', company: 'Company / شركة', team: 'Team / فريق' }[payee.type] || 'Provider';
+  let qrBuf = null;
+  if (QRCode) { try { qrBuf = await QRCode.toBuffer(`${APP_URL}/  · ${voucherNo}`, { margin: 1, width: 200 }); } catch { qrBuf = null; } }
+
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({ size: 'A4', margin: 50 });
+      const chunks = [];
+      doc.on('data', c => chunks.push(c));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
+
+      header(doc, 'PAYMENT VOUCHER', [voucherNo, issued.toISOString().slice(0, 10), 'إشعار دفع']);
+
+      let y = 140;
+      doc.fillColor(DARK).fontSize(15).font('Helvetica-Bold').text('Payment Voucher — إشعار دفع', 50, y);
+      y += 28;
+
+      // Payee box
+      doc.roundedRect(50, y, doc.page.width - 100, 78, 8).fill('#f4faf8');
+      doc.fillColor(GREY).fontSize(9).font('Helvetica').text('PAID TO — صُرف إلى', 64, y + 12);
+      doc.fillColor(DARK).fontSize(14).font('Helvetica-Bold').text(payee.name || '—', 64, y + 28);
+      doc.fillColor(GREY).fontSize(10).font('Helvetica')
+         .text(`${typeLabel}${payee.email ? '  ·  ' + payee.email : ''}`, 64, y + 50);
+      y += 100;
+
+      // Amount — the headline
+      doc.roundedRect(50, y, doc.page.width - 100, 70, 8).fill(GREEN);
+      doc.fillColor('#cfe7e1').fontSize(10).font('Helvetica').text('AMOUNT PAID — المبلغ المدفوع', 64, y + 14);
+      doc.fillColor('white').fontSize(26).font('Helvetica-Bold').text(omr(payment.amount), 64, y + 30);
+      y += 92;
+
+      // Details table
+      const row = (k, v) => {
+        doc.fillColor(GREY).fontSize(10).font('Helvetica').text(k, 64, y, { width: 180 });
+        doc.fillColor(DARK).fontSize(10).font('Helvetica-Bold').text(v, 244, y, { width: doc.page.width - 294 });
+        y += 22;
+      };
+      row('Voucher No. — رقم الإشعار', voucherNo);
+      row('Date — التاريخ', issued.toLocaleString('en-GB'));
+      row('Description — البيان', payment.description || '—');
+      row('Method — الطريقة', 'Treasury transfer — تحويل من الخزانة');
+      row('Status — الحالة', 'PAID — مدفوع ✓');
+
+      if (qrBuf) { try { doc.image(qrBuf, doc.page.width - 150, y + 6, { width: 90 }); } catch (_) {} }
+
+      y += 30;
+      doc.fillColor(GREY).fontSize(9).font('Helvetica')
+         .text('This voucher confirms a payment issued by Guideon (Vision for Digital Thought) to the provider above.', 50, y, { width: doc.page.width - 160 })
+         .text('هذا الإشعار يؤكّد صرف المبلغ أعلاه من Guideon إلى المزوّد المذكور.', 50, y + 14, { width: doc.page.width - 160 });
+
+      footer(doc, 'Guideon — Payment Voucher · operated by Vision for Digital Thought · guideon.om');
+      doc.end();
+    } catch (e) { reject(e); }
+  });
+}
+
 module.exports = {
   breakdown, invoiceNumber, verifyToken, decodeToken,
-  generateGuideInvoice, generateStatement,
+  generateGuideInvoice, generateStatement, generatePaymentVoucher, paymentVoucherNumber,
   COMMISSION_RATE, VAT_RATE,
 };

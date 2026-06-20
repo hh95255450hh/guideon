@@ -1747,3 +1747,47 @@ exports.deleteTreasuryTxn = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
+
+// GET /api/admin/providers?type=guide|company|team — list providers to pay
+exports.providersByType = async (req, res) => {
+  try {
+    const type = req.query.type;
+    if (!['guide', 'company', 'team'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'نوع غير صحيح.' });
+    }
+    const list = await users.findAllWhere({ userType: type }).catch(() => []);
+    const providers = list
+      .filter(u => !u.isSuspended)
+      .map(u => ({ id: u.id, name: u.companyName || u.teamName || u.fullName || u.email || u.id, email: u.email || '' }))
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    res.json({ success: true, providers });
+  } catch (err) {
+    console.error('[admin:providersByType]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// GET /api/admin/treasury/:id/voucher — auto-issued payment voucher (PDF)
+exports.treasuryVoucher = async (req, res) => {
+  try {
+    const all = await treasuryDB.readAll().catch(() => []);
+    const t = all.find(x => x.id === req.params.id);
+    if (!t) return res.status(404).json({ success: false, message: 'العمليّة غير موجودة.' });
+    const payee = t.payeeId ? await users.findById(t.payeeId).catch(() => null) : null;
+    const invoice = require('../services/invoiceService');
+    const pdf = await invoice.generatePaymentVoucher(
+      { id: t.id, amount: t.amount, description: t.description, createdAt: t.createdAt },
+      {
+        name: t.payeeName || (payee ? (payee.companyName || payee.teamName || payee.fullName) : 'Provider'),
+        type: payee ? payee.userType : 'guide',
+        email: payee ? payee.email : '',
+      }
+    );
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="voucher-${t.id}.pdf"`);
+    res.send(pdf);
+  } catch (err) {
+    console.error('[admin:treasuryVoucher]', err.message);
+    res.status(500).json({ success: false, message: 'تعذّر توليد الفاتورة.' });
+  }
+};
