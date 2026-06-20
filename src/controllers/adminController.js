@@ -12,6 +12,7 @@ const messages    = new SupabaseDB('messages');
 const packages    = new SupabaseDB('tour_packages');
 const auditLog    = new SupabaseDB('admin_audit_log');
 const expenses    = new SupabaseDB('finance_expenses');
+const treasuryDB  = new SupabaseDB('treasury_transactions');
 const commission  = require('../services/commission');
 
 // ── Recent activity feed ──────────────────────────────────────────────────────
@@ -1638,4 +1639,111 @@ exports.myPermissions = (req, res) => {
     permissions: perms,
     isSuperAdmin: req.user.userType === 'admin',
   });
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+//  TREASURY — the company's main vault (bank-account-style running balance)
+//  Balance = platform commission income (auto) + manual deposits
+//            − total expenses − manual withdrawals/sends.
+// ════════════════════════════════════════════════════════════════════════════
+async function _treasurySnapshot() {
+  const RATES = await commission.getRates();
+  const [allUsers, allBookings, allExpenses, txns] = await Promise.all([
+    users.readAll(),
+    bookings.readAll(),
+    expenses.readAll().catch(() => []),
+    treasuryDB.readAll().catch(() => []),
+  ]);
+  const userById = Object.fromEntries(allUsers.map(u => [u.id, u]));
+
+  // Auto income = the platform's commission on every paid booking.
+  let income = 0;
+  for (const b of allBookings) {
+    if (!b.isPaid || b.totalAmount == null) continue;
+    const rate = commission.rateFor(userById[b.guideId], RATES);
+    income += (parseFloat(b.totalAmount) || 0) * rate;
+  }
+  income = _round3(income);
+
+  const expensesTotal = _round3((allExpenses || []).reduce((s, e) => s + (parseFloat(e.amount) || 0), 0));
+
+  let manualIn = 0, manualOut = 0;
+  for (const t of (txns || [])) {
+    const amt = parseFloat(t.amount) || 0;
+    if (t.type === 'deposit') manualIn += amt; else manualOut += amt; // withdrawal | send
+  }
+  manualIn = _round3(manualIn); manualOut = _round3(manualOut);
+
+  const balance = _round3(income + manualIn - expensesTotal - manualOut);
+  return { balance, income, expensesTotal, manualIn, manualOut, txns: txns || [], userById };
+}
+
+// GET /api/admin/treasury — balance + manual ledger
+exports.treasury = async (req, res) => {
+  try {
+    const s = await _treasurySnapshot();
+    const transactions = s.txns
+      .map(t => ({
+        id: t.id, type: t.type, amount: _round3(t.amount),
+        description: t.description || '', payeeId: t.payeeId || null,
+        payeeName: t.payeeName || '', createdAt: t.createdAt,
+      }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({
+      success: true,
+      data: {
+        balance: s.balance, income: s.income, expenses: s.expensesTotal,
+        manualIn: s.manualIn, manualOut: s.manualOut, transactions,
+      },
+    });
+  } catch (err) {
+    console.error('[admin:treasury]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// POST /api/admin/treasury — record a manual deposit / withdrawal / send
+exports.addTreasuryTxn = async (req, res) => {
+  try {
+    const { type, amount, description, payeeId } = req.body;
+    if (!['deposit', 'withdrawal', 'send'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'نوع العمليّة غير صحيح.' });
+    }
+    const amt = parseFloat(amount);
+    if (!Number.isFinite(amt) || amt <= 0) {
+      return res.status(400).json({ success: false, message: 'المبلغ يجب أن يكون رقماً أكبر من صفر.' });
+    }
+    let payeeName = '';
+    if (payeeId) {
+      const u = await users.findById(payeeId).catch(() => null);
+      payeeName = u ? (u.companyName || u.fullName || '') : '';
+    }
+    const row = {
+      id: 'trz-' + uuidv4().slice(0, 8),
+      type, amount: _round3(amt),
+      description: String(description || '').slice(0, 300),
+      payeeId: payeeId || null, payeeName,
+      createdAt: new Date().toISOString(), createdBy: req.session.userId,
+    };
+    await treasuryDB.insert(row);
+    audit.logAction(req, { action: 'treasuryTxn', targetType: 'treasury', targetId: row.id, details: { type, amount: amt, payeeName } });
+    const s = await _treasurySnapshot();
+    res.json({ success: true, balance: s.balance, transaction: row });
+  } catch (err) {
+    console.error('[admin:addTreasuryTxn]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// DELETE /api/admin/treasury/:id — remove a manual entry (correction)
+exports.deleteTreasuryTxn = async (req, res) => {
+  try {
+    await treasuryDB.delete(req.params.id);
+    audit.logAction(req, { action: 'treasuryTxnDelete', targetType: 'treasury', targetId: req.params.id });
+    const s = await _treasurySnapshot();
+    res.json({ success: true, balance: s.balance });
+  } catch (err) {
+    console.error('[admin:deleteTreasuryTxn]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
 };

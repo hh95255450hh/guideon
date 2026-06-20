@@ -28,6 +28,11 @@ router.delete('/expenses/:id',    requirePermission('manage_finance'), admin.del
 // Provider payouts — what the platform owes guides/companies, and settling it
 router.get('/payouts',                 requirePermission('view_analytics'), admin.listPayouts);
 router.post('/payouts/:providerId/settle', requirePermission('manage_finance'), admin.settlePayout);
+
+// Treasury — the company's main vault (running balance + manual ledger)
+router.get('/treasury',           requirePermission('view_analytics'), admin.treasury);
+router.post('/treasury',          requirePermission('manage_finance'), admin.addTreasuryTxn);
+router.delete('/treasury/:id',    requirePermission('manage_finance'), admin.deleteTreasuryTxn);
 router.get('/guides/pending',     requirePermission('view_users'), admin.pendingGuides);
 router.get('/guides',             requirePermission('view_users'), admin.allGuides);
 router.get('/tourists',           requirePermission('view_users'), admin.allTourists);

@@ -50,6 +50,15 @@
   }
   a { color: var(--teal); text-decoration: none; }
   .wrap { max-width: 1440px; margin: 0 auto; padding: 22px; }
+  /* Tabs */
+  .tabbar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:2px; }
+  .tabbar button { background:transparent; border:none; color:var(--muted); font-weight:700; font-size:.95rem; padding:11px 18px; border-radius:10px 10px 0 0; cursor:pointer; border-bottom:3px solid transparent; transition:.15s; white-space:nowrap; }
+  .tabbar button:hover { color:var(--text,#fff); background:var(--card-2); }
+  .tabbar button.active { color:var(--teal); border-bottom-color:var(--teal); background:var(--card-2); }
+  .tabpane { display:none; }
+  .tabpane.active { display:block; animation:fadeTab .2s ease; }
+  @keyframes fadeTab { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  @media (max-width:700px){ .tabbar{ overflow-x:auto; } .tabbar button{ padding:10px 13px; font-size:.85rem; } }
 
   /* ── Top bar ── */
   .topbar {
@@ -203,6 +212,8 @@ let CAT_LABELS = {
 };
 let CHARTS = {};
 let CURRENT_PERIOD = '7';
+let CURRENT_TAB = 'overview';
+let TREASURY = null;
 let TXN_SORT = { key: 'date', dir: 'desc' };
 
 const fmt   = (n) => (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
@@ -261,6 +272,16 @@ function render() {
   const periodGrowth = CURRENT_PERIOD === '30' ? o.growth30 : (CURRENT_PERIOD === '7' ? o.growth7 : null);
 
   document.getElementById('app').innerHTML = `
+    <div class="tabbar no-print">
+      <button data-tab="overview"   onclick="switchTab('overview')">📊 نظرة عامة</button>
+      <button data-tab="expenses"   onclick="switchTab('expenses')">💸 المصروفات</button>
+      <button data-tab="payables"   onclick="switchTab('payables')">🤝 المستحقّات</button>
+      <button data-tab="operations" onclick="switchTab('operations')">🧾 العمليّات</button>
+      <button data-tab="treasury"   onclick="switchTab('treasury')">🏦 الخزانة</button>
+      <button data-tab="invoices"   onclick="switchTab('invoices')">📄 الفواتير</button>
+    </div>
+
+    <div class="tabpane" data-pane="overview">
     <!-- KPI cards -->
     <div class="kpis">
       ${kpiCard('💰 إجمالي الإيرادات', omr(o.revTotal), null, 'كلّ العمليّات المدفوعة')}
@@ -351,6 +372,9 @@ function render() {
       </div>
     </div>
 
+    </div><!-- /overview pane -->
+
+    <div class="tabpane" data-pane="expenses">
     <!-- ════════ Financial management: expenses / salaries / discounts ════════ -->
     <div class="panel">
       <div class="panel-head">
@@ -436,6 +460,9 @@ function render() {
       </div>
     </div>
 
+    </div><!-- /expenses pane -->
+
+    <div class="tabpane" data-pane="payables">
     <!-- ════════ Commission rates + provider payouts ════════ -->
     <div class="grid cols-2">
       <!-- Commission settings -->
@@ -492,6 +519,9 @@ function render() {
       </div>
     </div>
 
+    </div><!-- /payables pane -->
+
+    <div class="tabpane" data-pane="operations">
     <!-- Transactions -->
     <div class="panel">
       <div class="panel-head">
@@ -529,10 +559,72 @@ function render() {
       </div>
     </div>
 
+    </div><!-- /operations pane -->
+
+    <!-- ════════ Treasury (main vault) ════════ -->
+    <div class="tabpane" data-pane="treasury">
+      <div class="panel" style="background:linear-gradient(135deg,#0f7b6c 0%,#0a5c50 100%);color:#fff;border:none">
+        <div class="sub" style="color:rgba(255,255,255,.85);font-weight:700">🏦 رصيد الخزانة الرئيسيّة</div>
+        <div id="trzBalance" style="font-size:2.6rem;font-weight:800;margin:6px 0">—</div>
+        <div class="sub" style="color:rgba(255,255,255,.8)">الحساب الرئيسي للشركة — كلّ ما يدخل ويخرج</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="label">📥 دخل (عمولات)</div><div class="value" id="trzIncome">—</div></div>
+        <div class="kpi"><div class="label">📤 مصروفات</div><div class="value" id="trzExp">—</div></div>
+        <div class="kpi"><div class="label">➕ إيداعات يدويّة</div><div class="value" id="trzIn">—</div></div>
+        <div class="kpi"><div class="label">➖ سحوبات/تحويلات</div><div class="value" id="trzOut">—</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>💼 حركة الخزانة</h3><div class="sub">إيداع رأس مال · سحب · إرسال مبلغ لمزوّد</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="openTrzForm('deposit')">➕ إيداع</button>
+            <button class="btn" onclick="openTrzForm('withdrawal')">➖ سحب</button>
+            <button class="btn" onclick="openTrzForm('send')">📤 إرسال مبلغ</button>
+          </div>
+        </div>
+        <div id="trzForm" style="display:none;background:var(--card-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+            <div><label class="explbl">النوع</label>
+              <select id="trzType" class="expinput" onchange="trzTypeChanged()">
+                <option value="deposit">➕ إيداع</option><option value="withdrawal">➖ سحب</option><option value="send">📤 إرسال لمزوّد</option>
+              </select></div>
+            <div><label class="explbl">المبلغ (ر.ع) *</label><input id="trzAmount" class="expinput" type="number" step="0.001" min="0" placeholder="0.000"></div>
+            <div id="trzPayeeWrap" style="display:none"><label class="explbl">المستفيد</label><select id="trzPayee" class="expinput"></select></div>
+            <div><label class="explbl">الوصف</label><input id="trzDesc" class="expinput" placeholder="مثال: إيداع رأس مال"></div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+            <button class="btn btn-primary" onclick="saveTrz()" id="trzSaveBtn">💾 تنفيذ</button>
+            <button class="btn" onclick="document.getElementById('trzForm').style.display='none'">إلغاء</button>
+            <span class="sub" id="trzMsg"></span>
+          </div>
+        </div>
+        <div class="tbl-wrap" style="max-height:560px;overflow-y:auto">
+          <table style="width:100%">
+            <thead><tr><th>النوع</th><th>الوصف</th><th>المستفيد</th><th>المبلغ</th><th>التاريخ</th><th></th></tr></thead>
+            <tbody id="trzBody"><tr><td colspan="6" class="empty">جارٍ التحميل…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ Invoices ════════ -->
+    <div class="tabpane" data-pane="invoices">
+      <div class="panel">
+        <div class="panel-head"><div><h3>📄 الفواتير</h3><div class="sub">إصدار فواتير PDF للمرشدين والشركات</div></div></div>
+        <div class="empty" style="padding:40px 20px">
+          <div style="font-size:2.4rem;margin-bottom:8px">🧾</div>
+          إصدار الفواتير الاحترافيّة (PDF) قيد التجهيز في الخطوة التالية.<br>
+          <span class="sub">ستتيح اختيار مزوّد + بند + مبلغ وتوليد فاتورة رسميّة فوراً.</span>
+        </div>
+      </div>
+    </div>
+
     <div class="sub no-print" style="text-align:center;margin-top:20px">
       آخر تحديث: ${new Date(DATA.generatedAt).toLocaleString('ar')} · عملة العرض: ${esc(DATA.currency)}
     </div>
   `;
+  applyTab();
 
   // Wire chart-scale + period toggles
   wireToggles();
@@ -540,6 +632,108 @@ function render() {
   renderTxns();
   renderExpenses();
   renderExpByCat();
+}
+
+/* ════════════════════════ Tabs ════════════════════════ */
+function switchTab(name) {
+  CURRENT_TAB = name;
+  applyTab();
+  if (name === 'treasury') loadTreasury();
+}
+function applyTab() {
+  document.querySelectorAll('.tabpane').forEach(p =>
+    p.classList.toggle('active', p.dataset.pane === CURRENT_TAB));
+  document.querySelectorAll('.tabbar button').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === CURRENT_TAB));
+}
+
+/* ════════════════════════ Treasury ════════════════════════ */
+async function loadTreasury() {
+  try {
+    const r = await fetch('/api/admin/treasury', { credentials: 'include' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'فشل التحميل');
+    TREASURY = d.data;
+    renderTreasury();
+  } catch (e) {
+    const b = document.getElementById('trzBody');
+    if (b) b.innerHTML = `<tr><td colspan="6" class="empty">⚠️ ${esc(e.message)}</td></tr>`;
+  }
+}
+function renderTreasury() {
+  if (!TREASURY) return;
+  const t = TREASURY;
+  const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+  set('trzBalance', `${fmt(t.balance)} <small style="font-size:1.1rem;opacity:.85">ر.ع</small>`);
+  set('trzIncome', omr(t.income)); set('trzExp', omr(t.expenses));
+  set('trzIn', omr(t.manualIn)); set('trzOut', omr(t.manualOut));
+  const TLBL = { deposit: '➕ إيداع', withdrawal: '➖ سحب', send: '📤 إرسال' };
+  const body = document.getElementById('trzBody');
+  if (!t.transactions.length) { body.innerHTML = '<tr><td colspan="6" class="empty">لا حركات يدويّة بعد</td></tr>'; return; }
+  body.innerHTML = t.transactions.map(x => `
+    <tr>
+      <td>${TLBL[x.type] || x.type}</td>
+      <td>${esc(x.description) || '—'}</td>
+      <td>${esc(x.payeeName) || '—'}</td>
+      <td class="money" style="color:${x.type === 'deposit' ? 'var(--teal)' : 'var(--danger,#e5484d)'}">${x.type === 'deposit' ? '+' : '−'}${fmt(x.amount)}</td>
+      <td>${new Date(x.createdAt).toLocaleDateString('en-GB')}</td>
+      <td><button class="icon-btn" title="حذف" onclick="delTrz('${x.id}')">🗑️</button></td>
+    </tr>`).join('');
+}
+function openTrzForm(type) {
+  document.getElementById('trzForm').style.display = 'block';
+  document.getElementById('trzType').value = type;
+  document.getElementById('trzMsg').textContent = '';
+  trzTypeChanged();
+  document.getElementById('trzAmount').focus();
+}
+async function trzTypeChanged() {
+  const isSend = document.getElementById('trzType').value === 'send';
+  document.getElementById('trzPayeeWrap').style.display = isSend ? '' : 'none';
+  if (isSend) await fillTrzPayees();
+}
+async function fillTrzPayees() {
+  const sel = document.getElementById('trzPayee');
+  if (sel.dataset.loaded) return;
+  try {
+    const r = await fetch('/api/admin/payouts', { credentials: 'include' });
+    const d = await r.json();
+    const rows = (d.payouts || []);
+    sel.innerHTML = rows.length
+      ? rows.map(p => `<option value="${p.providerId}">${esc(p.name)} — مستحقّ ${fmt(p.net)} ر.ع</option>`).join('')
+      : '<option value="">لا مستحقّات حاليّاً</option>';
+    sel.dataset.loaded = '1';
+  } catch (_) { sel.innerHTML = '<option value="">تعذّر التحميل</option>'; }
+}
+async function saveTrz() {
+  const type = document.getElementById('trzType').value;
+  const amount = parseFloat(document.getElementById('trzAmount').value);
+  const description = document.getElementById('trzDesc').value.trim();
+  const payeeId = type === 'send' ? document.getElementById('trzPayee').value : null;
+  const msg = document.getElementById('trzMsg');
+  if (!(amount > 0)) { msg.textContent = '⚠️ أدخل مبلغاً صحيحاً'; return; }
+  const btn = document.getElementById('trzSaveBtn'); btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const r = await fetch('/api/admin/treasury', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, amount, description, payeeId }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    document.getElementById('trzForm').style.display = 'none';
+    ['trzAmount', 'trzDesc'].forEach(id => document.getElementById(id).value = '');
+    await loadTreasury();
+  } catch (e) { msg.textContent = '⚠️ ' + e.message; }
+  finally { btn.disabled = false; btn.textContent = '💾 تنفيذ'; }
+}
+async function delTrz(id) {
+  if (!confirm('حذف هذه الحركة؟')) return;
+  try {
+    const r = await fetch('/api/admin/treasury/' + id, { method: 'DELETE', credentials: 'include' });
+    const d = await r.json();
+    if (d.success) loadTreasury();
+  } catch (_) {}
 }
 
 function kpiCard(label, valueHtml, growth, sub) {
