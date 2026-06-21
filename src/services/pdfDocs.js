@@ -96,12 +96,12 @@ function partiesBlock(recipient) {
       <div class="h">المُصدِر · FROM</div>
       <div class="n">${esc(COMPANY.ar)}</div>
       <div class="n2">${esc(COMPANY.en)}</div>
-      <div class="l">س.ت / CR: <b>${COMPANY.cr}</b> · D-U-N-S: ${COMPANY.duns}<br>${esc(COMPANY.addrAr)}<br>${COMPANY.site} · ${COMPANY.email} · <span style="direction:ltr">${COMPANY.phone}</span></div>
+      <div class="l">السجل التجاري: <span style="direction:ltr;unicode-bidi:isolate"><b>${COMPANY.cr}</b></span><br>${esc(COMPANY.addrAr)}<br><span style="direction:ltr;unicode-bidi:isolate">${COMPANY.site} · ${COMPANY.email} · ${COMPANY.phone}</span></div>
     </div>
     <div class="party">
       <div class="h">المستفيد · BILL TO</div>
       <div class="n">${esc(recipient.name || '—')}</div>
-      <div class="l">${TYPE_AR[recipient.type] || ''} · ${TYPE_EN[recipient.type] || 'Provider'}${recipient.email ? `<br><span style="direction:ltr">${esc(recipient.email)}</span>` : ''}</div>
+      <div class="l">${TYPE_AR[recipient.type] || ''} · ${TYPE_EN[recipient.type] || 'Provider'}${recipient.email ? `<br><span style="direction:ltr;unicode-bidi:isolate">${esc(recipient.email)}</span>` : ''}</div>
     </div>
   </div>`;
 }
@@ -138,7 +138,6 @@ async function renderInvoice(invoice, recipient, vatRate = 0, vatNumber = '') {
         ${vatRate > 0 ? `<div class="r"><span>ض.ق.م · VAT (${(vatRate * 100).toFixed(0)}%)</span><span class="v">${omr(vat)}</span></div>` : ''}
         <div class="r grand"><span>الإجمالي · TOTAL</span><span class="v">${omr(total)} ر.ع</span></div>
       </div>
-      ${invoice.note ? `<div class="note">ملاحظة · Note: ${esc(invoice.note)}</div>` : ''}
     </div>
     ${footer()}`;
   return htmlToPdf(shell('Invoice', body));

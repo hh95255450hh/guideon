@@ -628,7 +628,6 @@ function render() {
           <div id="invItems"></div>
           <button class="btn" type="button" onclick="addInvItem()" style="margin-top:8px">➕ إضافة بند</button>
         </div>
-        <div style="margin-top:14px"><label class="explbl">ملاحظة (اختياري)</label><input id="invNote" class="expinput" placeholder="تفاصيل إضافيّة…"></div>
         <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
           <span class="sub">الإجمالي: <strong id="invTotal" class="money" style="font-size:1.2rem">0.000</strong> ر.ع</span>
           <button class="btn btn-primary" onclick="genInvoice()" id="invBtn" style="margin-inline-start:auto">🧾 إصدار الفاتورة (PDF)</button>
@@ -810,7 +809,6 @@ async function fillInvProviders(force) {
 }
 async function genInvoice() {
   const recipientId = document.getElementById('invRecipient').value;
-  const note = document.getElementById('invNote').value.trim();
   const items = [...document.querySelectorAll('#invItems .inv-item')].map(r => ({
     desc: r.querySelector('.inv-desc').value.trim(),
     amount: parseFloat(r.querySelector('.inv-amt').value) || 0,
@@ -823,13 +821,13 @@ async function genInvoice() {
     const r = await fetch('/api/admin/invoices', {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipientId, items, note }),
+      body: JSON.stringify({ recipientId, items }),
     });
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
     window.open('/api/admin/invoices/' + d.invoice.id + '/pdf', '_blank');
     document.getElementById('invItems').innerHTML = ''; addInvItem();
-    document.getElementById('invNote').value = ''; recalcInv();
+    recalcInv();
     msg.textContent = '✅ صدرت الفاتورة';
     loadInvoices();
   } catch (e) { msg.textContent = '⚠️ ' + e.message; }
