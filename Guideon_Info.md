@@ -372,3 +372,21 @@ git push origin main
 - **GitHub:** hh95255450hh
 - **الإيميل:** Hh95255450hh@hotmail.com
 - **Domain:** guideon.om
+
+---
+
+## 📱 تطبيق الجوال الرسمي (Flutter — Android + iOS)
+
+- **المصدر:** `mobile/` (Flutter، التطبيق يتّصل بـ`https://guideon.om`).
+- **مُعرّف التطبيق:** `om.guideon.guideon` (موحّد للمنصّتين).
+- **البناء السحابي:** Codemagic (`codemagic.yaml`) — 3 مسارات:
+  - `android-test` → APK تجريبي فوري (بلا إعداد).
+  - `android-play` → AAB لمتجر Google Play (يحتاج مجموعة `keystore_credentials`).
+  - `ios-release` → IPA لمتجر Apple (يحتاج تكامل App Store Connect — بلا Mac).
+- **الأيقونة + شاشة الإطلاق:** تُولَّد في البناء من شعار Guideon
+  (`flutter_launcher_icons` + `flutter_native_splash`).
+- **الإشعارات:** Firebase Cloud Messaging — الكود جاهز (`PushService`)، يُفعَّل
+  تلقائيّاً بعد إضافة `google-services.json` / `GoogleService-Info.plist`
+  (انظر `mobile/FIREBASE_SETUP.md`). الخادم يخزّن الرمز عبر `POST /auth/fcm-token`.
+- **بيانات المتجر:** `mobile/STORE_LISTING.md` (وصف عربي/إنجليزي + روابط الخصوصية).
+- **نوع حساب المطوّر:** مؤسّسة باسم "الرؤية للفكر الرقمي" (D-U-N-S 850403864).
