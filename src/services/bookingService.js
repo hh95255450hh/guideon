@@ -73,6 +73,11 @@ async function createBooking(touristId, body) {
   if (!guide || (guide.userType !== 'guide' && guide.userType !== 'company')) {
     throw new BookingError(404, 'Provider not found.', 'PROVIDER_NOT_FOUND');
   }
+  // A provider can't book their own tour (would inflate booking counts / ranking
+  // and let them self-complete a booking to post a fake review).
+  if (String(guideId) === String(touristId)) {
+    throw new BookingError(400, 'You cannot book your own tour.', 'SELF_BOOKING');
+  }
   if (!guide.isVerified) {
     throw new BookingError(400, 'Provider is not verified.', 'PROVIDER_NOT_VERIFIED');
   }
