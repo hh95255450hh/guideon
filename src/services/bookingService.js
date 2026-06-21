@@ -131,6 +131,13 @@ async function createBooking(touristId, body) {
     }
   } else {
     const slots = Array.isArray(guide.availabilitySlots) ? guide.availabilitySlots : [];
+    // A provider using the time-slot system is bookable ONLY via slots. This
+    // keeps the two availability models mutually exclusive, so a guide who has
+    // both a legacy `availability` array and `availabilitySlots` can't be
+    // double-booked once via each path on the same date.
+    if (slots.length && !reqStartTime) {
+      throw new BookingError(400, 'Please choose an available time slot for this guide.', 'SLOT_REQUIRED');
+    }
     if (slots.length && reqStartTime) {
       // Time-slot booking
       const matchSlot = slots.find(s => s.date === tourDate && s.startTime === reqStartTime);
@@ -206,10 +213,43 @@ async function createBooking(touristId, body) {
     throw insertErr;
   }
 
+  // Optimistic-concurrency reconciliation. Individual guides are protected by
+  // the DB unique index, but finite-capacity COMPANIES have no such index, so
+  // two simultaneous requests could both pass the pre-insert capacity check.
+  // Now that our row is committed, re-count the conflicts and, if we exceeded
+  // capacity, the deterministic loser rolls itself back. (Skipped for packages
+  // — their seat cap is sum-based and checked pre-insert.)
+  if (!packageId && Number.isFinite(providerCapacity)) {
+    await _reconcileCapacity(booking, guideId, tourDate, providerCapacity);
+  }
+
   // Side effects (never block / fail the booking)
   _notifyBookingCreated({ booking, guide, touristId, destination, tourDate, duration, participantCount }).catch(() => {});
 
   return booking;
+}
+
+// After insert, ensure we didn't exceed a finite provider capacity under a
+// race. If this booking is the deterministic loser, undo it and signal that the
+// slot is taken so the tourist can retry.
+async function _reconcileCapacity(booking, guideId, tourDate, capacity) {
+  const existing = await bookings.findAllByField('guideId', guideId);
+  let conflicts;
+  if (booking.startTime) {
+    conflicts = existing.filter(b =>
+      b.status !== 'cancelled' && b.tourDate === tourDate && b.startTime && b.endTime &&
+      rules.timeRangesOverlap(booking.startTime, booking.endTime, b.startTime, b.endTime));
+  } else {
+    const buckets = rules.conflictingSlots(booking.tourTime || 'full_day');
+    conflicts = existing.filter(b =>
+      b.status !== 'cancelled' && b.tourDate === tourDate && buckets.includes(b.tourTime || 'full_day'));
+  }
+  const winners = rules.bookingsWithinCapacity(conflicts, capacity);
+  if (!winners.has(booking.id)) {
+    try { await bookings.delete(booking.id); }
+    catch { try { await bookings.update(booking.id, { status: 'cancelled' }); } catch { /* best effort */ } }
+    throw new BookingError(409, 'This time slot was just booked. Please choose another.', 'SLOT_TAKEN');
+  }
 }
 
 async function _notifyBookingCreated({ booking, guide, touristId, destination, tourDate, duration, participantCount }) {

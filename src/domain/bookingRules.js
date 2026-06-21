@@ -49,6 +49,23 @@ function timeRangesOverlap(aStart, aEnd, bStart, bEnd) {
   return aStart < bEnd && bStart < aEnd;
 }
 
+// Optimistic-concurrency decision: given every active conflicting booking
+// (each { id, createdAt }) competing for a provider's capacity, return the set
+// of booking ids that win the slots — the earliest `capacity` by createdAt,
+// breaking ties on id. Deterministic, so two racing requests independently
+// agree on who keeps the slot and who must roll back. Infinite capacity keeps
+// everyone.
+function bookingsWithinCapacity(conflicts, capacity) {
+  if (!Number.isFinite(capacity)) return new Set(conflicts.map(b => b.id));
+  const ordered = [...conflicts].sort((a, b) => {
+    const ta = new Date(a.createdAt).getTime();
+    const tb = new Date(b.createdAt).getTime();
+    if (ta !== tb) return ta - tb;
+    return String(a.id) < String(b.id) ? -1 : 1;
+  });
+  return new Set(ordered.slice(0, Math.max(0, capacity)).map(b => b.id));
+}
+
 // ── Date / timezone helpers (Oman = UTC+4, no DST) ──────────────────────────
 // Tour dates are stored as plain 'YYYY-MM-DD' strings. We interpret them in
 // Oman local time so "today", the 48h cancellation window and the earliest
@@ -122,6 +139,7 @@ module.exports = {
   guideHasSlot,
   removeSlotFromAvailability,
   timeRangesOverlap,
+  bookingsWithinCapacity,
   calculatePackagePrice,
   calculateDayRatePrice,
   roundMoney,

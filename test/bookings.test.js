@@ -61,3 +61,32 @@ test('package seat math refuses to oversell max_group_size', () => {
   assert.ok(seatsTaken + people > maxGroup); // would oversell → blocked
   assert.strictEqual(Math.max(0, maxGroup - seatsTaken), 2); // 2 seats left
 });
+
+// ── concurrency: deterministic capacity reconciliation ──────────────────────
+test('bookingsWithinCapacity keeps the earliest N, drops the rest', () => {
+  const conflicts = [
+    { id: 'bk-c', createdAt: '2026-06-21T10:00:02Z' },
+    { id: 'bk-a', createdAt: '2026-06-21T10:00:00Z' },
+    { id: 'bk-b', createdAt: '2026-06-21T10:00:01Z' },
+  ];
+  const winners = rules.bookingsWithinCapacity(conflicts, 2);
+  assert.ok(winners.has('bk-a') && winners.has('bk-b'));
+  assert.ok(!winners.has('bk-c')); // latest loses the race
+});
+
+test('bookingsWithinCapacity breaks createdAt ties deterministically by id', () => {
+  const t = '2026-06-21T10:00:00Z';
+  const conflicts = [
+    { id: 'bk-z', createdAt: t },
+    { id: 'bk-a', createdAt: t },
+  ];
+  // Both racers compute the SAME winner set → exactly one survives capacity 1.
+  const w = rules.bookingsWithinCapacity(conflicts, 1);
+  assert.strictEqual(w.size, 1);
+  assert.ok(w.has('bk-a') && !w.has('bk-z'));
+});
+
+test('bookingsWithinCapacity with Infinity keeps everyone (company unlimited)', () => {
+  const conflicts = [{ id: 'x', createdAt: '2026-01-01' }, { id: 'y', createdAt: '2026-01-02' }];
+  assert.strictEqual(rules.bookingsWithinCapacity(conflicts, Infinity).size, 2);
+});
