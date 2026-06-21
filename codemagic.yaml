@@ -1,0 +1,81 @@
+# Codemagic CI/CD — Guideon mobile app (Flutter)
+# Repo is a monorepo; the Flutter app lives in ./mobile
+#
+#  workflows:
+#   1) android-test  → installable test APK (debug-signed). NO setup needed.
+#   2) android-play  → release AAB for Google Play. Needs keystore env group.
+#   3) ios-release   → release IPA for App Store. Needs Apple integration.
+#
+# Connect this repo at https://codemagic.io (Add application → pick repo).
+
+workflows:
+  # ── 1) Quick test APK — sideload on any Android phone ──────────────────────
+  android-test:
+    name: Android Test APK
+    max_build_duration: 45
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+    scripts:
+      - name: Flutter packages
+        script: cd mobile && flutter packages pub get
+      - name: Build release APK (debug-signed, for testing)
+        script: cd mobile && flutter build apk --release
+    artifacts:
+      - mobile/build/app/outputs/flutter-apk/*.apk
+
+  # ── 2) Google Play release bundle (AAB) ───────────────────────────────────
+  android-play:
+    name: Android Play AAB
+    max_build_duration: 60
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+      groups:
+        - keystore_credentials   # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
+    scripts:
+      - name: Set up keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.jks
+          cat >> "$CM_BUILD_DIR/mobile/android/key.properties" <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=/tmp/keystore.jks
+          EOF
+      - name: Flutter packages
+        script: cd mobile && flutter packages pub get
+      - name: Build AAB
+        script: cd mobile && flutter build appbundle --release
+    artifacts:
+      - mobile/build/app/outputs/bundle/release/*.aab
+    # publishing:
+    #   google_play:
+    #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+    #     track: internal
+
+  # ── 3) iOS App Store release ──────────────────────────────────────────────
+  ios-release:
+    name: iOS App Store
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: guideon_asc   # create this key in Codemagic → Teams → Integrations
+    environment:
+      flutter: stable
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: om.guideon.guideon
+    scripts:
+      - name: Flutter packages
+        script: cd mobile && flutter packages pub get
+      - name: Set up signing
+        script: cd mobile && xcode-project use-profiles
+      - name: Build IPA
+        script: cd mobile && flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - mobile/build/ios/ipa/*.ipa
+    # publishing:
+    #   app_store_connect:
+    #     auth: integration
+    #     submit_to_testflight: true

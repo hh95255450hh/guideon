@@ -11,3 +11,8 @@ android/.gradle/
 android/local.properties
 # Keep web build out of repo
 web/
+
+# Android signing (never commit)
+android/key.properties
+**/*.jks
+**/*.keystore
