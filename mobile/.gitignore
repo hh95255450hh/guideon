@@ -16,3 +16,7 @@ web/
 android/key.properties
 **/*.jks
 **/*.keystore
+
+# Firebase config (inject via CI, do not commit to public repo)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist

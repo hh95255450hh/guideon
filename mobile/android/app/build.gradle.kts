@@ -7,6 +7,12 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Apply Firebase only when google-services.json is present, so quick test
+// builds (without Firebase) still succeed.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 // Release signing: read android/key.properties when present (CI / Play builds).
 // When absent (local quick test builds) we fall back to the debug key.
 val keystoreProperties = Properties()

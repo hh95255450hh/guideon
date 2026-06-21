@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'services/api.dart';
 import 'services/auth_service.dart';
+import 'services/push_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 
@@ -11,6 +12,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await Api.instance.init();
+  // Non-blocking: activates only once Firebase config is added.
+  await PushService.instance.init();
 
   runApp(const GuideonApp());
 }

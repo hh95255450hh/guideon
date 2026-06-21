@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import 'api.dart';
+import 'push_service.dart';
 
 /// Holds the auth state for the whole app. Backed by the cookie-session in
 /// [Api]; on launch we call /auth/me to restore a persisted session.
@@ -20,6 +21,8 @@ class AuthService extends ChangeNotifier {
       final res = await Api.instance.get('/auth/me');
       if (res.statusCode == 200 && res.data['success'] != false) {
         _user = AppUser.fromJson(res.data as Map<String, dynamic>);
+        // Register this device for push now that we're authenticated.
+        PushService.instance.syncToken();
       }
     } catch (_) {
       // stay logged out
