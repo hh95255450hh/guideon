@@ -15,6 +15,11 @@ function randomToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+// A real bcrypt hash to compare against when an email isn't found, so login
+// takes the same time whether or not the account exists (defeats timing-based
+// account enumeration). Computed once at startup.
+const DUMMY_HASH = bcrypt.hashSync('timing-equalizer-not-a-real-password', 10);
+
 /**
  * Validates password strength.
  * Returns null if valid, or error message string if invalid.
@@ -219,6 +224,9 @@ exports.login = async (req, res) => {
 
     const user = await users.findByField('email', email.toLowerCase());
     if (!user) {
+      // Spend the same time as a real bcrypt check so attackers can't tell
+      // registered emails from unregistered ones by response timing.
+      await bcrypt.compare(password, DUMMY_HASH);
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
     if (user.isSuspended) {
