@@ -3,10 +3,16 @@
 # behind a reverse proxy (Nginx) that terminates TLS.
 FROM node:22-slim
 
-# System deps for sharp (image processing) — Debian slim is missing some libs.
+# System deps: sharp libs + Chromium and Arabic/emoji fonts for HTML→PDF
+# invoices (Puppeteer renders bilingual documents the browser way).
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates wget \
+    chromium fonts-noto-core fonts-noto-color-emoji fonts-kacst fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
+
+# Puppeteer: use the distro Chromium instead of downloading its own copy.
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
 

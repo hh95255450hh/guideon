@@ -393,9 +393,21 @@ async function generateInvoice(invoice, recipient, vatRate = VAT_RATE, vatNumber
   });
 }
 
+// Professional bilingual (AR/EN) renderer via HTML + Puppeteer — supersedes the
+// pdfkit versions above (kept for reference but no longer exported), because
+// pdfkit cannot shape Arabic text. The browser renders Arabic/RTL + the logo.
+function _invoiceHtml(invoice, recipient, vatRate = VAT_RATE, vatNumber = VAT_NUMBER) {
+  const number = invoice.number || invoiceDocNumber(invoice.id, invoice.createdAt);
+  return require('./pdfDocs').renderInvoice({ ...invoice, number }, recipient, vatRate, vatNumber);
+}
+function _voucherHtml(payment, payee) {
+  const number = payment.number || paymentVoucherNumber(payment.id, payment.createdAt);
+  return require('./pdfDocs').renderVoucher({ ...payment, number }, payee);
+}
+
 module.exports = {
   breakdown, invoiceNumber, verifyToken, decodeToken,
-  generateGuideInvoice, generateStatement, generatePaymentVoucher, paymentVoucherNumber,
-  generateInvoice, invoiceDocNumber,
+  generateGuideInvoice, generateStatement, paymentVoucherNumber, invoiceDocNumber,
+  generateInvoice: _invoiceHtml, generatePaymentVoucher: _voucherHtml,
   COMMISSION_RATE, VAT_RATE,
 };
