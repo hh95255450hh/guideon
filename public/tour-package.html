@@ -425,12 +425,17 @@ async function loadReviews(packageId) {
           <div class="small text-muted">${d.count} ${d.count === 1 ? 'review' : 'reviews'}</div>
         </div>
       </div>`;
+    window.__rvPhotos = [];
     list.innerHTML = reviews.map(r => {
       const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
       const avatar = r.touristPhoto
         ? `<img src="${escapeHtml(r.touristPhoto)}" style="width:40px;height:40px;border-radius:50%;object-fit:cover" alt="">`
         : `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0f7b6c,#1a2c5b);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">${(r.touristName||'A').slice(0,1).toUpperCase()}</div>`;
-      const photos = Array.isArray(r.photos) ? r.photos.map(p => `<img src="${escapeHtml(p)}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${escapeHtml(p)}','_blank')" alt="">`).join('') : '';
+      let photos = '';
+      if (Array.isArray(r.photos) && r.photos.length) {
+        const k = window.__rvPhotos.push(r.photos) - 1;
+        photos = r.photos.map((p, i) => `<img src="${escapeHtml(p)}" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 16px rgba(15,28,62,.18)'" onmouseout="this.style.transform='';this.style.boxShadow=''" onclick="GdGallery.open(window.__rvPhotos[${k}], ${i})" alt="">`).join('');
+      }
       return `
         <div class="p-3 mb-2" style="background:#fff;border:1px solid #eef0f4;border-radius:12px">
           <div class="d-flex align-items-start gap-3 mb-2">
@@ -560,6 +565,7 @@ loadPackage();
 // Record page view (fire-and-forget)
 if (PKG_ID) fetch('/api/views/' + PKG_ID, { method: 'POST', credentials: 'include' }).catch(() => {});
 </script>
+<script src="/js/gd-gallery.js?v=1"></script>
 <script src="/js/common-widgets.js?v=22"></script>
 </body>
 </html>

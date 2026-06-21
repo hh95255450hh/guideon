@@ -964,9 +964,9 @@ function renderGallery() {
     el.innerHTML = `<div class="text-muted small">${I18N.t('gallery_empty')}</div>`;
     return;
   }
-  el.innerHTML = photos.map(url => `
+  el.innerHTML = photos.map((url, i) => `
     <div style="position:relative">
-      <img loading="lazy" decoding="async" src="${url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')">
+      <img loading="lazy" decoding="async" src="${url}" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in" onclick="GdGallery.open(COMPANY.galleryPhotos, ${i})">
       <button onclick="removeGallery('${url}')" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
 }
@@ -1231,6 +1231,7 @@ init();
 </script>
 <script src="/js/gd-messages.js?v=2"></script>
 <script src="/js/pwa.js?v=15" defer></script>
+<script src="/js/gd-gallery.js?v=1"></script>
 <script src="/js/common-widgets.js?v=22"></script>
 </body>
 </html>
