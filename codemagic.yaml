@@ -19,6 +19,8 @@ workflows:
     scripts:
       - name: Flutter packages
         script: cd mobile && flutter packages pub get
+      - name: Generate icons & splash
+        script: cd mobile && dart run flutter_launcher_icons && dart run flutter_native_splash:create
       - name: Build release APK (debug-signed, for testing)
         script: cd mobile && flutter build apk --release
     artifacts:
@@ -45,6 +47,8 @@ workflows:
           EOF
       - name: Flutter packages
         script: cd mobile && flutter packages pub get
+      - name: Generate icons & splash
+        script: cd mobile && dart run flutter_launcher_icons && dart run flutter_native_splash:create
       - name: Build AAB
         script: cd mobile && flutter build appbundle --release
     artifacts:
@@ -69,6 +73,8 @@ workflows:
     scripts:
       - name: Flutter packages
         script: cd mobile && flutter packages pub get
+      - name: Generate icons & splash
+        script: cd mobile && dart run flutter_launcher_icons && dart run flutter_native_splash:create
       - name: Set up signing
         script: cd mobile && xcode-project use-profiles
       - name: Build IPA

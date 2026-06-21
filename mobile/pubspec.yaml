@@ -30,8 +30,29 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+  # Generate store-grade launcher icons + native splash screens
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
+
+# ── App launcher icon (Android adaptive + iOS) ──────────────────────────────
+flutter_launcher_icons:
+  image_path: "assets/images/app_icon.png"
+  android: "ic_launcher"
+  adaptive_icon_background: "#0f1c3e"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+  ios: true
+  remove_alpha_ios: true
+
+# ── Native splash screen ────────────────────────────────────────────────────
+flutter_native_splash:
+  color: "#0f1c3e"
+  image: "assets/images/splash_logo.png"
+  android_12:
+    color: "#0f1c3e"
+    image: "assets/images/splash_logo.png"
+  ios: true
