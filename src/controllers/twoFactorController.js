@@ -3,6 +3,7 @@
  * Compatible with Google Authenticator, Authy, 1Password, etc.
  */
 const speakeasy = require('speakeasy');
+const { publicUser } = require('../utils/sanitizeUser');
 const QRCode = require('qrcode');
 const crypto = require('crypto');
 const SupabaseDB = require('../models/SupabaseDB');
@@ -116,10 +117,7 @@ exports.verifyLogin = async (req, res) => {
     req.session.userId = user.id;
     req.session.userType = user.userType;
 
-    const safe = { ...user };
-    delete safe.password;
-    delete safe.twoFactorSecret;
-    delete safe.twoFactorBackupCodes;
+    const safe = publicUser(user);
     res.json({ success: true, message: 'Login successful.', user: safe });
   } catch (err) {
     console.error('[2FA verifyLogin]', err);

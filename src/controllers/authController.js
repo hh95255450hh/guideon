@@ -15,6 +15,10 @@ function randomToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+// Strip every sensitive field before a user object is sent to a client (used
+// by register/login/me/google/profile). Shared so no endpoint leaks tokens.
+const { publicUser } = require('../utils/sanitizeUser');
+
 // A real bcrypt hash to compare against when an email isn't found, so login
 // takes the same time whether or not the account exists (defeats timing-based
 // account enumeration). Computed once at startup.
@@ -197,8 +201,7 @@ exports.register = async (req, res) => {
       })).catch(() => {});
     }
 
-    const safe = { ...record };
-    delete safe.password;
+    const safe = publicUser(record);
     res.status(201).json({ success: true, message: 'Account created successfully.', user: safe });
   } catch (err) {
     console.error('[register] FAILED:', err?.message || err, err?.code || '');
@@ -269,10 +272,7 @@ exports.login = async (req, res) => {
     req.session.userId = user.id;
     req.session.userType = user.userType;
 
-    const safe = { ...user };
-    delete safe.password;
-    delete safe.twoFactorSecret;
-    delete safe.twoFactorBackupCodes;
+    const safe = publicUser(user);
     const loginsLeft = user.twoFactorEnabled
       ? Math.max(0, LOGINS_BEFORE_2FA - ((user.loginsSince2FA || 0) + 1))
       : null;
@@ -385,8 +385,7 @@ exports.googleAuth = async (req, res) => {
 
     await _saveGoogleSession(req, user);
 
-    const safe = { ...user };
-    delete safe.password;
+    const safe = publicUser(user);
     res.json({ success: true, message: 'Signed in with Google.', user: safe });
   } catch (err) {
     console.error('[googleAuth]', err.message);
@@ -471,7 +470,7 @@ exports.updateProfile = async (req, res) => {
       }
     }
     if (!updated) return res.status(404).json({ success: false, message: 'User not found.' });
-    const { password, ...safe } = updated;
+    const safe = publicUser(updated);
     if (droppedCols.length) {
       // Admin-actionable detail goes to the logs, not the user's screen.
       console.warn('[updateProfile] columns not yet in DB (run migration 034):', droppedCols.join(', '));
@@ -538,10 +537,7 @@ exports.me = async (req, res) => {
     }
     const user = await users.findById(req.session.userId);
     if (!user) return res.status(401).json({ success: false, message: 'User not found.' });
-    const safe = { ...user };
-    delete safe.password;
-    delete safe.twoFactorSecret;
-    delete safe.twoFactorBackupCodes;
+    const safe = publicUser(user);
     res.json({ success: true, user: safe });
   } catch (e) {
     console.error('[auth:me]', e.message);
