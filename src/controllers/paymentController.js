@@ -105,12 +105,18 @@ exports.verify = async (req, res) => {
     }
     if (booking.isPaid) return res.json({ success: true, paid: true, alreadyPaid: true });
 
-    const { status } = await thawani.retrieveSession(sessionId);
-    if (status !== 'paid') {
-      return res.json({ success: true, paid: false, status });
+    const session = await thawani.retrieveSession(sessionId);
+    if (session.status !== 'paid') {
+      return res.json({ success: true, paid: false, status: session.status });
+    }
+    // Bind the session to THIS booking — a paid session for one booking must
+    // never settle another (blocks session-reuse / amount bypass).
+    const ref = session.raw?.client_reference_id;
+    if (ref && ref !== bookingId) {
+      return res.status(400).json({ success: false, message: 'This payment does not match the booking.' });
     }
 
-    await finalizePaidBooking(bookingId);
+    await finalizePaidBooking(bookingId, session);
     res.json({ success: true, paid: true });
   } catch (err) {
     console.error('[Payment] verify:', err.message);
@@ -119,11 +125,27 @@ exports.verify = async (req, res) => {
 };
 
 // Shared: mark a booking paid + notify both sides (idempotent-ish).
-async function finalizePaidBooking(bookingId) {
+async function finalizePaidBooking(bookingId, session) {
   const fresh = await bookings.findById(bookingId);
   if (!fresh || fresh.isPaid) return;
 
-  await updateBookingSafe(bookingId, { isPaid: true, paidAt: new Date().toISOString() });
+  // Defense-in-depth: never settle a booking from a session that belongs to a
+  // different booking, or that paid less than the amount owed.
+  if (session) {
+    const ref = session.raw?.client_reference_id;
+    if (ref && ref !== bookingId) {
+      console.warn(`[Payment] refusing: session ref ${ref} != booking ${bookingId}`);
+      return;
+    }
+    const expected = thawani.toBaisa(fresh.totalAmount);
+    const paid = Number(session.raw?.total_amount);
+    if (Number.isFinite(paid) && paid < expected) {
+      console.warn(`[Payment] refusing: underpaid ${paid} < ${expected} baisa for ${bookingId}`);
+      return;
+    }
+  }
+
+  await updateBookingSafe(bookingId, { isPaid: true, paidAt: new Date().toISOString(), paymentRef: session?.raw?.session_id || fresh.paymentSessionId });
 
   const tourist  = await users.findById(fresh.touristId);
   const provider = await users.findById(fresh.guideId);
@@ -179,10 +201,12 @@ exports.webhook = async (req, res) => {
     let body = req.body;
     if (Buffer.isBuffer(body)) { try { body = JSON.parse(body.toString('utf8')); } catch { body = {}; } }
     const sessionId = body?.data?.session_id || body?.session_id;
-    const bookingId = body?.data?.client_reference_id || body?.data?.metadata?.booking_id;
-    if (sessionId && bookingId) {
-      const { status } = await thawani.retrieveSession(sessionId);
-      if (status === 'paid') await finalizePaidBooking(bookingId);
+    if (sessionId) {
+      const session = await thawani.retrieveSession(sessionId);
+      // Authoritative booking id comes from the verified session, never the
+      // (spoofable) webhook payload.
+      const bookingId = session.raw?.client_reference_id;
+      if (session.status === 'paid' && bookingId) await finalizePaidBooking(bookingId, session);
     }
     res.json({ received: true });
   } catch (err) {
