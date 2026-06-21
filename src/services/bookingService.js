@@ -16,7 +16,7 @@ const users    = new SupabaseDB('users');
 const packages = new SupabaseDB('tour_packages');
 
 // Columns added by migration 021 that may not exist on older deployments.
-const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons'];
+const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons', 'providerType'];
 const isMissingColumnError = (msg) => /Could not find the '\w+' column|schema cache/i.test(msg || '');
 
 class BookingError extends Error {
@@ -56,6 +56,15 @@ async function createBooking(touristId, body) {
     throw new BookingError(400, 'Missing required booking fields.', 'MISSING_FIELDS');
   }
 
+  // Reject malformed dates (e.g. '2026-02-31') and dates in the past — both
+  // would otherwise be stored verbatim and corrupt downstream date math.
+  if (!rules.isValidDateStr(tourDate)) {
+    throw new BookingError(400, 'Please choose a valid tour date.', 'INVALID_DATE');
+  }
+  if (rules.isPastDate(tourDate)) {
+    throw new BookingError(400, 'The tour date has already passed. Please choose a future date.', 'DATE_IN_PAST');
+  }
+
   // The booking provider can be either a solo guide OR a tour company.
   // The frontend passes the provider's user id as `guideId` for historical
   // reasons — keep accepting both user types so company package bookings
@@ -91,10 +100,29 @@ async function createBooking(touristId, body) {
       throw new BookingError(400, 'Selected date is not available for this tour.', 'DATE_UNAVAILABLE');
     }
 
+    let people;
     try {
-      ({ totalAmount } = rules.calculatePackagePrice({ packageData, participants, adultCount, variantPrice, addons }));
+      ({ totalAmount, people } = rules.calculatePackagePrice({ packageData, participants, adultCount, variantPrice, addons }));
     } catch (e) {
       throw new BookingError(400, e.message, e.code || 'PRICING_ERROR');
+    }
+
+    // Seat capacity: a package is one group departure per date. Sum the seats
+    // already taken by active bookings of this package on this date and refuse
+    // to oversell beyond max_group_size (the per-booking check alone can't catch
+    // multiple separate bookings filling the same departure).
+    const maxGroup = parseInt(packageData.max_group_size) || 50;
+    const sameDeparture = await bookings.findAllByField('packageId', packageId);
+    const seatsTaken = sameDeparture
+      .filter(b => b.status !== 'cancelled' && b.tourDate === tourDate)
+      .reduce((s, b) => s + (parseInt(b.participants) || 0), 0);
+    if (seatsTaken + people > maxGroup) {
+      const left = Math.max(0, maxGroup - seatsTaken);
+      throw new BookingError(409,
+        left > 0
+          ? `Only ${left} seat(s) left for this tour on the selected date.`
+          : 'This tour is fully booked on the selected date. Please choose another date.',
+        'TOUR_FULL');
     }
   } else {
     const slots = Array.isArray(guide.availabilitySlots) ? guide.availabilitySlots : [];
@@ -144,6 +172,7 @@ async function createBooking(touristId, body) {
   const booking = {
     id: 'bk-' + uuidv4().slice(0, 8),
     touristId, guideId, tourDate, destination, tourTime,
+    providerType: guide.userType, // 'guide' | 'company' — drives the unique-index scope
     ...(slotData || {}),
     duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
     participants: participantCount,
@@ -163,7 +192,7 @@ async function createBooking(touristId, body) {
   try {
     await insertBookingSafe(booking);
   } catch (insertErr) {
-    if (insertErr.message && (insertErr.message.includes('duplicate key') || insertErr.message.includes('uniq_active_booking'))) {
+    if (insertErr.message && (insertErr.message.includes('duplicate key') || insertErr.message.includes('uniq_active_'))) {
       const msg = booking.startTime
         ? 'This time slot was just booked by someone else. Please choose another slot.'
         : 'This date was just booked by someone else. Please choose another date.';

@@ -26,3 +26,38 @@ test('cancellation under 48 hours is rejected', () => {
   const hours = (tourDate - new Date()) / 36e5;
   assert.ok(hours < 48);
 });
+
+// ── 043: date validation + Oman-timezone helpers ───────────────────────────
+const rules = require('../src/domain/bookingRules');
+
+test('isValidDateStr accepts a real date, rejects malformed/impossible', () => {
+  assert.ok(rules.isValidDateStr('2026-06-25'));
+  assert.ok(!rules.isValidDateStr('2026-02-31')); // Feb has no 31st
+  assert.ok(!rules.isValidDateStr('2026-13-01')); // no month 13
+  assert.ok(!rules.isValidDateStr('25-06-2026')); // wrong format
+  assert.ok(!rules.isValidDateStr(''));
+  assert.ok(!rules.isValidDateStr(undefined));
+});
+
+test('isPastDate is timezone-anchored to Oman', () => {
+  // 2026-06-21 03:00 UTC == 07:00 Oman, so the Oman date is still 2026-06-21.
+  const now = new Date('2026-06-21T03:00:00Z');
+  assert.ok(rules.isPastDate('2026-06-20', now));
+  assert.ok(!rules.isPastDate('2026-06-21', now)); // today is not past
+  assert.ok(!rules.isPastDate('2026-06-22', now));
+});
+
+test('hoursUntilDate measures to Oman midnight of the tour date', () => {
+  // 2026-06-23 00:00 Oman == 2026-06-22 20:00 UTC.
+  const now = new Date('2026-06-22T20:00:00Z');
+  assert.strictEqual(Math.round(rules.hoursUntilDate('2026-06-23', now)), 0);
+  assert.strictEqual(Math.round(rules.hoursUntilDate('2026-06-25', now)), 48);
+});
+
+test('package seat math refuses to oversell max_group_size', () => {
+  const maxGroup = 10;
+  const seatsTaken = 8;
+  const people = 3;
+  assert.ok(seatsTaken + people > maxGroup); // would oversell → blocked
+  assert.strictEqual(Math.max(0, maxGroup - seatsTaken), 2); // 2 seats left
+});

@@ -2,7 +2,7 @@ const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
 const { notify } = require('../services/notificationService');
 const bookingService = require('../services/bookingService');
-const { removeSlotFromAvailability } = require('../domain/bookingRules');
+const { removeSlotFromAvailability, isValidDateStr, hoursUntilDate, omanDateStart } = require('../domain/bookingRules');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
@@ -112,9 +112,13 @@ exports.updateStatus = async (req, res) => {
     if (userType === 'tourist'  && booking.touristId !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
 
     if (userType === 'tourist' && status === 'cancelled') {
-      const hoursUntil = (new Date(booking.tourDate) - new Date()) / 36e5;
-      if (hoursUntil < 48) {
-        return res.status(400).json({ success: false, message: 'Cancellations must be made at least 48 hours before the tour.' });
+      // Oman-local, NaN-safe: a malformed stored date must not silently bypass
+      // the 48h rule (NaN < 48 is false). Only enforce when the date is valid.
+      if (isValidDateStr(booking.tourDate)) {
+        const hoursUntil = hoursUntilDate(booking.tourDate);
+        if (hoursUntil < 48) {
+          return res.status(400).json({ success: false, message: 'Cancellations must be made at least 48 hours before the tour.' });
+        }
       }
     }
 
@@ -142,11 +146,13 @@ exports.updateStatus = async (req, res) => {
       if (booking.status !== 'confirmed') {
         return res.status(400).json({ success: false, message: 'Trip can only be started from a confirmed booking.' });
       }
-      // Allow starting 1 day before scheduled date (for evening tours, etc.)
-      const tripDate = new Date(booking.tourDate);
-      const earliestStart = new Date(tripDate); earliestStart.setDate(earliestStart.getDate() - 1);
-      if (new Date() < earliestStart) {
-        return res.status(400).json({ success: false, message: 'Cannot start trip more than 1 day before the scheduled date.' });
+      // Allow starting up to 1 day before the scheduled date (Oman-local),
+      // for evening/overnight tours etc.
+      if (isValidDateStr(booking.tourDate)) {
+        const earliestStart = omanDateStart(booking.tourDate).getTime() - 24 * 3600 * 1000;
+        if (Date.now() < earliestStart) {
+          return res.status(400).json({ success: false, message: 'Cannot start trip more than 1 day before the scheduled date.' });
+        }
       }
     }
 

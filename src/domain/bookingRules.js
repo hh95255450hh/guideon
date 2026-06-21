@@ -49,6 +49,39 @@ function timeRangesOverlap(aStart, aEnd, bStart, bEnd) {
   return aStart < bEnd && bStart < aEnd;
 }
 
+// ── Date / timezone helpers (Oman = UTC+4, no DST) ──────────────────────────
+// Tour dates are stored as plain 'YYYY-MM-DD' strings. We interpret them in
+// Oman local time so "today", the 48h cancellation window and the earliest
+// trip-start check stay correct regardless of the server's own timezone.
+
+// True only for a real calendar date in strict 'YYYY-MM-DD' form
+// (rejects '2026-02-31', '2026-13-01', malformed/empty input).
+function isValidDateStr(s) {
+  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = new Date(`${s}T00:00:00Z`);
+  return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
+
+// Midnight (start) of an Oman calendar date, as a Date instant.
+function omanDateStart(s) {
+  return new Date(`${s}T00:00:00+04:00`);
+}
+
+// Today's Oman calendar date as 'YYYY-MM-DD' for a given instant (default now).
+function omanToday(now = new Date()) {
+  return new Date(now.getTime() + 4 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+// Is the tour date strictly before today (Oman)?
+function isPastDate(dateStr, now = new Date()) {
+  return dateStr < omanToday(now);
+}
+
+// Hours from `now` until the start of the Oman tour date (can be negative).
+function hoursUntilDate(dateStr, now = new Date()) {
+  return (omanDateStart(dateStr).getTime() - now.getTime()) / 36e5;
+}
+
 /**
  * Server-authoritative package pricing.
  *   price_adult = base price covering the first 2 people (included)
@@ -92,4 +125,9 @@ module.exports = {
   calculatePackagePrice,
   calculateDayRatePrice,
   roundMoney,
+  isValidDateStr,
+  omanDateStart,
+  omanToday,
+  isPastDate,
+  hoursUntilDate,
 };
