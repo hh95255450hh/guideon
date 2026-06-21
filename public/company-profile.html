@@ -105,7 +105,7 @@
 
         <div class="info-card d-none" id="cGalleryCard">
           <h5>📸 <span>معرض الصور</span></h5>
-          <div id="cGallery" class="co-gallery-grid"></div>
+          <div id="cGallery"></div>
         </div>
 
         <div class="info-card d-none" id="cVideoCard">
@@ -211,9 +211,7 @@ function render(packages) {
   // Photo gallery
   const gallery = Array.isArray(COMPANY.galleryPhotos) ? COMPANY.galleryPhotos.filter(Boolean) : [];
   if (gallery.length) {
-    document.getElementById('cGallery').innerHTML = gallery.map(url =>
-      `<img loading="lazy" src="${url}" alt="" onclick="window.open('${url}','_blank')">`
-    ).join('');
+    GdGallery.render(document.getElementById('cGallery'), gallery);
     document.getElementById('cGalleryCard').classList.remove('d-none');
   }
 
@@ -433,6 +431,7 @@ function render(packages) {
 init();
 </script>
 <script src="/js/pwa.js?v=15" defer></script>
+<script src="/js/gd-gallery.js?v=1"></script>
 <script src="/js/common-widgets.js?v=22"></script>
 </body>
 </html>

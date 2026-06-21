@@ -259,7 +259,7 @@
         <!-- Gallery -->
         <div class="info-card d-none" id="galleryCard">
           <h5>📸 <span data-i18n="gallery_title">Photo Gallery</span></h5>
-          <div id="pGallery" class="d-flex flex-wrap gap-2"></div>
+          <div id="pGallery"></div>
         </div>
 
         <!-- Guide Assets (ما يملكه المرشد) -->
@@ -630,12 +630,10 @@ function renderAll() {
   document.getElementById('pBio').textContent = g.bio || I18N.t('gp_no_bio');
 
   // Gallery
-  const gallery = g.galleryPhotos || [];
+  const gallery = (g.galleryPhotos || []).filter(Boolean);
   const galleryCard = document.getElementById('galleryCard');
   if (gallery.length) {
-    document.getElementById('pGallery').innerHTML = gallery.map(url =>
-      `<img src="${url}" style="width:120px;height:90px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="window.open('${url}','_blank')" loading="lazy">`
-    ).join('');
+    GdGallery.render(document.getElementById('pGallery'), gallery);
     galleryCard.classList.remove('d-none');
   } else {
     galleryCard.classList.add('d-none');
@@ -1234,6 +1232,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 init();
 </script>
 <script src="/js/pwa.js?v=15" defer></script>
+<script src="/js/gd-gallery.js?v=1"></script>
 <script src="/js/common-widgets.js?v=22"></script>
 </body>
 </html>
