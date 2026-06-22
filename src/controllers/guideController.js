@@ -1,4 +1,5 @@
 const SupabaseDB = require('../models/SupabaseDB');
+const { publicUser } = require('../utils/sanitizeUser');
 const { sanitizeContact } = require('../utils/sanitizeContact');
 
 const users    = new SupabaseDB('users');
@@ -277,8 +278,7 @@ exports.updateProfile = async (req, res) => {
     if (destinations)   changes.destinations   = Array.isArray(destinations)   ? destinations   : destinations.split(',').map(s => s.trim());
 
     const updated = await users.update(guideId, changes);
-    const { password, ...safe } = updated;
-    res.json({ success: true, message: 'Profile updated.', guide: safe });
+    res.json({ success: true, message: 'Profile updated.', guide: publicUser(updated) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });

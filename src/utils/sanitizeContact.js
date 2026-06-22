@@ -11,6 +11,8 @@
  * / all contact fields. Everyone else gets a stripped copy.
  */
 
+const { SENSITIVE_USER_FIELDS } = require('./sanitizeUser');
+
 const CONTACT_FIELDS = [
   // Direct comms
   'phone', 'mobile', 'whatsapp', 'whatsApp', 'whatsappNumber',
@@ -30,12 +32,17 @@ const CONTACT_FIELDS = [
  */
 function sanitizeContact(profile, viewer) {
   if (!profile) return profile;
-  // Owner sees themselves; admins see everything
+  // Security tokens (password hash, 2FA secret/backup codes, email-verify and
+  // password-reset tokens, FCM token) must NEVER appear in ANY response — not
+  // even to the owner or an admin. Strip them before anything else.
+  const base = { ...profile };
+  for (const f of SENSITIVE_USER_FIELDS) delete base[f];
+  // Owner sees their own profile; admins see everything (still minus the tokens)
   if (viewer && (viewer.id === profile.id ||
       viewer.userType === 'admin' || viewer.userType === 'staff')) {
-    return profile;
+    return base;
   }
-  const copy = { ...profile };
+  const copy = base;
   for (const f of CONTACT_FIELDS) {
     if (f in copy) delete copy[f];
   }

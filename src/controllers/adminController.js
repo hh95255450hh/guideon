@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const { publicUser } = require('../utils/sanitizeUser');
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
@@ -970,7 +971,7 @@ async function userPage(req, extraEq = {}, jsFilter = null) {
 }
 
 function stripPassword(arr) {
-  return (arr || []).map(({ password, resetPasswordToken, emailVerifyToken, twoFactorSecret, ...rest }) => rest);
+  return (arr || []).map(publicUser);
 }
 
 exports.pendingGuides = async (req, res) => {
@@ -1184,7 +1185,7 @@ exports.deleteUser = async (req, res) => {
 exports.allAdmins = async (req, res) => {
   try {
     const admins = await users.findAllByField('userType', 'admin');
-    res.json({ success: true, admins: admins.map(({ password, ...a }) => a) });
+    res.json({ success: true, admins: admins.map(publicUser) });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
@@ -1430,7 +1431,7 @@ exports.exportCSV = async (req, res) => {
     switch (resource) {
       case 'users':
         rows = await users.readAll();
-        rows = rows.map(({ password, resetPasswordToken, emailVerifyToken, ...r }) => r);
+        rows = rows.map(publicUser);
         columns = ['id', 'fullName', 'email', 'phone', 'userType', 'nationality', 'isVerified', 'isSuspended', 'emailVerified', 'createdAt'];
         filename = 'guideon-users.csv';
         break;
@@ -1472,7 +1473,7 @@ exports.exportCSV = async (req, res) => {
 exports.allStaff = async (req, res) => {
   try {
     const staff = await users.findAllByField('userType', 'staff');
-    const safe = staff.map(({ password, resetPasswordToken, emailVerifyToken, ...s }) => s);
+    const safe = staff.map(publicUser);
     res.json({ success: true, staff: safe });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -1605,8 +1606,7 @@ exports.updateStaff = async (req, res) => {
 
     const updated = await users.update(id, changes);
     audit.logAction(req, { action: 'updateStaff', targetType: 'user', targetId: id, details: changes });
-    const { password, ...safe } = updated;
-    res.json({ success: true, message: 'Staff member updated.', staff: safe });
+    res.json({ success: true, message: 'Staff member updated.', staff: publicUser(updated) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });

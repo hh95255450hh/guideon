@@ -3,6 +3,7 @@
  * Teams reuse the users table (userType='team') + a team_events table.
  */
 const { v4: uuidv4 } = require('uuid');
+const { publicUser } = require('../utils/sanitizeUser');
 const SupabaseDB = require('../models/SupabaseDB');
 const { sanitizeContact } = require('../utils/sanitizeContact');
 
@@ -97,8 +98,7 @@ exports.updateProfile = async (req, res) => {
     if (b.teamSocials !== undefined)     changes.teamSocials = sanitizeSocials(b.teamSocials);
 
     const updated = await users.update(teamId, changes);
-    const { password, ...safe } = updated || {};
-    res.json({ success: true, message: 'Profile updated. — تم تحديث الملف.', team: safe });
+    res.json({ success: true, message: 'Profile updated. — تم تحديث الملف.', team: publicUser(updated) });
   } catch (err) {
     console.error('[team:updateProfile]', err.message);
     res.status(500).json({ success: false, message: "Couldn't save your changes. — تعذّر حفظ التعديلات." });
