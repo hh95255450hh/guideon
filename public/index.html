@@ -274,13 +274,13 @@
   <div class="container">
     <div class="row g-3 text-center">
       <div class="col-6 col-md-3">
-        <div class="trust-item"><div class="trust-num">3+</div><div class="trust-label" data-i18n="trust_guides">Verified Guides</div></div>
+        <div class="trust-item"><div class="trust-num" id="trust-guides">—</div><div class="trust-label" data-i18n="trust_guides">Verified Guides</div></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="trust-item"><div class="trust-num">9</div><div class="trust-label" data-i18n="trust_dests">Destinations</div></div>
+        <div class="trust-item"><div class="trust-num" id="trust-dests">—</div><div class="trust-label" data-i18n="trust_dests">Destinations</div></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="trust-item"><div class="trust-num">8+</div><div class="trust-label" data-i18n="trust_reviews">Happy Reviews</div></div>
+        <div class="trust-item"><div class="trust-num" id="trust-reviews">—</div><div class="trust-label" data-i18n="trust_reviews">Happy Reviews</div></div>
       </div>
       <div class="col-6 col-md-3">
         <div class="trust-item"><div class="trust-num">🏛️</div><div class="trust-label" data-i18n="trust_since">Est. 2026</div></div>
@@ -1109,6 +1109,10 @@ async function loadStats() {
     if (typeof stats.destinations === 'number')  animateTo('stat-dests', stats.destinations);
     if (typeof stats.happyTourists === 'number') animateTo('stat-tourists', stats.happyTourists);
     if (typeof stats.avgRating === 'number')     animateTo('stat-rating', stats.avgRating.toFixed(1), ' ★');
+    // Trust strip — real, live figures (replaces the old hard-coded placeholders)
+    if (typeof stats.guides === 'number')        animateTo('trust-guides', stats.guides);
+    if (typeof stats.destinations === 'number')  animateTo('trust-dests', stats.destinations);
+    if (typeof stats.reviewsCount === 'number')  animateTo('trust-reviews', stats.reviewsCount);
   } catch (_) { /* keep fallback values */ }
 }
 document.addEventListener('DOMContentLoaded', loadStats);
