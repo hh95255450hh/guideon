@@ -99,7 +99,6 @@ function getBadge(g) {
   if (g.isVerified && g.rating >= 4.7 && g.totalReviews >= 2) return `<div class="super-guide-medal">${I18N.t('super_guide')}</div>`;
   if (g.totalReviews >= 3 && g.rating >= 4.8) return `<div class="guest-fav-badge">${I18N.t('guest_fav')}</div>`;
   if (g.rating >= 4.5) return `<div class="top-rated-badge">${I18N.t('top_rated')}</div>`;
-  if (!g.totalReviews || g.totalReviews === 0) return `<div class="new-guide-badge">${I18N.t('new_guide')}</div>`;
   return '';
 }
 
