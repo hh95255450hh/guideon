@@ -1112,7 +1112,8 @@ async function loadStats() {
     // Trust strip — real, live figures (replaces the old hard-coded placeholders)
     if (typeof stats.guides === 'number')        animateTo('trust-guides', stats.guides);
     if (typeof stats.destinations === 'number')  animateTo('trust-dests', stats.destinations);
-    if (typeof stats.reviewsCount === 'number')  animateTo('trust-reviews', stats.reviewsCount);
+    // Happy-reviews counter starts from a 16 baseline, then grows with real reviews.
+    if (typeof stats.reviewsCount === 'number')  animateTo('trust-reviews', stats.reviewsCount + 16);
   } catch (_) { /* keep fallback values */ }
 }
 document.addEventListener('DOMContentLoaded', loadStats);
