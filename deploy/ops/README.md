@@ -29,3 +29,14 @@ to containers on their next (re)create.
 ## TLS — certbot
 Auto-renew daily at 03:00 (`/etc/cron.d/guideon-certbot`): `certbot renew` then
 `nginx -s reload`.
+
+## Health monitor — `healthcheck.sh`  → `/opt/monitoring/healthcheck.sh`
+Runs every 5 min (`/etc/cron.d/guideon-monitor`). Checks the site (HTTPS 200),
+core containers, disk usage, and TLS-cert expiry. Emails admin@guideon.om via
+Resend **only on state change** (down→up / up→down), so no spam. Log:
+`/var/log/guideon-monitor.log`.
+
+> ⚠️ This runs ON the server, so it can't detect a total server/network outage
+> (it would be down too). Add a **second, external** uptime monitor for that —
+> e.g. UptimeRobot (free): create an HTTPS monitor for https://guideon.om with
+> a 5-min interval and email/SMS alerts. ~2 minutes to set up.
