@@ -208,14 +208,22 @@ router.post('/message-attachment', requireLogin, safeMulter(upload.single('file'
   }
 });
 
-// POST /api/upload/video — save YouTube video URL
+// POST /api/upload/video — save a YouTube URL and/or an uploaded video URL.
+// The file itself is uploaded via /api/upload/video-file; this persists the
+// resulting URL(s) onto the provider's profile.
 router.post('/video', requireLogin, async (req, res) => {
-  const { videoUrl } = req.body;
+  const { videoUrl, videoFileUrl } = req.body;
   if (videoUrl && !/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/.test(videoUrl)) {
     return res.status(400).json({ success: false, message: 'Only YouTube URLs are supported.' });
   }
+  if (videoFileUrl && !/^https?:\/\//.test(videoFileUrl)) {
+    return res.status(400).json({ success: false, message: 'Invalid video URL.' });
+  }
   try {
-    await users.update(req.session.userId, { videoUrl: videoUrl || '' });
+    const changes = {};
+    if (videoUrl !== undefined)     changes.videoUrl = videoUrl || '';
+    if (videoFileUrl !== undefined) changes.videoFileUrl = videoFileUrl || '';
+    if (Object.keys(changes).length) await users.update(req.session.userId, changes);
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ success: false, message: 'Save failed.' });

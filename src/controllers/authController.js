@@ -423,7 +423,7 @@ exports.updateProfile = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ success: false, message: 'Not authenticated.' });
     const {
       fullName, phone, nationality, preferredLanguage,
-      companyName, companyRegNo, companyServices, companyDestinations, companyDescription, packages, videoUrl,
+      companyName, companyRegNo, companyServices, companyDestinations, companyDescription, packages, videoUrl, videoFileUrl,
       maxConcurrentTours,
     } = req.body;
     const changes = {};
@@ -439,6 +439,7 @@ exports.updateProfile = async (req, res) => {
     if (companyDescription !== undefined) changes.companyDescription = companyDescription;
     if (packages !== undefined)           changes.packages = packages;
     if (videoUrl !== undefined)           changes.videoUrl = videoUrl;
+    if (videoFileUrl !== undefined)       changes.videoFileUrl = (typeof videoFileUrl === 'string' && /^https?:\/\//.test(videoFileUrl)) ? videoFileUrl : '';
     // Company concurrency capacity: how many tours it can run simultaneously
     // (it has multiple guides). Empty/0 = unlimited; otherwise min 1.
     if (maxConcurrentTours !== undefined) {

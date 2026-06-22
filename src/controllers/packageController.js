@@ -107,6 +107,7 @@ exports.create = async (req, res) => {
       isPublished, discountPercent, offerLabel, offerUntil,
       variants, addons, availableDates, highlights,
       meetingPoint, route,   // interactive map fields (lat/lng + route array)
+      videoFileUrl,
     } = req.body;
 
     if (!title || !description || !price_adult) {
@@ -139,6 +140,7 @@ exports.create = async (req, res) => {
       languages: languages || [],
       images: images || [],
       cover_image: cover_image || '',
+      videoFileUrl: videoFileUrl || '',
       cancellation_policy: cancellation_policy || 'flexible',
       isPublished: isPublished !== undefined ? !!isPublished : false,
       isFeatured: false,
@@ -248,7 +250,8 @@ exports.update = async (req, res) => {
       'cover_image', 'cancellation_policy', 'isPublished',
       'discountPercent', 'offerLabel', 'offerUntil',
       'variants', 'addons', 'availableDates', 'highlights',
-      'meetingPoint', 'route'];   // interactive map
+      'meetingPoint', 'route',   // interactive map
+      'videoFileUrl'];           // self-hosted tour video
     const changes = { updatedAt: new Date().toISOString() };
     for (const k of allowed) {
       if (req.body[k] !== undefined) changes[k] = req.body[k];

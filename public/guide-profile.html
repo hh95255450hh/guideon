@@ -641,12 +641,18 @@ function renderAll() {
 
   // Intro Video
   const videoCard = document.getElementById('videoCard');
-  if (g.videoUrl) {
-    const embedUrl = getYouTubeEmbedUrl(g.videoUrl);
-    if (embedUrl) {
-      document.getElementById('pVideo').innerHTML = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" allowfullscreen loading="lazy"></iframe></div>`;
-      videoCard.classList.remove('d-none');
-    } else { videoCard.classList.add('d-none'); }
+  const embedUrl = g.videoUrl ? getYouTubeEmbedUrl(g.videoUrl) : '';
+  let videoHtml = '';
+  if (g.videoFileUrl) {
+    const u = window.gdSafeUrl ? gdSafeUrl(g.videoFileUrl) : g.videoFileUrl;
+    videoHtml += `<video controls preload="metadata" playsinline style="width:100%;max-height:340px;border-radius:10px;background:#000;display:block;margin-bottom:${embedUrl ? '12px' : '0'}"><source src="${u}"></video>`;
+  }
+  if (embedUrl) {
+    videoHtml += `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:10px"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" allowfullscreen loading="lazy"></iframe></div>`;
+  }
+  if (videoHtml) {
+    document.getElementById('pVideo').innerHTML = videoHtml;
+    videoCard.classList.remove('d-none');
   } else {
     videoCard.classList.add('d-none');
   }

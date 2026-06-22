@@ -187,6 +187,10 @@
               <label class="form-label fw-600 small" data-i18n="video_url_lbl">YouTube Video URL</label>
               <input type="url" class="form-control" id="eVideoUrl" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=...">
             </div>
+            <div class="col-12">
+              <label class="form-label fw-600 small">أو ارفع فيديو من جهازك · Or upload a video</label>
+              <div id="companyVideoUpload"></div>
+            </div>
             <div class="col-md-6">
               <label class="form-label fw-600 small">الخدمات المقدمة</label>
               <input type="text" class="form-control" id="eServices" placeholder="مثال: جولات ثقافية، رحلات صحراء، تخييم">
@@ -663,6 +667,18 @@ function toggleEdit() {
     document.getElementById('ePhone').value        = COMPANY.phone        || '';
     document.getElementById('eMaxConcurrent').value = COMPANY.maxConcurrentTours || '';
     document.getElementById('eVideoUrl').value     = COMPANY.videoUrl     || '';
+    GdVideoUpload.mount(document.getElementById('companyVideoUpload'), {
+      initialUrl: COMPANY.videoFileUrl || '',
+      onChange: async (u) => {
+        COMPANY.videoFileUrl = u;
+        try {
+          const r = await fetch('/api/upload/video', { method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'}, body: JSON.stringify({ videoFileUrl: u }) });
+          const d = await r.json();
+          showToast(d.success ? (u ? 'تم حفظ الفيديو' : 'تم حذف الفيديو') : (d.message||'تعذّر الحفظ'), d.success ? 'success' : 'danger');
+        } catch { showToast('تعذّر الحفظ', 'danger'); }
+      }
+    });
     document.getElementById('eDescription').value  = COMPANY.companyDescription || '';
     document.getElementById('eServices').value     = (COMPANY.companyServices     || []).join(', ');
     document.getElementById('eDestinations').value = (COMPANY.companyDestinations || []).join(', ');
@@ -1232,6 +1248,7 @@ init();
 <script src="/js/gd-messages.js?v=2"></script>
 <script src="/js/pwa.js?v=15" defer></script>
 <script src="/js/gd-gallery.js?v=1"></script>
+<script src="/js/gd-video-upload.js?v=1"></script>
 <script src="/js/common-widgets.js?v=22"></script>
 </body>
 </html>

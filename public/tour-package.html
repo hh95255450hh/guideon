@@ -67,6 +67,10 @@
         <h5 class="fw-700">📸 <span>صور الرحلة · Tour photos</span></h5>
         <div id="pkgGallery"></div>
       </div>
+      <div class="mb-4 d-none" id="pkgVideoSection">
+        <h5 class="fw-700">🎬 <span>فيديو الرحلة · Tour video</span></h5>
+        <div id="pkgVideo"></div>
+      </div>
       <div class="mb-4"><h4 class="fw-700" data-i18n="about_tour">About this tour</h4><p id="pkgDescription" class="text-muted" style="white-space:pre-wrap"></p></div>
       <div class="mb-4 d-none" id="highlightsSection"><h5 class="fw-700" data-i18n="highlights">✨ Highlights</h5><ul id="pkgHighlights" class="text-muted"></ul></div>
       <div class="mb-4 d-none" id="includesSection"><h5 class="fw-700" data-i18n="included">✓ What's Included</h5><ul id="pkgIncludes" class="text-muted"></ul></div>
@@ -245,6 +249,13 @@ function renderPackage() {
   if (tourPhotos.length && window.GdGallery) {
     GdGallery.render(document.getElementById('pkgGallery'), tourPhotos);
     document.getElementById('pkgGallerySection').classList.remove('d-none');
+  }
+
+  // Tour video (self-hosted)
+  if (p.videoFileUrl) {
+    const vu = window.gdSafeUrl ? gdSafeUrl(p.videoFileUrl) : p.videoFileUrl;
+    document.getElementById('pkgVideo').innerHTML = `<video controls preload="metadata" playsinline style="width:100%;max-height:420px;border-radius:12px;background:#000;display:block"><source src="${vu}"></video>`;
+    document.getElementById('pkgVideoSection').classList.remove('d-none');
   }
 
   if (p.discountPercent > 0) {

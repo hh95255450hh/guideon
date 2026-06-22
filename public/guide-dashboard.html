@@ -268,6 +268,10 @@
                     <input type="file" accept="image/*" multiple class="form-control form-control-sm" id="tourGalleryInput" onchange="onTourGallerySelected(this)">
                     <div class="small text-muted mt-1" id="tourGalleryStatus">انقر على ✕ لحذف صورة. تظهر للسياح في صفحة الرحلة.</div>
                   </div>
+                  <div class="col-12">
+                    <label class="form-label small fw-600">🎬 فيديو الرحلة · Tour video <span class="text-muted fw-400">(اختياري)</span></label>
+                    <div id="tourVideoUpload"></div>
+                  </div>
                   <div class="col-md-8">
                     <label class="form-label small fw-600" data-i18n="tour_title">Tour Title *</label>
                     <input class="form-control" id="tourTitle" data-i18n-ph="tour_title_ph" placeholder="e.g. Sunset at Jebel Akhdar" required maxlength="120">
@@ -441,11 +445,13 @@
         <hr class="my-3">
 
         <h5 class="fw-700 mb-2" data-i18n="video_title">🎬 Intro Video</h5>
-        <p class="small text-muted mb-2">YouTube URL — will be shown on your public profile.</p>
-        <div class="d-flex gap-2">
+        <p class="small text-muted mb-2">رابط YouTube — أو ارفع فيديو من جهازك بالأسفل. يظهر في ملفك العام.</p>
+        <div class="d-flex gap-2 mb-3">
           <input type="url" class="form-control form-control-sm" id="videoUrlInput" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=..." style="flex:1">
           <button class="btn btn-sm btn-outline-secondary" onclick="saveVideo()" data-i18n="video_save">Save Video</button>
         </div>
+        <div class="small fw-600 text-muted mb-1">أو ارفع فيديو من جهازك · Or upload a video</div>
+        <div id="guideVideoUpload"></div>
       </div>
     </div>
 
@@ -619,6 +625,18 @@ async function checkAuth() {
     loadGuideReviews();
     renderGallery();
     if (GUIDE.videoUrl) document.getElementById('videoUrlInput').value = GUIDE.videoUrl;
+    GdVideoUpload.mount(document.getElementById('guideVideoUpload'), {
+      initialUrl: GUIDE.videoFileUrl || '',
+      onChange: async (u) => {
+        GUIDE.videoFileUrl = u;
+        try {
+          const r = await fetch('/api/upload/video', { method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'}, body: JSON.stringify({ videoFileUrl: u }) });
+          const d = await r.json();
+          toast(d.success ? (u ? 'تم حفظ الفيديو' : 'تم حذف الفيديو') : (d.message||'تعذّر الحفظ'), d.success ? 'success' : 'error');
+        } catch { toast('تعذّر الحفظ', 'error'); }
+      }
+    });
     guideInitMessages();   // build GDMessages instance now that GUIDE.id is known
     guideLoadConvos();
     guideConnectSSE();
@@ -871,6 +889,12 @@ function openTourModal(tour) {
   TOUR_GALLERY_PENDING = [];
   const gi = document.getElementById('tourGalleryInput'); if (gi) gi.value = '';
   renderTourGalleryStrip();
+  // Tour video (self-hosted) — track the URL in a module var for saveTour().
+  window._tourVideoUrl = tour?.videoFileUrl || '';
+  GdVideoUpload.mount(document.getElementById('tourVideoUpload'), {
+    initialUrl: window._tourVideoUrl,
+    onChange: (u) => { window._tourVideoUrl = u; }
+  });
   // Categories: support both legacy single string and new array
   const tourCats = Array.isArray(tour?.categories) && tour.categories.length
     ? tour.categories
@@ -1016,6 +1040,7 @@ async function saveTour() {
     title:          document.getElementById('tourTitle').value.trim(),
     cover_image:    cover,
     images,
+    videoFileUrl:   window._tourVideoUrl || '',
     categories:     Array.from(document.querySelectorAll('#tourCategoryChips input:checked')).map(i => i.value),
     category:       (document.querySelector('#tourCategoryChips input:checked') || {}).value || 'Cultural', // legacy single field for back-compat
     destination:    document.getElementById('tourDestination').value.trim(),
@@ -1836,6 +1861,7 @@ function guideConnectSSE()     { return GUIDE_MSG && GUIDE_MSG.connectSSE(); }
 <script src="/vendor/apexcharts.min.js" defer></script>
 <script src="/js/pwa.js?v=15" defer></script>
 <script src="/js/gd-gallery.js?v=1"></script>
+<script src="/js/gd-video-upload.js?v=1"></script>
 <script src="/js/common-widgets.js?v=22"></script>
 </body>
 </html>
