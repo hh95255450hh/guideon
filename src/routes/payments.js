@@ -6,6 +6,7 @@ const { requireLogin, requireAdmin } = require('../middleware/auth');
 
 // Public — frontend queries this to know if "Pay Now" button should be shown
 router.get('/feature-status', payment.getFeatureStatus);
+// (Paymob callback is registered in app.js before the CSRF check.)
 
 router.post('/create-checkout', requireLogin, payment.createCheckout);
 router.get('/verify',             requireLogin, payment.verify);

@@ -36,6 +36,14 @@ app.post('/api/payments/webhook',
   require('./controllers/paymentController').webhook
 );
 
+// Paymob server-to-server callback — register BEFORE the /api CSRF (Origin)
+// check, since Paymob's servers don't send a same-origin Origin header. The
+// handler verifies the Paymob HMAC itself, so it doesn't need CSRF.
+app.post('/api/payments/paymob/callback',
+  express.json(),
+  require('./controllers/paymentController').paymobCallback
+);
+
 app.use(helmet({
   // Allow cross-origin popups (e.g. Google Sign-In) to communicate back via postMessage
   crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },

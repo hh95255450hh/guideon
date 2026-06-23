@@ -1,4 +1,5 @@
 const thawani = require('../config/thawani');
+const paymob  = require('../config/paymob');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('../services/emailService');
 const { notify } = require('../services/notificationService');
@@ -8,9 +9,13 @@ const users    = new SupabaseDB('users');
 
 const APP_URL = process.env.APP_URL || 'http://localhost:3000';
 
-// Payments are disabled by default. Set PAYMENTS_ENABLED=true (and the
-// Thawani keys) in Railway to switch the Pay Now flow on.
+// Payments are disabled by default. Set PAYMENTS_ENABLED=true (and the gateway
+// keys) in the server .env to switch the Pay Now flow on.
 const PAYMENTS_ENABLED = process.env.PAYMENTS_ENABLED === 'true';
+// Active gateway: 'paymob' | 'thawani' (default thawani for back-compat).
+const PROVIDER = (process.env.PAYMENT_PROVIDER || 'thawani').toLowerCase();
+const gateway = PROVIDER === 'paymob' ? paymob : thawani;
+const gatewayConfigured = () => gateway.configured();
 
 // Some deployments may not have the payment columns yet — strip & retry.
 const OPTIONAL_PAY_COLS = ['isPaid', 'paidAt', 'paymentSessionId', 'paymentRef'];
@@ -30,16 +35,16 @@ async function updateBookingSafe(id, data) {
 exports.getFeatureStatus = (req, res) => {
   res.json({
     success: true,
-    enabled: PAYMENTS_ENABLED && thawani.configured(),
-    gateway: 'thawani',
-    mode: thawani.MODE,
+    enabled: PAYMENTS_ENABLED && gatewayConfigured(),
+    gateway: PROVIDER,
+    mode: PROVIDER === 'thawani' ? thawani.MODE : 'live',
     currency: 'OMR',
   });
 };
 
 // POST /api/payments/create-checkout  { bookingId }
 exports.createCheckout = async (req, res) => {
-  if (!PAYMENTS_ENABLED || !thawani.configured()) {
+  if (!PAYMENTS_ENABLED || !gatewayConfigured()) {
     return res.status(503).json({
       success: false, code: 'PAYMENTS_DISABLED',
       message: 'Payments are not available yet. Your booking is free during our launch period.',
@@ -67,6 +72,24 @@ exports.createCheckout = async (req, res) => {
       return res.status(400).json({ success: false, message: 'This booking has no payable amount.' });
     }
 
+    // ── Paymob (Oman) ───────────────────────────────────────────────────────
+    if (PROVIDER === 'paymob') {
+      const token = await paymob.auth();
+      const amountCents = paymob.toCents(amount);
+      // merchant_order_id must be unique per attempt; encode the booking id.
+      const merchantOrderId = `${bookingId}_${Date.now()}`;
+      const orderId = await paymob.createOrder(token, amountCents, merchantOrderId);
+      const payToken = await paymob.paymentKey(token, amountCents, orderId, {
+        firstName: (tourist?.fullName || 'Guideon').split(' ')[0],
+        lastName:  (tourist?.fullName || 'Customer').split(' ').slice(1).join(' ') || 'Customer',
+        email:     tourist?.email,
+        phone:     tourist?.phone,
+      });
+      await updateBookingSafe(bookingId, { paymentSessionId: String(orderId) });
+      return res.json({ success: true, url: paymob.checkoutUrl(payToken), sessionId: String(orderId) });
+    }
+
+    // ── Thawani (default) ───────────────────────────────────────────────────
     const durationLabel = booking.duration === 'half' ? 'Half Day' : 'Full Day';
     const { sessionId, payUrl } = await thawani.createSession({
       clientReferenceId: bookingId,
@@ -212,6 +235,36 @@ exports.webhook = async (req, res) => {
   } catch (err) {
     console.error('[Payment] webhook:', err.message);
     res.status(200).json({ received: true }); // never make Thawani retry-storm us
+  }
+};
+
+// POST /api/payments/paymob/callback — Paymob transaction-processed webhook.
+// Verifies the HMAC, binds to the booking via merchant_order_id, checks the
+// paid amount, then settles — a spoofed call can't mark a booking paid.
+exports.paymobCallback = async (req, res) => {
+  try {
+    let body = req.body;
+    if (Buffer.isBuffer(body)) { try { body = JSON.parse(body.toString('utf8')); } catch { body = {}; } }
+    const obj  = body?.obj || body;
+    const hmac = req.query.hmac || body?.hmac;
+    if (!paymob.verifyHmac(obj, hmac)) {
+      console.warn('[Paymob] callback rejected: bad HMAC');
+      return res.status(200).json({ received: true });
+    }
+    const success = obj?.success === true || obj?.success === 'true';
+    if (success) {
+      const moid = String(obj?.order?.merchant_order_id || '');
+      const bookingId = moid.split('_')[0]; // we encoded `${bookingId}_${ts}`
+      if (bookingId) {
+        await finalizePaidBooking(bookingId, {
+          raw: { client_reference_id: bookingId, total_amount: Number(obj.amount_cents), session_id: String(obj.id) },
+        });
+      }
+    }
+    res.status(200).json({ received: true });
+  } catch (err) {
+    console.error('[Paymob] callback:', err.message);
+    res.status(200).json({ received: true }); // never make Paymob retry-storm us
   }
 };
 
