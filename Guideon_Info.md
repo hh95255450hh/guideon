@@ -493,3 +493,19 @@ git push origin main
   الشهيرة. دُوّرت إلى قيم عشوائيّة فريدة (JWT_SECRET + anon + service) مع نسخ
   احتياطيّة وتحقّق حيّ ناجح. **ملاحظة:** كلمة مرور Postgres لا تزال الافتراضيّة
   (محميّة بالجدار الناري) — تدويرها أعلى خطراً ويُترك كخطوة لاحقة عند الرغبة.
+
+---
+
+## 💳 تفعيل المدفوعات — Paymob (Oman) — 2026-06-23
+
+بوّابة الدفع الفعّالة الآن **Paymob Accept (عُمان)** عبر **Unified Checkout
+(Intention API)** — لأنّ حساب Paymob يستخدم Secret/Public keys (وزر API Key
+الكلاسيكي معطوب في بوّابتهم). المتغيّرات على الخادم: `PAYMENT_PROVIDER=paymob`،
+`PAYMENTS_ENABLED=true`، `PAYMOB_SECRET_KEY`، `PAYMOB_PUBLIC_KEY`،
+`PAYMOB_INTEGRATION_ID=69823` (card)، `PAYMOB_HMAC_SECRET`.
+- Callback (خادم): `https://guideon.om/api/payments/paymob/callback` (تحقّق HMAC SHA512).
+- إرجاع المستخدم: `https://guideon.om/checkout-success.html`.
+- التدفّق: intention (Secret Key) → unifiedcheckout (Public Key) → webhook يربط
+  الحجز عبر special_reference ويطابق المبلغ ثمّ يُعلّم مدفوعاً.
+- **مُختبَر حيّاً** طرفاً لطرف (إنشاء جلسة دفع حقيقيّة نجح). المدفوعات **حيّة**.
+- Thawani يبقى كبديل (PAYMENT_PROVIDER=thawani). سكربت التفعيل: `/opt/paymob-setup.sh`.
