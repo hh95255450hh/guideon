@@ -60,7 +60,7 @@ async function createForCompletedBooking(bookingId) {
       recipientName: guide.companyName || guide.fullName || 'Provider',
       recipientType: guide.userType || 'guide',
       items: [
-        { desc: `رحلة ${b.destination || ''} — ${b.tourDate || ''} · Tour`, amount: gross },
+        { desc: `رحلة ${String(b.destination || '').slice(0, 60)} — ${b.tourDate || ''} · Tour`, amount: gross },
         { desc: `عمولة المنصّة (${pct}%) · Platform commission`,            amount: -comm },
       ],
       subtotal: gross,

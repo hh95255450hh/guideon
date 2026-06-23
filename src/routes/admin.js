@@ -40,6 +40,7 @@ router.get('/providers',          requirePermission('view_analytics'), admin.pro
 router.get('/invoices',           requirePermission('view_analytics'), admin.listInvoices);
 router.post('/invoices',          requirePermission('manage_finance'), admin.createInvoice);
 router.get('/invoices/:id/pdf',   requirePermission('view_analytics'), admin.invoicePdf);
+router.post('/invoices/:id/settle', requirePermission('manage_finance'), admin.settleInvoice);
 router.delete('/invoices/:id',    requirePermission('manage_finance'), admin.deleteInvoice);
 router.get('/guides/pending',     requirePermission('view_users'), admin.pendingGuides);
 router.get('/guides',             requirePermission('view_users'), admin.allGuides);

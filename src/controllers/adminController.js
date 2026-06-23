@@ -1840,7 +1840,11 @@ exports.listInvoices = async (req, res) => {
   try {
     const all = await invoicesDB.readAll().catch(() => []);
     const invoices = all
-      .map(i => ({ id: i.id, number: i.number, recipientName: i.recipientName, recipientType: i.recipientType, total: _round3(i.total), createdAt: i.createdAt }))
+      .map(i => ({
+        id: i.id, number: i.number, recipientName: i.recipientName, recipientType: i.recipientType,
+        total: _round3(i.total), kind: i.kind || 'manual', createdAt: i.createdAt,
+        paidOutAt: i.paidOutAt || null, paidOutByName: i.paidOutByName || null,
+      }))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     res.json({ success: true, invoices });
   } catch (err) {
@@ -1868,6 +1872,47 @@ exports.invoicePdf = async (req, res) => {
   } catch (err) {
     console.error('[admin:invoicePdf]', err.message);
     res.status(500).json({ success: false, message: 'تعذّر توليد الفاتورة.' });
+  }
+};
+
+// POST /api/admin/invoices/:id/settle — transfer the amount to the provider:
+// deducts it from the platform treasury (a 'send'), records who paid it out and
+// when, and stamps the invoice as paid.
+exports.settleInvoice = async (req, res) => {
+  try {
+    const inv = await invoicesDB.findById(req.params.id);
+    if (!inv) return res.status(404).json({ success: false, message: 'الفاتورة غير موجودة.' });
+    if (inv.paidOutAt) return res.status(400).json({ success: false, message: 'تمّ تحويل هذه الفاتورة مسبقاً.' });
+
+    const admin = await users.findById(req.session.userId).catch(() => null);
+    const adminName = admin ? (admin.fullName || admin.email || 'Admin') : 'Admin';
+    const now = new Date().toISOString();
+    const amount = _round3(inv.net != null ? inv.net : inv.total);
+
+    // 1) Deduct from the platform treasury (a transfer out to the provider).
+    await treasuryDB.insert({
+      id: 'trz-' + uuidv4().slice(0, 8),
+      type: 'send', amount,
+      description: `تحويل مستحقّ — فاتورة ${inv.number} إلى ${inv.recipientName || ''}`,
+      payeeId: inv.recipientId || null, payeeName: inv.recipientName || '',
+      createdAt: now, createdBy: req.session.userId,
+    });
+
+    // 2) Stamp the invoice as paid out (who + when), resilient if cols missing.
+    const patch = { paidOutAt: now, paidOutBy: req.session.userId, paidOutByName: adminName };
+    let updated;
+    try { updated = await invoicesDB.update(req.params.id, patch); }
+    catch (e) {
+      const clean = { ...patch }; ['paidOutBy', 'paidOutByName'].forEach(c => delete clean[c]);
+      updated = await invoicesDB.update(req.params.id, clean);
+    }
+
+    audit.logAction(req, { action: 'settleInvoice', targetType: 'invoice', targetId: req.params.id, details: { amount, payee: inv.recipientName } });
+    const s = await _treasurySnapshot();
+    res.json({ success: true, message: 'تمّ تحويل المبلغ للمزوّد.', balance: s.balance, invoice: updated });
+  } catch (err) {
+    console.error('[admin:settleInvoice]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
   }
 };
 
