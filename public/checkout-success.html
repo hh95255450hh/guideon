@@ -28,7 +28,8 @@
 const qs = p => new URLSearchParams(location.search).get(p);
 (async () => {
   const bookingId = qs('booking_id');
-  const sessionId = qs('session_id');
+  const sessionId = qs('session_id');           // Thawani only
+  const paymobOk  = qs('success');              // Paymob redirect flag ('true'/'false')
   const box = document.getElementById('box');
 
   function fail(msg) {
@@ -36,28 +37,50 @@ const qs = p => new URLSearchParams(location.search).get(p);
       <div class="tick" style="background:#fee2e2">⚠️</div>
       <h3>لم يكتمل الدفع</h3>
       <p>${msg}</p>
-      <a href="/checkout.html?booking_id=${bookingId||''}" class="btn btn-teal w-100 mt-2" style="padding:13px">إعادة المحاولة</a>
-      <a href="/tourist-dashboard.html" class="btn btn-link w-100 mt-1">العودة إلى حجوزاتي</a>`;
+      <a href="/tourist-dashboard.html#bookings" class="btn btn-teal w-100 mt-2" style="padding:13px">العودة إلى حجوزاتي</a>`;
+  }
+  function processing() {
+    box.innerHTML = `
+      <div class="tick" style="background:#fef9c3">⏳</div>
+      <h3>تتمّ معالجة دفعتك…</h3>
+      <p>قد يستغرق التأكيد لحظات. سنُحدّث حالة حجزك تلقائيّاً — لا حاجة لإعادة الدفع. يمكنك المتابعة من حجوزاتي.</p>
+      <a href="/tourist-dashboard.html#bookings" class="btn btn-teal w-100 mt-2" style="padding:13px">العودة إلى حجوزاتي</a>`;
   }
   function done() {
     box.innerHTML = `
       <div class="tick">✅</div>
       <h3>تم الدفع بنجاح!</h3>
-      <p>حجزك الآن مؤكّد ومدفوع. تواصل مع مزوّد الخدمة عبر الرسائل لترتيب التفاصيل. رحلة سعيدة! 🌿</p>
+      <p>تم استلام دفعتك وأُرسل حجزك إلى مزوّد الخدمة لتأكيده. تابع التفاصيل من حجوزاتي. رحلة سعيدة! 🌿</p>
       <a href="/tourist-dashboard.html#bookings" class="btn btn-teal w-100 mt-2" style="padding:13px">العودة إلى حجوزاتي</a>`;
   }
 
-  if (!bookingId || !sessionId) { fail('بيانات الدفع ناقصة.'); return; }
+  if (!bookingId) { fail('بيانات الدفع ناقصة.'); return; }
+  if (paymobOk === 'false') { fail('تم إلغاء عملية الدفع أو لم تكتمل.'); return; }
 
-  try {
-    const r = await fetch(`/api/payments/verify?session_id=${encodeURIComponent(sessionId)}&booking_id=${encodeURIComponent(bookingId)}`, { credentials:'include' });
-    if (r.status === 401) { location.href = '/login.html'; return; }
-    const d = await r.json();
-    if (d.success && d.paid) done();
-    else fail('لم نتمكّن من تأكيد الدفع. إن كنت قد دفعت، تواصل مع الدعم وسنؤكّده يدويّاً.');
-  } catch (e) {
-    fail('تعذّر الاتصال بالخادم. حاول مرّة أخرى.');
+  // ── Thawani: server-side verify with the session id ──
+  if (sessionId) {
+    try {
+      const r = await fetch(`/api/payments/verify?session_id=${encodeURIComponent(sessionId)}&booking_id=${encodeURIComponent(bookingId)}`, { credentials:'include' });
+      if (r.status === 401) { location.href = '/login.html'; return; }
+      const d = await r.json();
+      return (d.success && d.paid) ? done()
+        : fail('لم نتمكّن من تأكيد الدفع. إن كنت قد دفعت، تواصل مع الدعم وسنؤكّده يدويّاً.');
+    } catch (e) { return fail('تعذّر الاتصال بالخادم. حاول مرّة أخرى.'); }
   }
+
+  // ── Paymob: settlement arrives via webhook — poll the booking status ──
+  for (let i = 0; i < 8; i++) {
+    try {
+      const r = await fetch(`/api/payments/status/${encodeURIComponent(bookingId)}`, { credentials:'include' });
+      if (r.status === 401) { location.href = '/login.html'; return; }
+      const d = await r.json();
+      const b = d.booking;
+      if (b && (b.isPaid || b.depositPaidAt || (b.status && b.status !== 'awaiting_payment'))) return done();
+    } catch (_) { /* retry */ }
+    await new Promise(res => setTimeout(res, 2000));
+  }
+  // Webhook hasn't landed yet — reassure the user; it settles automatically.
+  processing();
 })();
 </script>
 
