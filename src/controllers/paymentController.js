@@ -60,14 +60,21 @@ exports.createCheckout = async (req, res) => {
     if (booking.touristId !== touristId) return res.status(403).json({ success: false, message: 'Access denied.' });
     if (booking.status === 'cancelled') return res.status(400).json({ success: false, message: 'Cannot pay for a cancelled booking.' });
     if (booking.isPaid) return res.status(400).json({ success: false, message: 'This booking is already paid.' });
-    // Full payment is collected AFTER the provider accepts (status 'confirmed').
-    if (booking.status !== 'confirmed') {
-      return res.status(400).json({ success: false, message: 'You can pay once the guide/company has accepted your booking.' });
+    // Pay-first: a deposit is paid while the booking is 'awaiting_payment'
+    // (this is what submits it to the guide). A balance can be paid later once
+    // the booking is 'confirmed'.
+    const PAYABLE_STATUSES = ['awaiting_payment', 'confirmed'];
+    if (!PAYABLE_STATUSES.includes(booking.status)) {
+      return res.status(400).json({ success: false, message: 'This booking cannot be paid right now.' });
     }
 
     const provider = await users.findById(booking.guideId);
     const tourist  = await users.findById(touristId);
-    const amount   = parseFloat(booking.totalAmount);
+    // Charge the deposit while awaiting payment; otherwise the remaining balance
+    // (or the full amount for legacy bookings without a deposit).
+    const amount = booking.status === 'awaiting_payment'
+      ? (parseFloat(booking.depositAmount) || parseFloat(booking.totalAmount))
+      : (parseFloat(booking.balanceAmount) > 0 ? parseFloat(booking.balanceAmount) : parseFloat(booking.totalAmount));
     if (!Number.isFinite(amount) || amount <= 0) {
       return res.status(400).json({ success: false, message: 'This booking has no payable amount.' });
     }
@@ -151,20 +158,29 @@ exports.verify = async (req, res) => {
   }
 };
 
-// Shared: mark a booking paid + notify both sides (idempotent-ish).
+// Shared: settle a payment + notify (idempotent-ish). Handles the pay-first
+// deposit (awaiting_payment → pending, then the provider is notified) and
+// balance/full payments.
 async function finalizePaidBooking(bookingId, session) {
   const fresh = await bookings.findById(bookingId);
-  if (!fresh || fresh.isPaid) return;
+  if (!fresh) return;
+  const isDeposit = fresh.status === 'awaiting_payment';
+  if (isDeposit ? fresh.depositPaidAt : fresh.isPaid) return; // already settled
 
-  // Defense-in-depth: never settle a booking from a session that belongs to a
-  // different booking, or that paid less than the amount owed.
+  // What's owed for THIS payment (deposit vs balance vs full).
+  const expectedOmr = isDeposit
+    ? (parseFloat(fresh.depositAmount) || parseFloat(fresh.totalAmount))
+    : (parseFloat(fresh.balanceAmount) > 0 ? parseFloat(fresh.balanceAmount) : parseFloat(fresh.totalAmount));
+
+  // Defense-in-depth: the session must belong to THIS booking and not pay less
+  // than what's owed for this step.
   if (session) {
     const ref = session.raw?.client_reference_id;
     if (ref && ref !== bookingId) {
       console.warn(`[Payment] refusing: session ref ${ref} != booking ${bookingId}`);
       return;
     }
-    const expected = thawani.toBaisa(fresh.totalAmount);
+    const expected = thawani.toBaisa(expectedOmr);
     const paid = Number(session.raw?.total_amount);
     if (Number.isFinite(paid) && paid < expected) {
       console.warn(`[Payment] refusing: underpaid ${paid} < ${expected} baisa for ${bookingId}`);
@@ -172,7 +188,33 @@ async function finalizePaidBooking(bookingId, session) {
     }
   }
 
-  await updateBookingSafe(bookingId, { isPaid: true, paidAt: new Date().toISOString(), paymentRef: session?.raw?.session_id || fresh.paymentSessionId });
+  const now = new Date().toISOString();
+  const ref = session?.raw?.session_id || fresh.paymentSessionId;
+
+  // ── Pay-first deposit: submit the booking to the provider now ──
+  if (isDeposit) {
+    const fullyPaid = (parseInt(fresh.depositPercent) || 100) >= 100;
+    await updateBookingSafe(bookingId, {
+      status: 'pending', depositPaidAt: now, isPaid: fullyPaid,
+      ...(fullyPaid && { paidAt: now }), paymentRef: ref,
+    });
+    // The provider sees the booking for the FIRST time, now that it's paid.
+    try { require('../services/bookingService').notifyBookingSubmitted(bookingId); } catch (e) { /* non-critical */ }
+    const t = await users.findById(fresh.touristId);
+    if (t) notify({
+      userId: t.id, type: 'payment_received',
+      title:   fullyPaid ? 'Payment successful 💳' : 'Deposit received ✅',
+      titleAr: fullyPaid ? 'تم الدفع بنجاح 💳' : 'تم استلام العربون ✅',
+      body:   `Your ${fresh.destination} booking has been sent to the guide for confirmation.`,
+      bodyAr: `تم إرسال حجز ${fresh.destination} إلى المرشد لتأكيده.`,
+      link: '/tourist-dashboard.html#bookings', metadata: { bookingId },
+    });
+    console.log(`[Payment] Booking ${bookingId} deposit paid → submitted to provider.`);
+    return;
+  }
+
+  // ── Balance / legacy full payment → mark fully paid ──
+  await updateBookingSafe(bookingId, { isPaid: true, paidAt: now, paymentRef: ref });
 
   const tourist  = await users.findById(fresh.touristId);
   const provider = await users.findById(fresh.guideId);

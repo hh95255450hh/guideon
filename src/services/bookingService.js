@@ -16,7 +16,8 @@ const users    = new SupabaseDB('users');
 const packages = new SupabaseDB('tour_packages');
 
 // Columns added by migration 021 that may not exist on older deployments.
-const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons', 'providerType'];
+const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons', 'providerType',
+  'depositPercent', 'depositAmount', 'balanceAmount', 'depositPaidAt'];
 const isMissingColumnError = (msg) => /Could not find the '\w+' column|schema cache/i.test(msg || '');
 
 class BookingError extends Error {
@@ -181,6 +182,17 @@ async function createBooking(touristId, body) {
   // The only difference between fixed-price (package / slot) and custom-trip
   // bookings is how the guide responds: a ready-made tour gets Accept/Reject
   // (price is already set), while a custom trip gets a price-quote input.
+  // Pay-first flow: when payments are live and the booking has a price, the
+  // tourist must pay a deposit (25/50/100%) BEFORE the provider is notified.
+  // The booking is created as 'awaiting_payment' and held back from the guide
+  // until the deposit is paid (see paymentController.finalizePaidBooking).
+  const roundedTotal = rules.roundMoney(totalAmount);
+  const paymentsLive = process.env.PAYMENTS_ENABLED === 'true';
+  const payFirst = paymentsLive && roundedTotal > 0;
+  const depositPercent = [25, 50, 100].includes(parseInt(body.deposit)) ? parseInt(body.deposit) : 100;
+  const depositAmount = payFirst ? rules.roundMoney(roundedTotal * depositPercent / 100) : null;
+  const balanceAmount = payFirst ? rules.roundMoney(roundedTotal - depositAmount) : null;
+
   const booking = {
     id: 'bk-' + uuidv4().slice(0, 8),
     touristId, guideId, tourDate, destination, tourTime,
@@ -188,8 +200,9 @@ async function createBooking(touristId, body) {
     ...(slotData || {}),
     duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
     participants: participantCount,
-    totalAmount: rules.roundMoney(totalAmount),
-    status: 'pending',
+    totalAmount: roundedTotal,
+    status: payFirst ? 'awaiting_payment' : 'pending',
+    ...(payFirst && { depositPercent, depositAmount, balanceAmount }),
     specialRequests: specialRequests || '',
     createdAt: new Date().toISOString(),
     ...(packageId && {
@@ -223,10 +236,31 @@ async function createBooking(touristId, body) {
     await _reconcileCapacity(booking, guideId, tourDate, providerCapacity);
   }
 
-  // Side effects (never block / fail the booking)
-  _notifyBookingCreated({ booking, guide, touristId, destination, tourDate, duration, participantCount }).catch(() => {});
+  // Side effects (never block / fail the booking). In the pay-first flow the
+  // provider is NOT notified yet — that happens after the deposit is paid.
+  if (!payFirst) {
+    _notifyBookingCreated({ booking, guide, touristId, destination, tourDate, duration, participantCount }).catch(() => {});
+  }
 
   return booking;
+}
+
+// Notify the provider + tourist that a (paid-deposit) booking is now awaiting
+// the provider's confirmation. Called by the payment layer after the deposit
+// clears, so the guide only ever sees bookings that have been paid for.
+async function notifyBookingSubmitted(bookingId) {
+  const booking = await bookings.findById(bookingId);
+  if (!booking) return;
+  const guide = await users.findById(booking.guideId);
+  if (!guide) return;
+  await _notifyBookingCreated({
+    booking, guide,
+    touristId: booking.touristId,
+    destination: booking.destination,
+    tourDate: booking.tourDate,
+    duration: booking.duration,
+    participantCount: booking.participants,
+  });
 }
 
 // After insert, ensure we didn't exceed a finite provider capacity under a
@@ -312,4 +346,4 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
   }
 }
 
-module.exports = { createBooking, BookingError };
+module.exports = { createBooking, notifyBookingSubmitted, BookingError };
