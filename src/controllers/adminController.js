@@ -1197,6 +1197,8 @@ exports.markBookingComplete = async (req, res) => {
     const b = await bookings.findById(id);
     if (!b) return res.status(404).json({ success: false, message: 'Booking not found.' });
     await bookings.update(id, { status: 'completed' });
+    // Auto-issue the provider's payout invoice (net = gross − commission).
+    require('../services/payoutInvoice').createForCompletedBooking(id).catch(() => {});
     audit.logAction(req, { action: 'markBookingComplete', targetType: 'booking', targetId: id });
     res.json({ success: true, message: 'Booking marked as completed.' });
   } catch (err) {

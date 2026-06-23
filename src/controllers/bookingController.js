@@ -275,6 +275,8 @@ exports.updateStatus = async (req, res) => {
         metadata: { bookingId: id },
       });
     } else if (status === 'completed') {
+      // Auto-issue the provider's payout invoice (net = gross − commission).
+      require('../services/payoutInvoice').createForCompletedBooking(id).catch(() => {});
       if (tourist) email.sendTouristReviewReminder({ email: tourist.email, name: tourist.fullName, guideName: guide?.fullName, destination: booking.destination, bookingId: id }).catch(() => {});
       if (tourist) notify({
         userId: tourist.id, type: 'booking_completed',
