@@ -72,21 +72,25 @@ exports.createCheckout = async (req, res) => {
       return res.status(400).json({ success: false, message: 'This booking has no payable amount.' });
     }
 
-    // ── Paymob (Oman) ───────────────────────────────────────────────────────
+    // ── Paymob (Oman) — Unified Checkout / Intention API ────────────────────
     if (PROVIDER === 'paymob') {
-      const token = await paymob.auth();
       const amountCents = paymob.toCents(amount);
-      // merchant_order_id must be unique per attempt; encode the booking id.
+      // special_reference must be unique per attempt; encode the booking id.
       const merchantOrderId = `${bookingId}_${Date.now()}`;
-      const orderId = await paymob.createOrder(token, amountCents, merchantOrderId);
-      const payToken = await paymob.paymentKey(token, amountCents, orderId, {
-        firstName: (tourist?.fullName || 'Guideon').split(' ')[0],
-        lastName:  (tourist?.fullName || 'Customer').split(' ').slice(1).join(' ') || 'Customer',
-        email:     tourist?.email,
-        phone:     tourist?.phone,
+      const { clientSecret, intentionId } = await paymob.createIntention({
+        amountCents,
+        merchantOrderId,
+        billing: {
+          firstName: (tourist?.fullName || 'Guideon').split(' ')[0],
+          lastName:  (tourist?.fullName || 'Customer').split(' ').slice(1).join(' ') || 'Customer',
+          email:     tourist?.email,
+          phone:     tourist?.phone,
+        },
+        notificationUrl: `${APP_URL}/api/payments/paymob/callback`,
+        redirectionUrl:  `${APP_URL}/checkout-success.html?booking_id=${bookingId}`,
       });
-      await updateBookingSafe(bookingId, { paymentSessionId: String(orderId) });
-      return res.json({ success: true, url: paymob.checkoutUrl(payToken), sessionId: String(orderId) });
+      await updateBookingSafe(bookingId, { paymentSessionId: String(intentionId) });
+      return res.json({ success: true, url: paymob.checkoutUrl(clientSecret), sessionId: String(intentionId) });
     }
 
     // ── Thawani (default) ───────────────────────────────────────────────────
@@ -253,8 +257,13 @@ exports.paymobCallback = async (req, res) => {
     }
     const success = obj?.success === true || obj?.success === 'true';
     if (success) {
-      const moid = String(obj?.order?.merchant_order_id || '');
-      const bookingId = moid.split('_')[0]; // we encoded `${bookingId}_${ts}`
+      // We set special_reference = `${bookingId}_${ts}`; Paymob surfaces it as
+      // the order's merchant_order_id (fall back to a few other fields).
+      const moid = String(
+        obj?.order?.merchant_order_id ||
+        obj?.order?.special_reference ||
+        obj?.payment_key_claims?.extra?.merchant_order_id || '');
+      const bookingId = moid.split('_')[0];
       if (bookingId) {
         await finalizePaidBooking(bookingId, {
           raw: { client_reference_id: bookingId, total_amount: Number(obj.amount_cents), session_id: String(obj.id) },
