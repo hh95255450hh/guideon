@@ -82,22 +82,28 @@ function toCents(omr) { return Math.round(parseFloat(omr) * 1000); }
  * Verify a Paymob callback HMAC (SHA512 over a fixed field order). `obj` is the
  * transaction object (the webhook body's `obj`). Returns true if valid.
  */
-function verifyHmac(obj, hmac) {
-  if (!HMAC_SECRET || !hmac || !obj) return false;
+const HMAC_FIELDS = [
+  'amount_cents', 'created_at', 'currency', 'error_occured', 'has_parent_transaction',
+  'id', 'integration_id', 'is_3d_secure', 'is_auth', 'is_capture', 'is_refunded',
+  'is_standalone_payment', 'is_voided', 'order.id', 'owner', 'pending',
+  'source_data.pan', 'source_data.sub_type', 'source_data.type', 'success',
+];
+
+function computeHmac(obj) {
+  if (!HMAC_SECRET || !obj) return '';
   const g = (p) => p.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
-  const fields = [
-    'amount_cents', 'created_at', 'currency', 'error_occured', 'has_parent_transaction',
-    'id', 'integration_id', 'is_3d_secure', 'is_auth', 'is_capture', 'is_refunded',
-    'is_standalone_payment', 'is_voided', 'order.id', 'owner', 'pending',
-    'source_data.pan', 'source_data.sub_type', 'source_data.type', 'success',
-  ];
-  const concat = fields.map((f) => {
+  const concat = HMAC_FIELDS.map((f) => {
     const v = g(f);
     return v === undefined || v === null ? '' : String(v);
   }).join('');
-  const digest = crypto.createHmac('sha512', HMAC_SECRET).update(concat).digest('hex');
+  return crypto.createHmac('sha512', HMAC_SECRET).update(concat).digest('hex');
+}
+
+function verifyHmac(obj, hmac) {
+  if (!HMAC_SECRET || !hmac || !obj) return false;
+  const digest = computeHmac(obj);
   try { return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(String(hmac))); }
   catch { return false; }
 }
 
-module.exports = { configured, createIntention, checkoutUrl, toCents, verifyHmac, CURRENCY };
+module.exports = { configured, createIntention, checkoutUrl, toCents, verifyHmac, computeHmac, CURRENCY };

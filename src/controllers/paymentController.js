@@ -246,6 +246,8 @@ async function finalizePaidBooking(bookingId, session) {
   }
   console.log(`[Payment] Booking ${bookingId} marked paid.`);
 }
+// Exposed so an admin/ops script can settle a booking whose webhook was missed.
+exports.finalizePaidBooking = finalizePaidBooking;
 
 // GET /api/payments/status/:bookingId
 exports.getStatus = async (req, res) => {
@@ -293,24 +295,31 @@ exports.paymobCallback = async (req, res) => {
     if (Buffer.isBuffer(body)) { try { body = JSON.parse(body.toString('utf8')); } catch { body = {}; } }
     const obj  = body?.obj || body;
     const hmac = req.query.hmac || body?.hmac;
-    if (!paymob.verifyHmac(obj, hmac)) {
-      console.warn('[Paymob] callback rejected: bad HMAC');
+    const success = obj?.success === true || obj?.success === 'true';
+
+    // Find the booking ref from any field Paymob may carry it in.
+    const moid = String(
+      obj?.order?.merchant_order_id ||
+      obj?.order?.special_reference ||
+      obj?.payment_key_claims?.extra?.merchant_order_id ||
+      obj?.payment_key_claims?.billing_data?.extra_description || '');
+    const refBookingId = moid.startsWith('bk-') ? moid.split('_')[0] : '';
+
+    const hmacOk = paymob.verifyHmac(obj, hmac);
+    // Diagnostic: surface exactly why a callback did/didn't settle.
+    console.log('[Paymob] webhook success=%s hmacOk=%s ref=%s booking=%s amount=%s orderKeys=%j',
+      success, hmacOk, moid, refBookingId, obj?.amount_cents, Object.keys(obj?.order || {}));
+    if (!hmacOk) {
+      console.warn('[Paymob] HMAC mismatch recv=%s calc=%s', String(hmac || '').slice(0, 14), paymob.computeHmac(obj).slice(0, 14));
       return res.status(200).json({ received: true });
     }
-    const success = obj?.success === true || obj?.success === 'true';
-    if (success) {
-      // We set special_reference = `${bookingId}_${ts}`; Paymob surfaces it as
-      // the order's merchant_order_id (fall back to a few other fields).
-      const moid = String(
-        obj?.order?.merchant_order_id ||
-        obj?.order?.special_reference ||
-        obj?.payment_key_claims?.extra?.merchant_order_id || '');
-      const bookingId = moid.split('_')[0];
-      if (bookingId) {
-        await finalizePaidBooking(bookingId, {
-          raw: { client_reference_id: bookingId, total_amount: Number(obj.amount_cents), session_id: String(obj.id) },
-        });
-      }
+
+    if (success && refBookingId) {
+      await finalizePaidBooking(refBookingId, {
+        raw: { client_reference_id: refBookingId, total_amount: Number(obj.amount_cents), session_id: String(obj.id) },
+      });
+    } else if (success && !refBookingId) {
+      console.warn('[Paymob] paid but could not resolve booking ref from obj.order=%j', obj?.order);
     }
     res.status(200).json({ received: true });
   } catch (err) {
