@@ -5,85 +5,161 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <title>تأكيد الدفع — Guideon</title>
-<link rel="stylesheet" href="/css/bootstrap.min.css">
-<link rel="stylesheet" href="/css/style.css?v=40">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
-  body{background:#eef2f7;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:'Tajawal','Inter',sans-serif}
-  .card-box{background:#fff;border-radius:20px;box-shadow:0 12px 48px rgba(15,28,62,.14);width:100%;max-width:460px;padding:44px 34px;text-align:center}
-  .tick{width:88px;height:88px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:46px}
-  .spin{width:54px;height:54px;border:5px solid #e5e7eb;border-top-color:#0f7b6c;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 18px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  h3{font-weight:800;color:#0f1c3e;margin-bottom:10px}
-  p{color:#555;line-height:1.8}
+  :root{--teal:#0f7b6c;--teal2:#14a085;--navy:#0f1c3e;--gold:#d4a017}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Tajawal',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:22px;background:radial-gradient(1200px 600px at 50% -10%,rgba(15,123,108,.18),transparent 60%),
+    linear-gradient(160deg,#eef3f8 0%,#e7eef6 100%);overflow:hidden}
+  .card{position:relative;width:100%;max-width:480px;background:#fff;border-radius:26px;
+    box-shadow:0 30px 80px rgba(15,28,62,.20);overflow:hidden;animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:none}}
+  .band{background:linear-gradient(125deg,var(--navy) 0%,#15396b 55%,var(--teal) 100%);padding:26px 28px 56px;text-align:center;position:relative}
+  .band::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 0,rgba(255,255,255,.14),transparent 40%)}
+  .logo{height:30px;filter:brightness(0) invert(1);opacity:.95}
+  .seal{position:absolute;left:50%;bottom:-44px;transform:translateX(-50%);width:88px;height:88px;border-radius:50%;
+    background:#fff;box-shadow:0 12px 30px rgba(15,123,108,.30);display:flex;align-items:center;justify-content:center;z-index:2}
+  .seal .ring{width:88px;height:88px}
+  .seal .ring circle{fill:none;stroke:#dcfce7;stroke-width:6}
+  .seal .ring .p{stroke:var(--teal);stroke-dasharray:251;stroke-dashoffset:251;stroke-linecap:round;
+    transform:rotate(-90deg);transform-origin:50% 50%;animation:draw .8s ease forwards .15s}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .seal .tick{position:absolute;width:34px;height:34px;stroke:var(--teal);stroke-width:4.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .seal .tick path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .35s ease forwards .7s}
+  .body{padding:60px 30px 30px;text-align:center}
+  h1{font-size:1.5rem;font-weight:800;color:var(--navy);margin-bottom:8px}
+  .sub{color:#5b6b82;line-height:1.85;font-size:.98rem;max-width:360px;margin:0 auto}
+  .chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0 4px}
+  .chip{background:#f3f8f6;border:1px solid #e1efe9;border-radius:12px;padding:9px 14px;text-align:center;min-width:120px}
+  .chip .l{font-size:.72rem;color:#8aa0ae;font-weight:600}
+  .chip .v{font-size:1.05rem;color:var(--teal);font-weight:800;direction:ltr}
+  .steps{margin:22px 0 6px;text-align:start}
+  .step{display:flex;align-items:center;gap:12px;padding:9px 4px;color:#465468;font-size:.92rem;font-weight:500}
+  .step .n{width:30px;height:30px;border-radius:50%;background:#eafaf4;color:var(--teal);font-weight:800;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.95rem}
+  .btn{display:block;width:100%;border:none;border-radius:14px;padding:14px;font-weight:800;font-size:1rem;
+    cursor:pointer;text-decoration:none;text-align:center;transition:.18s;font-family:inherit}
+  .btn-primary{background:linear-gradient(120deg,var(--teal),var(--teal2));color:#fff;box-shadow:0 10px 24px rgba(15,123,108,.28);margin-top:18px}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(15,123,108,.36);color:#fff}
+  .btn-ghost{background:transparent;color:#64748b;margin-top:8px;font-weight:600}
+  .btn-ghost:hover{color:var(--navy)}
+  .spin{width:58px;height:58px;border:5px solid #e7edf3;border-top-color:var(--teal);border-radius:50%;animation:rot 1s linear infinite;margin:0 auto}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .seal.warn{box-shadow:0 12px 30px rgba(220,53,69,.22)}
+  .seal.warn .x{font-size:42px}
+  /* confetti */
+  .cf{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;opacity:.9;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:0}}
 </style>
 </head>
 <body>
-<div class="card-box" id="box">
-  <div class="spin"></div>
-  <h3>جارٍ تأكيد الدفع…</h3>
-  <p>لحظة من فضلك، نتحقّق من عملية الدفع مع Paymob.</p>
+<div class="card" id="card">
+  <div class="band"><img src="/logo.png" class="logo" alt="Guideon"></div>
+  <div class="seal"><div class="spin"></div></div>
+  <div class="body">
+    <h1>جارٍ تأكيد الدفع…</h1>
+    <p class="sub">لحظة من فضلك، نتحقّق من دفعتك مع Paymob.</p>
+  </div>
 </div>
 
 <script>
 const qs = p => new URLSearchParams(location.search).get(p);
+const $ = s => document.querySelector(s);
+const money = n => (Math.round((+n||0)*1000)/1000).toFixed(3) + ' ر.ع';
+
+function confetti(){
+  const cols=['#0f7b6c','#14a085','#d4a017','#15396b','#4ade80'];
+  for(let i=0;i<26;i++){const e=document.createElement('div');e.className='cf';
+    e.style.left=Math.random()*100+'%';e.style.background=cols[i%cols.length];
+    e.style.animationDuration=(2.4+Math.random()*1.8)+'s';e.style.animationDelay=(Math.random()*.5)+'s';
+    document.body.appendChild(e);setTimeout(()=>e.remove(),4800);}
+}
+
+function seal(kind){
+  if(kind==='ok') return `<div class="seal">
+    <svg class="ring" viewBox="0 0 88 88"><circle cx="44" cy="44" r="40"></circle><circle class="p" cx="44" cy="44" r="40"></circle></svg>
+    <svg class="tick" viewBox="0 0 36 36"><path d="M9 19l6 6 12-13"></path></svg></div>`;
+  if(kind==='warn') return `<div class="seal warn"><span class="x">⚠️</span></div>`;
+  return `<div class="seal"><div class="spin"></div></div>`;
+}
+
+function done(b){
+  const dest = b && b.destination ? b.destination : '';
+  const amt  = b && (b.depositAmount||b.totalAmount) ? money(b.depositAmount||b.totalAmount) : '';
+  $('#card').innerHTML = `
+    <div class="band"><img src="/logo.png" class="logo" alt="Guideon"></div>
+    ${seal('ok')}
+    <div class="body">
+      <h1>تم الدفع بنجاح 🎉</h1>
+      <p class="sub">استلمنا دفعتك وأرسلنا حجزك إلى مزوّد الخدمة لتأكيده.</p>
+      <div class="chips">
+        ${amt?`<div class="chip"><div class="l">المبلغ المدفوع</div><div class="v">${amt}</div></div>`:''}
+        ${dest?`<div class="chip"><div class="l">الوجهة</div><div class="v" style="direction:rtl;color:var(--navy)">${dest}</div></div>`:''}
+      </div>
+      <div class="steps">
+        <div class="step"><span class="n">1</span> يؤكّد المرشد حجزك خلال وقت قصير.</div>
+        <div class="step"><span class="n">2</span> تواصل معه عبر الرسائل لترتيب التفاصيل.</div>
+        <div class="step"><span class="n">3</span> استمتع بتجربتك العُمانية الأصيلة 🌿</div>
+      </div>
+      <a href="/tourist-dashboard.html#bookings" class="btn btn-primary">العودة إلى حجوزاتي</a>
+      <a href="/" class="btn btn-ghost">الصفحة الرئيسية</a>
+    </div>`;
+  confetti();
+}
+function processing(){
+  $('#card').innerHTML = `
+    <div class="band"><img src="/logo.png" class="logo" alt="Guideon"></div>
+    ${seal('wait')}
+    <div class="body">
+      <h1>تتمّ معالجة دفعتك…</h1>
+      <p class="sub">قد يستغرق التأكيد لحظات. سنُحدّث حالة حجزك تلقائيّاً — لا حاجة لإعادة الدفع.</p>
+      <a href="/tourist-dashboard.html#bookings" class="btn btn-primary">متابعة من حجوزاتي</a>
+      <a href="/" class="btn btn-ghost">الصفحة الرئيسية</a>
+    </div>`;
+}
+function fail(msg){
+  $('#card').innerHTML = `
+    <div class="band"><img src="/logo.png" class="logo" alt="Guideon"></div>
+    ${seal('warn')}
+    <div class="body">
+      <h1>لم يكتمل الدفع</h1>
+      <p class="sub">${msg}</p>
+      <a href="/tourist-dashboard.html#bookings" class="btn btn-primary">العودة إلى حجوزاتي</a>
+      <a href="/" class="btn btn-ghost">الصفحة الرئيسية</a>
+    </div>`;
+}
+
 (async () => {
   const bookingId = qs('booking_id');
-  const sessionId = qs('session_id');           // Thawani only
-  const paymobOk  = qs('success');              // Paymob redirect flag ('true'/'false')
-  const box = document.getElementById('box');
+  const sessionId = qs('session_id');     // Thawani only
+  const paymobOk  = qs('success');        // Paymob redirect flag
+  if (!bookingId) return fail('بيانات الدفع ناقصة.');
+  if (paymobOk === 'false') return fail('تم إلغاء عملية الدفع أو لم تكتمل.');
 
-  function fail(msg) {
-    box.innerHTML = `
-      <div class="tick" style="background:#fee2e2">⚠️</div>
-      <h3>لم يكتمل الدفع</h3>
-      <p>${msg}</p>
-      <a href="/tourist-dashboard.html#bookings" class="btn btn-teal w-100 mt-2" style="padding:13px">العودة إلى حجوزاتي</a>`;
-  }
-  function processing() {
-    box.innerHTML = `
-      <div class="tick" style="background:#fef9c3">⏳</div>
-      <h3>تتمّ معالجة دفعتك…</h3>
-      <p>قد يستغرق التأكيد لحظات. سنُحدّث حالة حجزك تلقائيّاً — لا حاجة لإعادة الدفع. يمكنك المتابعة من حجوزاتي.</p>
-      <a href="/tourist-dashboard.html#bookings" class="btn btn-teal w-100 mt-2" style="padding:13px">العودة إلى حجوزاتي</a>`;
-  }
-  function done() {
-    box.innerHTML = `
-      <div class="tick">✅</div>
-      <h3>تم الدفع بنجاح!</h3>
-      <p>تم استلام دفعتك وأُرسل حجزك إلى مزوّد الخدمة لتأكيده. تابع التفاصيل من حجوزاتي. رحلة سعيدة! 🌿</p>
-      <a href="/tourist-dashboard.html#bookings" class="btn btn-teal w-100 mt-2" style="padding:13px">العودة إلى حجوزاتي</a>`;
-  }
-
-  if (!bookingId) { fail('بيانات الدفع ناقصة.'); return; }
-  if (paymobOk === 'false') { fail('تم إلغاء عملية الدفع أو لم تكتمل.'); return; }
-
-  // ── Thawani: server-side verify with the session id ──
   if (sessionId) {
     try {
       const r = await fetch(`/api/payments/verify?session_id=${encodeURIComponent(sessionId)}&booking_id=${encodeURIComponent(bookingId)}`, { credentials:'include' });
       if (r.status === 401) { location.href = '/login.html'; return; }
       const d = await r.json();
-      return (d.success && d.paid) ? done()
-        : fail('لم نتمكّن من تأكيد الدفع. إن كنت قد دفعت، تواصل مع الدعم وسنؤكّده يدويّاً.');
+      return (d.success && d.paid) ? done(d.booking) : fail('لم نتمكّن من تأكيد الدفع. إن كنت قد دفعت، تواصل مع الدعم.');
     } catch (e) { return fail('تعذّر الاتصال بالخادم. حاول مرّة أخرى.'); }
   }
 
-  // ── Paymob: settlement arrives via webhook — poll the booking status ──
+  // Paymob: settlement arrives via webhook — poll the booking status.
   for (let i = 0; i < 8; i++) {
     try {
       const r = await fetch(`/api/payments/status/${encodeURIComponent(bookingId)}`, { credentials:'include' });
       if (r.status === 401) { location.href = '/login.html'; return; }
       const d = await r.json();
       const b = d.booking;
-      if (b && (b.isPaid || b.depositPaidAt || (b.status && b.status !== 'awaiting_payment'))) return done();
-    } catch (_) { /* retry */ }
+      if (b && (b.isPaid || b.depositPaidAt || (b.status && b.status !== 'awaiting_payment'))) return done(b);
+    } catch (_) {}
     await new Promise(res => setTimeout(res, 2000));
   }
-  // Webhook hasn't landed yet — reassure the user; it settles automatically.
   processing();
 })();
 </script>
-
-<script src="/js/common-widgets.js?v=22"></script>
 </body>
 </html>
