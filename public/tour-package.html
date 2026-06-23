@@ -142,16 +142,6 @@
         <div class="mb-3 small" id="priceBreakdown" style="background:#f8f9fa;padding:12px;border-radius:8px">
           <div class="text-muted" data-i18n="pick_pkg_first">Pick a package above to see price breakdown.</div>
         </div>
-        <!-- Deposit selector (pay-first flow) -->
-        <div class="mb-2" id="depositSection">
-          <label class="form-label small fw-700 mb-1">💳 المبلغ المدفوع الآن · Pay now</label>
-          <div class="d-flex gap-2" id="depositBtns">
-            <button type="button" class="dep-btn" data-pct="25"  onclick="selectDeposit(25,this)">25%</button>
-            <button type="button" class="dep-btn" data-pct="50"  onclick="selectDeposit(50,this)">50%</button>
-            <button type="button" class="dep-btn active" data-pct="100" onclick="selectDeposit(100,this)">100%</button>
-          </div>
-          <div class="form-text small" id="depositHint">ادفع كامل المبلغ الآن. · Pay the full amount now.</div>
-        </div>
         <button class="btn btn-teal w-100 fw-700 py-2" id="bookBtn" onclick="bookTour()" disabled data-i18n="pay_and_book" style="background:#0f7b6c !important;color:#fff !important;border:none">💳 ادفع واحجز · Pay &amp; Book</button>
         <p class="small text-muted text-center mt-2 mb-0" id="bookHint" data-i18n="select_date_hint">Select a date and package to book.</p>
       </div>
@@ -170,14 +160,7 @@ const PKG_ID = qs('id');
 let PACKAGE = null;
 let SELECTED_VARIANT = null;
 let SELECTED_DATE    = null;
-let SELECTED_DEPOSIT = 100;   // pay-now percentage: 25 | 50 | 100
-
-function selectDeposit(pct, btn) {
-  SELECTED_DEPOSIT = pct;
-  document.querySelectorAll('#depositBtns .dep-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  recalcPrice();
-}
+const SELECTED_DEPOSIT = 100;   // full payment only
 let SELECTED_ADDONS  = new Set();
 let SELECTED_SLOT    = null; // { startTime, endTime, price, durationMin }
 
@@ -552,13 +535,6 @@ function recalcPrice() {
   document.getElementById('bookHint').textContent = ready
     ? 'بعد الدفع يُرسَل حجزك للمرشد لتأكيده. · After payment your booking is sent to the guide.'
     : ((window.I18N && I18N.t('select_date_to_book')) || 'Select a date to enable booking.');
-
-  // Deposit hint — show the pay-now amount and the remaining balance.
-  const depAmt = total * SELECTED_DEPOSIT / 100;
-  const dh = document.getElementById('depositHint');
-  if (dh) dh.textContent = SELECTED_DEPOSIT >= 100
-    ? `ادفع كامل المبلغ الآن (${money(total)}).`
-    : `ادفع ${SELECTED_DEPOSIT}% الآن (${money(depAmt)}) — والباقي ${money(total - depAmt)} لاحقاً.`;
 }
 
 async function bookTour() {

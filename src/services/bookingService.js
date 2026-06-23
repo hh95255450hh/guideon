@@ -189,9 +189,10 @@ async function createBooking(touristId, body) {
   const roundedTotal = rules.roundMoney(totalAmount);
   const paymentsLive = process.env.PAYMENTS_ENABLED === 'true';
   const payFirst = paymentsLive && roundedTotal > 0;
-  const depositPercent = [25, 50, 100].includes(parseInt(body.deposit)) ? parseInt(body.deposit) : 100;
-  const depositAmount = payFirst ? rules.roundMoney(roundedTotal * depositPercent / 100) : null;
-  const balanceAmount = payFirst ? rules.roundMoney(roundedTotal - depositAmount) : null;
+  // Full payment only — the booking is paid in full before it reaches the guide.
+  const depositPercent = 100;
+  const depositAmount = payFirst ? roundedTotal : null;
+  const balanceAmount = payFirst ? 0 : null;
 
   const booking = {
     id: 'bk-' + uuidv4().slice(0, 8),

@@ -57,10 +57,10 @@
       <div id="cancelNote" class="cancel-note">⚠️ تم إلغاء عملية الدفع السابقة. يمكنك المحاولة مرّة أخرى.</div>
       <div id="errMsg" class="alert alert-danger d-none mb-3 small"></div>
       <button class="thawani-btn" id="payBtn" onclick="goToThawani()">
-        🔒 ادفع بأمان عبر ثواني
+        🔒 ادفع بأمان عبر Paymob
       </button>
-      <div class="pay-methods">💳 Visa · Mastercard · محفظة ثواني</div>
-      <p class="secure-note">سيتم تحويلك إلى صفحة ثواني الآمنة لإتمام الدفع.</p>
+      <div class="pay-methods">💳 Visa · Mastercard</div>
+      <p class="secure-note">سيتم تحويلك إلى صفحة Paymob الآمنة لإتمام الدفع.</p>
     </div>
   </div>
 </div>
@@ -106,7 +106,7 @@ let BOOKING_ID = null;
 
 async function goToThawani() {
   const btn = document.getElementById('payBtn'), err = document.getElementById('errMsg');
-  err.classList.add('d-none'); btn.disabled = true; btn.textContent = '⏳ جارٍ التحويل إلى ثواني…';
+  err.classList.add('d-none'); btn.disabled = true; btn.textContent = '⏳ جارٍ التحويل إلى Paymob…';
   try {
     const r = await fetch('/api/payments/create-checkout', {
       method:'POST', credentials:'include',
@@ -118,7 +118,7 @@ async function goToThawani() {
     location.href = d.url;
   } catch (ex) {
     err.textContent = ex.message; err.classList.remove('d-none');
-    btn.disabled = false; btn.textContent = '🔒 ادفع بأمان عبر ثواني';
+    btn.disabled = false; btn.textContent = '🔒 ادفع بأمان عبر Paymob';
   }
 }
 </script>
