@@ -1235,7 +1235,7 @@ async function loadEarnings() {
       <tr>
         <td class="small" style="font-family:monospace">${row.invoiceNo}</td>
         <td class="small">${new Date(row.date).toLocaleDateString('en-GB')}</td>
-        <td class="small">${(row.destination || '—')}</td>
+        <td class="small acc-dest" title="${window.gdEsc ? gdEsc(row.destination || '') : ''}">${window.gdEsc ? gdEsc(String(row.destination || '—').slice(0, 50)) : String(row.destination || '—').slice(0, 50)}</td>
         <td class="text-end">${_f3(row.gross)}</td>
         <td class="text-end text-muted">${_f3(row.commission)}</td>
         <td class="text-end fw-700" style="color:var(--teal)">${_f3(row.net)}</td>
@@ -1856,6 +1856,8 @@ function guideConnectSSE()     { return GUIDE_MSG && GUIDE_MSG.connectSSE(); }
 .cat-chip:hover { border-color:var(--teal); background:#f0faf8; }
 .cat-chip.active { background:var(--teal); color:#fff; border-color:var(--teal); box-shadow:0 2px 6px rgba(15,123,108,.25); }
 .cat-chip input { position:absolute; opacity:0; pointer-events:none; }
+.acc-dest { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 576px){ .acc-dest { max-width: 120px; } }
 </style>
 <script src="/js/gd-messages.js?v=2"></script>
 <script src="/vendor/apexcharts.min.js" defer></script>

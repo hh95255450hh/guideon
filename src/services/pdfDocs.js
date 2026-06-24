@@ -43,7 +43,10 @@ async function htmlToPdf(html) {
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'load' });
-    return await page.pdf({ format: 'A4', printBackground: true, margin: { top: '0', bottom: '0', left: '0', right: '0' } });
+    const bytes = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '0', bottom: '0', left: '0', right: '0' } });
+    // Newer Puppeteer returns a Uint8Array; res.send() would JSON-serialize
+    // that into a corrupt, bloated "file". Always hand back a real Buffer.
+    return Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
   } finally { await browser.close(); }
 }
 
