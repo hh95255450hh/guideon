@@ -214,9 +214,10 @@
               <th class="text-end" data-i18n="acc_gross">Gross</th>
               <th class="text-end" data-i18n="acc_fee">Fee</th>
               <th class="text-end" data-i18n="acc_net">Net</th>
+              <th data-i18n="acc_status">Status</th>
               <th></th>
             </tr></thead>
-            <tbody id="accLedger"><tr><td colspan="7" class="text-center text-muted py-3">Loading…</td></tr></tbody>
+            <tbody id="accLedger"><tr><td colspan="8" class="text-center text-muted py-3">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1228,7 +1229,7 @@ async function loadEarnings() {
     // Ledger
     const body = document.getElementById('accLedger');
     if (!d.ledger.length) {
-      body.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">${I18N.t('acc_empty') || 'No paid bookings yet.'}</td></tr>`;
+      body.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">${I18N.t('acc_empty') || 'No paid bookings yet.'}</td></tr>`;
       return;
     }
     body.innerHTML = d.ledger.map(row => `
@@ -1239,9 +1240,55 @@ async function loadEarnings() {
         <td class="text-end">${_f3(row.gross)}</td>
         <td class="text-end text-muted">${_f3(row.commission)}</td>
         <td class="text-end fw-700" style="color:var(--teal)">${_f3(row.net)}</td>
-        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="/api/guides/me/invoice/${encodeURIComponent(row.id)}" target="_blank" title="Download invoice">🧾</a></td>
+        <td>${_ledgerStatus(row)}</td>
+        <td class="text-end" style="white-space:nowrap">
+          ${_payoutBtn(row)}
+          <a class="btn btn-sm btn-outline-secondary" href="/api/guides/me/invoice/${encodeURIComponent(row.id)}" target="_blank" title="Download invoice">🧾</a>
+        </td>
       </tr>`).join('');
   } catch (e) { /* non-critical */ }
+}
+
+// Paid / awaiting-payout / in-progress badge for one ledger row.
+function _ledgerStatus(row) {
+  if (row.settled) {
+    const when = row.paidOutAt ? ` <span class="text-muted" style="font-weight:500">· ${new Date(row.paidOutAt).toLocaleDateString('en-GB')}</span>` : '';
+    return `<span class="badge rounded-pill" style="background:#e6f6ef;color:#0a7d45;font-weight:700">✅ مدفوعة · Paid${when}</span>`;
+  }
+  if (row.status === 'completed') {
+    return row.requested
+      ? `<span class="badge rounded-pill" style="background:#fff3cd;color:#8a6d00;font-weight:700">⏳ طلب الدفع قيد المراجعة · Requested</span>`
+      : `<span class="badge rounded-pill" style="background:#eef2f7;color:#475569;font-weight:700">💰 مستحقّة · Due</span>`;
+  }
+  return `<span class="badge rounded-pill" style="background:#eef2f7;color:#64748b;font-weight:700">🚌 قيد التنفيذ · In&nbsp;progress</span>`;
+}
+
+// "Request payment" button — only for earned (completed+paid) but unsettled rows.
+function _payoutBtn(row) {
+  if (row.settled || row.status !== 'completed' || row.requested) return '';
+  return `<button class="btn btn-sm btn-teal" onclick="requestPayout('${row.id}', this)" title="اطلب من المنصّة تحويل مستحقّك">💸 طلب الدفع</button>`;
+}
+
+async function requestPayout(bookingId, btn) {
+  if (!confirm('إرسال طلب دفع هذه الفاتورة إلى المنصّة؟\nSend a payment request for this invoice to the platform?')) return;
+  if (btn) { btn.disabled = true; btn.textContent = '… جارٍ الإرسال'; }
+  try {
+    const r = await fetch('/api/guides/me/request-payout/' + encodeURIComponent(bookingId), {
+      method: 'POST', credentials: 'include',
+      headers: { 'X-Requested-With': 'fetch' },
+    });
+    const d = await r.json();
+    if (d.success) {
+      alert(d.message || 'تمّ إرسال طلب الدفع إلى المنصّة.');
+      loadEarnings();
+    } else {
+      alert(d.message || 'تعذّر إرسال الطلب.');
+      if (btn) { btn.disabled = false; btn.textContent = '💸 طلب الدفع'; }
+    }
+  } catch (e) {
+    alert('تعذّر الاتصال بالخادم. حاول مجدّداً.');
+    if (btn) { btn.disabled = false; btn.textContent = '💸 طلب الدفع'; }
+  }
 }
 function downloadStatement() {
   const m = document.getElementById('accMonth')?.value || new Date().toISOString().slice(0, 7);

@@ -42,6 +42,10 @@
 .edit-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
 .edit-row label { width:140px; font-size:.83rem; font-weight:600; color:var(--muted); padding-top:8px; flex-shrink:0; }
 .edit-row .val { flex:1; }
+.acc-dest { max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+@media (max-width:576px){ .acc-dest { max-width:120px; } }
+.btn-teal { background:var(--teal,#0f7b6c); color:#fff; border:none; }
+.btn-teal:hover { background:#0c6457; color:#fff; }
 </style>
 <script src="/js/image-compress.js?v=3"></script>
 <script src="/js/gd-map.js?v=3" defer></script>
@@ -234,6 +238,31 @@
         </div>
         <div id="coBookingsList">
           <div class="text-center py-4 text-muted small">جارٍ تحميل الطلبات…</div>
+        </div>
+      </div>
+
+      <!-- Invoices & Payouts Section -->
+      <div class="card-section mb-4" id="coInvoicesSection">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="section-title mb-0">🧾 الفواتير والمستحقّات · Invoices &amp; Payouts</div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="coLoadEarnings()" style="border-radius:8px">↻ تحديث</button>
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#0a5c50,#14a085);color:#fff;border-radius:14px;padding:12px"><div class="num fw-800" id="coWalAvailable" style="font-size:1.25rem">—</div><div class="lbl small">متاح للصرف (ر.ع)</div></div></div>
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#f7971e,#ffd200);color:#3a2c00;border-radius:14px;padding:12px"><div class="num fw-800" id="coWalPending" style="font-size:1.25rem">—</div><div class="lbl small">معلّق (ر.ع)</div></div></div>
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:#eef2f7;color:#0f1c3e;border-radius:14px;padding:12px"><div class="num fw-800" id="coWalPaidOut" style="font-size:1.25rem">—</div><div class="lbl small">مدفوع (ر.ع)</div></div></div>
+          <div class="col-6 col-md-3"><div class="dash-stat" style="background:#eef2f7;color:#0f1c3e;border-radius:14px;padding:12px"><div class="num fw-800" id="coWalLifetime" style="font-size:1.25rem">—</div><div class="lbl small">صافي تراكمي (ر.ع)</div></div></div>
+        </div>
+        <p class="text-muted small mb-2" id="coFeeNote"></p>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr>
+              <th>الفاتورة</th><th>التاريخ</th><th>الوجهة</th>
+              <th class="text-end">الإجمالي</th><th class="text-end">العمولة</th><th class="text-end">الصافي</th>
+              <th>الحالة</th><th></th>
+            </tr></thead>
+            <tbody id="coLedger"><tr><td colspan="8" class="text-center text-muted py-3">جارٍ التحميل…</td></tr></tbody>
+          </table>
         </div>
       </div>
 
@@ -447,6 +476,9 @@ async function init() {
 
   // Bookings — load the requests sent to this company
   coLoadBookings();
+
+  // Invoices & payouts
+  coLoadEarnings();
 
   // Messaging — load conversations + open the real-time channel
   coInitMessages();  // build GDMessages instance now that COMPANY.id is known
@@ -1052,6 +1084,70 @@ window.onLangChange = () => { if (COMPANY) render(); };
 // ══════════════════════ BOOKING REQUESTS (company) ══════════════════════
 let CO_BOOKINGS = [];
 let CO_BK_FILTER = 'pending';
+
+// ── Invoices & payouts (shared provider accounting endpoint) ──
+function _cf3(n){ return (Number(n)||0).toFixed(3); }
+function _coStatus(row){
+  if (row.settled){
+    const when = row.paidOutAt ? ` · ${new Date(row.paidOutAt).toLocaleDateString('en-GB')}` : '';
+    return `<span class="badge rounded-pill" style="background:#e6f6ef;color:#0a7d45;font-weight:700">✅ مدفوعة${when}</span>`;
+  }
+  if (row.status === 'completed'){
+    return row.requested
+      ? `<span class="badge rounded-pill" style="background:#fff3cd;color:#8a6d00;font-weight:700">⏳ قيد المراجعة</span>`
+      : `<span class="badge rounded-pill" style="background:#eef2f7;color:#475569;font-weight:700">💰 مستحقّة</span>`;
+  }
+  return `<span class="badge rounded-pill" style="background:#eef2f7;color:#64748b;font-weight:700">🚌 قيد التنفيذ</span>`;
+}
+function _coPayoutBtn(row){
+  if (row.settled || row.status !== 'completed' || row.requested) return '';
+  return `<button class="btn btn-sm btn-teal" onclick="coRequestPayout('${row.id}', this)" title="اطلب من المنصّة تحويل مستحقّك">💸 طلب الدفع</button>`;
+}
+async function coLoadEarnings(){
+  const body = document.getElementById('coLedger');
+  if (!body) return;
+  try {
+    const r = await fetch('/api/guides/me/earnings', { credentials:'include' });
+    const d = await r.json();
+    if (!d.success) return;
+    const w = d.wallet, set = (id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=_cf3(v); };
+    set('coWalAvailable', w.available); set('coWalPending', w.pending);
+    set('coWalPaidOut', w.paidOut); set('coWalLifetime', w.lifetimeNet);
+    const note = document.getElementById('coFeeNote');
+    if (note) note.textContent = `عمولة المنصّة: ${(w.commissionRate*100).toFixed(0)}%` + (w.vatRate>0?` · ض.ق.م ${(w.vatRate*100).toFixed(0)}%`:'');
+    if (!d.ledger.length){
+      body.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">لا توجد فواتير بعد.</td></tr>`;
+      return;
+    }
+    const esc = window.gdEsc || (s=>String(s==null?'':s));
+    body.innerHTML = d.ledger.map(row => `
+      <tr>
+        <td class="small" style="font-family:monospace">${esc(row.invoiceNo)}</td>
+        <td class="small">${new Date(row.date).toLocaleDateString('en-GB')}</td>
+        <td class="small acc-dest" title="${esc(row.destination||'')}">${esc(String(row.destination||'—').slice(0,50))}</td>
+        <td class="text-end">${_cf3(row.gross)}</td>
+        <td class="text-end text-muted">${_cf3(row.commission)}</td>
+        <td class="text-end fw-700" style="color:var(--teal)">${_cf3(row.net)}</td>
+        <td>${_coStatus(row)}</td>
+        <td class="text-end" style="white-space:nowrap">
+          ${_coPayoutBtn(row)}
+          <a class="btn btn-sm btn-outline-secondary" href="/api/guides/me/invoice/${encodeURIComponent(row.id)}" target="_blank" title="تحميل الفاتورة">🧾</a>
+        </td>
+      </tr>`).join('');
+  } catch(e){ /* non-critical */ }
+}
+async function coRequestPayout(bookingId, btn){
+  if (!confirm('إرسال طلب دفع هذه الفاتورة إلى المنصّة؟')) return;
+  if (btn){ btn.disabled = true; btn.textContent = '… جارٍ الإرسال'; }
+  try {
+    const r = await fetch('/api/guides/me/request-payout/'+encodeURIComponent(bookingId), {
+      method:'POST', credentials:'include', headers:{ 'X-Requested-With':'fetch' },
+    });
+    const d = await r.json();
+    if (d.success){ alert(d.message || 'تمّ إرسال طلب الدفع.'); coLoadEarnings(); }
+    else { alert(d.message || 'تعذّر إرسال الطلب.'); if(btn){ btn.disabled=false; btn.textContent='💸 طلب الدفع'; } }
+  } catch(e){ alert('تعذّر الاتصال بالخادم.'); if(btn){ btn.disabled=false; btn.textContent='💸 طلب الدفع'; } }
+}
 
 async function coLoadBookings(){
   const el = document.getElementById('coBookingsList');

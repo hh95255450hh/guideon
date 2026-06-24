@@ -10,11 +10,25 @@
 const SupabaseDB = require('../models/SupabaseDB');
 const invoice = require('../services/invoiceService');
 const commission = require('../services/commission');
+const emailService = require('../services/emailService');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
 
 const r3 = (n) => Math.round((Number(n) || 0) * 1000) / 1000;
+
+// Resilient write: drop the column & retry if a not-yet-migrated field is hit.
+const OPTIONAL_BK_COLS = ['payoutRequestedAt'];
+async function updateBookingSafe(id, patch) {
+  try { return await bookings.update(id, patch); }
+  catch (e) {
+    if (/Could not find the '\w+' column|column \S+ does not exist|schema cache/i.test(e.message || '')) {
+      const clean = { ...patch }; OPTIONAL_BK_COLS.forEach(c => delete clean[c]);
+      return Object.keys(clean).length ? await bookings.update(id, clean) : null;
+    }
+    throw e;
+  }
+}
 
 // GET /api/guides/me/earnings — wallet + ledger
 exports.earnings = async (req, res) => {
@@ -59,6 +73,9 @@ exports.earnings = async (req, res) => {
           destination: b.destination || '—',
           status: b.status,
           settled: !!b.paidOutAt,
+          paidOutAt: b.paidOutAt || null,
+          requested: !!b.payoutRequestedAt,
+          requestedAt: b.payoutRequestedAt || null,
           ...br,
         };
       });
@@ -73,6 +90,53 @@ exports.earnings = async (req, res) => {
   } catch (err) {
     console.error('[accounting:earnings]', err.message);
     res.status(500).json({ success: false, message: "Couldn't load earnings. — تعذّر تحميل الأرباح." });
+  }
+};
+
+// POST /api/guides/me/request-payout/:bookingId — provider asks the platform to
+// pay an earned-but-unsettled invoice (in case a transfer was forgotten).
+exports.requestPayout = async (req, res) => {
+  try {
+    const providerId = req.session.userId;
+    const b = await bookings.findById(req.params.bookingId);
+    if (!b || b.guideId !== providerId) {
+      return res.status(404).json({ success: false, message: 'Booking not found. — الحجز غير موجود.' });
+    }
+    if (!b.isPaid || b.status !== 'completed') {
+      return res.status(400).json({ success: false, message: 'Payment can only be requested for completed, paid tours. — يمكن طلب الدفع للرحلات المكتملة والمدفوعة فقط.' });
+    }
+    if (b.paidOutAt) {
+      return res.status(400).json({ success: false, message: 'This payout was already transferred. — تمّ تحويل مستحقّ هذه الفاتورة بالفعل.' });
+    }
+    if (b.payoutRequestedAt) {
+      return res.json({ success: true, alreadyRequested: true, requestedAt: b.payoutRequestedAt, message: 'You already requested this payout. — سبق أن أرسلت طلب الدفع لهذه الفاتورة.' });
+    }
+
+    const now = new Date().toISOString();
+    await updateBookingSafe(req.params.bookingId, { payoutRequestedAt: now });
+
+    // Alert the platform owner/staff so they can settle it.
+    try {
+      const me = await users.findById(providerId);
+      const R  = await commission.getRates();
+      const br = invoice.breakdown(b, commission.rateFor(me, R), R.vat);
+      const who = me?.companyName || me?.fullName || 'مزوّد';
+      const invNo = invoice.invoiceNumber(b);
+      const html = emailService.notificationEmail({
+        icon: '💸',
+        title:   `Payout requested by ${who}`,
+        titleAr: `طلب صرف مستحقّ من ${who}`,
+        body:    `Invoice ${invNo} · net ${br.net.toFixed(3)} OMR · booking ${b.id}`,
+        bodyAr:  `الفاتورة ${invNo} · الصافي ${br.net.toFixed(3)} ر.ع · الحجز ${b.id}${b.destination ? ' — ' + b.destination : ''}`,
+        link: '/admin-revenue.html',
+      });
+      emailService.notifyAdmins(`[Guideon] 💸 طلب دفع مستحقّ — ${who}`, html);
+    } catch (_) { /* never fail the request because the alert failed */ }
+
+    return res.json({ success: true, requestedAt: now, message: 'Payment request sent to the platform. — تمّ إرسال طلب الدفع إلى المنصّة، وسيتمّ التحويل قريباً.' });
+  } catch (err) {
+    console.error('[accounting:requestPayout]', err.message);
+    res.status(500).json({ success: false, message: "Couldn't send the request. — تعذّر إرسال طلب الدفع." });
   }
 };
 
