@@ -345,6 +345,15 @@
                   <div class="col-12">
                     <label class="form-label small fw-600" data-i18n="tour_description">Description *</label>
                     <textarea class="form-control" id="tourDescription" rows="3" data-i18n-ph="tour_desc_ph" placeholder="Describe what makes this tour special..." required></textarea>
+                    <button type="button" class="btn btn-sm btn-teal mt-2" id="aiPkgBtn" onclick="aiImprovePkg()">✨ حسّن وصف الرحلة بالذكاء · Improve with AI</button>
+                    <div id="aiPkgBox" style="display:none;margin-top:10px;background:#f0faf8;border:1px solid #c7e9e2;border-radius:12px;padding:12px">
+                      <div class="small fw-700 mb-1" style="color:#0f7b6c">✨ اقتراح الذكاء الاصطناعي</div>
+                      <div id="aiPkgAr" class="small" style="white-space:pre-wrap;line-height:1.7;color:#23303f"></div>
+                      <div class="d-flex gap-2 mt-2 flex-wrap">
+                        <button type="button" class="btn btn-sm btn-teal" onclick="aiApplyPkg()">✅ استخدم هذا الوصف</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('aiPkgBox').style.display='none'">إلغاء</button>
+                      </div>
+                    </div>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label small fw-600" data-i18n="tour_meeting">Meeting Point</label>
@@ -1290,6 +1299,36 @@ async function requestPayout(bookingId, btn) {
     if (btn) { btn.disabled = false; btn.textContent = '💸 طلب الدفع'; }
   }
 }
+// ── AI: improve a tour-package description (guide) ──
+async function aiImprovePkg() {
+  const ta = document.getElementById('tourDescription');
+  const txt = (ta?.value || '').trim();
+  if (txt.length < 10) { alert('اكتب وصفاً مبدئيّاً للرحلة أوّلاً (بضع كلمات على الأقل).'); return; }
+  const btn = document.getElementById('aiPkgBtn');
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '✨ جارٍ التحسين…'; }
+  try {
+    const r = await fetch('/api/ai/improve', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: txt, role: 'guide' }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'تعذّر التحسين');
+    document.getElementById('aiPkgAr').textContent = d.ar || '';
+    document.getElementById('aiPkgBox').style.display = 'block';
+  } catch (e) {
+    alert(e.message || 'تعذّر التحسين حالياً');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = orig || '✨ حسّن وصف الرحلة بالذكاء · Improve with AI'; }
+  }
+}
+function aiApplyPkg() {
+  const ar = document.getElementById('aiPkgAr').textContent;
+  if (ar) document.getElementById('tourDescription').value = ar;
+  document.getElementById('aiPkgBox').style.display = 'none';
+}
+
 function downloadStatement() {
   const m = document.getElementById('accMonth')?.value || new Date().toISOString().slice(0, 7);
   window.open(`/api/guides/me/statement?month=${encodeURIComponent(m)}`, '_blank');
