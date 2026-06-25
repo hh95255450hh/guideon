@@ -1394,15 +1394,15 @@ function renderPending(list) {
       return bookingCard(b, `
         <span class="badge bg-warning-subtle text-warning align-self-center">${I18N.t('awaiting_tourist') || '⏳ بانتظار قبول السائح'}</span>
         <button class="btn btn-sm btn-outline-secondary" onclick="quotePrompt('${b.id}', ${b.quotedAmount || 0})">${I18N.t('edit_price') || '✏️ تعديل السعر'}</button>
-        <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
+        <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled', this)">${I18N.t('reject_btn')}</button>
       `, b.quotedAmount);
     }
     // Ready-made tour package or fixed-slot booking — price is already set on
     // the listing. Guide just accepts or declines (no quote step).
     if (b.packageId || b.startTime) {
       return bookingCard(b, `
-        <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','confirmed')">${I18N.t('accept_btn') || '✅ قبول'}</button>
-        <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
+        <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','confirmed', this)">${I18N.t('accept_btn') || '✅ قبول'}</button>
+        <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled', this)">${I18N.t('reject_btn')}</button>
       `);
     }
     // Custom trip request → guide proposes a price.
@@ -1422,7 +1422,7 @@ function renderPending(list) {
           <div class="d-flex gap-2">
             <input type="number" min="0" step="0.5" class="form-control form-control-sm" id="quote_${b.id}" placeholder="0.00" style="max-width:140px">
             <button class="btn btn-sm btn-verify" onclick="sendQuote('${b.id}')">${I18N.t('send_offer') || '📤 إرسال العرض'}</button>
-            <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled')">${I18N.t('reject_btn')}</button>
+            <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled', this)">${I18N.t('reject_btn')}</button>
           </div>
         </div>
       </div>`;
@@ -1467,7 +1467,7 @@ function renderInProgress(list) {
   if (!el) return;
   if (!list.length) { el.innerHTML = ''; return; }
   el.innerHTML = list.map(b => bookingCard(b, `
-    <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','completed')">${I18N.t('end_trip_btn') || '🏁 End Trip'}</button>
+    <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','completed', this)">${I18N.t('end_trip_btn') || '🏁 End Trip'}</button>
   `)).join('');
 }
 
@@ -1484,7 +1484,7 @@ function renderConfirmed(list) {
     const dayBefore = tripDate - 24*60*60*1000;
     const canStart = now >= dayBefore;
     return bookingCard(b, canStart
-      ? `<button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','in_progress')">${I18N.t('start_trip_btn') || '🚀 Start Trip'}</button>`
+      ? `<button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','in_progress', this)">${I18N.t('start_trip_btn') || '🚀 Start Trip'}</button>`
       : '');
   }).join('');
 }
@@ -1498,7 +1498,9 @@ function renderPast(list) {
   el.innerHTML = list.slice(0, 5).map(b => bookingCard(b)).join('');
 }
 
-async function updateStatus(id, status) {
+let _statusBusy = false;
+async function updateStatus(id, status, btn) {
+  if (_statusBusy) return;                 // guard against rapid double-taps
   const msgKey =
     status === 'confirmed'   ? 'accept_confirm' :
     status === 'cancelled'   ? 'reject_confirm' :
@@ -1506,17 +1508,33 @@ async function updateStatus(id, status) {
     status === 'completed'   ? 'end_trip_confirm' : 'accept_confirm';
   const msg = I18N.t(msgKey);
   if (!confirm(msg)) return;
+
+  // Instant feedback: disable the row's buttons and show a spinner so the
+  // guide sees the tap registered immediately, even on a slow connection.
+  _statusBusy = true;
+  const row = btn ? btn.closest('.booking-card, .card, [data-bk]') : null;
+  const siblings = row ? row.querySelectorAll('button') : (btn ? [btn] : []);
+  siblings.forEach(b => { b.disabled = true; });
+  const orig = btn ? btn.innerHTML : '';
+  if (btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> …';
+
   try {
     const r = await fetch(`/api/bookings/${id}/status`, {
       method: 'PATCH', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.message);
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.message || 'تعذّر تحديث الحالة');
     toast(I18N.t('status_' + status) + ' ✓', 'success');
-    loadBookings();
-  } catch (e) { toast(e.message, 'error'); }
+    await loadBookings();                  // re-render replaces the buttons
+  } catch (e) {
+    toast(e.message, 'error');
+    siblings.forEach(b => { b.disabled = false; });
+    if (btn) btn.innerHTML = orig;
+  } finally {
+    _statusBusy = false;
+  }
 }
 
 // ── Time Slot Management ──────────────────────────────────────

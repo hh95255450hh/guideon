@@ -1222,14 +1222,14 @@ function coRenderBookings(){
     if (b.status === 'pending'){
       // Company packages are fixed-price → accept / reject directly.
       actions = `
-        <button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','confirmed')">✅ قبول</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled')">رفض</button>`;
+        <button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','confirmed', this)">✅ قبول</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled', this)">رفض</button>`;
     } else if (b.status === 'confirmed' && b.tourDate >= today){
       actions = `
-        <button class="btn btn-sm btn-primary" onclick="coBkStatus('${b.id}','in_progress')">🚗 بدء الرحلة</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled')">إلغاء</button>`;
+        <button class="btn btn-sm btn-primary" onclick="coBkStatus('${b.id}','in_progress', this)">🚗 بدء الرحلة</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled', this)">إلغاء</button>`;
     } else if (b.status === 'in_progress'){
-      actions = `<button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','completed')">🏁 إنهاء</button>`;
+      actions = `<button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','completed', this)">🏁 إنهاء</button>`;
     }
     return `
       <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff">
@@ -1250,21 +1250,36 @@ function coRenderBookings(){
   }).join('');
 }
 
-async function coBkStatus(id, status){
+let _coBkBusy = false;
+async function coBkStatus(id, status, btn){
+  if (_coBkBusy) return;                    // guard against rapid double-taps
   const labels = { confirmed:'قبول هذا الحجز؟', cancelled:'رفض/إلغاء هذا الحجز؟', in_progress:'بدء هذه الرحلة؟', completed:'إنهاء هذه الرحلة؟' };
   if (!confirm(labels[status] || 'تأكيد العملية؟')) return;
+
+  // Instant feedback so the tap is visibly registered even on slow mobile.
+  _coBkBusy = true;
+  const row = btn ? btn.closest('.card, [data-bk]') : null;
+  const siblings = row ? row.querySelectorAll('button') : (btn ? [btn] : []);
+  siblings.forEach(b => { b.disabled = true; });
+  const orig = btn ? btn.innerHTML : '';
+  if (btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> …';
+
   try {
     const r = await fetch(`/api/bookings/${id}/status`, {
       method:'PATCH', credentials:'include',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ status }),
     });
-    const d = await r.json();
+    const d = await r.json().catch(() => ({}));
     if (!r.ok || !d.success) throw new Error(d.message || 'فشل تحديث الحالة');
     showToast(status==='confirmed' ? 'تم قبول الحجز ✅' : status==='cancelled' ? 'تم الإلغاء' : 'تم التحديث', 'success');
-    coLoadBookings();
+    await coLoadBookings();
   } catch (e) {
     showToast(e.message || 'فشل تحديث الحالة', 'danger');
+    siblings.forEach(b => { b.disabled = false; });
+    if (btn) btn.innerHTML = orig;
+  } finally {
+    _coBkBusy = false;
   }
 }
 
