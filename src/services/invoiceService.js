@@ -99,88 +99,36 @@ async function generateGuideInvoice(booking, guide, tourist, rate, vatRate = VAT
   const b = breakdown(booking, rate, vatRate);
   const invNo = invoiceNumber(booking);
   const isTax = vatRate > 0 && !!vatNumber;
-  const docTitle = isTax ? 'TAX INVOICE' : 'EARNINGS INVOICE';
+  const issued = new Date(booking.paidAt || booking.createdAt || Date.now());
 
-  // QR → verification page
-  let qrBuf = null;
+  // QR → verification page (data URL for the HTML renderer).
+  let qr = null;
   if (QRCode) {
-    try { qrBuf = await QRCode.toBuffer(`${APP_URL}/invoice/verify/${verifyToken(booking.id)}`, { margin: 1, width: 220 }); }
-    catch { qrBuf = null; }
+    try { qr = await QRCode.toDataURL(`${APP_URL}/invoice/verify/${verifyToken(booking.id)}`, { margin: 1, width: 220 }); }
+    catch { qr = null; }
   }
 
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: 'A4', margin: 50 });
-      const chunks = [];
-      doc.on('data', c => chunks.push(c));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
+  const tourDate = booking.tourDate ? new Date(booking.tourDate).toLocaleDateString('en-GB') : '—';
+  const dest = String(booking.destination || '—').replace(/\s+/g, ' ').trim();
+  const serviceLine = `رحلة إرشاديّة · Guided tour — ${dest} · ${tourDate} · ${booking.participants || 1} pax`;
 
-      const issued = new Date(booking.paidAt || booking.createdAt || Date.now());
-      header(doc, docTitle, [
-        `No: ${invNo}`,
-        `Issued: ${issued.toLocaleDateString('en-GB')}`,
-        isTax ? `VATIN: ${vatNumber}` : 'Self-billed',
-      ]);
-
-      // Self-billing note
-      doc.fillColor(GREY).font('Helvetica').fontSize(9)
-         .text('This invoice is issued by Guideon on behalf of the guide (self-billing) for services delivered through the platform.', 50, 122, { width: doc.page.width - 100 });
-
-      // Parties
-      let y = 150;
-      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text('Guide (payee)', 50, y);
-      doc.font('Helvetica').fillColor(GREY).fontSize(10)
-         .text(guide?.fullName || 'Unknown', 50, y + 16)
-         .text(guide?.email || '', 50, y + 30)
-         .text(guide?.phone || '', 50, y + 44);
-      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text('Platform', 320, y);
-      doc.font('Helvetica').fillColor(GREY).fontSize(10)
-         .text('Vision for Digital Thought', 320, y + 16)
-         .text('North Al Mabilah, Seeb', 320, y + 30)
-         .text('Muscat Governorate 112, Oman', 320, y + 44);
-
-      // Service line
-      y = 222;
-      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(11).text('Service', 50, y);
-      doc.font('Helvetica').fillColor(GREY).fontSize(10)
-         .text(`Guided tour — ${booking.destination || '—'} · ${new Date(booking.tourDate).toLocaleDateString('en-GB')} · ${booking.participants || 1} pax`, 50, y + 16, { width: doc.page.width - 100 });
-      doc.fontSize(9).text(`Booking ref: ${booking.id}`, 50, y + 32);
-
-      // Breakdown table
-      y = 280;
-      doc.roundedRect(50, y, doc.page.width - 100, isTax ? 150 : 130, 8).strokeColor(LIGHT).stroke();
-      const row = (label, value, yy, bold, color) => {
-        doc.font(bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(bold ? 12 : 11)
-           .fillColor(color || (bold ? DARK : GREY)).text(label, 70, yy);
-        doc.text(value, doc.page.width - 230, yy, { width: 160, align: 'right' });
-      };
-      let ry = y + 18;
-      row('Gross booking value', omr(b.gross), ry); ry += 26;
-      row(`Platform service fee (${(b.rate * 100).toFixed(0)}%)`, `- ${omr(b.commission)}`, ry); ry += 26;
-      if (isTax) { row(`VAT on fee (${(vatRate * 100).toFixed(0)}%)`, `- ${omr(b.vat)}`, ry); ry += 26; }
-      doc.moveTo(70, ry + 2).lineTo(doc.page.width - 70, ry + 2).strokeColor(LIGHT).stroke();
-      row('Net payout to guide', omr(b.net), ry + 12, true, GREEN);
-
-      // Status badge
-      y += (isTax ? 170 : 150);
-      const paid = !!booking.isPaid;
-      doc.roundedRect(50, y, 160, 30, 6).fill(paid ? '#e6f6ef' : '#fff4e5');
-      doc.fillColor(paid ? '#0a7d45' : '#a85b00').font('Helvetica-Bold').fontSize(11)
-         .text(paid ? 'PAID BY CUSTOMER' : 'AWAITING PAYMENT', 60, y + 9);
-
-      // QR verification
-      if (qrBuf) {
-        doc.image(qrBuf, doc.page.width - 130, y - 6, { width: 80 });
-        doc.fillColor(GREY).font('Helvetica').fontSize(7)
-           .text('Scan to verify', doc.page.width - 130, y + 76, { width: 80, align: 'center' });
-      }
-
-      footer(doc, isTax
-        ? `Tax invoice · VATIN ${vatNumber} · Guideon`
-        : 'Earnings invoice (no VAT charged) · Guideon');
-      doc.end();
-    } catch (e) { reject(e); }
+  // Render through the Puppeteer engine (pdfDocs) so Arabic shapes correctly,
+  // the logo is embedded, and the QR verification code is included.
+  return require('./pdfDocs').renderEarningsInvoice({
+    invNo,
+    docTitle: isTax ? 'فاتورة ضريبيّة · TAX INVOICE' : 'فاتورة أرباح · EARNINGS INVOICE',
+    issued: issued.toLocaleDateString('en-GB'),
+    isTax, vatNumber,
+    guide: {
+      name:  guide?.fullName || guide?.companyName || 'Unknown',
+      email: guide?.email || '',
+      phone: guide?.phone || '',
+    },
+    service: { line: serviceLine, bookingRef: booking.id },
+    gross: b.gross, commission: b.commission, ratePct: (b.rate * 100).toFixed(0),
+    vat: b.vat, net: b.net,
+    paid: !!booking.isPaid,
+    qr,
   });
 }
 

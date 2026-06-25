@@ -174,4 +174,59 @@ async function renderVoucher(payment, payee) {
   return htmlToPdf(shell('Voucher', body));
 }
 
-module.exports = { renderInvoice, renderVoucher, htmlToPdf, COMPANY };
+// ── Self-billed earnings invoice (per booking) ──────────────────────────────
+// Replaces the old pdfkit version which could not shape Arabic (guide names and
+// destinations came out as mojibake). Browser-rendered → Arabic + logo + QR.
+async function renderEarningsInvoice(d) {
+  const paid = !!d.paid;
+  const body = `
+    <div class="band">
+      <div class="brand">${LOGO ? `<img src="${LOGO}">` : ''}<div><div class="nm">${COMPANY.platform}</div><div class="tag">${esc(COMPANY.ar)} · ${esc(COMPANY.en)}</div></div></div>
+      <div class="docbox"><div class="t">${esc(d.docTitle)}</div>
+        <div class="meta">رقم · No: <b>${esc(d.invNo)}</b><br>التاريخ · Issued: <b>${esc(d.issued)}</b><br>${d.isTax ? `الرقم الضريبي · VATIN: ${esc(d.vatNumber)}` : 'فاتورة ذاتيّة · Self-billed'}</div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="note" style="background:#f5f8fb;border-color:#e6eef6;color:#5a6b85;margin-top:0;margin-bottom:18px">
+        تُصدر Guideon هذه الفاتورة نيابةً عن المرشد (فوترة ذاتيّة) مقابل خدمة قُدّمت عبر المنصّة.<br>
+        <span style="direction:ltr;unicode-bidi:isolate">This invoice is issued by Guideon on behalf of the guide (self-billing) for a service delivered through the platform.</span>
+      </div>
+      <div class="parties">
+        <div class="party">
+          <div class="h">المستفيد · GUIDE (PAYEE)</div>
+          <div class="n">${esc(d.guide.name || '—')}</div>
+          <div class="l">${d.guide.email ? `<span style="direction:ltr;unicode-bidi:isolate">${esc(d.guide.email)}</span><br>` : ''}${d.guide.phone ? `<span style="direction:ltr;unicode-bidi:isolate">${esc(d.guide.phone)}</span>` : ''}</div>
+        </div>
+        <div class="party">
+          <div class="h">المنصّة · PLATFORM</div>
+          <div class="n" style="font-size:15px">${esc(COMPANY.ar)}</div>
+          <div class="n2">${esc(COMPANY.en)}</div>
+          <div class="l">${esc(COMPANY.addrAr)}<br><span style="direction:ltr;unicode-bidi:isolate">D-U-N-S ${COMPANY.duns} · ${COMPANY.site}</span></div>
+        </div>
+      </div>
+
+      <div class="party" style="background:#fff;border:1px solid #e6eef6;margin-bottom:18px">
+        <div class="h">الخدمة · SERVICE</div>
+        <div class="l" style="font-size:13px;color:#1a2233">${esc(d.service.line)}</div>
+        <div class="l" style="margin-top:4px">مرجع الحجز · Booking ref: <span style="direction:ltr;unicode-bidi:isolate">${esc(d.service.bookingRef)}</span></div>
+      </div>
+
+      <div class="totals" style="width:100%;margin:0">
+        <div class="r"><span>إجمالي قيمة الحجز · Gross booking value</span><span class="v">${omr(d.gross)} ر.ع</span></div>
+        <div class="r"><span>عمولة المنصّة · Platform service fee (${d.ratePct}%)</span><span class="v">− ${omr(d.commission)} ر.ع</span></div>
+        ${d.isTax ? `<div class="r"><span>ض.ق.م على العمولة · VAT on fee</span><span class="v">− ${omr(d.vat)} ر.ع</span></div>` : ''}
+        <div class="r grand"><span>صافي مستحقّ المرشد · Net payout to guide</span><span class="v">${omr(d.net)} ر.ع</span></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:24px">
+        <div class="stamp" style="margin-top:0;border-color:${paid ? '#0a7d45' : '#a85b00'};color:${paid ? '#0a7d45' : '#a85b00'};transform:none">
+          ${paid ? 'مدفوع من العميل · PAID BY CUSTOMER ✓' : 'بانتظار الدفع · AWAITING PAYMENT'}
+        </div>
+        ${d.qr ? `<div style="text-align:center"><img src="${d.qr}" style="width:84px;height:84px"><div style="font-size:10px;color:#7a8aa0;margin-top:3px">امسح للتحقّق · Scan to verify</div></div>` : ''}
+      </div>
+    </div>
+    ${footer()}`;
+  return htmlToPdf(shell(d.docTitle, body));
+}
+
+module.exports = { renderInvoice, renderVoucher, renderEarningsInvoice, htmlToPdf, COMPANY };
