@@ -1907,6 +1907,13 @@ exports.settleInvoice = async (req, res) => {
       updated = await invoicesDB.update(req.params.id, clean);
     }
 
+    // 2b) Keep the booking in sync so the provider's earnings ledger reflects
+    // the transfer (it reads booking.paidOutAt). Best-effort, never blocks.
+    if (inv.bookingId) {
+      try { await bookings.update(inv.bookingId, { paidOutAt: now }); }
+      catch (_) { /* column may lag; the ledger also merges invoice.paidOutAt */ }
+    }
+
     audit.logAction(req, { action: 'settleInvoice', targetType: 'invoice', targetId: req.params.id, details: { amount, payee: inv.recipientName } });
     const s = await _treasurySnapshot();
     res.json({ success: true, message: 'تمّ تحويل المبلغ للمزوّد.', balance: s.balance, invoice: updated });

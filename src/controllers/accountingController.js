@@ -14,6 +14,7 @@ const emailService = require('../services/emailService');
 
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
+const invoices = new SupabaseDB('invoices');
 
 const r3 = (n) => Math.round((Number(n) || 0) * 1000) / 1000;
 
@@ -44,9 +45,19 @@ exports.earnings = async (req, res) => {
     const paid = mine.filter(b => b.isPaid);
     const sum  = (arr) => r3(arr.reduce((s, b) => s + invoice.breakdown(b, rate, vat).net, 0));
 
-    const completedPaid = paid.filter(b => b.status === 'completed' && !b.paidOutAt);
-    const inFlight      = paid.filter(b => b.status !== 'completed' && !b.paidOutAt);
-    const settled       = paid.filter(b => b.paidOutAt);
+    // A payout can be settled in two places: on the booking (payables flow) OR
+    // on the booking's invoice (admin "Transfer to guide" on the Invoices tab).
+    // Merge both so a transferred invoice shows the guide as paid (not "Due").
+    const invPaidOut = {}; // bookingId -> paidOutAt
+    try {
+      const myInvoices = await invoices.findAllByField('recipientId', guideId);
+      (myInvoices || []).forEach(iv => { if (iv.bookingId && iv.paidOutAt) invPaidOut[iv.bookingId] = iv.paidOutAt; });
+    } catch (_) { /* invoices table/cols may lag — degrade gracefully */ }
+    const settledAt = (b) => b.paidOutAt || invPaidOut[b.id] || null;
+
+    const completedPaid = paid.filter(b => b.status === 'completed' && !settledAt(b));
+    const inFlight      = paid.filter(b => b.status !== 'completed' && !settledAt(b));
+    const settled       = paid.filter(b => settledAt(b));
 
     const wallet = {
       pending:   sum(inFlight),         // tour not finished → held
@@ -72,8 +83,8 @@ exports.earnings = async (req, res) => {
           date: b.paidAt || b.createdAt,
           destination: b.destination || '—',
           status: b.status,
-          settled: !!b.paidOutAt,
-          paidOutAt: b.paidOutAt || null,
+          settled: !!settledAt(b),
+          paidOutAt: settledAt(b),
           requested: !!b.payoutRequestedAt,
           requestedAt: b.payoutRequestedAt || null,
           ...br,
