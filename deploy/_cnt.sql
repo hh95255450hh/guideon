@@ -1,0 +1,1 @@
+select 'users' t,count(*) from public.users union all select 'packages',count(*) from public.tour_packages union all select 'bookings',count(*) from public.bookings union all select 'reviews',count(*) from public.reviews order by 1;

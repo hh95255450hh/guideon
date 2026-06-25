@@ -312,7 +312,7 @@
       { label: tr('Bookings','الحجوزات'),                      href: '/company-dashboard.html#coBookingsSection', icon: 'bookings' },
       { label: tr('Add a Tour Package','إضافة حزمة سياحية'),   href: '/company-dashboard.html#add',        icon: 'plus' },
       { label: tr('My Packages','حزمي السياحية'),              href: '/company-dashboard.html#packages',   icon: 'tour' },
-      { label: tr('Reviews','التقييمات'),                       href: '/company-dashboard.html#reviews',    icon: 'star' },
+      { label: tr('Invoices & Payouts','الفواتير والمستحقّات'), href: '/company-dashboard.html#coInvoicesSection', icon: 'star' },
     ];
 
     const team = [

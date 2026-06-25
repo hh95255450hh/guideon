@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=22">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=23">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -79,7 +79,7 @@
   <div class="row g-4">
     <!-- LEFT: Bookings -->
     <div class="col-lg-8">
-      <div class="mb-4">
+      <div class="mb-4" id="bookings">
         <h5 class="fw-700 mb-3" data-i18n="pending_section">⏳ Pending Booking Requests</h5>
         <div id="pendingList">
           <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
@@ -223,7 +223,7 @@
       </div>
 
       <!-- ════════════════════════ MY TOURS ════════════════════════ -->
-      <div class="info-card mb-4">
+      <div class="info-card mb-4" id="tours">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="fw-700 mb-0" data-i18n="my_tours_title">🗺️ My Tours</h5>
           <button class="btn btn-sm btn-teal" onclick="openTourModal()" data-i18n="add_tour_btn">➕ Add New Tour</button>
@@ -441,7 +441,7 @@
       </div>
 
       <!-- Gallery & Video -->
-      <div class="info-card mb-4">
+      <div class="info-card mb-4" id="gallery">
         <h5 class="fw-700 mb-3" data-i18n="gallery_title">📸 Photo Gallery</h5>
         <div id="galleryGrid" class="d-flex flex-wrap gap-2 mb-3"></div>
         <div class="d-flex align-items-center gap-2">
@@ -467,7 +467,7 @@
 
     <!-- RIGHT: Availability Slots -->
     <div class="col-lg-4">
-      <div class="info-card sticky-top" style="top:80px">
+      <div class="info-card sticky-top" id="availability" style="top:80px">
         <h5 class="fw-700 mb-2">📅 إدارة المواعيد</h5>
 
         <!-- Add slot form -->
@@ -564,7 +564,7 @@
 
 <!-- ════════════════════ MY REVIEWS ════════════════════ -->
 <div class="container py-4">
-  <div class="info-card">
+  <div class="info-card" id="reviews">
     <h5 class="fw-700 mb-3">⭐ <span data-i18n="my_reviews_title">تقييمات السياح</span></h5>
     <div id="guideReviewsList">
       <div class="text-muted small text-center py-3" data-i18n="loading">Loading…</div>
@@ -1943,6 +1943,8 @@ function guideConnectSSE()     { return GUIDE_MSG && GUIDE_MSG.connectSSE(); }
 .cat-chip.active { background:var(--teal); color:#fff; border-color:var(--teal); box-shadow:0 2px 6px rgba(15,123,108,.25); }
 .cat-chip input { position:absolute; opacity:0; pointer-events:none; }
 .acc-dest { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Side-menu hash links land below the sticky navbar, not under it */
+#tours, #bookings, #reviews, #availability, #gallery { scroll-margin-top: 84px; }
 @media (max-width: 576px){ .acc-dest { max-width: 120px; } }
 </style>
 <script src="/js/gd-messages.js?v=2"></script>
@@ -1950,7 +1952,7 @@ function guideConnectSSE()     { return GUIDE_MSG && GUIDE_MSG.connectSSE(); }
 <script src="/js/pwa.js?v=15" defer></script>
 <script src="/js/gd-gallery.js?v=1"></script>
 <script src="/js/gd-video-upload.js?v=1"></script>
-<script src="/js/common-widgets.js?v=22"></script>
+<script src="/js/common-widgets.js?v=23"></script>
 </body>
 </html>
 
