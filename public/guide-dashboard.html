@@ -175,8 +175,6 @@
           </div>
         </div>
 
-        <h6 class="fw-700 mb-2">🏆 Achievements</h6>
-        <div id="achievementsList" class="d-flex flex-wrap gap-2 mb-4">Loading…</div>
         <h6 class="fw-700 mb-2">📈 Per-Tour Performance</h6>
         <div class="table-responsive">
           <table class="table table-sm mb-0">
@@ -1122,16 +1120,12 @@ async function loadAnalytics() {
     if (document.getElementById('anConv'))    document.getElementById('anConv').textContent    = (d.overallConversion || 0) + '%';
     if (document.getElementById('anPending')) document.getElementById('anPending').textContent = d.pendingEarnings.toFixed(0);
     if (document.getElementById('anPaid'))    document.getElementById('anPaid').textContent    = d.totalEarned.toFixed(0);
-    const aEl = document.getElementById('achievementsList');
-    if (aEl) aEl.innerHTML = (d.achievements || []).map(a => `
-      <div title="${a.description}" style="${a.earned ? 'background:linear-gradient(135deg,#fff8dc,#ffd700);border:2px solid #ffd700' : 'background:#f5f5f5;border:2px solid #e0e0e0;opacity:.5'};padding:10px 14px;border-radius:12px;min-width:120px;text-align:center;cursor:help">
-        <div style="font-size:1.6rem">${a.icon}</div>
-        <div class="small fw-700" style="${a.earned ? 'color:#8b6f00' : 'color:#999'}">${a.label}</div>
-      </div>`).join('');
     const tEl = document.getElementById('perTourTable');
+    const _esc = window.gdEsc || (s => String(s == null ? '' : s));
+    const _clip = (s, n = 48) => { s = String(s || '').replace(/\s+/g, ' ').trim(); return _esc(s.length > n ? s.slice(0, n).trim() + '…' : s); };
     if (tEl) tEl.innerHTML = d.perTour.length ? d.perTour.map(t => `
       <tr>
-        <td><strong>${t.title}</strong><br><small class="text-muted">${t.destination || '—'} ${t.isPublished ? '' : '<span class="badge bg-secondary" style="font-size:.6rem">DRAFT</span>'}</small></td>
+        <td><strong>${_clip(t.title, 60)}</strong><br><small class="text-muted">${_clip(t.destination || '—')} ${t.isPublished ? '' : '<span class="badge bg-secondary" style="font-size:.6rem">DRAFT</span>'}</small></td>
         <td class="text-end">${t.views}</td>
         <td class="text-end fw-700">${t.bookings}</td>
         <td class="text-end"><span class="badge ${t.conversion > 5 ? 'bg-success' : t.conversion > 0 ? 'bg-warning text-dark' : 'bg-light text-dark'}">${t.conversion}%</span></td>
