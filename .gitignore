@@ -35,5 +35,6 @@ android/app/
 android/.gradle/
 
 .env.production
-deploy/_*.sh
+# Local ops/debug scratch scripts (kept on disk, never committed)
+deploy/_*
 deploy/*.tgz
