@@ -209,66 +209,6 @@ function paymentVoucherNumber(id, when) {
   const short = String(id || '').replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
   return `GDN-PV-${yr}-${short}`;
 }
-async function generatePaymentVoucher(payment, payee) {
-  const voucherNo = paymentVoucherNumber(payment.id, payment.createdAt);
-  const issued = new Date(payment.createdAt || Date.now());
-  const typeLabel = { guide: 'Guide / مرشد', company: 'Company / شركة', team: 'Team / فريق' }[payee.type] || 'Provider';
-  let qrBuf = null;
-  if (QRCode) { try { qrBuf = await QRCode.toBuffer(`${APP_URL}/  · ${voucherNo}`, { margin: 1, width: 200 }); } catch { qrBuf = null; } }
-
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: 'A4', margin: 50 });
-      const chunks = [];
-      doc.on('data', c => chunks.push(c));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      header(doc, 'PAYMENT VOUCHER', [voucherNo, issued.toISOString().slice(0, 10), 'إشعار دفع']);
-
-      let y = 140;
-      doc.fillColor(DARK).fontSize(15).font('Helvetica-Bold').text('Payment Voucher — إشعار دفع', 50, y);
-      y += 28;
-
-      // Payee box
-      doc.roundedRect(50, y, doc.page.width - 100, 78, 8).fill('#f4faf8');
-      doc.fillColor(GREY).fontSize(9).font('Helvetica').text('PAID TO — صُرف إلى', 64, y + 12);
-      doc.fillColor(DARK).fontSize(14).font('Helvetica-Bold').text(payee.name || '—', 64, y + 28);
-      doc.fillColor(GREY).fontSize(10).font('Helvetica')
-         .text(`${typeLabel}${payee.email ? '  ·  ' + payee.email : ''}`, 64, y + 50);
-      y += 100;
-
-      // Amount — the headline
-      doc.roundedRect(50, y, doc.page.width - 100, 70, 8).fill(GREEN);
-      doc.fillColor('#cfe7e1').fontSize(10).font('Helvetica').text('AMOUNT PAID — المبلغ المدفوع', 64, y + 14);
-      doc.fillColor('white').fontSize(26).font('Helvetica-Bold').text(omr(payment.amount), 64, y + 30);
-      y += 92;
-
-      // Details table
-      const row = (k, v) => {
-        doc.fillColor(GREY).fontSize(10).font('Helvetica').text(k, 64, y, { width: 180 });
-        doc.fillColor(DARK).fontSize(10).font('Helvetica-Bold').text(v, 244, y, { width: doc.page.width - 294 });
-        y += 22;
-      };
-      row('Voucher No. — رقم الإشعار', voucherNo);
-      row('Date — التاريخ', issued.toLocaleString('en-GB'));
-      row('Description — البيان', payment.description || '—');
-      row('Method — الطريقة', 'Treasury transfer — تحويل من الخزانة');
-      row('Status — الحالة', 'PAID — مدفوع ✓');
-
-      if (qrBuf) { try { doc.image(qrBuf, doc.page.width - 150, y + 6, { width: 90 }); } catch (_) {} }
-
-      y += 30;
-      doc.fillColor(GREY).fontSize(9).font('Helvetica')
-         .text('This voucher confirms a payment issued by Guideon (Vision for Digital Thought) to the provider above.', 50, y, { width: doc.page.width - 160 })
-         .text('هذا الإشعار يؤكّد صرف المبلغ أعلاه من Guideon إلى المزوّد المذكور.', 50, y + 14, { width: doc.page.width - 160 });
-
-      footer(doc, 'Guideon — Payment Voucher · operated by Vision for Digital Thought · guideon.om');
-      doc.end();
-    } catch (e) { reject(e); }
-  });
-}
-
 // ════════════════════ Custom invoice (admin → provider) ════════════════════
 // A proper multi-line invoice the admin issues to a guide / company / team.
 //   invoice   = { id, number?, items:[{desc,amount}], note, createdAt }
@@ -278,72 +218,10 @@ function invoiceDocNumber(id, when) {
   const short = String(id || '').replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
   return `GDN-BILL-${yr}-${short}`;
 }
-async function generateInvoice(invoice, recipient, vatRate = VAT_RATE, vatNumber = VAT_NUMBER) {
-  const docNo  = invoice.number || invoiceDocNumber(invoice.id, invoice.createdAt);
-  const issued = new Date(invoice.createdAt || Date.now());
-  const isTax  = vatRate > 0 && !!vatNumber;
-  const items  = Array.isArray(invoice.items) ? invoice.items : [];
-  const subtotal = r3(items.reduce((s, it) => s + (Number(it.amount) || 0), 0));
-  const vat   = r3(subtotal * (vatRate || 0));
-  const total = r3(subtotal + vat);
-  let qrBuf = null;
-  if (QRCode) { try { qrBuf = await QRCode.toBuffer(`${APP_URL} · ${docNo}`, { margin: 1, width: 200 }); } catch { qrBuf = null; } }
-
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: 'A4', margin: 50 });
-      const chunks = [];
-      doc.on('data', c => chunks.push(c));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      header(doc, isTax ? 'TAX INVOICE' : 'INVOICE', [docNo, issued.toISOString().slice(0, 10), isTax ? ('VATIN ' + vatNumber) : 'فاتورة']);
-
-      let y = 140;
-      doc.fillColor(GREY).fontSize(9).font('Helvetica').text('BILL TO — إلى', 50, y);
-      doc.fillColor(DARK).fontSize(14).font('Helvetica-Bold').text(recipient.name || '—', 50, y + 14);
-      doc.fillColor(GREY).fontSize(10).font('Helvetica')
-         .text(`${({ guide: 'Guide / مرشد', company: 'Company / شركة', team: 'Team / فريق' }[recipient.type] || '')}${recipient.email ? '  ·  ' + recipient.email : ''}`, 50, y + 34);
-      y += 70;
-
-      const W = doc.page.width, xAmt = W - 50;
-      doc.rect(50, y, W - 100, 24).fill(GREEN);
-      doc.fillColor('white').fontSize(10).font('Helvetica-Bold').text('Description — البيان', 60, y + 7);
-      doc.text('Amount (OMR)', xAmt - 150, y + 7, { width: 140, align: 'right' });
-      y += 24;
-      items.forEach((it, i) => {
-        if (i % 2) doc.rect(50, y, W - 100, 22).fill('#f6f9f8');
-        doc.fillColor(DARK).fontSize(10).font('Helvetica').text(it.desc || '—', 60, y + 6, { width: W - 260 });
-        doc.fillColor(DARK).text(r3(it.amount).toFixed(3), xAmt - 150, y + 6, { width: 140, align: 'right' });
-        y += 22;
-      });
-      y += 14;
-
-      const totRow = (k, v, bold) => {
-        doc.fillColor(bold ? DARK : GREY).fontSize(bold ? 12 : 10).font(bold ? 'Helvetica-Bold' : 'Helvetica')
-           .text(k, xAmt - 320, y, { width: 170, align: 'right' });
-        doc.fillColor(bold ? GREEN : DARK).font('Helvetica-Bold').text(v, xAmt - 150, y, { width: 140, align: 'right' });
-        y += bold ? 26 : 20;
-      };
-      totRow('Subtotal — المجموع', omr(subtotal));
-      if (vatRate > 0) totRow(`VAT (${(vatRate * 100).toFixed(0)}%)`, omr(vat));
-      totRow('TOTAL — الإجمالي', omr(total), true);
-
-      if (invoice.note) {
-        y += 8;
-        doc.fillColor(GREY).fontSize(9).font('Helvetica').text('Note — ملاحظة: ' + invoice.note, 50, y, { width: W - 100 });
-      }
-      if (qrBuf) { try { doc.image(qrBuf, 50, doc.page.height - 150, { width: 80 }); } catch (_) {} }
-
-      footer(doc, 'Guideon — Invoice · operated by Vision for Digital Thought · guideon.om');
-      doc.end();
-    } catch (e) { reject(e); }
-  });
-}
-
-// Professional bilingual (AR/EN) renderer via HTML + Puppeteer — supersedes the
-// pdfkit versions above (kept for reference but no longer exported), because
-// pdfkit cannot shape Arabic text. The browser renders Arabic/RTL + the logo.
+// Bilingual (AR/EN) PDF renderers via HTML + Puppeteer. pdfkit cannot shape
+// Arabic, so the admin invoice and payment voucher are rendered by the browser
+// (Arabic/RTL + embedded logo). The monthly statement above still uses pdfkit
+// (English/numeric only).
 function _invoiceHtml(invoice, recipient, vatRate = VAT_RATE, vatNumber = VAT_NUMBER) {
   const number = invoice.number || invoiceDocNumber(invoice.id, invoice.createdAt);
   return require('./pdfDocs').renderInvoice({ ...invoice, number }, recipient, vatRate, vatNumber);
