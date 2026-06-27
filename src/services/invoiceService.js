@@ -20,14 +20,8 @@
  * VAT is OFF by default (VAT_RATE=0). Set VAT_RATE=0.05 + VAT_NUMBER once the
  * platform is VAT-registered, and the documents become full tax invoices.
  */
-const PDFDocument = require('pdfkit');
 const crypto = require('crypto');
 let QRCode; try { QRCode = require('qrcode'); } catch { QRCode = null; }
-
-const GREEN = '#0f7b6c';
-const DARK  = '#1a1a1a';
-const GREY  = '#666666';
-const LIGHT = '#e0e7e4';
 
 const APP_URL = (process.env.APP_URL || 'https://guideon.om').replace(/\/$/, '');
 const COMMISSION_RATE = parseFloat(process.env.PLATFORM_COMMISSION_RATE || '0.10');
@@ -75,25 +69,6 @@ function decodeToken(token) {
   try { return Buffer.from(body, 'base64url').toString('utf8'); } catch { return null; }
 }
 
-function header(doc, rightTitle, rightLines) {
-  doc.rect(0, 0, doc.page.width, 110).fill(GREEN);
-  doc.fillColor('white').fontSize(26).font('Helvetica-Bold').text('Guideon', 50, 38);
-  doc.fontSize(10).font('Helvetica').fillColor('#cfe7e1')
-     .text('Vision for Digital Thought · D-U-N-S 850403864', 50, 72)
-     .text('Seeb, Muscat, Sultanate of Oman · guideon.om', 50, 86);
-  const right = doc.page.width - 50;
-  doc.fontSize(13).font('Helvetica-Bold').fillColor('white').text(rightTitle, right - 200, 40, { width: 200, align: 'right' });
-  doc.fontSize(9).font('Helvetica');
-  rightLines.forEach((l, i) => doc.text(l, right - 200, 62 + i * 13, { width: 200, align: 'right' }));
-}
-
-function footer(doc, note) {
-  const y = doc.page.height - 56;
-  doc.fontSize(8).fillColor(GREY).font('Helvetica')
-     .text(note || 'Guideon — operated by Vision for Digital Thought · guideon.om', 50, y, { width: doc.page.width - 100, align: 'center' })
-     .text(`Generated ${new Date().toISOString()}`, 50, y + 12, { width: doc.page.width - 100, align: 'center' });
-}
-
 // ════════════════════ Per-booking earnings invoice ════════════════════
 async function generateGuideInvoice(booking, guide, tourist, rate, vatRate = VAT_RATE, vatNumber = VAT_NUMBER) {
   const b = breakdown(booking, rate, vatRate);
@@ -134,68 +109,29 @@ async function generateGuideInvoice(booking, guide, tourist, rate, vatRate = VAT
 
 // ════════════════════ Monthly payout statement ════════════════════
 function generateStatement(guide, bookings, ym /* YYYY-MM */, rate, vatRate = VAT_RATE) {
-  return new Promise((resolve, reject) => {
-    try {
-      const doc = new PDFDocument({ size: 'A4', margin: 50 });
-      const chunks = [];
-      doc.on('data', c => chunks.push(c));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
+  const [yy, mm] = String(ym).split('-');
+  const monthName = new Date(Date.UTC(+yy, +mm - 1, 1)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
-      const [yy, mm] = ym.split('-');
-      const monthName = new Date(Date.UTC(+yy, +mm - 1, 1)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  const tot = { gross: 0, commission: 0, vat: 0, net: 0 };
+  const sorted = bookings.slice().sort((a, b) => new Date(a.paidAt || a.createdAt) - new Date(b.paidAt || b.createdAt));
+  const rows = sorted.map(bk => {
+    const b = breakdown(bk, rate, vatRate);
+    tot.gross += b.gross; tot.commission += b.commission; tot.vat += b.vat; tot.net += b.net;
+    return {
+      date: new Date(bk.paidAt || bk.createdAt).toLocaleDateString('en-GB'),
+      destination: String(bk.destination || '—').replace(/\s+/g, ' ').trim(),
+      gross: b.gross, commission: b.commission, net: b.net,
+    };
+  });
 
-      header(doc, 'PAYOUT STATEMENT', [`Period: ${monthName}`, `Guide: ${guide?.fullName || ''}`.slice(0, 32)]);
-
-      // Totals
-      const tot = bookings.reduce((acc, bk) => {
-        const b = breakdown(bk, rate, vatRate);
-        acc.gross += b.gross; acc.commission += b.commission; acc.vat += b.vat; acc.net += b.net;
-        return acc;
-      }, { gross: 0, commission: 0, vat: 0, net: 0 });
-
-      let y = 135;
-      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(13).text(`${bookings.length} booking${bookings.length === 1 ? '' : 's'} this period`, 50, y);
-
-      // Summary card
-      y = 165;
-      doc.roundedRect(50, y, doc.page.width - 100, 96, 8).fill('#f4f8f7');
-      const scol = (label, value, x) => {
-        doc.fillColor(GREY).font('Helvetica').fontSize(9).text(label, x, y + 18, { width: 120 });
-        doc.fillColor(DARK).font('Helvetica-Bold').fontSize(14).text(r3(value).toFixed(3), x, y + 34, { width: 120 });
-      };
-      scol('Gross (OMR)', tot.gross, 70);
-      scol('Platform fee', tot.commission, 200);
-      if (vatRate > 0) scol('VAT', tot.vat, 330);
-      doc.fillColor(GREEN).font('Helvetica').fontSize(9).text('NET PAYOUT (OMR)', doc.page.width - 200, y + 18, { width: 140 });
-      doc.fillColor(GREEN).font('Helvetica-Bold').fontSize(18).text(r3(tot.net).toFixed(3), doc.page.width - 200, y + 32, { width: 140 });
-
-      // Table header
-      y = 285;
-      doc.fillColor(DARK).font('Helvetica-Bold').fontSize(9);
-      doc.text('DATE', 50, y).text('DESTINATION', 120, y).text('GROSS', 300, y, { width: 70, align: 'right' })
-         .text('FEE', 380, y, { width: 70, align: 'right' }).text('NET', 470, y, { width: 75, align: 'right' });
-      doc.moveTo(50, y + 14).lineTo(doc.page.width - 50, y + 14).strokeColor(LIGHT).stroke();
-
-      // Rows
-      y += 22;
-      doc.font('Helvetica').fontSize(9).fillColor(GREY);
-      const sorted = bookings.slice().sort((a, b) => new Date(a.paidAt || a.createdAt) - new Date(b.paidAt || b.createdAt));
-      for (const bk of sorted) {
-        if (y > doc.page.height - 90) { doc.addPage(); y = 60; }
-        const b = breakdown(bk, rate, vatRate);
-        doc.fillColor(GREY).text(new Date(bk.paidAt || bk.createdAt).toLocaleDateString('en-GB'), 50, y);
-        doc.text(String(bk.destination || '—').slice(0, 26), 120, y);
-        doc.text(b.gross.toFixed(3), 300, y, { width: 70, align: 'right' });
-        doc.text(b.commission.toFixed(3), 380, y, { width: 70, align: 'right' });
-        doc.fillColor(DARK).font('Helvetica-Bold').text(b.net.toFixed(3), 470, y, { width: 75, align: 'right' });
-        doc.font('Helvetica').fillColor(GREY);
-        y += 20;
-      }
-
-      footer(doc, `Payout statement · ${monthName} · Guideon`);
-      doc.end();
-    } catch (e) { reject(e); }
+  // Rendered via the Puppeteer engine so Arabic destinations shape correctly.
+  return require('./pdfDocs').renderStatement({
+    monthName,
+    guideName: guide?.fullName || guide?.companyName || '',
+    count: bookings.length,
+    totals: { gross: r3(tot.gross), commission: r3(tot.commission), vat: r3(tot.vat), net: r3(tot.net) },
+    vatRate,
+    rows,
   });
 }
 

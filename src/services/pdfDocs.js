@@ -229,4 +229,40 @@ async function renderEarningsInvoice(d) {
   return htmlToPdf(shell(d.docTitle, body));
 }
 
-module.exports = { renderInvoice, renderVoucher, renderEarningsInvoice, htmlToPdf, COMPANY };
+// ── Monthly payout statement (multi-booking) ────────────────────────────────
+// Browser-rendered so Arabic destination names shape correctly (pdfkit could not).
+async function renderStatement(d) {
+  const rows = (d.rows || []).map(r => `
+    <tr>
+      <td>${esc(r.date)}</td>
+      <td class="dest" title="${esc(r.destination)}">${esc(r.destination)}</td>
+      <td class="amt">${omr(r.gross)}</td>
+      <td class="amt">${omr(r.commission)}</td>
+      <td class="amt" style="font-weight:800;color:#0f7b6c">${omr(r.net)}</td>
+    </tr>`).join('');
+  const body = `
+    <div class="band">
+      <div class="brand">${LOGO ? `<img src="${LOGO}">` : ''}<div><div class="nm">${COMPANY.platform}</div><div class="tag">${esc(COMPANY.ar)} · ${esc(COMPANY.en)}</div></div></div>
+      <div class="docbox"><div class="t">كشف مستحقّات · PAYOUT STATEMENT</div>
+        <div class="meta">الفترة · Period: <b>${esc(d.monthName)}</b><br>المرشد · Guide: <b>${esc(d.guideName || '')}</b><br>عدد الرحلات · Bookings: <b>${d.count}</b></div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="totals" style="width:100%;margin:0 0 18px">
+        <div class="r"><span>الإجمالي · Gross</span><span class="v">${omr(d.totals.gross)} ر.ع</span></div>
+        <div class="r"><span>عمولة المنصّة · Platform fee</span><span class="v">− ${omr(d.totals.commission)} ر.ع</span></div>
+        ${d.vatRate > 0 ? `<div class="r"><span>ض.ق.م · VAT</span><span class="v">− ${omr(d.totals.vat)} ر.ع</span></div>` : ''}
+        <div class="r grand"><span>صافي المستحقّ · NET PAYOUT</span><span class="v">${omr(d.totals.net)} ر.ع</span></div>
+      </div>
+      <table>
+        <thead><tr><th>التاريخ · Date</th><th>الوجهة · Destination</th><th class="amt">الإجمالي</th><th class="amt">العمولة</th><th class="amt">الصافي</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="5" style="text-align:center;color:#7a8aa0;padding:18px">لا رحلات في هذه الفترة · No bookings this period</td></tr>`}</tbody>
+      </table>
+    </div>
+    ${footer()}`;
+  // small extra style for the destination ellipsis
+  const html = shell('Statement', body).replace('</style>', '.dest{max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>');
+  return htmlToPdf(html);
+}
+
+module.exports = { renderInvoice, renderVoucher, renderEarningsInvoice, renderStatement, htmlToPdf, COMPANY };
