@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for the app to reach guideon.om in release builds -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Guideon"
         android:name="${applicationName}"
