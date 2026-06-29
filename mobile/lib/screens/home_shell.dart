@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import 'search_screen.dart';
+import 'trip_planner_screen.dart';
 import 'bookings_screen.dart';
 import 'account_screen.dart';
 
-/// Bottom-nav container: Search · Bookings · Account.
+/// Bottom-nav container: Search · Plan · Bookings · Account.
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
 
@@ -20,6 +21,7 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     const pages = [
       SearchScreen(),
+      TripPlannerScreen(),
       BookingsScreen(),
       AccountScreen(),
     ];
@@ -33,6 +35,10 @@ class _HomeShellState extends State<HomeShell> {
         destinations: const [
           NavigationDestination(
               icon: Icon(Icons.search), label: 'ابحث'),
+          NavigationDestination(
+              icon: Icon(Icons.auto_awesome_outlined),
+              selectedIcon: Icon(Icons.auto_awesome),
+              label: 'خطّط'),
           NavigationDestination(
               icon: Icon(Icons.calendar_month_outlined), label: 'حجوزاتي'),
           NavigationDestination(
