@@ -260,15 +260,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     : SizedBox(
                         height: 230,
                         child: _top.isEmpty
-                            ? const Center(
-                                child: Text('لا يوجد مرشدون حالياً'))
-                            : ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16),
+                            ? const Center(child: Text('لا يوجد مرشدون حالياً'))
+                            : _AutoScrollList(
                                 itemCount: _top.length,
-                                itemBuilder: (_, i) =>
-                                    _guideChip(_top[i]),
+                                itemWidth: 162,
+                                itemBuilder: (i) => _guideChip(_top[i]),
                               ),
                       ),
               ),
@@ -289,11 +285,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? const SizedBox.shrink()
                         : SizedBox(
                             height: 230,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _AutoScrollList(
                               itemCount: _packages.length,
-                              itemBuilder: (_, i) => _packageChip(_packages[i]),
+                              itemWidth: 182,
+                              itemBuilder: (i) => _packageChip(_packages[i]),
                             ),
                           ),
               ),
@@ -654,6 +649,88 @@ class _HomeScreenState extends State<HomeScreen> {
     if (h < 12) return 'صباح الخير';
     if (h < 17) return 'مساء الخير';
     return 'مساء النور';
+  }
+}
+
+// ── Auto-scroll list ─────────────────────────────────────────────────────
+/// Infinite-loop horizontal carousel that scrolls automatically every 3 s.
+/// The user can still drag to scroll manually — dragging pauses the timer,
+/// which resumes 4 s after the finger lifts.
+class _AutoScrollList extends StatefulWidget {
+  final int itemCount;
+  final double itemWidth;
+  final Widget Function(int index) itemBuilder;
+
+  const _AutoScrollList({
+    required this.itemCount,
+    required this.itemWidth,
+    required this.itemBuilder,
+  });
+
+  @override
+  State<_AutoScrollList> createState() => _AutoScrollListState();
+}
+
+class _AutoScrollListState extends State<_AutoScrollList> {
+  late final ScrollController _ctrl;
+  // We render N * multiplier virtual items so the list feels infinite.
+  static const int _mult = 50;
+  bool _userScrolling = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = ScrollController();
+    // Start at the middle so the user can drag left without hitting the edge.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_ctrl.hasClients) return;
+      final mid = widget.itemWidth * widget.itemCount * (_mult ~/ 2);
+      _ctrl.jumpTo(mid);
+      _startAutoScroll();
+    });
+  }
+
+  void _startAutoScroll() async {
+    while (mounted) {
+      await Future.delayed(const Duration(seconds: 3));
+      if (!mounted || _userScrolling || !_ctrl.hasClients) continue;
+      final target = _ctrl.offset + widget.itemWidth + 12;
+      await _ctrl.animateTo(
+        target,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.itemCount * _mult;
+    return NotificationListener<ScrollNotification>(
+      onNotification: (n) {
+        if (n is ScrollStartNotification && n.dragDetails != null) {
+          _userScrolling = true;
+        } else if (n is ScrollEndNotification) {
+          Future.delayed(const Duration(seconds: 4), () {
+            if (mounted) _userScrolling = false;
+          });
+        }
+        return false;
+      },
+      child: ListView.builder(
+        controller: _ctrl,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: total,
+        itemBuilder: (_, i) => widget.itemBuilder(i % widget.itemCount),
+      ),
+    );
   }
 }
 
