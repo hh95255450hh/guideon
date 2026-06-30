@@ -580,7 +580,8 @@ async function bookTour() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (r.status === 401) { window.location.href = '/login.html?return=' + encodeURIComponent(window.location.href); return; }
+    // Not logged in → offer fast guest checkout (no account needed).
+    if (r.status === 401) { btn.disabled = false; btn.textContent = origLabel; openGuestModal(body); return; }
     const d = await r.json();
     if (!d.success) throw new Error(d.message);
 
@@ -604,6 +605,70 @@ async function bookTour() {
   } catch (e) {
     toast(e.message || 'تعذّر الحجز', 'error');
     btn.disabled = false; btn.textContent = origLabel;
+  }
+}
+
+// ── Guest (no-account) checkout ─────────────────────────────────────────────
+let GUEST_BODY = null;
+function openGuestModal(body) {
+  GUEST_BODY = body;
+  let m = document.getElementById('guestModal');
+  if (!m) {
+    m = document.createElement('div');
+    m.id = 'guestModal';
+    m.style.cssText = 'position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px';
+    m.innerHTML =
+      '<div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.3)">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<h5 style="margin:0;font-weight:800;color:#0f3d3a">احجز كزائر · Quick booking</h5>' +
+          '<button onclick="closeGuestModal()" style="border:none;background:none;font-size:24px;line-height:1;cursor:pointer;color:#888">&times;</button>' +
+        '</div>' +
+        '<p style="font-size:13px;color:#666;margin:0 0 14px">أدخل بياناتك لإتمام الحجز والدفع — دون إنشاء حساب.<br>Enter your details to book & pay — no account needed.</p>' +
+        '<input id="gName"  class="form-control mb-2" placeholder="الاسم الكامل · Full name" autocomplete="name">' +
+        '<input id="gEmail" class="form-control mb-2" type="email" placeholder="البريد الإلكتروني · Email" autocomplete="email">' +
+        '<input id="gPhone" class="form-control mb-2" type="tel" placeholder="رقم الهاتف · Phone" autocomplete="tel">' +
+        '<div id="gErr" style="color:#c0392b;font-size:13px;min-height:18px;margin-bottom:6px"></div>' +
+        '<button id="gSubmit" class="btn w-100 fw-700 py-2" onclick="submitGuest()" style="background:#0f7b6c;color:#fff;border:none">💳 ادفع واحجز · Pay &amp; Book</button>' +
+        '<div style="text-align:center;margin-top:10px;font-size:13px">' +
+          '<a href="/login.html?return=' + encodeURIComponent(window.location.href) + '" style="color:#0f7b6c">لديك حساب؟ سجّل الدخول · Have an account? Log in</a>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m) closeGuestModal(); });
+  }
+  m.style.display = 'flex';
+  setTimeout(() => { const n = document.getElementById('gName'); if (n) n.focus(); }, 50);
+}
+function closeGuestModal() { const m = document.getElementById('guestModal'); if (m) m.style.display = 'none'; }
+async function submitGuest() {
+  const name  = document.getElementById('gName').value.trim();
+  const email = document.getElementById('gEmail').value.trim();
+  const phone = document.getElementById('gPhone').value.trim();
+  const err   = document.getElementById('gErr');
+  err.textContent = '';
+  if (!name) { err.textContent = 'الرجاء إدخال الاسم · Please enter your name.'; return; }
+  if (!email && !phone) { err.textContent = 'أدخل البريد أو الهاتف · Enter email or phone.'; return; }
+  const btn = document.getElementById('gSubmit');
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'جارٍ التجهيز…';
+  try {
+    const r = await fetch('/api/payments/guest-checkout', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...GUEST_BODY, name, email, phone }),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'تعذّر الحجز');
+    if (d.url) { window.location.href = d.url; return; }   // → payment gateway
+    // Free-launch mode: no payment needed.
+    closeGuestModal();
+    toast('🎉 تم استلام حجزك! تحقق من بريدك.', 'success');
+    if (d.booking && d.booking.id) {
+      setTimeout(() => window.location.href = '/checkout-success.html?booking_id=' + d.booking.id, 1200);
+    }
+  } catch (e) {
+    err.textContent = e.message || 'تعذّر الحجز';
+    btn.disabled = false; btn.textContent = orig;
   }
 }
 

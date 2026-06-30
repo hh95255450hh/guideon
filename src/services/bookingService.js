@@ -17,7 +17,8 @@ const packages = new SupabaseDB('tour_packages');
 
 // Columns added by migration 021 that may not exist on older deployments.
 const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons', 'providerType',
-  'depositPercent', 'depositAmount', 'balanceAmount', 'depositPaidAt'];
+  'depositPercent', 'depositAmount', 'balanceAmount', 'depositPaidAt',
+  'guestName', 'guestEmail', 'guestPhone'];
 const isMissingColumnError = (msg) => /Could not find the '\w+' column|schema cache/i.test(msg || '');
 
 class BookingError extends Error {
@@ -46,7 +47,7 @@ async function insertBookingSafe(record) {
  * Create a booking. Returns the persisted booking record.
  * Throws BookingError on validation / availability / conflict failures.
  */
-async function createBooking(touristId, body) {
+async function createBooking(touristId, body, guest = null) {
   const {
     guideId, tourDate, duration, tourTime: reqTourTime, destination, participants,
     specialRequests, packageId, adultCount, childCount, variantName, variantPrice,
@@ -75,8 +76,9 @@ async function createBooking(touristId, body) {
     throw new BookingError(404, 'Provider not found.', 'PROVIDER_NOT_FOUND');
   }
   // A provider can't book their own tour (would inflate booking counts / ranking
-  // and let them self-complete a booking to post a fake review).
-  if (String(guideId) === String(touristId)) {
+  // and let them self-complete a booking to post a fake review). Skipped for
+  // guest (no-account) bookings, which have no touristId.
+  if (touristId && String(guideId) === String(touristId)) {
     throw new BookingError(400, 'You cannot book your own tour.', 'SELF_BOOKING');
   }
   if (!guide.isVerified) {
@@ -197,6 +199,13 @@ async function createBooking(touristId, body) {
   const booking = {
     id: 'bk-' + uuidv4().slice(0, 8),
     touristId, guideId, tourDate, destination, tourTime,
+    // Guest (no-account) booking — store the contact so the provider/admin can
+    // reach them and we can email the confirmation + booking link.
+    ...(guest && {
+      guestName: guest.name || '',
+      guestEmail: guest.email || '',
+      guestPhone: guest.phone || '',
+    }),
     providerType: guide.userType, // 'guide' | 'company' — drives the unique-index scope
     ...(slotData || {}),
     duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
@@ -288,8 +297,11 @@ async function _reconcileCapacity(booking, guideId, tourDate, capacity) {
 }
 
 async function _notifyBookingCreated({ booking, guide, touristId, destination, tourDate, duration, participantCount }) {
-  const tourist = await users.findById(touristId);
-  if (!tourist) return;
+  // Guest (no-account) bookings have no tourist user — fall back to the stored
+  // guest contact so the GUIDE is still notified of the new (paid) booking.
+  const tourist = touristId ? await users.findById(touristId) : null;
+  if (!tourist && !booking.guestName && !booking.guestEmail) return;
+  const touristName = tourist ? tourist.fullName : (booking.guestName || 'Guest');
 
   // A booking carrying a packageId or a fixed startTime came from a ready-made
   // listing where the price is already known — the guide only needs to
@@ -297,14 +309,16 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
   // price quote from the guide.
   const isFixedPrice = !!booking.packageId || !!booking.startTime;
 
-  email.sendTouristBookingPending({
-    email: tourist.email, name: tourist.fullName,
-    guideName: guide.fullName, destination, tourDate,
-    duration, totalAmount: booking.totalAmount, bookingId: booking.id,
-  }).catch(() => {});
+  if (tourist) {
+    email.sendTouristBookingPending({
+      email: tourist.email, name: tourist.fullName,
+      guideName: guide.fullName, destination, tourDate,
+      duration, totalAmount: booking.totalAmount, bookingId: booking.id,
+    }).catch(() => {});
+  }
   email.sendGuideNewBooking({
     email: guide.email, name: guide.fullName,
-    touristName: tourist.fullName, destination, tourDate,
+    touristName, destination, tourDate,
     duration, participants: participantCount,
     totalAmount: booking.totalAmount, bookingId: booking.id,
   }).catch(() => {});
@@ -318,11 +332,11 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
     notify({
       userId: guide.id, type: 'booking_new',
       title: 'New booking request 📅', titleAr: 'طلب حجز جديد 📅',
-      body: `${tourist.fullName} booked your ${destination} tour on ${tourDate}. Accept or decline.`,
-      bodyAr: `حجز ${tourist.fullName} رحلتك إلى ${destination} بتاريخ ${tourDate}. اقبل أو ارفض.`,
+      body: `${touristName} booked your ${destination} tour on ${tourDate}. Accept or decline.`,
+      bodyAr: `حجز ${touristName} رحلتك إلى ${destination} بتاريخ ${tourDate}. اقبل أو ارفض.`,
       link: providerLink, metadata: { bookingId: booking.id },
     });
-    notify({
+    if (tourist) notify({
       userId: tourist.id, type: 'booking_new',
       title: 'Booking request sent', titleAr: 'تم إرسال طلب الحجز',
       body: `Waiting for ${guide.fullName} to confirm your ${destination} tour on ${tourDate}.`,
@@ -333,11 +347,11 @@ async function _notifyBookingCreated({ booking, guide, touristId, destination, t
     notify({
       userId: guide.id, type: 'booking_new',
       title: 'New trip request — please send a price', titleAr: 'طلب رحلة جديد — يرجى تحديد السعر',
-      body: `${tourist.fullName} requested a tour to ${destination} on ${tourDate}.`,
-      bodyAr: `طلب ${tourist.fullName} رحلة إلى ${destination} بتاريخ ${tourDate}.`,
+      body: `${touristName} requested a tour to ${destination} on ${tourDate}.`,
+      bodyAr: `طلب ${touristName} رحلة إلى ${destination} بتاريخ ${tourDate}.`,
       link: providerLink, metadata: { bookingId: booking.id },
     });
-    notify({
+    if (tourist) notify({
       userId: tourist.id, type: 'booking_new',
       title: 'Trip request sent', titleAr: 'تم إرسال طلب الرحلة',
       body: `Waiting for ${guide.fullName} to send a price for your ${destination} trip on ${tourDate}.`,

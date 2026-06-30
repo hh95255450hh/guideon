@@ -8,6 +8,9 @@ const { requireLogin, requireAdmin } = require('../middleware/auth');
 router.get('/feature-status', payment.getFeatureStatus);
 // (Paymob callback is registered in app.js before the CSRF check.)
 
+// Public — guest (no-account) booking + checkout in one call.
+router.post('/guest-checkout', payment.createGuestCheckout);
+
 router.post('/create-checkout', requireLogin, payment.createCheckout);
 router.get('/verify',             requireLogin, payment.verify);
 router.get('/status/:bookingId',  requireLogin, payment.getStatus);

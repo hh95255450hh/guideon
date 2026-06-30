@@ -2,6 +2,7 @@ const thawani = require('../config/thawani');
 const paymob  = require('../config/paymob');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('../services/emailService');
+const bookingService = require('../services/bookingService');
 const { notify } = require('../services/notificationService');
 
 const bookings = new SupabaseDB('bookings');
@@ -122,6 +123,106 @@ exports.createCheckout = async (req, res) => {
   }
 };
 
+// Email a guest (no-account) their booking status. Best-effort.
+async function _emailGuest(booking, guest, paid) {
+  if (!guest || !guest.email) return;
+  try {
+    const link = `${APP_URL}/checkout-success.html?booking_id=${booking.id}`;
+    const subject = paid ? 'تأكيد حجزك · Booking confirmed — Guideon'
+                         : 'تم استلام حجزك · Booking received — Guideon';
+    const html = emailService.notificationEmail
+      ? emailService.notificationEmail({
+          icon: paid ? '✅' : '🧾',
+          title: paid ? 'Your booking is confirmed' : 'Your booking was received',
+          titleAr: paid ? 'تم تأكيد حجزك' : 'تم استلام حجزك',
+          body: `Tour to ${booking.destination} on ${booking.tourDate}. Open the link to view your booking.`,
+          bodyAr: `رحلتك إلى ${booking.destination} بتاريخ ${booking.tourDate}. افتح الرابط لعرض حجزك.`,
+          link,
+        })
+      : `حجزك إلى ${booking.destination} بتاريخ ${booking.tourDate} — ${link}`;
+    await emailService.send(guest.email, subject, html);
+  } catch (_) { /* never block on email */ }
+}
+
+// Email a guest that their booking is now PAID (from the payment webhook).
+function _emailGuestPaid(booking) {
+  _emailGuest(booking, {
+    name:  booking.guestName  || 'Guest',
+    email: booking.guestEmail || '',
+    phone: booking.guestPhone || '',
+  }, true).catch(() => {});
+}
+
+// POST /api/payments/guest-checkout — book + pay WITHOUT an account.
+// Body: the normal booking fields + { name, email, phone }.
+exports.createGuestCheckout = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body || {};
+    const gname = String(name || '').trim();
+    if (!gname) {
+      return res.status(400).json({ success: false, message: 'الاسم مطلوب · Your name is required.' });
+    }
+    if (!email && !phone) {
+      return res.status(400).json({ success: false, message: 'أدخل البريد أو رقم الهاتف · Email or phone is required.' });
+    }
+    const guest = {
+      name: gname.slice(0, 120),
+      email: String(email || '').trim().slice(0, 160),
+      phone: String(phone || '').trim().slice(0, 40),
+    };
+
+    let booking;
+    try {
+      booking = await bookingService.createBooking(null, req.body, guest);
+    } catch (e) {
+      if (e instanceof bookingService.BookingError) {
+        return res.status(e.status).json({ success: false, code: e.code, message: e.message });
+      }
+      throw e;
+    }
+
+    // Free-launch / no gateway / zero price → no payment; confirm + email guest.
+    const amount = parseFloat(booking.depositAmount) || parseFloat(booking.totalAmount);
+    if (booking.status !== 'awaiting_payment' || !PAYMENTS_ENABLED ||
+        !gatewayConfigured() || !Number.isFinite(amount) || amount <= 0) {
+      _emailGuest(booking, guest, false).catch(() => {});
+      return res.status(201).json({ success: true, booking, paid: false });
+    }
+
+    const [firstName, ...rest] = guest.name.split(' ');
+    if (PROVIDER === 'paymob') {
+      const { clientSecret, intentionId } = await paymob.createIntention({
+        amountCents: paymob.toCents(amount),
+        merchantOrderId: `${booking.id}_${Date.now()}`,
+        billing: {
+          firstName: firstName || 'Guest',
+          lastName: rest.join(' ') || 'Customer',
+          email: guest.email || undefined,
+          phone: guest.phone || undefined,
+        },
+        notificationUrl: `${APP_URL}/api/payments/paymob/callback`,
+        redirectionUrl: `${APP_URL}/checkout-success.html?booking_id=${booking.id}`,
+      });
+      await updateBookingSafe(booking.id, { paymentSessionId: String(intentionId) });
+      return res.status(201).json({ success: true, booking, url: paymob.checkoutUrl(clientSecret) });
+    }
+
+    // Thawani fallback
+    const { sessionId, payUrl } = await thawani.createSession({
+      clientReferenceId: booking.id,
+      products: [{ name: `Tour — ${booking.destination}`, quantity: 1, unit_amount: thawani.toBaisa(amount) }],
+      successUrl: `${APP_URL}/checkout-success.html?booking_id=${booking.id}&session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${APP_URL}/checkout.html?booking_id=${booking.id}&cancelled=1`,
+      metadata: { booking_id: booking.id, guest: '1' },
+    });
+    await updateBookingSafe(booking.id, { paymentSessionId: sessionId });
+    return res.status(201).json({ success: true, booking, url: payUrl });
+  } catch (err) {
+    console.error('[Payment] guestCheckout:', err.message);
+    res.status(500).json({ success: false, message: 'تعذّر بدء الحجز. حاول مجدّداً · Could not start the booking.' });
+  }
+};
+
 // GET /api/payments/verify?session_id=...&booking_id=...
 // Called from checkout-success page. Verifies with Thawani server-side and
 // marks the booking paid — this is the source of truth (don't trust the
@@ -200,6 +301,7 @@ async function finalizePaidBooking(bookingId, session) {
     });
     // The provider sees the booking for the FIRST time, now that it's paid.
     try { require('../services/bookingService').notifyBookingSubmitted(bookingId); } catch (e) { /* non-critical */ }
+    if (!fresh.touristId && fresh.guestEmail) _emailGuestPaid(fresh);
     const t = await users.findById(fresh.touristId);
     if (t) notify({
       userId: t.id, type: 'payment_received',
@@ -216,6 +318,7 @@ async function finalizePaidBooking(bookingId, session) {
   // ── Balance / legacy full payment → mark fully paid ──
   await updateBookingSafe(bookingId, { isPaid: true, paidAt: now, paymentRef: ref });
 
+  if (!fresh.touristId && fresh.guestEmail) _emailGuestPaid(fresh);
   const tourist  = await users.findById(fresh.touristId);
   const provider = await users.findById(fresh.guideId);
   const providerLink = provider?.userType === 'company'
