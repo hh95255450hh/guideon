@@ -24,6 +24,8 @@ dependencies:
   cached_network_image: ^3.3.1
   intl: ^0.20.2
   url_launcher: ^6.2.4
+  # Full-platform shell — load guideon.om inside the app (all features)
+  webview_flutter: ^4.7.0
   # Push notifications (backend already exposes /auth/fcm-token)
   firebase_core: ^2.27.0
   firebase_messaging: ^14.7.19
