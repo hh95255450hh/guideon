@@ -207,6 +207,9 @@ app.use(express.static(path.join(__dirname, '..', 'public'), {
 const { apiLimiter, chatLimiter } = require('./middleware/rateLimit');
 const csrfProtect = require('./middleware/csrf');
 const { loadUser } = require('./middleware/auth');
+// Mobile-app meta (version gate + crash sink) — public + CSRF-exempt (the app
+// sends no Origin). Mounted BEFORE csrf so it isn't rejected.
+app.use('/api/app', apiLimiter, require('./routes/appMeta'));
 app.use('/api/', apiLimiter);
 app.use('/api/', csrfProtect);
 app.use('/api/', loadUser);

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../services/app_update.dart';
 import '../theme/app_theme.dart';
 
 /// The whole Guideon platform (guideon.om) inside a clean native shell —
@@ -22,6 +23,7 @@ class _WebAppScreenState extends State<WebAppScreen> {
   double _progress = 0;
   bool _loading = true;
   bool _errored = false;
+  AppUpdateInfo? _update;
 
   @override
   void initState() {
@@ -34,10 +36,14 @@ class _WebAppScreenState extends State<WebAppScreen> {
       statusBarBrightness: Brightness.dark,
     ));
 
+    _checkForUpdate();
+
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
-      ..setUserAgent(null) // keep the default UA + app marker below
+      ..setUserAgent(null)
+      // Let the site use the camera / microphone (photo capture, etc.).
+      ..setOnPermissionRequest((request) => request.grant())
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (p) {
@@ -107,8 +113,21 @@ class _WebAppScreenState extends State<WebAppScreen> {
     await _controller.loadRequest(Uri.parse(_home));
   }
 
+  Future<void> _checkForUpdate() async {
+    final u = await AppUpdate.check();
+    if (u != null && u.mustUpdate && mounted) {
+      setState(() => _update = u);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Force-update gate: blocks the app when this build is below the server's
+    // required minimum (inactive until APP_MIN_BUILD is set).
+    final update = _update;
+    if (update != null && update.mustUpdate) {
+      return _updateGate(update);
+    }
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -147,6 +166,45 @@ class _WebAppScreenState extends State<WebAppScreen> {
       ),
     );
   }
+
+  Widget _updateGate(AppUpdateInfo u) => Scaffold(
+        backgroundColor: GdColors.navy,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.system_update,
+                      size: 64, color: GdColors.gold),
+                  const SizedBox(height: 18),
+                  Text(
+                    u.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.6),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () {
+                      if (u.storeUrl.isNotEmpty) {
+                        launchUrl(Uri.parse(u.storeUrl),
+                            mode: LaunchMode.externalApplication);
+                      }
+                    },
+                    icon: const Icon(Icons.shop),
+                    label: const Text('تحديث الآن'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
 
   Widget _errorView() => Center(
         child: Padding(

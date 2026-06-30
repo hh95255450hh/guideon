@@ -1,10 +1,22 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "guide.guideon.twa",
-    "sha256_cert_fingerprints": [
-      "60:E9:36:37:C7:67:C7:C6:8D:70:F2:D5:54:E7:DA:00:00:32:54:9D:B2:50:F4:E3:62:A2:C0:AD:BF:61:F1:83"
-    ]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "guide.guideon.twa",
+      "sha256_cert_fingerprints": [
+        "60:E9:36:37:C7:67:C7:C6:8D:70:F2:D5:54:E7:DA:00:00:32:54:9D:B2:50:F4:E3:62:A2:C0:AD:BF:61:F1:83"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "om.guideon.guideon",
+      "sha256_cert_fingerprints": [
+        "CE:38:85:F4:80:C7:82:EE:E7:DB:26:FD:0B:60:CC:30:5D:92:C7:6C:07:D1:20:AA:EA:82:6A:48:E7:8C:1E:56"
+      ]
+    }
   }
-}]
+]
