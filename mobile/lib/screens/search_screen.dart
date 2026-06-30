@@ -19,6 +19,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Guide> _guides = [];
   bool _loading = true;
   String? _error;
+  String _diag = 'بدء v3 · 1.0.0+3';
 
   @override
   void initState() {
@@ -36,18 +37,27 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       _loading = true;
       _error = null;
+      _diag = 'جارٍ التحميل من $_endpoint …';
     });
     try {
       final g = await GuideService.search(query: _ctrl.text);
       if (!mounted) return;
-      setState(() => _guides = g);
+      setState(() {
+        _guides = g;
+        _diag = 'تم ✓ عدد المرشدين: ${g.length}';
+      });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = friendlyError(e));
+      setState(() {
+        _error = friendlyError(e);
+        _diag = 'خطأ: ${e.toString()}';
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  static const String _endpoint = 'guideon.om/api/guides';
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +80,16 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
             ),
+          ),
+          // TEMP diagnostic banner — always visible, shows the live load state.
+          Container(
+            width: double.infinity,
+            color: const Color(0xFFFFF3CD),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Text('🔎 $_diag',
+                style: const TextStyle(
+                    fontSize: 12, color: Color(0xFF8A6D00)),
+                textAlign: TextAlign.center),
           ),
           Expanded(child: _body()),
         ],
