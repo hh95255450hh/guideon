@@ -20,14 +20,13 @@ let _messaging = null;
     return;
   }
   try {
-    const admin = require('firebase-admin');
+    const { initializeApp, getApps, cert } = require('firebase-admin/app');
+    const { getMessaging } = require('firebase-admin/messaging');
     const credential = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
-    if (!admin.apps.length) {
-      _app = admin.initializeApp({ credential: admin.credential.cert(credential) });
-    } else {
-      _app = admin.apps[0];
+    if (!getApps().length) {
+      initializeApp({ credential: cert(credential) });
     }
-    _messaging = admin.messaging();
+    _messaging = getMessaging();
     console.log('[fcm] Firebase Admin SDK initialised — mobile push enabled.');
   } catch (e) {
     console.error('[fcm] init failed:', e.message);
@@ -45,7 +44,8 @@ function isEnabled() { return !!_messaging; }
 async function sendToToken(token, { title, body, data = {} } = {}) {
   if (!_messaging || !token) return false;
   try {
-    await _messaging.send({
+    const { getMessaging } = require('firebase-admin/messaging');
+    await getMessaging().send({
       token,
       notification: { title: String(title || '').slice(0, 100), body: String(body || '').slice(0, 200) },
       data: Object.fromEntries(
