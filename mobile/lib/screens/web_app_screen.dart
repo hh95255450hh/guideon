@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../theme/app_theme.dart';
 
-/// The whole Guideon platform (guideon.om) inside a clean native shell.
-/// Gives full feature parity — search, booking, payment, messaging,
-/// dashboards, AI planner — with a light app wrapper.
+/// The whole Guideon platform (guideon.om) inside a clean native shell —
+/// full feature parity (search, booking, payment, messaging, dashboards, AI
+/// planner) with a light, professional wrapper.
 class WebAppScreen extends StatefulWidget {
   const WebAppScreen({super.key});
 
@@ -25,25 +26,40 @@ class _WebAppScreenState extends State<WebAppScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Brand the status bar to blend with the site's teal header.
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: GdColors.teal,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+    ));
+
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
+      ..setUserAgent(null) // keep the default UA + app marker below
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (p) {
             if (mounted) setState(() => _progress = p / 100);
           },
           onPageStarted: (_) {
-            if (mounted) setState(() {
-              _loading = true;
-              _errored = false;
-            });
+            if (mounted) {
+              setState(() {
+                _loading = true;
+                _errored = false;
+              });
+            }
           },
           onPageFinished: (_) {
             if (mounted) setState(() => _loading = false);
+            // Open links that would spawn a new window inside the app instead.
+            _controller.runJavaScript(
+              "document.querySelectorAll('a[target=\"_blank\"]')"
+              ".forEach(function(a){a.target='_self';});",
+            );
           },
           onWebResourceError: (err) {
-            // Only treat the main document failing to load as an error screen.
             if (err.isForMainFrame == true && mounted) {
               setState(() {
                 _errored = true;
@@ -53,11 +69,22 @@ class _WebAppScreenState extends State<WebAppScreen> {
           },
           onNavigationRequest: (req) {
             final url = req.url;
-            // Keep all web pages (incl. payment gateways, Google OAuth) inside.
-            if (url.startsWith('http://') || url.startsWith('https://')) {
+            final lower = url.toLowerCase();
+            // Phone / email / SMS / WhatsApp → hand off to the right app.
+            if (lower.startsWith('tel:') ||
+                lower.startsWith('mailto:') ||
+                lower.startsWith('sms:') ||
+                lower.startsWith('whatsapp:') ||
+                lower.contains('wa.me/') ||
+                lower.contains('api.whatsapp.com')) {
+              _openExternally(url);
+              return NavigationDecision.prevent;
+            }
+            // All web pages (incl. payment gateways, Google OAuth) stay in-app.
+            if (lower.startsWith('http://') || lower.startsWith('https://')) {
               return NavigationDecision.navigate;
             }
-            // tel:, mailto:, sms:, whatsapp:, intent: → hand to the OS.
+            // intent:, market:, geo:, etc. → external.
             _openExternally(url);
             return NavigationDecision.prevent;
           },
@@ -69,7 +96,7 @@ class _WebAppScreenState extends State<WebAppScreen> {
   Future<void> _openExternally(String url) async {
     try {
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    } catch (_) {/* ignore */}
+    } catch (_) {/* ignore unsupported schemes */}
   }
 
   Future<void> _reload() async {
@@ -91,23 +118,30 @@ class _WebAppScreenState extends State<WebAppScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: GdColors.teal,
         body: SafeArea(
-          child: Column(
-            children: [
-              if (_loading)
-                LinearProgressIndicator(
-                  value: _progress == 0 ? null : _progress,
-                  minHeight: 2.5,
-                  color: GdColors.teal,
-                  backgroundColor: const Color(0xFFE2F0EE),
+          bottom: false,
+          child: Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 2.5,
+                  child: _loading
+                      ? LinearProgressIndicator(
+                          value: _progress == 0 ? null : _progress,
+                          color: GdColors.teal,
+                          backgroundColor: const Color(0xFFE2F0EE),
+                        )
+                      : null,
                 ),
-              Expanded(
-                child: _errored
-                    ? _errorView()
-                    : WebViewWidget(controller: _controller),
-              ),
-            ],
+                Expanded(
+                  child: _errored
+                      ? _errorView()
+                      : WebViewWidget(controller: _controller),
+                ),
+              ],
+            ),
           ),
         ),
       ),
