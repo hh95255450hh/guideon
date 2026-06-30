@@ -42,8 +42,6 @@ class _WebAppScreenState extends State<WebAppScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.white)
       ..setUserAgent(null)
-      // Let the site use the camera / microphone (photo capture, etc.).
-      ..setOnPermissionRequest((request) => request.grant())
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (p) {
