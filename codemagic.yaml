@@ -16,7 +16,12 @@ workflows:
     instance_type: mac_mini_m2
     environment:
       flutter: stable
+      groups:
+        - firebase_config   # GOOGLE_SERVICES_JSON (base64)
     scripts:
+      - name: Inject google-services.json
+        script: |
+          echo $GOOGLE_SERVICES_JSON | base64 --decode > "$CM_BUILD_DIR/mobile/android/app/google-services.json"
       - name: Flutter packages
         script: cd mobile && flutter packages pub get
       - name: Generate icons & splash
@@ -35,7 +40,11 @@ workflows:
       flutter: stable
       groups:
         - keystore_credentials   # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
+        - firebase_config        # GOOGLE_SERVICES_JSON (base64)
     scripts:
+      - name: Inject google-services.json
+        script: |
+          echo $GOOGLE_SERVICES_JSON | base64 --decode > "$CM_BUILD_DIR/mobile/android/app/google-services.json"
       - name: Set up keystore
         script: |
           echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.jks
