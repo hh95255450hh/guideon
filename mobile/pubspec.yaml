@@ -1,7 +1,7 @@
 name: guideon
 description: Guideon — Oman's tour-guide marketplace. Official mobile app.
 publish_to: 'none'
-version: 1.0.0+10
+version: 1.0.0+11
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -26,6 +26,7 @@ dependencies:
   url_launcher: ^6.2.4
   # Full-platform shell — load guideon.om inside the app (all features)
   webview_flutter: ^4.14.0
+  webview_flutter_android: ^4.3.0
   # App version (force-update gate) + crash reporting context
   package_info_plus: ^8.0.2
   # Push notifications (backend already exposes /auth/fcm-token)
