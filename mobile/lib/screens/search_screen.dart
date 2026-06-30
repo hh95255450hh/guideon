@@ -109,17 +109,25 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.travel_explore,
-                  size: 48, color: GdColors.muted),
-              const SizedBox(height: 12),
+              Icon(retry ? Icons.wifi_off : Icons.travel_explore,
+                  size: 56, color: retry ? GdColors.danger : GdColors.teal),
+              const SizedBox(height: 14),
               Text(text,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: GdColors.muted)),
+                  style: const TextStyle(
+                      color: GdColors.navy,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600)),
               if (retry) ...[
-                const SizedBox(height: 16),
-                OutlinedButton(
-                    onPressed: _load, child: const Text('إعادة المحاولة')),
+                const SizedBox(height: 18),
+                FilledButton.icon(
+                    onPressed: _load,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('إعادة المحاولة')),
               ],
+              const SizedBox(height: 20),
+              const Text('v3 · 1.0.0+3',
+                  style: TextStyle(color: GdColors.muted, fontSize: 11)),
             ],
           ),
         ),
