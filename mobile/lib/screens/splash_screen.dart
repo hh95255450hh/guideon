@@ -55,35 +55,40 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo circle
+            // Guideon logo on white card (colored logo on dark bg)
             Container(
-              width: 100,
-              height: 100,
+              width: 140,
+              height: 140,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: GdColors.teal.withValues(alpha: .15),
-                border: Border.all(
-                    color: GdColors.teal.withValues(alpha: .4), width: 2),
-              ),
-              child: const Icon(Icons.travel_explore,
-                  size: 52, color: GdColors.teal),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Guideon',
-              style: TextStyle(
                 color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.5,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .2),
+                    blurRadius: 32,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Image.asset(
+                  'assets/images/app_icon.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.travel_explore,
+                    size: 60,
+                    color: GdColors.teal,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 6),
-            const Text(
+            const SizedBox(height: 12),
+            Text(
               'دليلك السياحي في عُمان',
-              style: TextStyle(color: Colors.white60, fontSize: 14),
+              style: TextStyle(color: Colors.white.withValues(alpha: .55), fontSize: 14),
             ),
-            const SizedBox(height: 36),
+            const SizedBox(height: 40),
             const SizedBox(
               width: 24,
               height: 24,

@@ -215,47 +215,36 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // ─ Guideon Logo ─
-            Row(children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [GdColors.teal, Color(0xFF0A5C50)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+            // ─ Guideon Logo — white pill so colored logo shows on dark bg ─
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: .18),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: GdColors.teal.withValues(alpha: .5),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.travel_explore_rounded,
-                    color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Guideon',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -.4)),
-                  Text('دليلك في عُمان',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: .45),
-                          fontSize: 10)),
                 ],
               ),
-            ]),
+              child: Image.asset(
+                'assets/images/app_icon.png',
+                height: 28,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Row(children: [
+                  Icon(Icons.travel_explore_rounded,
+                      color: GdColors.teal, size: 22),
+                  SizedBox(width: 6),
+                  Text('Guideon',
+                      style: TextStyle(
+                          color: GdColors.navy,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800)),
+                ]),
+              ),
+            ),
 
             // ─ Skip ─
             if (!isLast)
