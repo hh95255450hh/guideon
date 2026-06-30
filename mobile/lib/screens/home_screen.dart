@@ -11,6 +11,7 @@ import '../services/package_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/guide_card.dart';
 import 'guide_detail_screen.dart';
+import 'map_screen.dart';
 import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -148,11 +149,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ],
                               ),
-                              // Notification bell
+                              // Map button
                               IconButton(
-                                icon: const Icon(Icons.notifications_outlined,
+                                icon: const Icon(Icons.map_outlined,
                                     color: Colors.white70),
-                                onPressed: () {},
+                                tooltip: 'استكشف الخارطة',
+                                onPressed: _openMap,
                               ),
                             ],
                           ),
@@ -318,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _section(
                 title: '🏕️ أفضل الرحلات',
                 action: TextButton(
-                  onPressed: () {},
+                  onPressed: _openSearch,
                   child: const Text('عرض الكل',
                       style: TextStyle(color: GdColors.teal, fontSize: 13)),
                 ),
@@ -678,9 +680,8 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (_) => const SearchScreen()),
       );
 
-  void _searchDest(String dest) => Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (_) => SearchScreen(initialQuery: dest)),
+  void _openMap() => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const MapScreen()),
       );
 
   void _openGuide(Guide g) => Navigator.of(context).push(

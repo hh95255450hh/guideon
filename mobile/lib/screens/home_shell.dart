@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
 import 'bookings_screen.dart';
+import 'map_screen.dart';
 import 'account_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -20,6 +21,7 @@ class _HomeShellState extends State<HomeShell> {
     HomeScreen(),
     SearchScreen(),
     BookingsScreen(),
+    MapScreen(),
     AccountScreen(),
   ];
 
@@ -49,10 +51,11 @@ class _HomeShellState extends State<HomeShell> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _navItem(0, Icons.home_outlined,      Icons.home,            'الرئيسية'),
-                _navItem(1, Icons.search,              Icons.search,          'بحث'),
-                _navItem(2, Icons.calendar_today_outlined, Icons.calendar_today, 'حجوزاتي'),
-                _navItem(3, Icons.person_outline,     Icons.person,          'حسابي'),
+                _navItem(0, Icons.home_outlined,          Icons.home,              'الرئيسية'),
+                _navItem(1, Icons.search,                  Icons.search,            'بحث'),
+                _navItem(2, Icons.calendar_today_outlined, Icons.calendar_today,    'حجوزاتي'),
+                _navItem(3, Icons.map_outlined,            Icons.map,               'الخارطة'),
+                _navItem(4, Icons.person_outline,          Icons.person,            'حسابي'),
               ],
             ),
           ),
@@ -68,7 +71,7 @@ class _HomeShellState extends State<HomeShell> {
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: selected ? GdColors.teal.withValues(alpha: .1) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
@@ -79,7 +82,7 @@ class _HomeShellState extends State<HomeShell> {
             Icon(
               selected ? activeIcon : icon,
               color: selected ? GdColors.teal : GdColors.muted,
-              size: 24,
+              size: 22,
             ),
             const SizedBox(height: 2),
             Text(
