@@ -22,7 +22,7 @@ workflows:
       - name: Generate icons & splash
         script: cd mobile && dart run flutter_launcher_icons && dart run flutter_native_splash:create
       - name: Build release APK (debug-signed, for testing)
-        script: cd mobile && flutter build apk --release
+        script: cd mobile && flutter build apk --release --build-number=$(($PROJECT_BUILD_NUMBER + 100))
     artifacts:
       - mobile/build/app/outputs/flutter-apk/*.apk
 
@@ -50,7 +50,7 @@ workflows:
       - name: Generate icons & splash
         script: cd mobile && dart run flutter_launcher_icons && dart run flutter_native_splash:create
       - name: Build AAB
-        script: cd mobile && flutter build appbundle --release
+        script: cd mobile && flutter build appbundle --release --build-number=$(($PROJECT_BUILD_NUMBER + 100))
     artifacts:
       - mobile/build/app/outputs/bundle/release/*.aab
     # publishing:
@@ -78,7 +78,7 @@ workflows:
       - name: Set up signing
         script: cd mobile && xcode-project use-profiles
       - name: Build IPA
-        script: cd mobile && flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+        script: cd mobile && flutter build ipa --release --build-number=$(($PROJECT_BUILD_NUMBER + 100)) --export-options-plist=/Users/builder/export_options.plist
     artifacts:
       - mobile/build/ios/ipa/*.ipa
     # publishing:
