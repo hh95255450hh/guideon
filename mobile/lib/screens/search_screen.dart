@@ -8,22 +8,33 @@ import '../widgets/guide_card.dart';
 import 'guide_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final String? initialQuery;
+  const SearchScreen({super.key, this.initialQuery});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final _ctrl = TextEditingController();
+  late final TextEditingController _ctrl;
   List<Guide> _guides = [];
   bool _loading = true;
   String? _error;
-  String _diag = 'بدء v3 · 1.0.0+3';
+  String _activeFilter = 'all';
+
+  final List<Map<String, String>> _filters = [
+    {'key': 'all',     'label': 'الكل'},
+    {'key': 'top',     'label': '⭐ الأعلى'},
+    {'key': 'cheap',   'label': '💰 الأرخص'},
+    {'key': 'muscat',  'label': 'مسقط'},
+    {'key': 'salalah', 'label': 'صلالة'},
+    {'key': 'nizwa',   'label': 'نزوى'},
+  ];
 
   @override
   void initState() {
     super.initState();
+    _ctrl = TextEditingController(text: widget.initialQuery ?? '');
     _load();
   }
 
@@ -34,122 +45,117 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-      _diag = 'جارٍ التحميل من $_endpoint …';
-    });
+    setState(() { _loading = true; _error = null; });
     try {
-      final g = await GuideService.search(query: _ctrl.text);
+      final q = _ctrl.text.trim().isNotEmpty ? _ctrl.text.trim()
+          : (_activeFilter != 'all' && _activeFilter != 'top' && _activeFilter != 'cheap')
+              ? _activeFilter : null;
+      final g = await GuideService.search(query: q, limit: 30);
+      List<Guide> sorted = g;
+      if (_activeFilter == 'top') {
+        sorted = [...g]..sort((a, b) => b.rating.compareTo(a.rating));
+      } else if (_activeFilter == 'cheap') {
+        sorted = [...g]..sort((a, b) => (a.pricePerDay > 0 ? a.pricePerDay : 9999)
+            .compareTo(b.pricePerDay > 0 ? b.pricePerDay : 9999));
+      }
       if (!mounted) return;
-      setState(() {
-        _guides = g;
-        _diag = 'تم ✓ عدد المرشدين: ${g.length}';
-      });
+      setState(() { _guides = sorted; _loading = false; });
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _error = friendlyError(e);
-        _diag = 'خطأ: ${e.toString()}';
-      });
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      setState(() { _error = friendlyError(e); _loading = false; });
     }
   }
-
-  static const String _endpoint = 'guideon.om/api/guides';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ابحث عن مرشد')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: _ctrl,
-              textInputAction: TextInputAction.search,
-              onSubmitted: (_) => _load(),
-              decoration: InputDecoration(
-                hintText: 'الوجهة، اللغة، أو التخصّص…',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: _load,
-                ),
-              ),
-            ),
+      backgroundColor: GdColors.sand,
+      appBar: AppBar(
+        backgroundColor: GdColors.navy,
+        foregroundColor: Colors.white,
+        title: TextField(
+          controller: _ctrl,
+          textInputAction: TextInputAction.search,
+          onSubmitted: (_) => _load(),
+          style: const TextStyle(color: Colors.white, fontSize: 15),
+          decoration: InputDecoration(
+            hintText: 'ابحث عن وجهة أو مرشد…',
+            hintStyle: const TextStyle(color: Colors.white60, fontSize: 14),
+            border: InputBorder.none,
+            suffixIcon: _ctrl.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.white60, size: 18),
+                    onPressed: () { _ctrl.clear(); _load(); },
+                  )
+                : null,
           ),
-          // TEMP diagnostic banner — always visible, shows the live load state.
-          Container(
-            width: double.infinity,
-            color: const Color(0xFFFFF3CD),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Text('🔎 $_diag',
-                style: const TextStyle(
-                    fontSize: 12, color: Color(0xFF8A6D00)),
-                textAlign: TextAlign.center),
-          ),
-          Expanded(child: _body()),
+        ),
+        actions: [
+          IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: _load),
         ],
       ),
+      body: Column(children: [
+        // Filter pills
+        Container(
+          color: GdColors.navy,
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _filters.map((f) {
+                final active = _activeFilter == f['key'];
+                return GestureDetector(
+                  onTap: () { setState(() => _activeFilter = f['key']!); _load(); },
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: active ? GdColors.gold : Colors.white12,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: active ? GdColors.gold : Colors.white30),
+                    ),
+                    child: Text(f['label']!,
+                      style: TextStyle(
+                        color: active ? GdColors.navy : Colors.white,
+                        fontSize: 12, fontWeight: FontWeight.w700)),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        Expanded(child: _body()),
+      ]),
     );
   }
 
   Widget _body() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_error != null) {
-      return _message(_error!, retry: true);
-    }
-    if (_guides.isEmpty) {
-      return _message('لا توجد نتائج مطابقة.\nجرّب كلمة بحث أخرى.');
-    }
+    if (_loading) return const Center(child: CircularProgressIndicator(color: GdColors.teal));
+    if (_error != null) return Center(
+      child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Icon(Icons.wifi_off, size: 56, color: GdColors.muted),
+        const SizedBox(height: 14),
+        Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: GdColors.muted)),
+        const SizedBox(height: 18),
+        FilledButton.icon(onPressed: _load, icon: const Icon(Icons.refresh), label: const Text('إعادة المحاولة')),
+      ])),
+    );
+    if (_guides.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+      const Icon(Icons.search_off, size: 56, color: GdColors.muted),
+      const SizedBox(height: 12),
+      Text('لا نتائج', style: const TextStyle(color: GdColors.muted, fontSize: 15)),
+    ]));
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: _load, color: GdColors.teal,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.all(16),
         itemCount: _guides.length,
         itemBuilder: (_, i) => GuideCard(
           guide: _guides[i],
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-                builder: (_) => GuideDetailScreen(guide: _guides[i])),
-          ),
+            MaterialPageRoute(builder: (_) => GuideDetailScreen(guide: _guides[i]))),
         ),
       ),
     );
   }
-
-  Widget _message(String text, {bool retry = false}) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(retry ? Icons.wifi_off : Icons.travel_explore,
-                  size: 56, color: retry ? GdColors.danger : GdColors.teal),
-              const SizedBox(height: 14),
-              Text(text,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: GdColors.navy,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600)),
-              if (retry) ...[
-                const SizedBox(height: 18),
-                FilledButton.icon(
-                    onPressed: _load,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('إعادة المحاولة')),
-              ],
-              const SizedBox(height: 20),
-              const Text('v3 · 1.0.0+3',
-                  style: TextStyle(color: GdColors.muted, fontSize: 11)),
-            ],
-          ),
-        ),
-      );
 }

@@ -4,50 +4,59 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:provider/provider.dart';
 
+import 'screens/splash_screen.dart';
+import 'services/api.dart';
+import 'services/auth_service.dart';
 import 'services/crash_reporter.dart';
 import 'services/push_service.dart';
 import 'theme/app_theme.dart';
-import 'screens/web_app_screen.dart';
 
 Future<void> main() async {
-  // Catch every uncaught error and report it to the backend.
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Make release-mode widget errors VISIBLE (default shows a blank gray box).
-    ErrorWidget.builder = (FlutterErrorDetails details) => Material(
+    ErrorWidget.builder = (FlutterErrorDetails d) => Material(
           color: const Color(0xFFFFF1F0),
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Text(
-                '⚠️ خطأ في الواجهة:\n\n${details.exceptionAsString()}',
+                '⚠️ ${d.exceptionAsString()}',
                 textDirection: TextDirection.ltr,
-                style: const TextStyle(color: Color(0xFFB00020), fontSize: 13),
+                style: const TextStyle(color: Color(0xFFB00020), fontSize: 12),
               ),
             ),
           ),
         );
 
-    // App version for crash context + the update gate.
     try {
       final info = await PackageInfo.fromPlatform();
       CrashReporter.init('${info.version}+${info.buildNumber}');
     } catch (_) {}
 
-    // Framework errors → present + report.
-    FlutterError.onError = (details) {
-      FlutterError.presentError(details);
-      CrashReporter.report(details.exception, details.stack);
+    FlutterError.onError = (d) {
+      FlutterError.presentError(d);
+      CrashReporter.report(d.exception, d.stack);
     };
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    // Push notifications — no-op until Firebase config is added (defensive).
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ));
+
+    await Api.instance.init();
     await PushService.instance.init();
 
-    runApp(const GuideonApp());
-  }, (error, stack) => CrashReporter.report(error, stack));
+    runApp(
+      ChangeNotifierProvider(
+        create: (_) => AuthService()..restore(),
+        child: const GuideonApp(),
+      ),
+    );
+  }, (e, s) => CrashReporter.report(e, s));
 }
 
 class GuideonApp extends StatelessWidget {
@@ -59,7 +68,6 @@ class GuideonApp extends StatelessWidget {
       title: 'Guideon',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      // Arabic-first; the app is bilingual.
       locale: const Locale('ar'),
       supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [
@@ -67,12 +75,9 @@ class GuideonApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: child!,
-      ),
-      // The whole platform lives at guideon.om — load it in a native shell.
-      home: const WebAppScreen(),
+      builder: (ctx, child) =>
+          Directionality(textDirection: TextDirection.rtl, child: child!),
+      home: const SplashScreen(),
     );
   }
 }

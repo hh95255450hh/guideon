@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/guide.dart';
 import '../theme/app_theme.dart';
@@ -84,18 +85,14 @@ class GuideDetailScreen extends StatelessWidget {
     );
   }
 
-  // Booking + payment still flow through the web checkout for now (Thawani);
-  // deep-link into the existing, fully-working web booking page.
-  Future<void> _openBooking(BuildContext context) async {
-    final uri =
-        Uri.parse('https://guideon.om/guide-profile.html?id=${guide.id}');
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تعذّر فتح صفحة الحجز.')),
-        );
-      }
-    }
+  // Booking + payment flow through the web checkout inside an in-app WebView.
+  void _openBooking(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => _WebSheet(
+        url: 'https://guideon.om/guide-profile.html?id=${guide.id}',
+        title: 'احجز مع ${guide.fullName}',
+      ),
+    ));
   }
 
   Widget _ph() => Container(
@@ -135,4 +132,66 @@ class _SectionTitle extends StatelessWidget {
             style:
                 const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
       );
+}
+
+/// In-app WebView sheet — used for booking/payment pages so the user
+/// never leaves the app context and session cookies are shared.
+class _WebSheet extends StatefulWidget {
+  final String url;
+  final String title;
+  const _WebSheet({required this.url, required this.title});
+  @override
+  State<_WebSheet> createState() => _WebSheetState();
+}
+
+class _WebSheetState extends State<_WebSheet> {
+  late final WebViewController _ctrl;
+  double _progress = 0;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(NavigationDelegate(
+        onProgress: (p) => setState(() => _progress = p / 100),
+        onPageStarted: (_) => setState(() { _loading = true; }),
+        onPageFinished: (_) => setState(() { _loading = false; }),
+      ))
+      ..loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title, style: const TextStyle(fontSize: 15)),
+        backgroundColor: GdColors.teal,
+        foregroundColor: Colors.white,
+        bottom: _loading
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(3),
+                child: LinearProgressIndicator(
+                  value: _progress == 0 ? null : _progress,
+                  color: GdColors.gold,
+                  backgroundColor: Colors.white30,
+                ),
+              )
+            : null,
+      ),
+      body: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          if (await _ctrl.canGoBack()) {
+            _ctrl.goBack();
+          } else {
+            if (context.mounted) Navigator.of(context).pop();
+          }
+        },
+        child: WebViewWidget(controller: _ctrl),
+      ),
+    );
+  }
 }
