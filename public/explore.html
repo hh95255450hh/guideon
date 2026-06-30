@@ -219,11 +219,18 @@ function loadLeaflet(cb) {
   if (window.L) { cb(); return; }
   const css = document.createElement('link');
   css.rel = 'stylesheet';
-  css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  css.href = '/vendor/leaflet/leaflet.css';
   document.head.appendChild(css);
   const js = document.createElement('script');
-  js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  js.src = '/vendor/leaflet/leaflet.js';
   js.onload = cb;
+  js.onerror = () => {
+    // Fallback to CDN if local fails
+    const js2 = document.createElement('script');
+    js2.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    js2.onload = cb;
+    document.head.appendChild(js2);
+  };
   document.head.appendChild(js);
 }
 
