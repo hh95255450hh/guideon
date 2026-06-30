@@ -294,7 +294,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           const SizedBox(height: 24),
 
           if (!isLast)
-            // Next button
             _GdButton(
               label: 'التالي',
               icon: Icons.arrow_back_ios_new_rounded,
@@ -302,17 +301,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               filled: true,
             )
           else ...[
-            // Tourist
             _GdButton(
-              label: 'أبدأ كسائح',
+              label: 'ابدأ كسائح',
               icon: Icons.luggage_rounded,
               onTap: () => _push(const HomeShell()),
               filled: true,
             ),
             const SizedBox(height: 10),
-            // Guide
             _GdButton(
-              label: 'أنا مرشد سياحي',
+              label: 'دخول كمرشد',
               icon: Icons.badge_rounded,
               onTap: () => _push(const LoginScreen()),
               filled: false,
@@ -565,15 +562,20 @@ class _GdButton extends StatelessWidget {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(icon, color: filled ? Colors.white : Colors.white60, size: 20),
-              const SizedBox(width: 10),
-              Text(label,
-                  style: TextStyle(
-                    color: filled ? Colors.white : Colors.white70,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  )),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: filled ? Colors.white : Colors.white70,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+                overflow: TextOverflow.ellipsis,
+                softWrap: false,
+              ),
             ],
           ),
         ),
