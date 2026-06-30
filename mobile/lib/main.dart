@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'services/api.dart';
@@ -48,6 +49,13 @@ class GuideonApp extends StatelessWidget {
         // Arabic-first; the app is bilingual.
         locale: const Locale('ar'),
         supportedLocales: const [Locale('ar'), Locale('en')],
+        // REQUIRED for a non-English locale — without these, Material widgets
+        // (TextField, etc.) throw "No MaterialLocalizations found" → blank gray.
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         builder: (context, child) => Directionality(
           textDirection: TextDirection.rtl,
           child: child!,
