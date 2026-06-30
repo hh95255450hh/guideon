@@ -472,6 +472,10 @@ async function doRegister(e) {
     }
   }
 
+  // Pass referral code if present in URL (?ref=XXXX).
+  const _refCode = new URLSearchParams(window.location.search).get('ref');
+  if (_refCode) body.ref = _refCode.toUpperCase().slice(0, 6);
+
   try {
     const r = await fetch('/api/auth/register', {
       method: 'POST', credentials: 'include',

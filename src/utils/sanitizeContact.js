@@ -57,7 +57,9 @@ function sanitizeContact(profile, viewer) {
  * (bios, messages). Replaces with a notice that pushes users back to
  * the platform messaging.
  */
-const PHONE_RE = /(\+?\d[\d\s\-().]{6,}\d)/g;
+// Unicode-aware: \p{N} catches Arabic-Indic (٠١٢…٩), Persian, and all other
+// Unicode digit blocks in addition to ASCII [0-9]. The 'u' flag is required.
+const PHONE_RE = /(\+?[\p{N}][\p{N}\s\-().]{6,}[\p{N}])/gu;
 const EMAIL_RE = /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/gi;
 // Social handles like @username with at-sign, and t.me/, wa.me/, instagram.com/
 const HANDLE_RE = /(?:\b(?:wa\.me|t\.me|instagram\.com|facebook\.com|fb\.me|tiktok\.com|snapchat\.com)\/[^\s]+)/gi;

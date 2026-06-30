@@ -99,6 +99,32 @@
 
 ---
 
+## ✅ آخر التحديثات — 2026-06-30 (إصلاحات المجلس الاستشاري — 6 إصلاحات أمنية وميزات جديدة)
+
+### 🔒 إصلاحات أمنية
+- **Rate limit على guest-checkout:** `guestCheckoutLimiter` (5 محاولات/10 دقائق) — يحمي من spam وإغراق البريد.
+- **أرقام عربية تتجاوز الفلتر:** `PHONE_RE` صار `\p{N}` (Unicode) بدل `\d` (ASCII فقط) — يمسك ٩٦٧٩٥٢... وما شابهها.
+- **تصليب ownership في updateStatus:** أضيف فحص صريح لأنواع المستخدمين غير المعروفة (`team`، `staff`) → 403.
+- **Idempotency للـ webhooks (migration 052):** `UNIQUE INDEX` على `paymentRef` + معالجة خطأ 23505 في `finalizePaidBooking` — لا تُعالَج مدفوعات مرتين.
+
+### 🎁 نظام الإحالة (Referral) — migration 053
+- كل مستخدم جديد يحصل على `referralCode` فريد (6 أحرف).
+- رابط الإحالة: `guideon.om/register.html?ref=XXXX` — يُمرَّر للـ API تلقائياً.
+- المُحال يحصل على **خصم 5%** (بحدٍّ أقصى 5 OMR) في أول حجز تلقائياً.
+- بطاقة الإحالة تظهر في لوحة السائح مع روابط واتساب + بريد.
+
+### 📊 Funnel Analytics — migration 054
+- جدول `analytics_events` لتتبع: `book_click` → `checkout_start` → `guest_checkout_start` → `guest_checkout_complete`.
+- دالة `window.gdTrack()` في `common-widgets.js` — fire-and-forget، لا تعطّل الصفحة.
+- نقطة `POST /api/analytics/event` (عامّة، قائمة بيضاء للأحداث المسموح بها).
+
+### ⚠️ خطوات يدوية مطلوبة في Supabase ✅ تمّت
+- **migration 052** (payment idempotency) ✓
+- **migration 053** (referral system) ✓
+- **migration 054** (analytics events) ✓
+
+---
+
 ## ✅ آخر التحديثات — 2026-06-30 (الحجز كزائر — Guest Checkout)
 
 - **حجز سريع دون حساب (مثل jawla.om):** عند الضغط على "ادفع واحجز" في أي رحلة، إذا لم يكن المستخدم مسجّلاً يظهر نموذج صغير (الاسم + البريد/الهاتف) بدل تحويله لصفحة التسجيل → يدفع مباشرة ويصله رابط الحجز على بريده.

@@ -59,8 +59,20 @@ const chatLimiter = rateLimit({
   skip,
 });
 
+// Guest checkout is a public financial endpoint — keep tight to prevent
+// spam bookings that exhaust the email quota and pollute the DB.
+const guestCheckoutLimiter = rateLimit({
+  windowMs: num('RATE_LIMIT_GUEST_CHECKOUT_WINDOW_MIN', 10) * 60 * 1000,
+  max: num('RATE_LIMIT_GUEST_CHECKOUT_MAX', 5),
+  message: { success: false, message: 'عدد كبير من المحاولات. حاول بعد 10 دقائق · Too many attempts. Please wait 10 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false,
+  skip,
+});
+
 if (DISABLED) {
   console.warn('[rateLimit] DISABLED via RATE_LIMIT_DISABLED=true — all limits bypassed.');
 }
 
-module.exports = { loginLimiter, registerLimiter, passwordResetLimiter, apiLimiter, chatLimiter };
+module.exports = { loginLimiter, registerLimiter, passwordResetLimiter, apiLimiter, chatLimiter, guestCheckoutLimiter };

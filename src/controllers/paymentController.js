@@ -259,14 +259,20 @@ exports.verify = async (req, res) => {
   }
 };
 
-// Shared: settle a payment + notify (idempotent-ish). Handles the pay-first
-// deposit (awaiting_payment → pending, then the provider is notified) and
-// balance/full payments.
+// Shared: settle a payment + notify. Fully idempotent — safe to call from
+// concurrent webhook deliveries (Thawani/Paymob both retry on timeout).
+// The DB has a UNIQUE index on paymentRef (migration 052) so a duplicate
+// ref update is a no-op; we also do an early in-memory check here so we
+// avoid unnecessary DB writes in the happy path.
 async function finalizePaidBooking(bookingId, session) {
   const fresh = await bookings.findById(bookingId);
   if (!fresh) return;
   const isDeposit = fresh.status === 'awaiting_payment';
-  if (isDeposit ? fresh.depositPaidAt : fresh.isPaid) return; // already settled
+  // In-memory idempotency guard — prevents double-processing in concurrent calls.
+  if (isDeposit ? fresh.depositPaidAt : fresh.isPaid) {
+    console.log(`[Payment] Booking ${bookingId} already settled — skipping duplicate webhook.`);
+    return;
+  }
 
   // What's owed for THIS payment (deposit vs balance vs full).
   const expectedOmr = isDeposit
@@ -295,10 +301,19 @@ async function finalizePaidBooking(bookingId, session) {
   // ── Pay-first deposit: submit the booking to the provider now ──
   if (isDeposit) {
     const fullyPaid = (parseInt(fresh.depositPercent) || 100) >= 100;
-    await updateBookingSafe(bookingId, {
-      status: 'pending', depositPaidAt: now, isPaid: fullyPaid,
-      ...(fullyPaid && { paidAt: now }), paymentRef: ref,
-    });
+    try {
+      await updateBookingSafe(bookingId, {
+        status: 'pending', depositPaidAt: now, isPaid: fullyPaid,
+        ...(fullyPaid && { paidAt: now }), paymentRef: ref,
+      });
+    } catch (dbErr) {
+      // Unique violation on paymentRef = another webhook already settled this. Safe to ignore.
+      if (dbErr?.code === '23505' || String(dbErr?.message).includes('unique')) {
+        console.log(`[Payment] Booking ${bookingId} unique-ref conflict — already settled by concurrent webhook.`);
+        return;
+      }
+      throw dbErr;
+    }
     // The provider sees the booking for the FIRST time, now that it's paid.
     try { require('../services/bookingService').notifyBookingSubmitted(bookingId); } catch (e) { /* non-critical */ }
     if (!fresh.touristId && fresh.guestEmail) _emailGuestPaid(fresh);
@@ -316,7 +331,15 @@ async function finalizePaidBooking(bookingId, session) {
   }
 
   // ── Balance / legacy full payment → mark fully paid ──
-  await updateBookingSafe(bookingId, { isPaid: true, paidAt: now, paymentRef: ref });
+  try {
+    await updateBookingSafe(bookingId, { isPaid: true, paidAt: now, paymentRef: ref });
+  } catch (dbErr) {
+    if (dbErr?.code === '23505' || String(dbErr?.message).includes('unique')) {
+      console.log(`[Payment] Booking ${bookingId} unique-ref conflict (balance) — already settled.`);
+      return;
+    }
+    throw dbErr;
+  }
 
   if (!fresh.touristId && fresh.guestEmail) _emailGuestPaid(fresh);
   const tourist  = await users.findById(fresh.touristId);

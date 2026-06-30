@@ -18,7 +18,7 @@ const packages = new SupabaseDB('tour_packages');
 // Columns added by migration 021 that may not exist on older deployments.
 const OPTIONAL_BOOKING_COLS = ['startedAt', 'completedAt', 'variantName', 'addons', 'providerType',
   'depositPercent', 'depositAmount', 'balanceAmount', 'depositPaidAt',
-  'guestName', 'guestEmail', 'guestPhone'];
+  'guestName', 'guestEmail', 'guestPhone', 'referralDiscount'];
 const isMissingColumnError = (msg) => /Could not find the '\w+' column|schema cache/i.test(msg || '');
 
 class BookingError extends Error {
@@ -188,7 +188,21 @@ async function createBooking(touristId, body, guest = null) {
   // tourist must pay a deposit (25/50/100%) BEFORE the provider is notified.
   // The booking is created as 'awaiting_payment' and held back from the guide
   // until the deposit is paid (see paymentController.finalizePaidBooking).
-  const roundedTotal = rules.roundMoney(totalAmount);
+
+  // Referral discount: 5% off (max 5 OMR) on a referred tourist's FIRST booking.
+  let referralDiscount = 0;
+  if (touristId) {
+    const tourist = await users.findById(touristId);
+    if (tourist && tourist.referredBy && !tourist.referralDiscountUsed) {
+      referralDiscount = Math.min(parseFloat(totalAmount) * 0.05, 5);
+      referralDiscount = rules.roundMoney(referralDiscount);
+      // Mark as used so the discount is only applied once.
+      users.update(touristId, { referralDiscountUsed: true }).catch(() => {});
+    }
+  }
+  const discountedTotal = Math.max(0, parseFloat(totalAmount) - referralDiscount);
+
+  const roundedTotal = rules.roundMoney(discountedTotal);
   const paymentsLive = process.env.PAYMENTS_ENABLED === 'true';
   const payFirst = paymentsLive && roundedTotal > 0;
   // Full payment only — the booking is paid in full before it reaches the guide.
@@ -211,6 +225,7 @@ async function createBooking(touristId, body, guest = null) {
     duration: packageId ? (packageData?.duration_days === 1 ? 'full' : 'multi') : (tourTime === 'full_day' ? 'full' : 'half'),
     participants: participantCount,
     totalAmount: roundedTotal,
+    ...(referralDiscount > 0 && { referralDiscount }),
     status: payFirst ? 'awaiting_payment' : 'pending',
     ...(payFirst && { depositPercent, depositAmount, balanceAmount }),
     specialRequests: specialRequests || '',

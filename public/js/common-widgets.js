@@ -335,6 +335,23 @@
   }
 })();
 
+/* ── Funnel analytics tracker ───────────────────────────────────────────────
+   Fire-and-forget. Sends a named event to /api/analytics/event.
+   Usage: window.gdTrack('book_click', { packageId, guideId, dest })
+   Never throws — silently discards on any error. */
+window.gdTrack = function (event, meta) {
+  try {
+    if (!event) return;
+    fetch('/api/analytics/event', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, ...(meta || {}) }),
+      keepalive: true,  // survives page unload (e.g. redirect to payment)
+    }).catch(function () {});
+  } catch (_) {}
+};
+
 /* ── Polish layer loader — adds motion + micro-interactions site-wide.
    Injected here so it ships on every page that already loads common-widgets. */
 (function () {

@@ -83,6 +83,9 @@
     <a href="/search.html" class="btn-teal btn" data-i18n="find_guides">🔍 Find More Guides</a>
   </div>
 
+  <!-- ── REFERRAL WIDGET (populated by JS after login) ── -->
+  <div id="referralWidget" style="display:none" class="mt-4"></div>
+
   <!-- ── MESSAGES SECTION ── -->
   <div class="card shadow-sm mt-5" id="msgSection">
     <div class="card-header d-flex justify-content-between align-items-center" style="background:var(--teal);color:#fff">
@@ -196,6 +199,8 @@ async function checkAuth() {
     initMessages();        // build the GDMessages instance now that MY_ID is known
     loadConvos();          // delegates to MSG.loadConvos()
     connectMsgSSE();       // delegates to MSG.connectSSE()
+    // Show referral widget if the user has a code (migration 053).
+    if (d.user.referralCode) _showReferralWidget(d.user.referralCode);
   } catch { window.location.href = '/login.html'; }
 }
 
@@ -347,6 +352,39 @@ async function submitReview() {
 }
 
 window.onLangChange = () => { renderBookings(); renderConvos(); };
+
+// ── Referral widget ────────────────────────────────────────────────────────
+function _showReferralWidget(code) {
+  const link = window.location.origin + '/register.html?ref=' + code;
+  const el = document.getElementById('referralWidget');
+  if (!el) return;
+  el.innerHTML =
+    '<div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(135deg,#0f7b6c,#1a9e8b);color:#fff;border-radius:14px">' +
+      '<div class="card-body p-4">' +
+        '<div class="d-flex align-items-center gap-3 mb-3">' +
+          '<span style="font-size:2rem">🎁</span>' +
+          '<div><h6 class="fw-800 mb-0">ادعُ أصدقاءك — Invite Friends</h6>' +
+          '<small style="opacity:.85">يحصل كل مدعوّ على خصم 5% في أول حجز · Your friend gets 5% off their first booking</small></div>' +
+        '</div>' +
+        '<div class="input-group">' +
+          '<input id="refLinkInput" type="text" class="form-control" readonly value="' + link + '" style="font-size:13px;border-radius:8px 0 0 8px">' +
+          '<button class="btn btn-light fw-700" onclick="_copyRef()" style="border-radius:0 8px 8px 0" id="refCopyBtn">نسخ · Copy</button>' +
+        '</div>' +
+        '<div class="d-flex gap-2 mt-3 flex-wrap">' +
+          '<a href="https://wa.me/?text=' + encodeURIComponent('سافر معي عبر Guideon واحصل على خصم 5% في أول رحلة! ' + link) + '" target="_blank" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4)">📲 واتساب · WhatsApp</a>' +
+          '<a href="mailto:?subject=انضم لـ Guideon&body=' + encodeURIComponent('استخدم رابطي الخاص للتسجيل في Guideon واحصل على خصم 5%: ' + link) + '" class="btn btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4)">📧 بريد إلكتروني · Email</a>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  el.style.display = 'block';
+}
+function _copyRef() {
+  const inp = document.getElementById('refLinkInput');
+  if (!inp) return;
+  navigator.clipboard?.writeText(inp.value).catch(() => { inp.select(); document.execCommand('copy'); });
+  const btn = document.getElementById('refCopyBtn');
+  if (btn) { const o = btn.textContent; btn.textContent = '✓ تم النسخ!'; setTimeout(() => btn.textContent = o, 2000); }
+}
 
 checkAuth();
 

@@ -105,11 +105,21 @@ exports.updateStatus = async (req, res) => {
     const userId   = req.session.userId;
     const userType = req.session.userType;
 
+    // Only known roles may touch booking status. Any unrecognised userType
+    // (e.g. 'team', 'staff' without explicit admin grant) is refused here
+    // before it even reaches the allowedTransitions table — belt-and-suspenders.
+    const KNOWN_ROLES = ['guide', 'company', 'tourist', 'admin', 'staff'];
+    if (!KNOWN_ROLES.includes(userType)) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
     // A company is a provider too: the booking's guideId holds the
     // provider's user id whether they're a solo guide or a company.
     const isProvider = userType === 'guide' || userType === 'company';
     if (isProvider              && booking.guideId   !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
     if (userType === 'tourist'  && booking.touristId !== userId) return res.status(403).json({ success: false, message: 'Access denied.' });
+    // Staff are not admins — they cannot mutate bookings they don't own.
+    if (userType === 'staff') return res.status(403).json({ success: false, message: 'Access denied. Use the admin panel.' });
 
     if (userType === 'tourist' && status === 'cancelled') {
       // Oman-local, NaN-safe: a malformed stored date must not silently bypass

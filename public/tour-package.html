@@ -574,6 +574,8 @@ async function bookTour() {
   const btn = document.getElementById('bookBtn');
   const origLabel = btn.textContent;
   btn.disabled = true; btn.textContent = 'جارٍ التجهيز…';
+  // Funnel event: user clicked Book.
+  if (window.gdTrack) gdTrack('book_click', { packageId: PACKAGE.id, guideId: PACKAGE.providerId, meta: { destination: PACKAGE.destination } });
   try {
     const r = await fetch('/api/bookings', {
       method: 'POST', credentials: 'include',
@@ -589,6 +591,7 @@ async function bookTour() {
     // checkout; it is only sent to the guide after payment.
     if (d.booking && d.booking.status === 'awaiting_payment') {
       btn.textContent = 'جارٍ التحويل للدفع…';
+      if (window.gdTrack) gdTrack('checkout_start', { packageId: PACKAGE.id, guideId: PACKAGE.providerId, meta: { bookingId: d.booking.id } });
       const pr = await fetch('/api/payments/create-checkout', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -641,6 +644,7 @@ function openGuestModal(body) {
 }
 function closeGuestModal() { const m = document.getElementById('guestModal'); if (m) m.style.display = 'none'; }
 async function submitGuest() {
+  if (window.gdTrack) gdTrack('guest_checkout_start', { packageId: GUEST_BODY?.packageId, guideId: GUEST_BODY?.guideId });
   const name  = document.getElementById('gName').value.trim();
   const email = document.getElementById('gEmail').value.trim();
   const phone = document.getElementById('gPhone').value.trim();
@@ -659,7 +663,10 @@ async function submitGuest() {
     });
     const d = await r.json();
     if (!d.success) throw new Error(d.message || 'تعذّر الحجز');
-    if (d.url) { window.location.href = d.url; return; }   // → payment gateway
+    if (d.url) {
+      if (window.gdTrack) gdTrack('guest_checkout_complete', { packageId: GUEST_BODY?.packageId, guideId: GUEST_BODY?.guideId, meta: { bookingId: d.booking?.id } });
+      window.location.href = d.url; return;
+    }   // → payment gateway
     // Free-launch mode: no payment needed.
     closeGuestModal();
     toast('🎉 تم استلام حجزك! تحقق من بريدك.', 'success');

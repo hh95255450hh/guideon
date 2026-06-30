@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 
 const views    = new SupabaseDB('tour_views');
+const events   = new SupabaseDB('analytics_events');
 const packages = new SupabaseDB('tour_packages');
 const bookings = new SupabaseDB('bookings');
 const reviews  = new SupabaseDB('reviews', 'reviewId');
@@ -27,6 +28,32 @@ exports.recordView = async (req, res) => {
   } catch (e) {
     res.json({ success: false }); // silently fail — never block the page
   }
+};
+
+// POST /api/analytics/event — record a funnel event (fire-and-forget from frontend).
+// Public endpoint — no login required. Stores no PII.
+const ALLOWED_EVENTS = new Set([
+  'book_click', 'checkout_start', 'payment_complete',
+  'guest_checkout_start', 'guest_checkout_complete',
+  'search_result_click', 'package_view',
+]);
+exports.recordEvent = async (req, res) => {
+  res.json({ success: true }); // respond immediately, process async
+  try {
+    const { event, packageId, guideId, meta } = req.body || {};
+    if (!ALLOWED_EVENTS.has(event)) return;
+    await events.insert({
+      id:         'ev-' + uuidv4().slice(0, 12),
+      event,
+      packageId:  packageId || null,
+      guideId:    guideId   || null,
+      userId:     req.session?.userId || null,
+      sessionRef: req.session?.id     || null,
+      meta:       typeof meta === 'object' && meta ? meta : {},
+      ip:         req.ip || req.headers['x-forwarded-for']?.split(',')[0] || null,
+      createdAt:  new Date().toISOString(),
+    });
+  } catch (_) { /* silently discard — never break the page for analytics */ }
 };
 
 // GET /api/guide/analytics — analytics for the logged-in guide

@@ -15,6 +15,11 @@ function randomToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+// Generate a short, URL-safe referral code unique per user (6 chars, uppercase).
+function generateReferralCode() {
+  return crypto.randomBytes(4).toString('base64url').toUpperCase().slice(0, 6);
+}
+
 // Strip every sensitive field before a user object is sent to a client (used
 // by register/login/me/google/profile). Shared so no endpoint leaks tokens.
 const { publicUser } = require('../utils/sanitizeUser');
@@ -54,7 +59,8 @@ exports.register = async (req, res) => {
     const { fullName, email, password, userType, phone, nationality, preferredLanguage,
             hasMinistryLicence, licenceNumber, languages, specialisations, destinations, pricePerDay, bio,
             companyName, companyRegNo, companyServices, companyDestinations, companyDescription,
-            teamName, teamCategory, teamDescription, teamGovernorate, membersCount, foundedYear } = req.body;
+            teamName, teamCategory, teamDescription, teamGovernorate, membersCount, foundedYear,
+            ref } = req.body; // ref = referral code from ?ref=XXXX query param
 
     if (!fullName || !email || !password || !userType) {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields.' });
@@ -85,6 +91,17 @@ exports.register = async (req, res) => {
     const verifyToken = randomToken();
     const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
+    // Referral: resolve referrer before creating record (ignore invalid codes silently).
+    let referredByUserId = null;
+    if (ref && typeof ref === 'string') {
+      const referrer = await users.findByField('referralCode', ref.toUpperCase().slice(0, 6));
+      if (referrer && referrer.id !== id) referredByUserId = referrer.id;
+    }
+    // Generate a unique referral code for this new user (retry once on collision).
+    let referralCode = generateReferralCode();
+    const codeCollision = await users.findByField('referralCode', referralCode);
+    if (codeCollision) referralCode = generateReferralCode();
+
     const base = {
       id, fullName, email: email.toLowerCase(), password: hashed,
       phone: phone || '', userType,
@@ -92,6 +109,8 @@ exports.register = async (req, res) => {
       emailVerified: false,
       emailVerifyToken: verifyToken,
       emailVerifyExpires: verifyExpires,
+      referralCode,
+      ...(referredByUserId && { referredBy: referredByUserId }),
     };
 
     let record;
