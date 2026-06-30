@@ -25,14 +25,17 @@ class _HomeScreenState extends State<HomeScreen> {
   List<TourPackage> _packages = [];
   bool _loading = true;
 
-  final List<Map<String, dynamic>> _destinations = [
-    {'label': 'مسقط', 'en': 'Muscat', 'emoji': '🏙️'},
-    {'label': 'صلالة', 'en': 'Salalah', 'emoji': '🌿'},
-    {'label': 'نزوى',  'en': 'Nizwa',   'emoji': '🏰'},
-    {'label': 'صحار',  'en': 'Sohar',   'emoji': '⚓'},
-    {'label': 'صور',   'en': 'Sur',     'emoji': '🐢'},
-    {'label': 'مسندم', 'en': 'Khasab',  'emoji': '⛵'},
+  // Categories matching the web platform exactly — used to filter packages.
+  final List<Map<String, dynamic>> _categories = [
+    {'label': 'الكل',           'key': null,              'icon': Icons.public,              'color': Color(0xFF0f7b6c)},
+    {'label': 'تاريخية',        'key': 'Historical',      'icon': Icons.account_balance,     'color': Color(0xFF8B6914)},
+    {'label': 'سفاري صحراوي',   'key': 'Desert Safari',   'icon': Icons.terrain,             'color': Color(0xFFC07820)},
+    {'label': 'ثقافية',         'key': 'Cultural',        'icon': Icons.theater_comedy,      'color': Color(0xFF7B3FA0)},
+    {'label': 'طبيعة',          'key': 'Nature',          'icon': Icons.eco,                 'color': Color(0xFF2E7D32)},
+    {'label': 'بحرية',          'key': 'Marine',          'icon': Icons.scuba_diving,        'color': Color(0xFF0277BD)},
+    {'label': 'مغامرة',         'key': 'Adventure',       'icon': Icons.hiking,              'color': Color(0xFFBF360C)},
   ];
+  String? _activeCategory;
 
   @override
   void initState() {
@@ -45,7 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final results = await Future.wait([
         GuideService.search(limit: 6),
         GuideService.search(limit: 20),
-        PackageService.popular(limit: 8),
+        _activeCategory == null
+            ? PackageService.popular(limit: 8)
+            : PackageService.list(category: _activeCategory, limit: 8),
       ]);
       if (!mounted) return;
       setState(() {
@@ -54,6 +59,19 @@ class _HomeScreenState extends State<HomeScreen> {
         _packages = results[2] as List<TourPackage>;
         _loading  = false;
       });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _filterByCategory(String? category) async {
+    setState(() { _activeCategory = category; _loading = true; });
+    try {
+      final pkgs = category == null
+          ? await PackageService.popular(limit: 8)
+          : await PackageService.list(category: category, limit: 8);
+      if (!mounted) return;
+      setState(() { _packages = pkgs; _loading = false; });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -194,47 +212,72 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── DESTINATIONS ────────────────────────────────────
+            // ── CATEGORIES (matching platform) ───────────────────
             SliverToBoxAdapter(
               child: _section(
-                title: '🗺️ الوجهات الشهيرة',
+                title: '🏷️ تصنيفات الرحلات',
                 child: SizedBox(
-                  height: 90,
+                  height: 96,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _destinations.length,
+                    itemCount: _categories.length,
                     itemBuilder: (_, i) {
-                      final d = _destinations[i];
+                      final c = _categories[i];
+                      final key = c['key'] as String?;
+                      final color = c['color'] as Color;
+                      final icon  = c['icon'] as IconData;
+                      final active = _activeCategory == key;
                       return GestureDetector(
-                        onTap: () => _searchDest(d['en']!),
-                        child: Container(
-                          width: 80,
+                        onTap: () => _filterByCategory(key),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 82,
                           margin: const EdgeInsets.only(left: 10),
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
+                            color: active ? color : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: active ? color : const Color(0xFFE8EDF0),
+                              width: active ? 2 : 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: .06),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                color: active
+                                    ? color.withValues(alpha: .25)
+                                    : Colors.black.withValues(alpha: .05),
+                                blurRadius: active ? 12 : 6,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(d['emoji']!,
-                                  style: const TextStyle(fontSize: 28)),
-                              const SizedBox(height: 4),
-                              Text(
-                                d['label']!,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: GdColors.navy,
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: active
+                                      ? Colors.white.withValues(alpha: .2)
+                                      : color.withValues(alpha: .1),
+                                  shape: BoxShape.circle,
                                 ),
+                                child: Icon(icon,
+                                    size: 22,
+                                    color: active ? Colors.white : color),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                c['label']!,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: active ? Colors.white : GdColors.navy,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),

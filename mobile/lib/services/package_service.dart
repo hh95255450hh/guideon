@@ -15,10 +15,17 @@ class PackageService {
         .toList();
   }
 
-  static Future<List<TourPackage>> list({String? destination, int limit = 20}) async {
+  static Future<List<TourPackage>> list({
+    String? destination,
+    String? category,
+    int limit = 20,
+  }) async {
     final params = <String, dynamic>{'limit': limit};
     if (destination != null && destination.trim().isNotEmpty) {
       params['destination'] = destination.trim();
+    }
+    if (category != null && category.trim().isNotEmpty) {
+      params['category'] = category.trim();
     }
     final res = await Api.instance.get('/packages', query: params);
     final list = (res.data is Map && res.data['packages'] is List)
