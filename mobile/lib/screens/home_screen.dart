@@ -1,10 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/guide.dart';
+import '../models/tour_package.dart';
 import '../services/auth_service.dart';
 import '../services/guide_service.dart';
+import '../services/package_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/guide_card.dart';
 import 'guide_detail_screen.dart';
@@ -19,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Guide> _top = [];
   List<Guide> _all = [];
+  List<TourPackage> _packages = [];
   bool _loading = true;
 
   final List<Map<String, dynamic>> _destinations = [
@@ -41,12 +45,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final results = await Future.wait([
         GuideService.search(limit: 6),
         GuideService.search(limit: 20),
+        PackageService.popular(limit: 8),
       ]);
       if (!mounted) return;
       setState(() {
-        _top = results[0];
-        _all = results[1];
-        _loading = false;
+        _top      = results[0] as List<Guide>;
+        _all      = results[1] as List<Guide>;
+        _packages = results[2] as List<TourPackage>;
+        _loading  = false;
       });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
@@ -268,6 +274,31 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            // ── TOP PACKAGES ────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _section(
+                title: '🏕️ أفضل الرحلات',
+                action: TextButton(
+                  onPressed: () {},
+                  child: const Text('عرض الكل',
+                      style: TextStyle(color: GdColors.teal, fontSize: 13)),
+                ),
+                child: _loading
+                    ? _shimmerRow()
+                    : _packages.isEmpty
+                        ? const SizedBox.shrink()
+                        : SizedBox(
+                            height: 230,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _packages.length,
+                              itemBuilder: (_, i) => _packageChip(_packages[i]),
+                            ),
+                          ),
+              ),
+            ),
+
             // ── ALL GUIDES LIST ──────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
@@ -425,6 +456,134 @@ class _HomeScreenState extends State<HomeScreen> {
         child: const Icon(Icons.person, size: 40, color: GdColors.teal),
       );
 
+  // ── Horizontal package chip ───────────────────────────────────
+  Widget _packageChip(TourPackage p) {
+    return GestureDetector(
+      onTap: () => _openPackage(p),
+      child: Container(
+        width: 170,
+        margin: const EdgeInsets.only(left: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .07),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cover image
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Stack(
+                children: [
+                  (p.coverImage != null && p.coverImage!.isNotEmpty)
+                      ? CachedNetworkImage(
+                          imageUrl: p.coverImage!,
+                          height: 110,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => _pkgPlaceholder(),
+                        )
+                      : _pkgPlaceholder(),
+                  // Duration badge
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: GdColors.navy.withValues(alpha: .75),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${p.durationDays} ${p.durationDays == 1 ? 'يوم' : 'أيام'}',
+                        style: const TextStyle(
+                          color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    p.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: GdColors.navy,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    '📍 ${p.destination}',
+                    style: const TextStyle(color: GdColors.muted, fontSize: 11),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, size: 13, color: GdColors.gold),
+                      const SizedBox(width: 3),
+                      Text(
+                        p.rating > 0 ? p.rating.toStringAsFixed(1) : 'جديد',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                      const Spacer(),
+                      if (p.priceAdult > 0)
+                        Text(
+                          '${p.priceAdult.toStringAsFixed(0)} ر.ع',
+                          style: const TextStyle(
+                            color: GdColors.teal,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _pkgPlaceholder() => Container(
+        height: 110,
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0f3d3a), Color(0xFF0f7b6c)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: const Icon(Icons.landscape, size: 40, color: Colors.white54),
+      );
+
+  void _openPackage(TourPackage p) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => _WebSheet(
+        url: 'https://guideon.om/tour-package.html?id=${p.id}',
+        title: p.title,
+      ),
+    ));
+  }
+
   Widget _section({
     required String title,
     required Widget child,
@@ -538,4 +697,66 @@ class _ShimmerState extends State<_Shimmer>
           ),
         ),
       );
+}
+
+/// In-app WebView — used for tour package pages and booking flows.
+class _WebSheet extends StatefulWidget {
+  final String url;
+  final String title;
+  const _WebSheet({required this.url, required this.title});
+  @override
+  State<_WebSheet> createState() => _WebSheetState();
+}
+
+class _WebSheetState extends State<_WebSheet> {
+  late final WebViewController _ctrl;
+  bool _loading = true;
+  double _progress = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(NavigationDelegate(
+        onProgress: (p) => setState(() => _progress = p / 100),
+        onPageStarted: (_) => setState(() => _loading = true),
+        onPageFinished: (_) => setState(() => _loading = false),
+      ))
+      ..loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title,
+            style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
+        backgroundColor: GdColors.teal,
+        foregroundColor: Colors.white,
+        bottom: _loading
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(3),
+                child: LinearProgressIndicator(
+                  value: _progress == 0 ? null : _progress,
+                  color: GdColors.gold,
+                  backgroundColor: Colors.white30,
+                ),
+              )
+            : null,
+      ),
+      body: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          if (await _ctrl.canGoBack()) {
+            _ctrl.goBack();
+          } else {
+            if (context.mounted) Navigator.of(context).pop();
+          }
+        },
+        child: WebViewWidget(controller: _ctrl),
+      ),
+    );
+  }
 }
