@@ -232,10 +232,14 @@ function initMap() {
   leafMap = L.map('map', { zoomControl: false, attributionControl: false })
     .setView(OMAN_CENTER, OMAN_ZOOM);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
-    subdomains: ['a','b','c'],
+    crossOrigin: '',
   }).addTo(leafMap);
+
+  // Force Leaflet to recalculate map size after WebView finishes layout
+  setTimeout(() => leafMap.invalidateSize(), 300);
+  setTimeout(() => leafMap.invalidateSize(), 1000);
 
   // Tap on map = collapse sheet
   leafMap.on('click', () => setSheet('peek'));
