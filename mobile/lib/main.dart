@@ -10,6 +10,22 @@ import 'screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Make release-mode widget errors VISIBLE (default shows a blank gray box).
+  ErrorWidget.builder = (FlutterErrorDetails details) => Material(
+        color: const Color(0xFFFFF1F0),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              '⚠️ خطأ في الواجهة:\n\n${details.exceptionAsString()}',
+              textDirection: TextDirection.ltr,
+              style: const TextStyle(color: Color(0xFFB00020), fontSize: 13),
+            ),
+          ),
+        ),
+      );
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await Api.instance.init();
   // Non-blocking: activates only once Firebase config is added.
