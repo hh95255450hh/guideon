@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../services/app_update.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
@@ -16,6 +18,40 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUpdate();
+  }
+
+  Future<void> _checkUpdate() async {
+    final info = await AppUpdate.check();
+    if (!mounted || info == null || !info.mustUpdate) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text('تحديث مطلوب', textAlign: TextAlign.center),
+        content: Text(info.message, textAlign: TextAlign.center),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: const Icon(Icons.system_update),
+              label: const Text('تحديث الآن'),
+              onPressed: () async {
+                if (info.storeUrl.isNotEmpty) {
+                  await launchUrl(Uri.parse(info.storeUrl),
+                      mode: LaunchMode.externalApplication);
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   static const _pages = [
     HomeScreen(),

@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Guide> _all = [];
   List<TourPackage> _packages = [];
   bool _loading = true;
+  String? _error;
 
   // Categories matching the web platform exactly — used to filter packages.
   final List<Map<String, dynamic>> _categories = [
@@ -45,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
     try {
       final results = await Future.wait([
         GuideService.search(limit: 6),
@@ -60,8 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _packages = results[2] as List<TourPackage>;
         _loading  = false;
       });
-    } catch (_) {
-      if (mounted) setState(() => _loading = false);
+    } catch (e) {
+      if (mounted) setState(() { _loading = false; _error = 'تعذّر الاتصال. تحقق من الإنترنت.'; });
     }
   }
 
@@ -213,6 +215,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
+            // ── OFFLINE / ERROR BANNER ──────────────────────────
+            if (_error != null)
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: .4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.wifi_off, color: Color(0xFF92400E), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(_error!,
+                            style: const TextStyle(color: Color(0xFF92400E), fontSize: 13)),
+                      ),
+                      GestureDetector(
+                        onTap: _load,
+                        child: const Text('إعادة المحاولة',
+                            style: TextStyle(
+                                color: GdColors.teal,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // ── CATEGORIES (matching platform) ───────────────────
             SliverToBoxAdapter(

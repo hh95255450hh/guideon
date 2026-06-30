@@ -51,6 +51,11 @@ class Api {
 
   Future<Response> put(String path, {dynamic data}) =>
       dio.put(path, data: data);
+
+  Future<Response> patch(String path, {dynamic data}) =>
+      dio.patch(path, data: data);
+
+  Future<Response> delete(String path) => dio.delete(path);
 }
 
 /// Turns any backend / network failure into a friendly bilingual message,

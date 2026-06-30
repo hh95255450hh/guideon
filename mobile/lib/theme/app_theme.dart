@@ -10,6 +10,7 @@ class GdColors {
   static const muted = Color(0xFF6B7280);
   static const danger = Color(0xFFDC2626);
   static const success = Color(0xFF16A34A);
+  static const warning = Color(0xFFF59E0B);
 }
 
 class AppTheme {
