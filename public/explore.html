@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>اكتشف عُمان · Explore Oman — Guideon</title>
+<meta name="description" content="اكتشف مرشدين سياحيين محليين معتمدين في عُمان · Discover certified local tour guides in Oman">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<meta name="theme-color" content="#0f3d3a">
+
+<!-- Leaflet (lazy-loaded below but preconnect speeds it up) -->
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="preconnect" href="https://tile.openstreetmap.org">
+
+<style>
+:root{--teal:#0f7b6c;--navy:#0f1c3e;--gold:#c8a94a;--bg:#f5f7f6;--card:#fff;--radius:16px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:#0f3d3a}
+
+/* ── MAP FULL SCREEN ──────────────────────────── */
+#map{position:fixed;inset:0;z-index:0}
+.leaflet-container{background:#0a2e28}
+
+/* ── TOP BAR ──────────────────────────────────── */
+#topBar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:12px 16px 8px;
+  background:linear-gradient(to bottom,rgba(15,28,62,.92) 0%,transparent 100%);
+}
+.logo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.logo-txt{color:#fff;font-size:20px;font-weight:800;letter-spacing:-0.5px}
+.logo-txt span{color:var(--gold)}
+#loginBtn{
+  background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);
+  border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer;
+  backdrop-filter:blur(6px);text-decoration:none
+}
+
+/* ── SEARCH BAR ───────────────────────────────── */
+.search-wrap{position:relative}
+#searchBox{
+  width:100%;padding:11px 44px 11px 16px;border-radius:28px;border:none;
+  font-size:15px;background:rgba(255,255,255,.97);color:#1a2233;outline:none;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);direction:rtl
+}
+#searchBox::placeholder{color:#7a8aa0}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none}
+#nearMeBtn{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:var(--teal);border:none;color:#fff;border-radius:50%;
+  width:30px;height:30px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center
+}
+
+/* ── FILTER PILLS ─────────────────────────────── */
+.pills{display:flex;gap:8px;overflow-x:auto;padding:8px 16px 4px;
+  position:fixed;top:112px;left:0;right:0;z-index:99;scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pill{
+  flex-shrink:0;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);
+  border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer;
+  backdrop-filter:blur(6px);white-space:nowrap;transition:all .2s
+}
+.pill.active{background:var(--gold);border-color:var(--gold);color:#0f1c3e}
+
+/* ── BOTTOM SHEET ─────────────────────────────── */
+#sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--bg);border-radius:24px 24px 0 0;
+  box-shadow:0 -8px 40px rgba(0,0,0,.3);
+  transition:transform .35s cubic-bezier(.32,0,.67,0);
+  max-height:82vh;
+}
+#sheetHandle{
+  width:44px;height:5px;background:#ccd;border-radius:3px;
+  margin:10px auto 0;cursor:grab
+}
+#sheetHeader{
+  padding:8px 16px 12px;display:flex;align-items:center;justify-content:space-between
+}
+#sheetTitle{font-size:15px;font-weight:800;color:var(--navy)}
+#sheetCount{font-size:12px;color:#7a8aa0;font-weight:600}
+#cardScroll{
+  overflow-y:auto;padding:0 12px 24px;
+  max-height:calc(82vh - 80px);scrollbar-width:thin
+}
+
+/* ── GUIDE CARD ───────────────────────────────── */
+.gcard{
+  background:var(--card);border-radius:var(--radius);margin-bottom:12px;
+  display:flex;gap:12px;padding:12px;cursor:pointer;
+  box-shadow:0 2px 12px rgba(0,0,0,.07);transition:transform .15s,box-shadow .15s;
+  text-decoration:none;color:inherit;position:relative;overflow:hidden
+}
+.gcard:active{transform:scale(.98);box-shadow:0 1px 6px rgba(0,0,0,.1)}
+.gcard-img{
+  width:72px;height:72px;border-radius:12px;object-fit:cover;flex-shrink:0;
+  background:#e2f0ee
+}
+.gcard-img-placeholder{
+  width:72px;height:72px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--teal),#1a9e8b);
+  display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff
+}
+.gcard-body{flex:1;min-width:0}
+.gcard-name{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcard-dest{font-size:12px;color:#7a8aa0;margin-bottom:5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcard-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;
+  background:#e2f0ee;color:var(--teal)}
+.gcard-footer{display:flex;align-items:center;justify-content:space-between}
+.gcard-rating{font-size:12px;font-weight:700;color:var(--navy)}
+.gcard-rating span{color:#f59e0b;margin-left:2px}
+.gcard-price{font-size:13px;font-weight:800;color:var(--teal)}
+.gcard-price small{font-size:10px;color:#7a8aa0;font-weight:400}
+.verified-badge{
+  position:absolute;top:10px;left:10px;
+  background:var(--teal);color:#fff;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:8px
+}
+
+/* ── LOADING ──────────────────────────────────── */
+.skeleton{
+  background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%);
+  background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius)
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── MAP POPUP (custom) ───────────────────────── */
+.leaflet-popup-content-wrapper{border-radius:14px;padding:0;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.leaflet-popup-content{margin:0;width:auto!important}
+.map-popup{padding:12px 14px;min-width:150px;cursor:pointer}
+.mp-name{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.mp-price{font-size:13px;color:var(--teal);font-weight:700}
+.mp-rating{font-size:12px;color:#f59e0b}
+
+/* ── EMPTY STATE ──────────────────────────────── */
+.empty{text-align:center;padding:40px 20px;color:#7a8aa0}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px}
+
+/* ── SHEET STATES ─────────────────────────────── */
+#sheet.peek   {transform:translateY(calc(100% - 120px))}
+#sheet.half   {transform:translateY(30%)}
+#sheet.full   {transform:translateY(0)}
+
+/* ── FAB LOCATE ───────────────────────────────── */
+#fabLocate{
+  position:fixed;left:16px;bottom:140px;z-index:150;
+  background:#fff;border:none;border-radius:50%;width:44px;height:44px;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center
+}
+</style>
+</head>
+<body>
+
+<!-- MAP LAYER -->
+<div id="map"></div>
+
+<!-- TOP BAR -->
+<div id="topBar">
+  <div class="logo-row">
+    <div class="logo-txt">Guide<span>on</span></div>
+    <a href="/login.html" id="loginBtn">دخول · Login</a>
+  </div>
+  <div class="search-wrap">
+    <input id="searchBox" type="search" placeholder="ابحث عن وجهة أو مرشد… · Search destination">
+    <span class="search-icon">🔍</span>
+    <button id="nearMeBtn" title="بالقرب مني">📍</button>
+  </div>
+</div>
+
+<!-- FILTER PILLS -->
+<div class="pills" id="pillBar">
+  <button class="pill active" data-filter="all">الكل · All</button>
+  <button class="pill" data-filter="top">⭐ الأعلى تقييماً</button>
+  <button class="pill" data-filter="cheap">💰 الأرخص</button>
+  <button class="pill" data-filter="muscat">مسقط</button>
+  <button class="pill" data-filter="salalah">صلالة</button>
+  <button class="pill" data-filter="nizwa">نزوى</button>
+  <button class="pill" data-filter="sohar">صحار</button>
+  <button class="pill" data-filter="sur">صور</button>
+</div>
+
+<!-- FAB LOCATE -->
+<button id="fabLocate" title="موقعي">📍</button>
+
+<!-- BOTTOM SHEET -->
+<div id="sheet" class="half">
+  <div id="sheetHandle"></div>
+  <div id="sheetHeader">
+    <div id="sheetTitle">🗺️ المرشدون المتاحون</div>
+    <div id="sheetCount"></div>
+  </div>
+  <div id="cardScroll"></div>
+</div>
+
+<script>
+'use strict';
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let allGuides = [];
+let filtered  = [];
+let leafMap   = null;
+let markers   = [];
+let activeFilter = 'all';
+let searchQ   = '';
+let userLat   = null, userLng = null;
+
+// Oman bounding box center
+const OMAN_CENTER = [23.6, 57.5];
+const OMAN_ZOOM   = 7;
+
+// ─── LOAD LEAFLET ─────────────────────────────────────────────────────────
+function loadLeaflet(cb) {
+  if (window.L) { cb(); return; }
+  const css = document.createElement('link');
+  css.rel = 'stylesheet';
+  css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(css);
+  const js = document.createElement('script');
+  js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  js.onload = cb;
+  document.head.appendChild(js);
+}
+
+// ─── INIT MAP ─────────────────────────────────────────────────────────────
+function initMap() {
+  leafMap = L.map('map', { zoomControl: false, attributionControl: false })
+    .setView(OMAN_CENTER, OMAN_ZOOM);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    subdomains: ['a','b','c'],
+  }).addTo(leafMap);
+
+  // Tap on map = collapse sheet
+  leafMap.on('click', () => setSheet('peek'));
+}
+
+// ─── FETCH GUIDES ─────────────────────────────────────────────────────────
+async function loadGuides() {
+  showSkeletons();
+  try {
+    const r = await fetch('/api/guides?verified=true', { credentials: 'include' });
+    const d = await r.json();
+    allGuides = (d.guides || []).filter(g => g.isVerified && !g.isSuspended);
+    applyFilter();
+  } catch {
+    document.getElementById('cardScroll').innerHTML =
+      '<div class="empty"><div class="empty-icon">🌐</div><h3>تعذّر التحميل · Load failed</h3><p>تحقق من اتصالك · Check your connection</p></div>';
+  }
+
+  // Update login button
+  try {
+    const me = await fetch('/api/auth/me', { credentials: 'include' });
+    const md = await me.json();
+    if (md.success && md.user) {
+      const btn = document.getElementById('loginBtn');
+      btn.textContent = md.user.fullName.split(' ')[0];
+      btn.href = md.user.userType === 'tourist' ? '/tourist-dashboard.html'
+               : md.user.userType === 'guide'   ? '/guide-dashboard.html'
+               : '/company-dashboard.html';
+    }
+  } catch {}
+}
+
+// ─── FILTER LOGIC ─────────────────────────────────────────────────────────
+const DEST_MAP = {
+  muscat: ['مسقط','مطرح','muscat','matrah','seeb','السيب'],
+  salalah: ['صلالة','salalah','dhofar','ظفار'],
+  nizwa: ['نزوى','nizwa','الداخلية'],
+  sohar: ['صحار','sohar','البريمي','buraimi'],
+  sur: ['صور','sur','الشرقية'],
+};
+
+function matchesDest(guide, key) {
+  const terms = DEST_MAP[key] || [];
+  const dests = (guide.destinations || []).join(' ').toLowerCase();
+  return terms.some(t => dests.includes(t.toLowerCase()));
+}
+
+function applyFilter() {
+  let g = [...allGuides];
+
+  // Search query
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    g = g.filter(x =>
+      (x.fullName||'').toLowerCase().includes(q) ||
+      (x.destinations||[]).some(d => d.toLowerCase().includes(q)) ||
+      (x.bio||'').toLowerCase().includes(q) ||
+      (x.specialisations||[]).some(s => s.toLowerCase().includes(q))
+    );
+  }
+
+  // Category filter
+  if (activeFilter === 'top')   g.sort((a,b) => (b.rating||0)-(a.rating||0));
+  else if (activeFilter === 'cheap') g.sort((a,b) => (a.pricePerDay||0)-(b.pricePerDay||0));
+  else if (DEST_MAP[activeFilter]) g = g.filter(x => matchesDest(x, activeFilter));
+  else g.sort((a,b) => (b.rating||0)-(a.rating||0));
+
+  // If user location known, sort by distance
+  if (userLat && activeFilter === 'all') {
+    g.sort((a,b) => {
+      const da = guideDist(a), db = guideDist(b);
+      if (da === Infinity && db === Infinity) return (b.rating||0)-(a.rating||0);
+      return da - db;
+    });
+  }
+
+  filtered = g;
+  renderCards();
+  renderMarkers();
+  document.getElementById('sheetCount').textContent = filtered.length + ' مرشد';
+}
+
+function guideDist(g) {
+  if (!userLat || !g._lat || !g._lng) return Infinity;
+  const R = 6371;
+  const dLat = (g._lat - userLat) * Math.PI / 180;
+  const dLng = (g._lng - userLng) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(userLat*Math.PI/180)*Math.cos(g._lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ─── CARDS RENDER ─────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderCards() {
+  const wrap = document.getElementById('cardScroll');
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><h3>لا نتائج · No results</h3><p>جرّب وجهة أخرى · Try another destination</p></div>';
+    return;
+  }
+
+  wrap.innerHTML = filtered.map(g => {
+    const name     = esc(g.fullName || '');
+    const dests    = (g.destinations||[]).slice(0,2).map(esc).join(' · ');
+    const specs    = (g.specialisations||[]).slice(0,3);
+    const rating   = parseFloat(g.rating)||0;
+    const stars    = rating > 0 ? `<span>★</span> ${rating.toFixed(1)} (${g.totalReviews||0})` : 'جديد · New';
+    const price    = g.pricePerDay > 0 ? `${parseFloat(g.pricePerDay).toFixed(0)} <small>OMR/يوم</small>` : '<small>بالاتفاق</small>';
+    const imgHtml  = g.photo
+      ? `<img class="gcard-img" src="${esc(g.photo)}" alt="${name}" loading="lazy">`
+      : `<div class="gcard-img-placeholder">🧭</div>`;
+    const tagsHtml = specs.map(s => `<span class="tag">${esc(s)}</span>`).join('');
+    const verHtml  = g.isVerified ? '<span class="verified-badge">✓ موثّق</span>' : '';
+
+    return `
+      <a class="gcard" href="/guide-profile.html?id=${esc(g.id)}" onclick="trackClick('${esc(g.id)}')">
+        ${verHtml}
+        ${imgHtml}
+        <div class="gcard-body">
+          <div class="gcard-name">${name}</div>
+          <div class="gcard-dest">📍 ${dests||'عُمان'}</div>
+          <div class="gcard-tags">${tagsHtml}</div>
+          <div class="gcard-footer">
+            <div class="gcard-rating">${stars}</div>
+            <div class="gcard-price">${price}</div>
+          </div>
+        </div>
+      </a>`;
+  }).join('');
+}
+
+function showSkeletons() {
+  const wrap = document.getElementById('cardScroll');
+  wrap.innerHTML = Array(5).fill(0).map(() =>
+    `<div class="skeleton" style="height:96px;margin-bottom:12px"></div>`
+  ).join('');
+}
+
+// ─── MAP MARKERS ──────────────────────────────────────────────────────────
+// Oman governorate approximate centers for guides without exact coords
+const GOV_COORDS = {
+  مسقط:[23.588,58.393], muscat:[23.588,58.393],
+  صلالة:[17.015,54.089], salalah:[17.015,54.089],
+  نزوى:[22.933,57.531], nizwa:[22.933,57.531],
+  صحار:[24.348,56.732], sohar:[24.348,56.732],
+  صور:[22.565,59.529], sur:[22.565,59.529],
+  مطرح:[23.619,58.592], matrah:[23.619,58.592],
+  عبري:[23.296,56.512], ibri:[23.296,56.512],
+  بهلاء:[22.968,57.306], bahla:[22.968,57.306],
+  خصب:[26.181,56.249], khasab:[26.181,56.249],
+};
+
+function guideCoords(g) {
+  if (g._lat && g._lng) return [g._lat, g._lng];
+  const dests = (g.destinations||[]);
+  for (const d of dests) {
+    const k = d.toLowerCase();
+    for (const [key, coords] of Object.entries(GOV_COORDS)) {
+      if (k.includes(key.toLowerCase())) return coords;
+    }
+  }
+  // Random scatter around Oman center
+  return [23.0 + (Math.random()-0.5)*4, 57.5 + (Math.random()-0.5)*6];
+}
+
+const GUIDE_ICON = L.divIcon({
+  className: '',
+  html: '<div style="background:#0f7b6c;color:#fff;border-radius:50% 50% 50% 0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.3);transform:rotate(-45deg)"><span style="transform:rotate(45deg)">🧭</span></div>',
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -34],
+});
+
+function renderMarkers() {
+  if (!leafMap) return;
+  markers.forEach(m => m.remove());
+  markers = [];
+
+  filtered.slice(0, 50).forEach(g => {
+    const [lat, lng] = guideCoords(g);
+    const rating = parseFloat(g.rating)||0;
+    const price  = g.pricePerDay > 0 ? `${parseFloat(g.pricePerDay).toFixed(0)} OMR` : 'بالاتفاق';
+    const m = L.marker([lat, lng], { icon: GUIDE_ICON })
+      .addTo(leafMap)
+      .bindPopup(`
+        <div class="map-popup" onclick="window.location='/guide-profile.html?id=${g.id}'">
+          <div class="mp-name">${g.fullName||''}</div>
+          <div class="mp-rating">${rating > 0 ? '★ '+rating.toFixed(1) : 'جديد'}</div>
+          <div class="mp-price">${price} / يوم</div>
+        </div>
+      `, { maxWidth: 200, closeButton: false });
+    markers.push(m);
+  });
+}
+
+// ─── SHEET DRAG ───────────────────────────────────────────────────────────
+let dragStart = null;
+const sheet = document.getElementById('sheet');
+
+function setSheet(state) {
+  sheet.className = state;
+}
+
+sheet.addEventListener('touchstart', e => {
+  dragStart = e.touches[0].clientY;
+}, { passive: true });
+
+sheet.addEventListener('touchend', e => {
+  if (dragStart === null) return;
+  const dy = (e.changedTouches[0].clientY - dragStart);
+  if (dy > 60)      setSheet(sheet.className === 'full' ? 'half' : 'peek');
+  else if (dy < -60) setSheet(sheet.className === 'peek' ? 'half' : 'full');
+  dragStart = null;
+}, { passive: true });
+
+document.getElementById('sheetHandle').addEventListener('click', () => {
+  setSheet(sheet.className === 'half' ? 'full' : 'half');
+});
+
+// ─── SEARCH ───────────────────────────────────────────────────────────────
+let searchTimer = null;
+document.getElementById('searchBox').addEventListener('input', function() {
+  searchQ = this.value.trim();
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilter, 350);
+  if (searchQ) setSheet('full');
+});
+
+document.getElementById('searchBox').addEventListener('focus', () => setSheet('full'));
+
+// ─── FILTER PILLS ─────────────────────────────────────────────────────────
+document.getElementById('pillBar').addEventListener('click', e => {
+  const pill = e.target.closest('.pill');
+  if (!pill) return;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  activeFilter = pill.dataset.filter;
+  applyFilter();
+  setSheet('half');
+});
+
+// ─── GEOLOCATION ──────────────────────────────────────────────────────────
+function locateUser() {
+  if (!navigator.geolocation) {
+    alert('خاصية الموقع غير متاحة · Location not available');
+    return;
+  }
+  document.getElementById('nearMeBtn').textContent = '⏳';
+  document.getElementById('fabLocate').textContent = '⏳';
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    if (leafMap) {
+      leafMap.setView([userLat, userLng], 10, { animate: true });
+      L.circle([userLat, userLng], {
+        color: '#0f7b6c', fillColor: '#0f7b6c', fillOpacity: 0.15, radius: 5000
+      }).addTo(leafMap);
+      L.circleMarker([userLat, userLng], {
+        radius: 8, color: '#fff', weight: 3, fillColor: '#0f7b6c', fillOpacity: 1
+      }).addTo(leafMap);
+    }
+    document.getElementById('nearMeBtn').textContent = '📍';
+    document.getElementById('fabLocate').textContent = '📍';
+    activeFilter = 'all';
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    document.querySelector('[data-filter="all"]').classList.add('active');
+    applyFilter();
+  }, () => {
+    document.getElementById('nearMeBtn').textContent = '📍';
+    document.getElementById('fabLocate').textContent = '📍';
+  });
+}
+
+document.getElementById('nearMeBtn').addEventListener('click', locateUser);
+document.getElementById('fabLocate').addEventListener('click', locateUser);
+
+// ─── ANALYTICS ────────────────────────────────────────────────────────────
+function trackClick(guideId) {
+  if (window.gdTrack) gdTrack('search_result_click', { guideId });
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────
+loadLeaflet(() => {
+  initMap();
+  loadGuides();
+});
+
+// Add to CSP: tile.openstreetmap.org is already allowed via Helmet img-src
+</script>
+
+<!-- common-widgets for gdTrack + WhatsApp button -->
+<script src="/js/common-widgets.js?v=24" defer></script>
+</body>
+</html>

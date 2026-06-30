@@ -17,7 +17,7 @@ class WebAppScreen extends StatefulWidget {
 }
 
 class _WebAppScreenState extends State<WebAppScreen> {
-  static const String _home = 'https://guideon.om/';
+  static const String _home = 'https://guideon.om/explore.html';
 
   late final WebViewController _controller;
   double _progress = 0;
