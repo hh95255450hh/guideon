@@ -47,9 +47,21 @@ RESEND_API_KEY=<مفتاح Resend>
 ```bash
 cd /opt/guideon/deploy
 docker compose up -d --build
+docker restart guideon-nginx   # ⚠️ مطلوب دائماً بعد --build
 docker compose logs -f app
 ```
 - التطبيق يعمل على المنفذ 3000 (خلف Nginx).
+
+## تحديث الكود (النشر اليومي)
+```bash
+cd /opt/guideon
+git pull origin main
+cd deploy
+docker compose up -d --build
+docker restart guideon-nginx   # ⚠️ مطلوب دائماً بعد كل تحديث
+```
+> **لماذا `docker restart guideon-nginx` مطلوب دائماً؟**
+> `git pull` يستبدل الملفات بنسخ جديدة (inode جديد). Docker bind-mount يبقى مرتبطاً بالملف القديم حتى تُعيد تشغيل الحاوية. بدونه: nginx يخدم إعدادات قديمة وقاعدة البيانات لا تعمل.
 
 ## المرحلة ٥ — استيراد بياناتك (يتطلّب Supabase القديم مفعّلاً)
 على جهازك (وليس الخادم)، صدّر أوّلاً:
