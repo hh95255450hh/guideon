@@ -7,6 +7,7 @@ const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('./emailService');
 const whatsapp     = require('./whatsappService');
 const push         = require('./pushService');
+const fcm          = require('./fcmService');
 const sse          = require('./sseHub');
 
 const notifications = new SupabaseDB('notifications');
@@ -66,6 +67,13 @@ async function notify(opts) {
         body:  (opts.bodyAr || opts.body || '').slice(0, 160),
         tag:   opts.type,
         data:  { url: link },
+      }).catch(() => {});
+
+      // ── FCM (Firebase) — reaches the mobile app even when closed ──
+      fcm.sendToUser(opts.userId, {
+        title: `${icon} ${opts.titleAr || opts.title}`.slice(0, 80),
+        body:  (opts.bodyAr || opts.body || '').slice(0, 160),
+        data:  { url: link, type: opts.type },
       }).catch(() => {});
     } catch (_) {}
 
