@@ -10,7 +10,7 @@
  *  - Requests without a session (public API)
  */
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
-  'http://localhost:3000,https://guideon.om,https://www.guideon.om,https://guideon.guide,https://www.guideon.guide,https://guideon-production.up.railway.app')
+  'http://localhost:3000,https://guideon.om,https://www.guideon.om,https://guideon.guide,https://www.guideon.guide')
   .split(',').map(s => s.trim()).filter(Boolean);
 
 const SKIP_PATHS = [

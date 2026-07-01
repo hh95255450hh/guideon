@@ -37,9 +37,14 @@ strings in the product are bilingual **Arabic + English**.
   Currently in "free launch" mode (`PAYMENTS_ENABLED` gates it). `stripe` and
   `openai` are in package.json but **not the active providers** — do not
   reintroduce Stripe; payment = Thawani. AI uses the Claude API when built.
-- **Hosting:** **Railway** (single instance), auto-deploys on push to `main`.
-  **Deploys take ~1–4 minutes** — after pushing, wait before telling the user
-  to check; HTML is served `no-store` so a hard refresh shows the new version.
+- **Hosting:** **Oman Data Park VPS** (`185.64.25.111`), Docker Compose stack
+  (`guideon-app` + `guideon-nginx`). Deploy: SSH in and run `bash /opt/deploy.sh`.
+  **Railway was deleted** — never reference it. Env vars live in
+  `/opt/guideon/deploy/.env`; rotate secrets via `/opt/rotate-secret.sh VAR`.
+  Self-hosted Supabase runs on the same server (Kong on port 8000).
+  nginx routes `/rest|storage|auth|realtime|functions/v1/` → Kong at `172.17.0.1:8000`;
+  all other traffic → `guideon-app:3000`. After every `--build`, run
+  `docker restart guideon-nginx` (git pull creates new inodes that need remount).
 - **i18n:** `public/js/i18n.js` is a ~6KB lazy loader; per-language packs live
   in `public/i18n/<code>.json` (10 languages). Bump `PACK_VERSION` in i18n.js
   **and** the `i18n.js?vNN` query in all HTML when pack content changes (packs
@@ -50,7 +55,7 @@ strings in the product are bilingual **Arabic + English**.
 ```bash
 node src/app.js          # run locally on PORT (needs SUPABASE_* env to hit DB)
 npm test                 # node --test test/*.test.js  (no DB needed; 55 tests)
-git add -A && git commit && git push   # Railway auto-deploys main
+git add -A && git commit && git push   # then SSH: bash /opt/deploy.sh
 ```
 
 - Local `npm test` has **no database** — it can't catch data-shape bugs.
@@ -120,23 +125,17 @@ git add -A && git commit && git push   # Railway auto-deploys main
 - `Guideon_Info.md` — owner-facing changelog/credentials doc; **update it and
   push after every significant change** (owner preference).
 
-## Current status (as of 2026-06-13)
+## Current status (as of 2026-07-01)
 
-Live and working. Recent work this period:
-- Perf: hard-cache versioned assets, lazy-load i18n per language, single
-  Bootstrap direction per page, lazy-load search card photos.
-- Refactor: unified dashboard chat into `gd-messages.js`.
-- Admin **Revenue Dashboard** + **financial management** (expenses/salaries/
-  net profit) — needs migration 037 (`finance_expenses`) run in Supabase.
-- Legal pages (about/privacy/terms/contact) with the legal entity + DUNS.
-- Security: fixed stored-XSS via attachment URL; hardened upload content-type.
-- Guide **analytics** (charts) + per-guide endpoint `/api/guides/me/analytics`.
-- **Programmatic SEO**: `/tour-guides/:place` and `/tours/:category` landing
-  pages in the sitemap (submitted to Google Search Console).
-- Android **TWA** config ready (`android/`), needs a JDK+Android-SDK machine
-  to run `bubblewrap build`.
-- Tests: 55 passing (`test/*.test.js`).
+Live and working on ODP VPS. Recent work:
+- **Migration**: moved from Railway+cloud Supabase → ODP VPS + self-hosted Supabase.
+- **Mobile app**: Flutter (Provider, Dio+CookieJar, WebView). Push via FCM V1
+  (`firebase-admin` modular API) + VAPID web push. Built via Codemagic CI.
+- **FCM**: `FIREBASE_SERVICE_ACCOUNT` (base64 JSON) in `.env` activates mobile push.
+- **WhatsApp**: `WHATSAPP_ENABLED=true` + test number wired; real Omani number
+  (+968 7419 7197) not yet verified in Meta Business Manager.
+- **Map**: `explore.html` uses Leaflet self-hosted at `/vendor/leaflet/` (no CDN).
+- Tests: 62 passing (`test/*.test.js`).
 
-Open follow-ups / ideas: AI Trip Planner (Claude API), WhatsApp booking,
-escrow payments. Architectural (defer until scale): real RLS, Redis for SSE/
-cache, DB indexing.
+Open follow-ups: AI Trip Planner, WhatsApp Omani number verification,
+escrow payments, iOS push setup. Architectural: real RLS, Redis for SSE/cache.

@@ -7,7 +7,7 @@
  * 2. Create an app → Business → add WhatsApp product
  * 3. Get your test number and Phone Number ID
  * 4. Generate a permanent access token (System User → WhatsApp Business Account)
- * 5. Set these env vars in Railway:
+ * 5. Set these env vars in /opt/guideon/deploy/.env (ODP server):
  *      WHATSAPP_ACCESS_TOKEN=EAAxxxxx...
  *      WHATSAPP_PHONE_NUMBER_ID=123456789012345
  *      WHATSAPP_ENABLED=true
