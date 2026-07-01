@@ -32,6 +32,9 @@ dependencies:
   # Push notifications (backend already exposes /auth/fcm-token)
   firebase_core: ^2.27.0
   firebase_messaging: ^14.7.19
+  # Native map (replaces WebView-based explore.html — more reliable on all devices)
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
