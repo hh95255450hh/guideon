@@ -152,7 +152,7 @@ class _MapScreenState extends State<MapScreen>
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => GuideDetailScreen(guideId: _selected!.id)),
+                      builder: (_) => GuideDetailScreen(guide: _selected!)),
                 ),
                 onClose: () => setState(() => _selected = null),
               ),
