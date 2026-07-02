@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _busy = false);
     if (err == null) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
     } else {
       _toast(err);
     }

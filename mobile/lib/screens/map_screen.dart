@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -239,10 +240,12 @@ class _GuideCard extends StatelessWidget {
             // Avatar
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: guide.profileImage != null
-                  ? Image.network(guide.profileImage!,
+              child: (guide.photo != null && guide.photo!.isNotEmpty)
+                  ? CachedNetworkImage(
+                      imageUrl: guide.photo!,
                       width: 56, height: 56, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _avatar(guide.fullName))
+                      memCacheWidth: 112,
+                      errorWidget: (_, __, ___) => _avatar(guide.fullName))
                   : _avatar(guide.fullName),
             ),
             const SizedBox(width: 12),

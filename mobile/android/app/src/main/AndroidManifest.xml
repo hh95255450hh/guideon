@@ -6,12 +6,11 @@
          transitive dependency adds this permission automatically; strip it so
          the manifest matches the "no advertising ID" Play Console declaration. -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
-    <!-- Location powers the "near me" guide map. No CAMERA / READ_MEDIA_IMAGES:
-         photo uploads happen inside the WebView via the system file/photo
-         picker, which needs no app-level media permission. Declaring them
-         unused triggered Google Play's photo/video-permission declaration. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- No CAMERA / READ_MEDIA_IMAGES / LOCATION: the native map uses a fixed
+         Oman view (no device geolocation), and photo uploads happen inside the
+         WebView via the system file/photo picker, which needs no app-level
+         permission. Declaring unused permissions triggered Google Play's
+         photo/video + data-safety declarations, so we request none of them. -->
     <application
         android:label="Guideon"
         android:name="${applicationName}"

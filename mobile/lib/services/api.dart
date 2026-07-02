@@ -75,8 +75,16 @@ String friendlyError(Object e) {
       return 'تعذّر الاتصال بالخادم. تأكّد من الإنترنت وحاول مجدّداً.\n'
           'Could not reach the server. Check your connection.';
     }
+    // Only surface the backend message for validation/auth statuses, whose
+    // messages are user-facing by design. For 5xx / unexpected codes the message
+    // may be technical ("run migration NN", column errors) — never show those.
+    final status = e.response?.statusCode ?? 0;
     final data = e.response?.data;
-    if (data is Map && data['message'] is String) return data['message'];
+    const safeStatuses = {400, 401, 403, 404, 409, 422, 429};
+    if (safeStatuses.contains(status) &&
+        data is Map && data['message'] is String) {
+      return data['message'] as String;
+    }
   }
   return 'حدث خطأ غير متوقّع. حاول لاحقاً.\nSomething went wrong. Please try again.';
 }

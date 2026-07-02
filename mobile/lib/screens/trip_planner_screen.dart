@@ -69,8 +69,9 @@ class _TripPlannerScreenState extends State<TripPlannerScreen> {
       setState(() => _plan = plan);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error =
-          e is DioException ? friendlyError(e) : e.toString().replaceFirst('Exception: ', ''));
+      // Never surface a raw Dart exception to the user — route everything
+      // through the friendly bilingual helper.
+      setState(() => _error = friendlyError(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

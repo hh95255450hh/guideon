@@ -14,6 +14,7 @@ import '../widgets/guide_card.dart';
 import 'guide_detail_screen.dart';
 import 'map_screen.dart';
 import 'search_screen.dart';
+import 'trip_planner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -99,6 +100,16 @@ class _HomeScreenState extends State<HomeScreen> {
               expandedHeight: 200,
               pinned: true,
               backgroundColor: GdColors.navy,
+              actions: [
+                IconButton(
+                  tooltip: 'مخطّط الرحلات الذكي',
+                  icon: const Icon(Icons.auto_awesome, color: GdColors.gold),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TripPlannerScreen()),
+                  ),
+                ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,

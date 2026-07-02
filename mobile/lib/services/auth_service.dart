@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../models/user.dart';
 import 'api.dart';
 import 'push_service.dart';
@@ -70,6 +71,10 @@ class AuthService extends ChangeNotifier {
       await Api.instance.post('/auth/logout');
     } catch (_) {}
     await Api.instance.clearCookies();
+    // The in-app WebView keeps its OWN cookie store (separate from Dio's jar).
+    // Without this, a booking/payment WebView opened after logout still carries
+    // the previous user's express-session cookie → session bleed between users.
+    try { await WebViewCookieManager().clearCookies(); } catch (_) {}
     _user = null;
     notifyListeners();
   }

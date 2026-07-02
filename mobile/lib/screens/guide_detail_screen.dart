@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/guide.dart';
 import '../models/tour_package.dart';
 import '../services/api.dart';
+import '../services/auth_service.dart';
 import '../services/guide_service.dart';
 import '../services/package_service.dart';
 import '../theme/app_theme.dart';
+import 'login_screen.dart';
 
 class GuideDetailScreen extends StatefulWidget {
   final Guide guide;
@@ -143,9 +146,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
             ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            onPressed: () => _openWeb(
-                'https://guideon.om/guide-profile.html?id=${g.id}',
-                'احجز مع ${g.fullName}'),
+            onPressed: () => _book(g),
             icon: const Icon(Icons.event_available),
             label: const Text('احجز الآن'),
           ),
@@ -255,6 +256,22 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
         ],
       ),
     );
+  }
+
+  // Booking requires an authenticated session (the WebView reuses the native
+  // cookie via cookie-sync). If the user is logged out, send them to the native
+  // login first so checkout doesn't open as a broken/guest session.
+  Future<void> _book(Guide g) async {
+    final auth = context.read<AuthService>();
+    if (!auth.isLoggedIn) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      // Re-check after the login screen closes; only proceed if now logged in.
+      if (!mounted || !context.read<AuthService>().isLoggedIn) return;
+    }
+    _openWeb('https://guideon.om/guide-profile.html?id=${g.id}',
+        'احجز مع ${g.fullName}');
   }
 
   // Open a guideon.om page (booking / tour) inside the in-app WebView.
