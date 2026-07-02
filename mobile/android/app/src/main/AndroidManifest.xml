@@ -1,12 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Required for the app to reach guideon.om in release builds -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- Lets the in-app site use the camera, location (maps) and image picker -->
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Location powers the "near me" guide map. No CAMERA / READ_MEDIA_IMAGES:
+         photo uploads happen inside the WebView via the system file/photo
+         picker, which needs no app-level media permission. Declaring them
+         unused triggered Google Play's photo/video-permission declaration. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
         android:label="Guideon"
         android:name="${applicationName}"
