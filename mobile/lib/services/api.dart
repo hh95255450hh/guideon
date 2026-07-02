@@ -1,3 +1,4 @@
+import 'dart:io' show Cookie;
 import 'package:dio/dio.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
@@ -41,6 +42,12 @@ class Api {
 
   /// Clears the session cookie (used on logout).
   Future<void> clearCookies() => cookieJar.deleteAll();
+
+  /// The session cookies the app holds for guideon.om. Used to hand the
+  /// express-session cookie to the in-app WebView (which has its OWN cookie
+  /// store, separate from Dio's jar) so booking/payment pages open logged-in.
+  Future<List<Cookie>> sessionCookies() =>
+      cookieJar.loadForRequest(Uri.parse('https://guideon.om/'));
 
   // ── thin helpers ──────────────────────────────────────────────
   Future<Response> get(String path, {Map<String, dynamic>? query}) =>

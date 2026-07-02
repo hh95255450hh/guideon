@@ -5,6 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/guide.dart';
 import '../models/tour_package.dart';
+import '../services/api.dart';
 import '../services/auth_service.dart';
 import '../services/guide_service.dart';
 import '../services/package_service.dart';
@@ -877,8 +878,25 @@ class _WebSheetState extends State<_WebSheet> {
         onProgress: (p) => setState(() => _progress = p / 100),
         onPageStarted: (_) => setState(() => _loading = true),
         onPageFinished: (_) => setState(() => _loading = false),
-      ))
-      ..loadRequest(Uri.parse(widget.url));
+      ));
+    _syncCookiesThenLoad();
+  }
+
+  // Copy the app's express-session cookie into the WebView's own cookie store
+  // so booking/payment pages open logged-in (see guide_detail_screen).
+  Future<void> _syncCookiesThenLoad() async {
+    try {
+      final cm = WebViewCookieManager();
+      for (final c in await Api.instance.sessionCookies()) {
+        await cm.setCookie(WebViewCookie(
+          name: c.name,
+          value: c.value,
+          domain: 'guideon.om',
+          path: (c.path == null || c.path!.isEmpty) ? '/' : c.path!,
+        ));
+      }
+    } catch (_) {/* not logged in / no cookies — load anyway */}
+    if (mounted) _ctrl.loadRequest(Uri.parse(widget.url));
   }
 
   @override

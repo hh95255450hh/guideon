@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/guide.dart';
+import '../services/api.dart';
 import '../theme/app_theme.dart';
 
 class GuideDetailScreen extends StatelessWidget {
@@ -158,8 +159,27 @@ class _WebSheetState extends State<_WebSheet> {
         onProgress: (p) => setState(() => _progress = p / 100),
         onPageStarted: (_) => setState(() { _loading = true; }),
         onPageFinished: (_) => setState(() { _loading = false; }),
-      ))
-      ..loadRequest(Uri.parse(widget.url));
+      ));
+    _syncCookiesThenLoad();
+  }
+
+  // The WebView keeps its own cookie store, separate from the app's Dio jar,
+  // so a natively-logged-in user would appear logged OUT inside the booking/
+  // payment page. Copy the express-session cookie over before loading so the
+  // checkout opens authenticated.
+  Future<void> _syncCookiesThenLoad() async {
+    try {
+      final cm = WebViewCookieManager();
+      for (final c in await Api.instance.sessionCookies()) {
+        await cm.setCookie(WebViewCookie(
+          name: c.name,
+          value: c.value,
+          domain: 'guideon.om',
+          path: (c.path == null || c.path!.isEmpty) ? '/' : c.path!,
+        ));
+      }
+    } catch (_) {/* not logged in / no cookies — load anyway */}
+    if (mounted) _ctrl.loadRequest(Uri.parse(widget.url));
   }
 
   @override
