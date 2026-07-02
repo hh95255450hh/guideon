@@ -153,8 +153,8 @@ async function loadWishlist() {
           </div>
           <div class="rating small mb-1">${stars(Math.round(g.rating))} <span class="text-muted">${g.rating} · ${I18N.t('reviews_count', g.totalReviews)}</span></div>
           <div class="mb-2">${(g.languages||[]).map(l=>`<span class="lang-badge me-1">${window.gdEsc(l)}</span>`).join('')}</div>
-          <div class="mb-2 small text-muted">📍 ${(g.destinations||[]).join(' · ')}</div>
-          <div class="mb-3">${(g.specialisations||[]).slice(0,2).map(s=>`<span class="spec-badge me-1">${s}</span>`).join('')}</div>
+          <div class="mb-2 small text-muted">📍 ${(g.destinations||[]).map(window.gdEsc).join(' · ')}</div>
+          <div class="mb-3">${(g.specialisations||[]).slice(0,2).map(s=>`<span class="spec-badge me-1">${window.gdEsc(s)}</span>`).join('')}</div>
           <button class="btn-view btn btn-sm w-100" onclick="location.href='/guide-profile.html?id=${g.id}'">${I18N.t('view_profile')}</button>
         </div>
       </div>

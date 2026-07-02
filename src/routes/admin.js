@@ -91,10 +91,12 @@ router.post('/staff',             requireSuperAdmin, admin.createStaff);
 router.patch('/staff/:id',        requireSuperAdmin, admin.updateStaff);
 router.delete('/staff/:id',       requireSuperAdmin, admin.deleteStaff);
 
-// Messages moderation — list all conversations + view any thread
+// Messages moderation — list all conversations + view any thread.
+// Reading users' private threads is a moderation power → gate by the same
+// permission as deleting messages (not open to every staff role).
 const { adminListConversations, adminViewThread } = require('../controllers/messagesController');
-router.get('/messages/conversations', adminListConversations);
-router.get('/messages/thread',        adminViewThread);
+router.get('/messages/conversations', requirePermission('delete_messages'), adminListConversations);
+router.get('/messages/thread',        requirePermission('delete_messages'), adminViewThread);
 
 // Content management — regions / trails / blog (admin or staff)
 const content = require('../controllers/contentController');

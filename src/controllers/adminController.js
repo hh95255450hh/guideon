@@ -17,6 +17,20 @@ const treasuryDB  = new SupabaseDB('treasury_transactions');
 const invoicesDB  = new SupabaseDB('invoices');
 const commission  = require('../services/commission');
 
+// Guard: only a full admin may act on an admin/staff account. Prevents a staff
+// member (who holds e.g. suspend_users / reset_passwords / edit_users by
+// permission) from suspending, editing, or resetting the password of the
+// super-admin or another staff member — a privilege-escalation / takeover path.
+// Returns true (and sends 403) when the action must be blocked.
+function blockPrivilegedTarget(target, req, res) {
+  const targetIsPrivileged = target?.userType === 'admin' || target?.userType === 'staff';
+  if (targetIsPrivileged && req.session.userType !== 'admin') {
+    res.status(403).json({ success: false, message: 'You cannot manage an admin or staff account.' });
+    return true;
+  }
+  return false;
+}
+
 // ── Recent activity feed ──────────────────────────────────────────────────────
 // Aggregates real events from existing tables (registrations, new tours,
 // bookings, status changes, reviews) into a single time-sorted timeline.
@@ -1048,6 +1062,7 @@ exports.suspendUser = async (req, res) => {
     const { id } = req.params;
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    if (blockPrivilegedTarget(user, req, res)) return;
     await users.update(id, { isSuspended: true, isVerified: false });
     audit.logAction(req, { action: 'suspendUser', targetType: 'user', targetId: id, details: { name: user.fullName, reason: req.body?.reason } });
     res.json({ success: true, message: `${user.fullName}'s account has been suspended.` });
@@ -1061,6 +1076,7 @@ exports.unsuspendUser = async (req, res) => {
     const { id } = req.params;
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    if (blockPrivilegedTarget(user, req, res)) return;
     await users.update(id, { isSuspended: false });
     audit.logAction(req, { action: 'unsuspendUser', targetType: 'user', targetId: id, details: { name: user.fullName } });
     res.json({ success: true, message: `${user.fullName}'s account has been reactivated.` });
@@ -1073,9 +1089,14 @@ exports.allBookings = async (req, res) => {
   try {
     const list = await bookings.readAll();
     list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    const enriched = await Promise.all(list.map(async b => {
-      const guide   = await users.findById(b.guideId);
-      const tourist = await users.findById(b.touristId);
+    // Batch-load every referenced user in ONE query instead of 2 findById per
+    // booking (which fanned out to hundreds of parallel calls at scale).
+    const ids = [...new Set(list.flatMap(b => [b.guideId, b.touristId]).filter(Boolean))];
+    const userRows = ids.length ? await users.findByIds(ids) : [];
+    const byId = Object.fromEntries(userRows.map(u => [u.id, u]));
+    const enriched = list.map(b => {
+      const guide   = byId[b.guideId];
+      const tourist = byId[b.touristId];
       return {
         ...b,
         guideName:    guide   ? guide.fullName   : 'Unknown',
@@ -1088,7 +1109,7 @@ exports.allBookings = async (req, res) => {
         touristEmail: tourist ? tourist.email     : '',
         touristPhone: tourist ? (tourist.phone || '') : '',
       };
-    }));
+    });
     res.json({ success: true, bookings: enriched });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
@@ -1216,6 +1237,7 @@ exports.editUser = async (req, res) => {
     const { id } = req.params;
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    if (blockPrivilegedTarget(user, req, res)) return;
 
     // Allowlist of editable fields (never expose password/tokens via this endpoint)
     const allowed = ['fullName', 'email', 'phone', 'nationality', 'preferredLanguage',
@@ -1261,6 +1283,7 @@ exports.adminResetPassword = async (req, res) => {
     }
     const user = await users.findById(id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+    if (blockPrivilegedTarget(user, req, res)) return;
 
     const hashed = await bcrypt.hash(newPassword, 10);
     await users.update(id, { password: hashed });

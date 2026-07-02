@@ -183,7 +183,7 @@ function render(packages) {
   document.title = (COMPANY.companyName || 'Company') + ' — Guideon';
   document.getElementById('cName').textContent = COMPANY.companyName || COMPANY.fullName || '—';
   if (COMPANY.photo) {
-    document.getElementById('cAvatar').innerHTML = `<img src="${COMPANY.photo}" alt="logo">`;
+    document.getElementById('cAvatar').innerHTML = `<img src="${window.gdSafeUrl(COMPANY.photo)}" alt="logo">`;
   }
   const badges = document.getElementById('cBadges');
   if (COMPANY.isVerified) badges.innerHTML += '<span class="badge-verified">✓ شركة موثّقة</span>';

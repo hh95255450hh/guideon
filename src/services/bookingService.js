@@ -190,14 +190,16 @@ async function createBooking(touristId, body, guest = null) {
   // until the deposit is paid (see paymentController.finalizePaidBooking).
 
   // Referral discount: 5% off (max 5 OMR) on a referred tourist's FIRST booking.
+  // We only COMPUTE it here; the "used" flag is set AFTER the booking is
+  // successfully committed (below), so a failed insert / capacity rollback does
+  // not silently burn the tourist's one-time discount.
   let referralDiscount = 0;
+  let applyReferral = false;
   if (touristId) {
     const tourist = await users.findById(touristId);
     if (tourist && tourist.referredBy && !tourist.referralDiscountUsed) {
-      referralDiscount = Math.min(parseFloat(totalAmount) * 0.05, 5);
-      referralDiscount = rules.roundMoney(referralDiscount);
-      // Mark as used so the discount is only applied once.
-      users.update(touristId, { referralDiscountUsed: true }).catch(() => {});
+      referralDiscount = rules.roundMoney(Math.min(parseFloat(totalAmount) * 0.05, 5));
+      applyReferral = referralDiscount > 0;
     }
   }
   const discountedTotal = Math.max(0, parseFloat(totalAmount) - referralDiscount);
@@ -259,6 +261,19 @@ async function createBooking(touristId, body, guest = null) {
   // — their seat cap is sum-based and checked pre-insert.)
   if (!packageId && Number.isFinite(providerCapacity)) {
     await _reconcileCapacity(booking, guideId, tourDate, providerCapacity);
+  }
+
+  // Booking is now committed and survived capacity reconciliation → it's safe to
+  // consume the one-time referral discount. Re-check the flag right before the
+  // write to shrink the window for two concurrent first-bookings both claiming
+  // it, and await so a failure is observable rather than silently lost.
+  if (applyReferral && touristId) {
+    try {
+      const fresh = await users.findById(touristId);
+      if (fresh && !fresh.referralDiscountUsed) {
+        await users.update(touristId, { referralDiscountUsed: true });
+      }
+    } catch (_) { /* non-fatal: booking already succeeded */ }
   }
 
   // Side effects (never block / fail the booking). In the pay-first flow the

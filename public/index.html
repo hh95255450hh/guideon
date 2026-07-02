@@ -1174,7 +1174,7 @@ async function loadFeatured() {
       return `
       <div class="swiper-slide">
         <div class="guide-card guide-card-wrap h-100">
-          <div class="guide-card-header" ${g.photo ? `style="background-image:linear-gradient(rgba(15,28,62,.25),rgba(15,28,62,.45)),url('${g.photo}');background-size:cover;background-position:center"` : ''}>
+          <div class="guide-card-header" ${g.photo ? `style="background-image:linear-gradient(rgba(15,28,62,.25),rgba(15,28,62,.45)),url('${window.gdSafeUrl(g.photo)}');background-size:cover;background-position:center"` : ''}>
             ${getBadge(g)}
             <button class="wishlist-btn ${wishlisted ? 'saved' : ''}" data-id="${g.id}" onclick="toggleWishlist('${g.id}')" title="${I18N.t('saved_guides')}">
               <span class="heart-icon">${wishlisted ? '♥' : '♡'}</span>

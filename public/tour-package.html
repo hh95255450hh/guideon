@@ -275,11 +275,11 @@ function renderPackage() {
 
   if (Array.isArray(p.highlights) && p.highlights.length) {
     document.getElementById('highlightsSection').classList.remove('d-none');
-    document.getElementById('pkgHighlights').innerHTML = p.highlights.map(h => `<li>${h}</li>`).join('');
+    document.getElementById('pkgHighlights').innerHTML = p.highlights.map(h => `<li>${escapeHtml(h)}</li>`).join('');
   }
   if (Array.isArray(p.includes) && p.includes.length) {
     document.getElementById('includesSection').classList.remove('d-none');
-    document.getElementById('pkgIncludes').innerHTML = p.includes.map(i => `<li>✓ ${i}</li>`).join('');
+    document.getElementById('pkgIncludes').innerHTML = p.includes.map(i => `<li>✓ ${escapeHtml(i)}</li>`).join('');
   }
   if (p.meeting_point) {
     document.getElementById('meetingSection').classList.remove('d-none');
@@ -306,8 +306,8 @@ function renderPackage() {
     document.getElementById('itinerarySection').classList.remove('d-none');
     document.getElementById('pkgItinerary').innerHTML = p.itinerary.map((d, i) => `
       <div class="itinerary-day">
-        <strong>Day ${i+1}${d.title ? ' — ' + d.title : ''}</strong>
-        <div class="text-muted small mt-1">${d.description || ''}</div>
+        <strong>Day ${i+1}${d.title ? ' — ' + escapeHtml(d.title) : ''}</strong>
+        <div class="text-muted small mt-1">${escapeHtml(d.description || '')}</div>
       </div>`).join('');
   }
 
@@ -319,8 +319,8 @@ function renderPackage() {
     <div class="variant-card" onclick="selectVariant(${i})" data-idx="${i}">
       <div class="d-flex justify-content-between align-items-start">
         <div class="flex-grow-1" style="padding-right:40px">
-          <div class="variant-name">${v.name || 'Package'}</div>
-          ${v.description ? `<div class="small text-muted mt-1">${v.description}</div>` : ''}
+          <div class="variant-name">${escapeHtml(v.name || 'Package')}</div>
+          ${v.description ? `<div class="small text-muted mt-1">${escapeHtml(v.description)}</div>` : ''}
         </div>
         <div class="text-end" style="min-width:130px">
           <div class="variant-price">${money(v.priceAdult || 0)}</div>
@@ -338,8 +338,8 @@ function renderPackage() {
       <label class="addon-row" for="addon-${i}">
         <input type="checkbox" id="addon-${i}" onchange="toggleAddon(${i},this.checked)">
         <div class="flex-grow-1">
-          <strong>${a.name}</strong>
-          ${a.description ? `<div class="small text-muted">${a.description}</div>` : ''}
+          <strong>${escapeHtml(a.name || '')}</strong>
+          ${a.description ? `<div class="small text-muted">${escapeHtml(a.description)}</div>` : ''}
         </div>
         <div class="text-end fw-700" style="color:var(--teal)">+${money(a.price || 0)}</div>
       </label>`).join('');
