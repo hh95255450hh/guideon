@@ -1,6 +1,11 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Required for the app to reach guideon.om in release builds -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- The app has no ads and does not use the advertising ID. A firebase
+         transitive dependency adds this permission automatically; strip it so
+         the manifest matches the "no advertising ID" Play Console declaration. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
     <!-- Location powers the "near me" guide map. No CAMERA / READ_MEDIA_IMAGES:
          photo uploads happen inside the WebView via the system file/photo
          picker, which needs no app-level media permission. Declaring them
