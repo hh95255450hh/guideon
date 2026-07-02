@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حذف الحساب · Delete Account — Guideon</title>
+  <meta name="description" content="اطلب حذف حسابك وبياناتك في Guideon · Request deletion of your Guideon account and data.">
+  <link rel="icon" href="/favicon.ico">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Tajawal', system-ui, sans-serif; background: #f4f8f7; color: #14213d; }
+    .wrap { max-width: 680px; margin: 40px auto; padding: 0 16px; }
+    .card { border: none; border-radius: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.07); }
+    .brand { color: #0f7b6c; font-weight: 800; }
+    h1 { font-weight: 800; font-size: 1.6rem; }
+    .btn-danger { background: #c0392b; border: none; }
+    .muted { color: #667; font-size: .92rem; }
+    .list-tight li { margin-bottom: 6px; }
+    .en { color: #667; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="text-center mb-4">
+      <a href="/" class="brand h4 text-decoration-none">Guideon</a>
+    </div>
+
+    <div class="card p-4 p-md-5">
+      <h1>حذف الحساب <span class="en d-block">Delete your account</span></h1>
+      <p class="muted mt-2">
+        يمكنك حذف حسابك في Guideon وجميع البيانات المرتبطة به نهائياً من هذه الصفحة.
+        <span class="en d-block">You can permanently delete your Guideon account and its associated data here.</span>
+      </p>
+
+      <hr>
+
+      <h5 class="mt-3">ما الذي سيُحذف؟ <span class="en">· What gets deleted</span></h5>
+      <ul class="list-tight muted">
+        <li>ملفك الشخصي (الاسم، البريد، الهاتف، الصورة) · Your profile (name, email, phone, photo)</li>
+        <li>حجوزاتك ورسائلك · Your bookings and messages</li>
+        <li>تقييماتك · Your reviews</li>
+        <li>باقاتك (للمرشدين/الشركات) · Your tour packages (guides/companies)</li>
+      </ul>
+      <p class="muted">
+        بعض السجلات المالية (الفواتير/المعاملات) قد تُحفظ مجهّلة الهوية للامتثال القانوني.
+        <span class="en d-block">Some financial records (invoices/transactions) may be retained in anonymised form for legal compliance.</span>
+      </p>
+
+      <hr>
+
+      <!-- Logged-in delete flow -->
+      <div id="authedBox" class="d-none">
+        <h5 class="mt-3">حذف حسابي الآن <span class="en">· Delete my account now</span></h5>
+        <p class="muted mb-2">مسجّل الدخول باسم: <strong id="whoName"></strong></p>
+
+        <div id="pwWrap" class="mb-2">
+          <label class="form-label small">أكّد كلمة المرور · Confirm your password</label>
+          <input type="password" id="pw" class="form-control" autocomplete="current-password" placeholder="••••••••">
+        </div>
+        <div id="confirmWrap" class="mb-2 d-none">
+          <label class="form-label small">اكتب <strong>DELETE</strong> للتأكيد · Type <strong>DELETE</strong> to confirm</label>
+          <input type="text" id="confirmTxt" class="form-control" placeholder="DELETE">
+        </div>
+
+        <div class="form-check my-3">
+          <input class="form-check-input" type="checkbox" id="ack">
+          <label class="form-check-label small" for="ack">
+            أفهم أن هذا الإجراء نهائي ولا يمكن التراجع عنه.
+            <span class="en d-block">I understand this is permanent and cannot be undone.</span>
+          </label>
+        </div>
+
+        <button id="delBtn" class="btn btn-danger w-100" disabled>حذف حسابي نهائياً · Delete my account permanently</button>
+        <div id="msg" class="mt-3 small"></div>
+      </div>
+
+      <!-- Not-logged-in instructions -->
+      <div id="guestBox" class="d-none">
+        <h5 class="mt-3">لست مسجّلاً الدخول؟ <span class="en">· Not logged in?</span></h5>
+        <p class="muted">
+          سجّل الدخول أولاً ثم عُد إلى هذه الصفحة لحذف حسابك، أو راسلنا لطلب الحذف يدوياً:
+          <span class="en d-block">Log in first and return to this page to delete your account, or email us to request deletion manually:</span>
+        </p>
+        <p><a href="/login.html?next=/delete-account.html" class="btn btn-outline-secondary">تسجيل الدخول · Log in</a></p>
+        <p class="muted">
+          البريد · Email:
+          <a href="mailto:privacy@guideon.om?subject=Account%20Deletion%20Request">privacy@guideon.om</a>
+          — نعالج الطلبات خلال 30 يوماً · processed within 30 days.
+        </p>
+      </div>
+    </div>
+
+    <p class="text-center muted mt-3 small">
+      <a href="/privacy.html">سياسة الخصوصية · Privacy Policy</a>
+    </p>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let hasPassword = true;
+
+    async function init() {
+      try {
+        const r = await fetch('/api/auth/me', { credentials: 'include' });
+        if (r.status === 401) { $('guestBox').classList.remove('d-none'); return; }
+        const d = await r.json();
+        if (!d.success || !d.user) { $('guestBox').classList.remove('d-none'); return; }
+        $('authedBox').classList.remove('d-none');
+        $('whoName').textContent = d.user.fullName || d.user.email || '';
+        // Google-only accounts have no password → confirm by typing DELETE.
+        hasPassword = d.user.hasPassword !== false;
+        if (!hasPassword) { $('pwWrap').classList.add('d-none'); $('confirmWrap').classList.remove('d-none'); }
+      } catch (_) {
+        $('guestBox').classList.remove('d-none');
+      }
+    }
+
+    $('ack').addEventListener('change', (e) => { $('delBtn').disabled = !e.target.checked; });
+
+    $('delBtn').addEventListener('click', async () => {
+      const btn = $('delBtn');
+      btn.disabled = true; btn.textContent = 'جارٍ الحذف · Deleting…';
+      $('msg').textContent = '';
+      const body = hasPassword
+        ? { password: $('pw').value }
+        : { confirm: $('confirmTxt').value };
+      try {
+        const r = await fetch('/api/auth/account', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (d.success) {
+          document.querySelector('.card').innerHTML =
+            '<h1>تم حذف حسابك · Account deleted</h1>' +
+            '<p class="muted mt-2">تم حذف حسابك وبياناتك نهائياً. شكراً لاستخدامك Guideon.' +
+            '<span class="en d-block">Your account and data have been permanently deleted. Thank you for using Guideon.</span></p>' +
+            '<a href="/" class="btn btn-outline-secondary mt-2">العودة للرئيسية · Home</a>';
+        } else {
+          $('msg').innerHTML = '<span class="text-danger">' + (d.message || 'تعذّر الحذف · Could not delete.') + '</span>';
+          btn.disabled = false; btn.textContent = 'حذف حسابي نهائياً · Delete my account permanently';
+        }
+      } catch (_) {
+        $('msg').innerHTML = '<span class="text-danger">تعذّر الاتصال · Network error. Please try again.</span>';
+        btn.disabled = false; btn.textContent = 'حذف حسابي نهائياً · Delete my account permanently';
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

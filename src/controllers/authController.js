@@ -308,6 +308,65 @@ exports.logout = (req, res) => {
   });
 };
 
+// DELETE /api/auth/account — a user permanently deletes THEIR OWN account and
+// associated data (Google Play / App Store account-deletion requirement).
+// Requires the current password (for password accounts) as a safety confirm.
+// Google-only accounts (no password) can confirm by typing DELETE.
+exports.deleteOwnAccount = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ success: false, message: 'Not logged in.' });
+
+    const user = await users.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'Account not found.' });
+    // Admin/staff accounts are managed by the team — not self-deletable here.
+    if (user.userType === 'admin' || user.userType === 'staff') {
+      return res.status(403).json({ success: false, message: 'Staff accounts are managed by the admin team.' });
+    }
+
+    const { password, confirm } = req.body || {};
+    if (user.password) {
+      // Password account — require the correct current password.
+      const ok = password && await bcrypt.compare(password, user.password);
+      if (!ok) return res.status(400).json({ success: false, message: 'كلمة المرور غير صحيحة · Incorrect password.' });
+    } else {
+      // Google-only account (no password) — require typing DELETE to confirm.
+      if (String(confirm || '').trim().toUpperCase() !== 'DELETE') {
+        return res.status(400).json({ success: false, message: 'اكتب DELETE للتأكيد · Type DELETE to confirm.' });
+      }
+    }
+
+    // Best-effort cleanup of related data so nothing is left orphaned.
+    try {
+      const bookings = new SupabaseDB('bookings');
+      const reviews  = new SupabaseDB('reviews', 'reviewId');
+      const messages = new SupabaseDB('messages');
+      if (user.userType === 'guide' || user.userType === 'company') {
+        const packages = new SupabaseDB('packages');
+        const pkgs = await packages.findAllByField('providerId', userId).catch(() => []);
+        for (const p of (pkgs || [])) await packages.delete(p.id).catch(() => {});
+      }
+      const myBookings = await bookings.findAllWhere({ touristId: userId }).catch(() => []);
+      const asGuide    = await bookings.findAllWhere({ guideId: userId }).catch(() => []);
+      for (const b of [...(myBookings || []), ...(asGuide || [])]) await bookings.delete(b.id).catch(() => {});
+      const myReviews  = await reviews.findAllByField('touristId', userId).catch(() => []);
+      const onMe       = await reviews.findAllByField('guideId', userId).catch(() => []);
+      for (const r of [...(myReviews || []), ...(onMe || [])]) await reviews.delete(r.reviewId).catch(() => {});
+      const sent = await messages.findAllByField('fromId', userId).catch(() => []);
+      const recv = await messages.findAllByField('toId', userId).catch(() => []);
+      for (const m of [...(sent || []), ...(recv || [])]) await messages.delete(m.id).catch(() => {});
+    } catch (_) { /* best-effort */ }
+
+    await users.delete(userId);
+    req.session.destroy(() => {
+      res.json({ success: true, message: 'تم حذف حسابك نهائياً · Your account has been permanently deleted.' });
+    });
+  } catch (err) {
+    console.error('[deleteOwnAccount]', err.message);
+    res.status(500).json({ success: false, message: 'تعذّر حذف الحساب. حاول لاحقاً · Could not delete the account.' });
+  }
+};
+
 // ── Sign in with Google (tourists) ────────────────────────────────────────────
 // The frontend uses Google Identity Services to obtain an ID token (credential)
 // and posts it here. We verify it against our GOOGLE_CLIENT_ID, then log the
@@ -558,6 +617,10 @@ exports.me = async (req, res) => {
     const user = await users.findById(req.session.userId);
     if (!user) return res.status(401).json({ success: false, message: 'User not found.' });
     const safe = publicUser(user);
+    // Flag (not the hash) so the client knows whether to ask for a password
+    // vs a typed confirmation on the account-deletion page. publicUser strips
+    // the password itself, so this is safe to expose.
+    safe.hasPassword = !!user.password;
     res.json({ success: true, user: safe });
   } catch (e) {
     console.error('[auth:me]', e.message);

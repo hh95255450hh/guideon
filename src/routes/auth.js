@@ -50,6 +50,8 @@ const upload = multer({
 router.post('/register', registerLimiter, validateRegister, auth.register);
 router.post('/login', loginLimiter, validateLogin, auth.login);
 router.post('/logout', auth.logout);
+// Self-service account + data deletion (Play/App-Store requirement).
+router.delete('/account', requireLogin, auth.deleteOwnAccount);
 router.get('/me', requireLogin, auth.me);
 router.put('/profile', requireLogin, auth.updateProfile);
 router.post('/google', loginLimiter, auth.googleAuth);
