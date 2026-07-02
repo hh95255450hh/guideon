@@ -23,7 +23,12 @@ exports.searchGuides = async (req, res) => {
     // findPage, but that path returned 0 rows on production data — the
     // server-side .order() made the query fail and silently empty the
     // result. Reverted to the proven findAllWhere fetch below.)
-    let guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
+    // NOTE: do NOT put `isSuspended: false` in the eq filter — a Postgres eq
+    // on a boolean column EXCLUDES rows where the column is NULL, so any guide
+    // whose isSuspended was never set would silently vanish from search. Fetch
+    // by the reliable columns, then drop suspended guides in JS (NULL = active).
+    let guides = await users.findAllWhere({ userType: 'guide', isVerified: true });
+    guides = guides.filter(g => !g.isSuspended);
 
     if (destination) {
       guides = guides.filter(g => (g.destinations || []).some(d => d.toLowerCase().includes(destination.toLowerCase())));
@@ -153,7 +158,8 @@ exports.topCompanies = async (req, res) => {
     if (_topCompaniesCache.data && Date.now() - _topCompaniesCache.at < TOP_COMPANIES_CACHE_MS) {
       return res.json({ success: true, cached: true, companies: _topCompaniesCache.data });
     }
-    const companies = await users.findAllWhere({ userType: 'company', isVerified: true, isSuspended: false });
+    const companies = (await users.findAllWhere({ userType: 'company', isVerified: true }))
+      .filter(c => !c.isSuspended);   // NULL isSuspended = active (eq filter would drop NULLs)
     companies.sort((a, b) =>
       (companyFeaturedScore(b) - companyFeaturedScore(a)) ||
       ((b.rating || 0) - (a.rating || 0)) ||
@@ -322,7 +328,8 @@ exports.topGuides = async (req, res) => {
     if (_topCache.data && Date.now() - _topCache.at < TOP_CACHE_MS) {
       return res.json({ success: true, cached: true, guides: _topCache.data });
     }
-    const guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
+    const guides = (await users.findAllWhere({ userType: 'guide', isVerified: true }))
+      .filter(g => !g.isSuspended);   // NULL isSuspended = active (eq filter would drop NULLs)
     guides.sort((a, b) =>
       (featuredScore(b) - featuredScore(a)) ||
       ((b.rating || 0) - (a.rating || 0)) ||

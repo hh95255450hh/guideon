@@ -28,8 +28,9 @@ function sanitizeSocials(s) {
 exports.listTeams = async (req, res) => {
   try {
     const { category, governorate } = req.query;
-    let teams = await users.findAllWhere({ userType: 'team', isSuspended: false });
-    teams = teams.filter(t => t.isVerified); // only show verified teams publicly
+    let teams = await users.findAllWhere({ userType: 'team' });
+    // NULL isSuspended = active (eq filter would drop NULLs); only verified teams shown publicly
+    teams = teams.filter(t => t.isVerified && !t.isSuspended);
     if (category)    teams = teams.filter(t => (t.teamCategory || '').toLowerCase() === category.toLowerCase());
     if (governorate) teams = teams.filter(t => (t.teamGovernorate || '').toLowerCase().includes(governorate.toLowerCase()));
     teams.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));

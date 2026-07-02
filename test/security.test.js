@@ -74,3 +74,48 @@ test('login returns the same message for bad email and bad password', () => {
   const matches = auth.match(/Invalid email or password/g) || [];
   assert.ok(matches.length >= 2, 'both bad-email and bad-password paths must use the same generic message');
 });
+
+// ── Stored-XSS via review photo URLs (behavioural, imports the real code) ──
+// Review photos render in <img src>; the server must drop any URL that isn't
+// https or site-relative. This imports the ACTUAL validator so it can't drift.
+const { safePhotoUrl } = require('../src/controllers/reviewController');
+
+test('review photo URLs: https and site-relative are kept', () => {
+  assert.equal(safePhotoUrl('https://x.supabase.co/storage/v1/object/public/p.png'),
+    'https://x.supabase.co/storage/v1/object/public/p.png');
+  assert.equal(safePhotoUrl('/uploads/p.png'), '/uploads/p.png');
+  assert.equal(safePhotoUrl('  /uploads/p.png  '), '/uploads/p.png'); // trimmed
+});
+
+test('review photo URLs: unsafe schemes and junk are dropped', () => {
+  assert.equal(safePhotoUrl('javascript:alert(1)'), null);
+  assert.equal(safePhotoUrl('data:text/html,<script>alert(1)</script>'), null);
+  assert.equal(safePhotoUrl('http://evil.example/x.png'), null); // non-TLS
+  assert.equal(safePhotoUrl('"><img src=x onerror=alert(1)>'), null);
+  assert.equal(safePhotoUrl(''), null);
+  assert.equal(safePhotoUrl(null), null);
+  assert.equal(safePhotoUrl(42), null);
+});
+
+// ── Shared-wishlist contact leak (source guard) ──
+// The public shared-wishlist endpoint must run guides through sanitizeContact
+// (viewer=null → contact fields stripped), not return raw rows.
+test('shared wishlist sanitises guide contact fields', () => {
+  const wl = fs.readFileSync(path.join(__dirname, '..', 'src', 'controllers', 'wishlistController.js'), 'utf8');
+  assert.match(wl, /sanitizeContact/, 'wishlist get() must call sanitizeContact on returned guides');
+});
+
+// ── isSuspended NULL-trap guard ──
+// Public listing paths must NOT put `isSuspended: false` in the eq filter
+// (Postgres eq drops NULL rows → guides silently vanish). They must filter
+// suspension in JS instead.
+test('public listings do not use isSuspended:false in eq filters', () => {
+  for (const f of ['guideController.js', 'tripController.js', 'teamController.js']) {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'controllers', f), 'utf8');
+    assert.ok(!/findAllWhere\(\{[^}]*isSuspended:\s*false/.test(src),
+      `${f} must not pass isSuspended:false to findAllWhere`);
+  }
+  const seo = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'seoLanding.js'), 'utf8');
+  assert.ok(!/findAllWhere\(\{[^}]*isSuspended:\s*false/.test(seo),
+    'seoLanding.js must not pass isSuspended:false to findAllWhere');
+});

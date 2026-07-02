@@ -25,7 +25,8 @@ async function verifiedGuides() {
   if (Date.now() - _guidesCache.at < 5 * 60 * 1000 && _guidesCache.rows.length) {
     return _guidesCache.rows;
   }
-  const all = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
+  const all = (await users.findAllWhere({ userType: 'guide', isVerified: true }))
+    .filter(g => !g.isSuspended);   // NULL isSuspended = active (eq filter would drop NULLs)
   _guidesCache = { at: Date.now(), rows: all };
   return all;
 }

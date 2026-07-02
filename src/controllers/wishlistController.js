@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
+const { sanitizeContact } = require('../utils/sanitizeContact');
 
 const shared = new SupabaseDB('shared_wishlists');
 const users  = new SupabaseDB('users');
@@ -42,9 +43,12 @@ exports.get = async (req, res) => {
       (wl.guideIds || []).map(id => users.findById(id))
     );
 
+    // Public endpoint (no auth) → viewer is null, so sanitizeContact strips
+    // ALL contact fields (phone/email/socials) + security tokens. This matches
+    // every other public guide view; returning raw rows here leaked contact info.
     const safe = guides
       .filter(g => g && g.userType === 'guide' && g.isVerified && !g.isSuspended)
-      .map(({ password, emailVerifyToken, resetPasswordToken, fcm_token, ...g }) => g);
+      .map(g => sanitizeContact(g, req.user || null));
 
     res.json({ success: true, wishlist: { ...wl, guides: safe } });
   } catch (err) {

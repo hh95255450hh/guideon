@@ -9,7 +9,8 @@ const users        = new SupabaseDB('users');
 // Fire-and-forget — never blocks the tourist's response. Capped to avoid spam.
 async function notifyMatchingGuides(request) {
   try {
-    const guides = await users.findAllWhere({ userType: 'guide', isVerified: true, isSuspended: false });
+    const guides = (await users.findAllWhere({ userType: 'guide', isVerified: true }))
+      .filter(g => !g.isSuspended);   // NULL isSuspended = active (eq filter would drop NULLs)
     const dest = (request.destination || '').toLowerCase();
     const lang = (request.language || '').toLowerCase();
 

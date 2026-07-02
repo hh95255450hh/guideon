@@ -33,10 +33,14 @@ strings in the product are bilingual **Arabic + English**.
 - **Frontend:** vanilla JS + Bootstrap 5 + custom CSS in `public/`. No build
   step, no framework. Pages are plain `.html` files; shared logic in
   `public/js/*.js`. Charts use ApexCharts via CDN.
-- **Payments:** **Thawani** (Oman gateway, amounts in *baisa* = OMR×1000).
-  Currently in "free launch" mode (`PAYMENTS_ENABLED` gates it). `stripe` and
-  `openai` are in package.json but **not the active providers** — do not
-  reintroduce Stripe; payment = Thawani. AI uses the Claude API when built.
+- **Payments:** Two Oman gateways behind a `PAYMENT_PROVIDER` env switch
+  (`paymob` | `thawani`, see `src/controllers/paymentController.js`).
+  **Paymob is the active LIVE provider** (Unified Checkout / Intention API +
+  HMAC callback, `src/config/paymob.js`); Thawani (`src/config/thawani.js`,
+  amounts in *baisa* = OMR×1000) is the fallback. `PAYMENTS_ENABLED` gates the
+  whole Pay-Now flow. Do **not** reintroduce Stripe (it is NOT in package.json).
+  AI uses the **Claude API** (`@anthropic-ai/sdk`, model `claude-opus-4-8`);
+  `openai` lingers in package.json but is not the active AI provider.
 - **Hosting:** **Oman Data Park VPS** (`185.64.25.111`), Docker Compose stack
   (`guideon-app` + `guideon-nginx`). Deploy: SSH in and run `bash /opt/deploy.sh`.
   **Railway was deleted** — never reference it. Env vars live in
@@ -79,9 +83,16 @@ git add -A && git commit && git push   # then SSH: bash /opt/deploy.sh
   when you change it.
 - **Never use `SupabaseDB.findPage()` for guide search or admin user lists.**
   Its `.order()` + `count:'exact'` + `.range()` pushdown **returned 0 rows on
-  production** and took the platform down. Use `findAllWhere(eq)` / `readAll()`
-  then filter/sort/paginate in JS (current scale is small). This is the single
+  production** and took the platform down. Use `findAllWhere(eq)` then
+  filter/sort/paginate in JS (current scale is small). This is the single
   most important gotcha.
+- **`readAll()` (bare `select *` on a whole table) can TIME OUT over the
+  self-hosted DB link and return `[]`** — `statsController.js` documents this
+  for the wide `users` table and works around it. Prefer `findAllWhere(eq)`
+  scoped to a subset over `readAll()` on large tables; admin aggregates that
+  still call `readAll()` will silently show zeros as the table grows. Proper
+  keyset pagination is the real long-term fix (needs live-DB diagnosis of the
+  `findPage` `.order` column).
 - **`isSuspended: false` in an eq filter excludes NULL rows** — guides without
   the column set vanish. Prefer JS filtering for boolean "not suspended".
 - **Authorization is app-only** (service-role bypasses RLS). Every mutating
@@ -120,22 +131,33 @@ git add -A && git commit && git push   # then SSH: bash /opt/deploy.sh
 - `public/` — all frontend pages + assets. Dashboards: tourist/guide/company/
   admin. `public/js/gd-messages.js` is the shared chat engine for all 3
   dashboards. `public/admin-revenue.html` is the finance dashboard.
-- `database/migrations/` — 38+ numbered SQL files. Highest applied may lag.
+- `database/migrations/` — 54 numbered SQL files (001–054), applied MANUALLY in
+  the Supabase SQL editor. There is no applied-migrations tracking table, so the
+  highest-applied number may lag. **`ALL_MIGRATIONS.sql` is stale (covers only
+  001–005)** — do not trust it as the full schema; apply new numbered files
+  individually. `npm run migrate` / `scripts/migrate.js` is broken/dead (points
+  at a non-existent `database/schema.sql`); don't use it.
 - `android/` — Bubblewrap TWA config + build guide for the Play Store app.
 - `Guideon_Info.md` — owner-facing changelog/credentials doc; **update it and
   push after every significant change** (owner preference).
 
-## Current status (as of 2026-07-01)
+## Current status (as of 2026-07-02)
 
 Live and working on ODP VPS. Recent work:
 - **Migration**: moved from Railway+cloud Supabase → ODP VPS + self-hosted Supabase.
-- **Mobile app**: Flutter (Provider, Dio+CookieJar, WebView). Push via FCM V1
+- **Payments**: Paymob (Oman) LIVE via `PAYMENT_PROVIDER=paymob`; Thawani fallback.
+- **Mobile app**: Flutter (Provider, Dio+CookieJar). Explore map is now native
+  `flutter_map` (OpenStreetMap); other flows use WebView. Push via FCM V1
   (`firebase-admin` modular API) + VAPID web push. Built via Codemagic CI.
 - **FCM**: `FIREBASE_SERVICE_ACCOUNT` (base64 JSON) in `.env` activates mobile push.
 - **WhatsApp**: `WHATSAPP_ENABLED=true` + test number wired; real Omani number
-  (+968 7419 7197) not yet verified in Meta Business Manager.
-- **Map**: `explore.html` uses Leaflet self-hosted at `/vendor/leaflet/` (no CDN).
-- Tests: 62 passing (`test/*.test.js`).
+  (+968 7419 7197) verification blocked on Meta rate-limit / Business review.
+- **Map (web)**: `explore.html` uses Leaflet self-hosted at `/vendor/leaflet/`
+  (no CDN); icon creation deferred until the lib loads.
+- **Security audit (2026-07-02)**: fixed stored-XSS in review/asset rendering,
+  review photo-URL validation, shared-wishlist contact leak, and the
+  `isSuspended:false` NULL-trap in all public listing paths.
+- Tests: 66 passing (`test/*.test.js`).
 
 Open follow-ups: AI Trip Planner, WhatsApp Omani number verification,
 escrow payments, iOS push setup. Architectural: real RLS, Redis for SSE/cache.

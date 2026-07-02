@@ -7,6 +7,22 @@ const reviews  = new SupabaseDB('reviews', 'reviewId');
 const bookings = new SupabaseDB('bookings');
 const users    = new SupabaseDB('users');
 
+// Only accept photo URLs that are https or site-relative. A review photo is
+// rendered in <img src> on the public profile; a javascript:/data: scheme (or
+// any attacker-supplied string) would be stored XSS. The client uploads via
+// /upload-photo and passes back the returned storage URL — anything else is
+// rejected here.
+function safePhotoUrl(u) {
+  if (typeof u !== 'string') return null;
+  const s = u.trim();
+  if (!s) return null;
+  if (s.startsWith('/')) return s.slice(0, 500);           // site-relative
+  if (/^https:\/\//i.test(s)) return s.slice(0, 500);      // https only
+  return null;                                             // drop everything else
+}
+// Exported for unit tests (regression guard against stored-XSS via photo URLs).
+exports.safePhotoUrl = safePhotoUrl;
+
 // Columns the app writes that may be missing from older `reviews` tables.
 // Migration 022 adds them; until it runs we strip them so reviews still save.
 const OPTIONAL_REVIEW_COLS = ['packageId', 'touristPhoto'];
@@ -46,7 +62,9 @@ exports.submitReview = async (req, res) => {
     if (existing) return res.status(409).json({ success: false, message: 'You have already reviewed this booking.' });
 
     const tourist = await users.findById(touristId);
-    const photoList = Array.isArray(photos) ? photos.slice(0, 3) : [];
+    const photoList = Array.isArray(photos)
+      ? photos.map(safePhotoUrl).filter(Boolean).slice(0, 3)
+      : [];
 
     const review = {
       reviewId: 'rv-' + uuidv4().slice(0, 8),
