@@ -4,26 +4,70 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/guide.dart';
+import '../models/tour_package.dart';
 import '../services/api.dart';
+import '../services/guide_service.dart';
+import '../services/package_service.dart';
 import '../theme/app_theme.dart';
 
-class GuideDetailScreen extends StatelessWidget {
+class GuideDetailScreen extends StatefulWidget {
   final Guide guide;
   const GuideDetailScreen({super.key, required this.guide});
 
   @override
+  State<GuideDetailScreen> createState() => _GuideDetailScreenState();
+}
+
+class _GuideDetailScreenState extends State<GuideDetailScreen> {
+  late Guide _guide;                       // starts as the summary, upgraded to full
+  List<TourPackage> _packages = [];
+  List<Map<String, dynamic>> _reviews = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _guide = widget.guide;
+    _load();
+  }
+
+  Future<void> _load() async {
+    // Fetch the FULL profile (+reviews) and the guide's tours in parallel. The
+    // object passed from the list is only a summary — without this the detail
+    // screen showed a truncated bio and no tours at all.
+    try {
+      final results = await Future.wait([
+        GuideService.profile(_guide.id),
+        PackageService.byProvider(_guide.id),
+      ]);
+      final prof = results[0] as ({Guide? guide, List<Map<String, dynamic>> reviews});
+      final pkgs = results[1] as List<TourPackage>;
+      if (!mounted) return;
+      setState(() {
+        if (prof.guide != null) _guide = prof.guide!;
+        _reviews = prof.reviews;
+        _packages = pkgs;
+        _loading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _loading = false); // keep the summary we have
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final g = _guide;
     return Scaffold(
-      appBar: AppBar(title: Text(guide.fullName)),
+      appBar: AppBar(title: Text(g.fullName)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Center(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(60),
-              child: (guide.photo != null && guide.photo!.isNotEmpty)
+              child: (g.photo != null && g.photo!.isNotEmpty)
                   ? CachedNetworkImage(
-                      imageUrl: guide.photo!,
+                      imageUrl: g.photo!,
                       width: 120,
                       height: 120,
                       fit: BoxFit.cover,
@@ -36,10 +80,13 @@ class GuideDetailScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(guide.fullName,
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w800)),
-              if (guide.isVerified) ...[
+              Flexible(
+                child: Text(g.fullName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w800)),
+              ),
+              if (g.isVerified) ...[
                 const SizedBox(width: 6),
                 const Icon(Icons.verified, color: GdColors.teal, size: 20),
               ],
@@ -48,28 +95,47 @@ class GuideDetailScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Center(
             child: Text(
-              guide.rating > 0
-                  ? '⭐ ${guide.rating.toStringAsFixed(1)} · ${guide.totalReviews} تقييم'
+              g.rating > 0
+                  ? '⭐ ${g.rating.toStringAsFixed(1)} · ${g.totalReviews} تقييم'
                   : 'مرشد جديد',
               style: const TextStyle(color: GdColors.muted),
             ),
           ),
           const SizedBox(height: 20),
-          if (guide.bio.isNotEmpty) ...[
+          if (g.bio.isNotEmpty) ...[
             const _SectionTitle('نبذة'),
-            Text(guide.bio, style: const TextStyle(height: 1.6)),
+            Text(g.bio, style: const TextStyle(height: 1.6)),
             const SizedBox(height: 16),
           ],
-          if (guide.languages.isNotEmpty)
-            _chips('اللغات', guide.languages),
-          if (guide.specialisations.isNotEmpty)
-            _chips('التخصّصات', guide.specialisations),
-          if (guide.destinations.isNotEmpty)
-            _chips('الوجهات', guide.destinations),
-          const SizedBox(height: 24),
-          if (guide.pricePerDay > 0)
+          if (g.languages.isNotEmpty) _chips('اللغات', g.languages),
+          if (g.specialisations.isNotEmpty) _chips('التخصّصات', g.specialisations),
+          if (g.destinations.isNotEmpty) _chips('الوجهات', g.destinations),
+
+          // ── Tours / packages ──────────────────────────────────────────────
+          if (_loading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator(color: GdColors.teal)),
+            )
+          else if (_packages.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            const _SectionTitle('الرحلات المتاحة'),
+            ..._packages.map(_packageCard),
+            const SizedBox(height: 8),
+          ],
+
+          // ── Reviews ────────────────────────────────────────────────────────
+          if (!_loading && _reviews.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _SectionTitle('التقييمات (${_reviews.length})'),
+            ..._reviews.take(10).map(_reviewCard),
+            const SizedBox(height: 8),
+          ],
+
+          const SizedBox(height: 16),
+          if (g.pricePerDay > 0)
             Center(
-              child: Text('${guide.pricePerDay} ر.ع / يوم',
+              child: Text('${g.pricePerDay} ر.ع / يوم',
                   style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -77,22 +143,124 @@ class GuideDetailScreen extends StatelessWidget {
             ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            onPressed: () => _openBooking(context),
+            onPressed: () => _openWeb(
+                'https://guideon.om/guide-profile.html?id=${g.id}',
+                'احجز مع ${g.fullName}'),
             icon: const Icon(Icons.event_available),
             label: const Text('احجز الآن'),
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  // Booking + payment flow through the web checkout inside an in-app WebView.
-  void _openBooking(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _WebSheet(
-        url: 'https://guideon.om/guide-profile.html?id=${guide.id}',
-        title: 'احجز مع ${guide.fullName}',
+  // ── Package (tour) card → opens the full tour page in the in-app WebView ──
+  Widget _packageCard(TourPackage p) {
+    return InkWell(
+      onTap: () => _openWeb(
+          'https://guideon.om/tour-package.html?id=${p.id}', p.title),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFD6EFE9)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(right: Radius.circular(14)),
+              child: (p.coverImage != null && p.coverImage!.isNotEmpty)
+                  ? CachedNetworkImage(
+                      imageUrl: p.coverImage!, width: 96, height: 96, fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => _pkgPh())
+                  : _pkgPh(),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(p.title,
+                        maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text('📍 ${p.destination} · ${p.durationDays} يوم',
+                        style: const TextStyle(color: GdColors.muted, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(
+                        p.priceAdult > 0 ? '${p.priceAdult.toStringAsFixed(0)} ر.ع' : 'بالاتفاق',
+                        style: const TextStyle(
+                            color: GdColors.teal, fontWeight: FontWeight.w800, fontSize: 14)),
+                  ],
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Icon(Icons.chevron_left, color: GdColors.muted),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _reviewCard(Map<String, dynamic> r) {
+    final name = (r['touristName'] ?? 'سائح').toString();
+    final rating = (r['rating'] is num) ? (r['rating'] as num).toInt() : 0;
+    final comment = (r['comment'] ?? '').toString();
+    final reply = (r['guideReply'] ?? '').toString();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FBFA),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(name,
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+              ),
+              Text('⭐' * rating.clamp(0, 5).toInt(),
+                  style: const TextStyle(fontSize: 12)),
+            ],
+          ),
+          if (comment.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(comment, style: const TextStyle(height: 1.5, fontSize: 13)),
+          ],
+          if (reply.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF7F5),
+                borderRadius: BorderRadius.circular(8),
+                border: const Border(right: BorderSide(color: GdColors.teal, width: 3)),
+              ),
+              child: Text('↩️ ردّ المرشد: $reply',
+                  style: const TextStyle(fontSize: 12.5, color: GdColors.navy)),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Open a guideon.om page (booking / tour) inside the in-app WebView.
+  void _openWeb(String url, String title) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => _WebSheet(url: url, title: title),
     ));
   }
 
@@ -101,6 +269,13 @@ class GuideDetailScreen extends StatelessWidget {
         height: 120,
         color: const Color(0xFFE2F0EE),
         child: const Icon(Icons.person, size: 56, color: GdColors.teal),
+      );
+
+  Widget _pkgPh() => Container(
+        width: 96,
+        height: 96,
+        color: const Color(0xFFE2F0EE),
+        child: const Icon(Icons.landscape, size: 34, color: GdColors.teal),
       );
 
   Widget _chips(String title, List<String> items) => Column(

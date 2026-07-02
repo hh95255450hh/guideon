@@ -2,6 +2,21 @@ import '../models/tour_package.dart';
 import 'api.dart';
 
 class PackageService {
+  /// All published tours offered by one provider (guide/company).
+  /// GET /api/packages?providerId=… pushes the filter to the backend.
+  static Future<List<TourPackage>> byProvider(String providerId, {int limit = 20}) async {
+    final res = await Api.instance.get('/packages',
+        query: {'providerId': providerId, 'limit': limit});
+    final list = (res.data is Map && res.data['packages'] is List)
+        ? res.data['packages'] as List
+        : const [];
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(TourPackage.fromJson)
+        .take(limit)
+        .toList();
+  }
+
   /// Fetches the most popular/featured published tour packages.
   static Future<List<TourPackage>> popular({int limit = 8}) async {
     final res = await Api.instance.get('/packages/popular');

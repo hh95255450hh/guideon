@@ -27,4 +27,27 @@ class GuideService {
     }
     return null;
   }
+
+  /// Full public profile PLUS the guide's reviews (GET /api/guides/:id returns
+  /// { guide, reviews }). The list/search Guide object is only a summary, so the
+  /// detail screen must fetch this to show the complete bio + reviews.
+  static Future<({Guide? guide, List<Map<String, dynamic>> reviews})> profile(String id) async {
+    final res = await Api.instance.get('/guides/$id');
+    final data = res.data;
+    Guide? g;
+    var revs = <Map<String, dynamic>>[];
+    if (data is Map) {
+      final gm = data['guide'];
+      if (gm is Map) {
+        g = Guide.fromJson(gm.cast<String, dynamic>());
+      } else if (data['id'] != null) {
+        g = Guide.fromJson(data.cast<String, dynamic>());
+      }
+      final r = data['reviews'];
+      if (r is List) {
+        revs = r.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList();
+      }
+    }
+    return (guide: g, reviews: revs);
+  }
 }
