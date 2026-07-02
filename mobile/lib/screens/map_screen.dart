@@ -23,7 +23,8 @@ class _MapScreenState extends State<MapScreen>
   String? _error;
   Guide? _selected;
 
-  static const _oman = LatLng(23.6, 57.5);
+  // Center that frames the whole Sultanate (Musandam → Dhofar), not just Muscat.
+  static const _oman = LatLng(21.8, 56.8);
 
   @override
   bool get wantKeepAlive => true;
@@ -38,10 +39,30 @@ class _MapScreenState extends State<MapScreen>
     setState(() { _loading = true; _error = null; });
     try {
       final guides = await GuideService.search(limit: 100);
-      if (mounted) setState(() { _guides = guides; _loading = false; });
+      if (mounted) {
+        setState(() { _guides = guides; _loading = false; });
+        // Frame the map around the guides that actually have coordinates.
+        WidgetsBinding.instance.addPostFrameCallback((_) => _fitToMarkers());
+      }
     } catch (e) {
       if (mounted) setState(() { _error = 'تعذّر تحميل المرشدين'; _loading = false; });
     }
+  }
+
+  void _fitToMarkers() {
+    final pts = _mapped.map((g) => LatLng(g.latitude!, g.longitude!)).toList();
+    if (pts.isEmpty) return;
+    if (pts.length == 1) {
+      _mapCtrl.move(pts.first, 9);
+      return;
+    }
+    try {
+      _mapCtrl.fitCamera(CameraFit.coordinates(
+        coordinates: pts,
+        padding: const EdgeInsets.all(48),
+        maxZoom: 9,
+      ));
+    } catch (_) {/* map not ready yet — default view is fine */}
   }
 
   // Guides that have coordinates
@@ -61,7 +82,7 @@ class _MapScreenState extends State<MapScreen>
             mapController: _mapCtrl,
             options: MapOptions(
               initialCenter: _oman,
-              initialZoom: 7,
+              initialZoom: 6,
               onTap: (_, __) => setState(() => _selected = null),
             ),
             children: [

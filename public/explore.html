@@ -210,9 +210,10 @@ let activeFilter = 'all';
 let searchQ   = '';
 let userLat   = null, userLng = null;
 
-// Oman bounding box center
-const OMAN_CENTER = [23.6, 57.5];
-const OMAN_ZOOM   = 7;
+// Center that frames the whole Sultanate (Musandam in the north to Dhofar in
+// the south) rather than just the Muscat/UAE coast.
+const OMAN_CENTER = [21.8, 56.8];
+const OMAN_ZOOM   = 6;
 
 // ─── LOAD LEAFLET ─────────────────────────────────────────────────────────
 function loadLeaflet(cb) {
@@ -386,30 +387,50 @@ function showSkeletons() {
 }
 
 // ─── MAP MARKERS ──────────────────────────────────────────────────────────
-// Oman governorate approximate centers for guides without exact coords
+// Oman place → approximate coordinates (AR + EN variants). Used to place a
+// guide on the map from their free-text destinations list.
 const GOV_COORDS = {
   مسقط:[23.588,58.393], muscat:[23.588,58.393],
-  صلالة:[17.015,54.089], salalah:[17.015,54.089],
-  نزوى:[22.933,57.531], nizwa:[22.933,57.531],
+  صلالة:[17.015,54.089], salalah:[17.015,54.089], ظفار:[17.015,54.089], dhofar:[17.015,54.089],
+  نزوى:[22.933,57.531], nizwa:[22.933,57.531], العقر:[22.933,57.531],
   صحار:[24.348,56.732], sohar:[24.348,56.732],
   صور:[22.565,59.529], sur:[22.565,59.529],
-  مطرح:[23.619,58.592], matrah:[23.619,58.592],
+  مطرح:[23.619,58.592], matrah:[23.619,58.592], muttrah:[23.619,58.592],
+  السيب:[23.670,58.189], seeb:[23.670,58.189],
   عبري:[23.296,56.512], ibri:[23.296,56.512],
-  بهلاء:[22.968,57.306], bahla:[22.968,57.306],
-  خصب:[26.181,56.249], khasab:[26.181,56.249],
+  بهلاء:[22.968,57.306], بهلا:[22.968,57.306], bahla:[22.968,57.306],
+  خصب:[26.181,56.249], khasab:[26.181,56.249], مسندم:[26.181,56.249], musandam:[26.181,56.249],
+  الرستاق:[23.390,57.424], rustaq:[23.390,57.424],
+  الحمراء:[23.115,57.298], الحمرا:[23.115,57.298], 'al hamra':[23.115,57.298], hamra:[23.115,57.298],
+  'الجبل الاخضر':[23.073,57.664], 'jabal akhdar':[23.073,57.664], 'jabal akhder':[23.073,57.664], akhdar:[23.073,57.664],
+  'جبل شمس':[23.237,57.263], 'jabal shams':[23.237,57.263], shams:[23.237,57.263],
+  'نخل':[23.394,57.827], nakhal:[23.394,57.827],
+  'بدية':[22.446,58.800], bidiyah:[22.446,58.800], bidiyya:[22.446,58.800], بديه:[22.446,58.800],
+  'وادي بني خالد':[22.601,59.038], 'wadi bani khalid':[22.601,59.038],
+  'وادي شاب':[22.213,59.238], 'wadi shab':[22.213,59.238], wadishab:[22.213,59.238],
+  'الشرقية':[22.446,58.800], sharqiya:[22.446,58.800], sharqiyah:[22.446,58.800],
+  'رمال وهيبة':[22.130,58.820], وهيبه:[22.130,58.820], wahiba:[22.130,58.820], 'sharqiya sands':[22.130,58.820],
+  'الصحراء':[22.130,58.820], desert:[22.130,58.820],
+  'الجبال':[23.073,57.664], mountains:[23.073,57.664],
+  'الوديان':[22.601,59.038], wadis:[22.601,59.038], wadi:[22.601,59.038],
+  البريمي:[24.249,55.793], buraimi:[24.249,55.793],
+  عُمان:[21.5,56.5], oman:[21.5,56.5],
 };
 
+// Return [lat,lng] for a guide, or NULL when their destinations don't match any
+// known Oman place. We deliberately DO NOT random-scatter unmatched guides —
+// that used to drop pins in the sea / neighbouring countries (e.g. a guide with
+// "Moscow, Russia" or an empty list). Unmatched guides simply get no map pin.
 function guideCoords(g) {
   if (g._lat && g._lng) return [g._lat, g._lng];
   const dests = (g.destinations||[]);
   for (const d of dests) {
-    const k = d.toLowerCase();
+    const k = (d||'').toLowerCase();
     for (const [key, coords] of Object.entries(GOV_COORDS)) {
       if (k.includes(key.toLowerCase())) return coords;
     }
   }
-  // Random scatter around Oman center
-  return [23.0 + (Math.random()-0.5)*4, 57.5 + (Math.random()-0.5)*6];
+  return null;
 }
 
 let GUIDE_ICON = null;
@@ -428,21 +449,35 @@ function renderMarkers() {
   markers.forEach(m => m.remove());
   markers = [];
 
+  const pts = [];
   filtered.slice(0, 50).forEach(g => {
-    const [lat, lng] = guideCoords(g);
+    const coords = guideCoords(g);
+    if (!coords) return;                       // no Oman location → no pin
+    const [lat, lng] = coords;
+    // Spread guides that share a city so pins don't stack exactly on top.
+    const jLat = lat + (Math.random() - 0.5) * 0.06;
+    const jLng = lng + (Math.random() - 0.5) * 0.06;
     const rating = parseFloat(g.rating)||0;
     const price  = g.pricePerDay > 0 ? `${parseFloat(g.pricePerDay).toFixed(0)} OMR` : 'بالاتفاق';
-    const m = L.marker([lat, lng], { icon: GUIDE_ICON })
+    const m = L.marker([jLat, jLng], { icon: GUIDE_ICON })
       .addTo(leafMap)
       .bindPopup(`
-        <div class="map-popup" onclick="window.location='/guide-profile.html?id=${g.id}'">
-          <div class="mp-name">${g.fullName||''}</div>
+        <div class="map-popup" onclick="window.location='/guide-profile.html?id=${encodeURIComponent(g.id)}'">
+          <div class="mp-name">${window.gdEsc ? gdEsc(g.fullName||'') : (g.fullName||'')}</div>
           <div class="mp-rating">${rating > 0 ? '★ '+rating.toFixed(1) : 'جديد'}</div>
           <div class="mp-price">${price} / يوم</div>
         </div>
       `, { maxWidth: 200, closeButton: false });
     markers.push(m);
+    pts.push([jLat, jLng]);
   });
+
+  // Frame the map around the actual guide pins (falls back to all-Oman view).
+  if (pts.length === 1) {
+    leafMap.setView(pts[0], 9, { animate: false });
+  } else if (pts.length > 1) {
+    leafMap.fitBounds(L.latLngBounds(pts).pad(0.2), { animate: false, maxZoom: 9 });
+  }
 }
 
 // ─── SHEET DRAG ───────────────────────────────────────────────────────────
