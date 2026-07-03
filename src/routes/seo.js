@@ -21,6 +21,8 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/',                  changefreq: 'daily',  priority: 1.0 },
       { loc: '/search.html',       changefreq: 'daily',  priority: 0.9 },
       { loc: '/plan-trip.html',    changefreq: 'weekly', priority: 0.8 },
+      { loc: '/ai-trip-planner.html', changefreq: 'weekly', priority: 0.85 },
+      { loc: '/trails.html',       changefreq: 'monthly',priority: 0.75 },
       { loc: '/how-it-works.html', changefreq: 'monthly',priority: 0.7 },
       { loc: '/faq.html',          changefreq: 'monthly',priority: 0.7 },
       { loc: '/contact.html',      changefreq: 'monthly',priority: 0.8 },

@@ -33,8 +33,12 @@ function esc(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function metaBlock({ title, description, image, url }) {
+function metaBlock({ title, description, image, url, jsonld }) {
   const t = esc(title), d = esc(description), img = esc(image), u = esc(url);
+  // JSON-LD is machine-readable, so it just needs to be safe inside a <script>.
+  const ld = jsonld
+    ? `\n<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, '\\u003c')}</script>`
+    : '';
   return `<title>${t}</title>
 <meta name="description" content="${d}">
 <link rel="canonical" href="${u}">
@@ -47,7 +51,20 @@ function metaBlock({ title, description, image, url }) {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${t}">
 <meta name="twitter:description" content="${d}">
-<meta name="twitter:image" content="${img}">`;
+<meta name="twitter:image" content="${img}">${ld}`;
+}
+
+const ORG = { '@type': 'Organization', name: 'Guideon', url: APP_URL };
+// Only emit an aggregateRating when there is at least one real review + score
+// (Google rejects/ignores a rating of 0 or reviewCount 0).
+function rating(score, count) {
+  const s = parseFloat(score) || 0, c = parseInt(count) || 0;
+  return (s > 0 && c > 0)
+    ? { '@type': 'AggregateRating', ratingValue: s, reviewCount: c } : undefined;
+}
+function places(list) {
+  const arr = (Array.isArray(list) ? list : []).filter(Boolean).slice(0, 6);
+  return arr.length ? arr.map(n => ({ '@type': 'Place', name: n })) : undefined;
 }
 
 // Replace the first <title>…</title> with our title + meta block.
@@ -68,7 +85,21 @@ async function guideMeta(id) {
     ? g.bio.trim().slice(0, 200)
     : `Book ${g.fullName}, a certified local tour guide${where}. View profile, reviews and availability on Guideon.`;
   const image = g.photo || `${APP_URL}/logo.png`;
-  return { title, description, image, url: `${APP_URL}/guide-profile.html?id=${id}` };
+  const url = `${APP_URL}/guide-profile.html?id=${id}`;
+  const jsonld = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: g.fullName,
+    jobTitle: 'Tour Guide',
+    image,
+    description,
+    url,
+    worksFor: ORG,
+    areaServed: places(dests),
+    knowsLanguage: (Array.isArray(g.languages) ? g.languages.filter(Boolean) : undefined),
+    aggregateRating: rating(g.rating, g.totalReviews),
+  };
+  return { title, description, image, url, jsonld };
 }
 
 async function tourMeta(id) {
@@ -79,7 +110,23 @@ async function tourMeta(id) {
     ? p.description.trim().slice(0, 200)
     : `Book "${p.title}", a curated tour in ${p.destination || 'Oman'} on Guideon.`;
   const image = (Array.isArray(p.images) && p.images[0]) || p.coverImage || `${APP_URL}/logo.png`;
-  return { title, description, image, url: `${APP_URL}/tour-package.html?id=${id}` };
+  const url = `${APP_URL}/tour-package.html?id=${id}`;
+  const price = parseFloat(p.price_adult ?? p.priceAdult ?? p.price) || 0;
+  const jsonld = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.title,
+    image,
+    description,
+    url,
+    brand: { '@type': 'Brand', name: 'Guideon' },
+    offers: price > 0 ? {
+      '@type': 'Offer', price, priceCurrency: 'OMR',
+      availability: 'https://schema.org/InStock', url,
+    } : undefined,
+    aggregateRating: rating(p.rating, p.totalReviews ?? p.total_reviews),
+  };
+  return { title, description, image, url, jsonld };
 }
 
 async function companyMeta(id) {
@@ -93,7 +140,19 @@ async function companyMeta(id) {
     ? c.companyDescription.trim().slice(0, 200)
     : `${name}, a registered Omani tourism company${where}. View tours, reviews and book on Guideon.`;
   const image = c.photo || `${APP_URL}/logo.png`;
-  return { title, description, image, url: `${APP_URL}/company-profile.html?id=${id}` };
+  const url = `${APP_URL}/company-profile.html?id=${id}`;
+  const jsonld = {
+    '@context': 'https://schema.org',
+    '@type': 'TravelAgency',
+    name,
+    image,
+    description,
+    url,
+    address: { '@type': 'PostalAddress', addressCountry: 'OM' },
+    areaServed: places(dests),
+    aggregateRating: rating(c.rating, c.totalReviews),
+  };
+  return { title, description, image, url, jsonld };
 }
 
 // Served for an entity page whose id doesn't exist — a REAL 404 (+noindex) so
