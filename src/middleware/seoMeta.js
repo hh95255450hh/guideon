@@ -82,24 +82,57 @@ async function tourMeta(id) {
   return { title, description, image, url: `${APP_URL}/tour-package.html?id=${id}` };
 }
 
+async function companyMeta(id) {
+  const c = await users.findById(id);
+  if (!c || c.userType !== 'company') return null;
+  const name = c.companyName || c.fullName || 'Tourism Company';
+  const dests = Array.isArray(c.companyDestinations) ? c.companyDestinations.filter(Boolean) : [];
+  const where = dests.length ? ` in ${dests.slice(0, 3).join(', ')}` : ' in Oman';
+  const title = `${name} — Tourism Company${where} | Guideon`;
+  const description = (c.companyDescription && c.companyDescription.trim())
+    ? c.companyDescription.trim().slice(0, 200)
+    : `${name}, a registered Omani tourism company${where}. View tours, reviews and book on Guideon.`;
+  const image = c.photo || `${APP_URL}/logo.png`;
+  return { title, description, image, url: `${APP_URL}/company-profile.html?id=${id}` };
+}
+
+// Served for an entity page whose id doesn't exist — a REAL 404 (+noindex) so
+// Google treats it as not-found instead of a soft 404 (the page still renders a
+// friendly "not found" to humans client-side).
+function notFoundBlock() {
+  return `<title>Not found · غير موجود — Guideon</title>
+<meta name="robots" content="noindex,follow">`;
+}
+
+const ENTITY_PAGES = {
+  '/guide-profile.html':   { tpl: 'guide-profile.html',   meta: guideMeta },
+  '/tour-package.html':    { tpl: 'tour-package.html',    meta: tourMeta },
+  '/company-profile.html': { tpl: 'company-profile.html', meta: companyMeta },
+};
+
 module.exports = async function seoMeta(req, res, next) {
   try {
-    const isGuide = req.path === '/guide-profile.html';
-    const isTour  = req.path === '/tour-package.html';
-    if ((!isGuide && !isTour) || !req.query.id) return next();
+    const page = ENTITY_PAGES[req.path];
+    if (!page || !req.query.id) return next();
 
-    const tplName = isGuide ? 'guide-profile.html' : 'tour-package.html';
-    const html = readTemplate(tplName);
+    const html = readTemplate(page.tpl);
     if (!html) return next();
 
-    const meta = isGuide ? await guideMeta(req.query.id) : await tourMeta(req.query.id);
-    if (!meta) return next(); // unknown id → serve normal page
+    const meta = await page.meta(req.query.id);
+    if (!meta) {
+      // id was provided but no such entity exists → return a REAL 404 + noindex
+      // instead of a 200 (which Google flags as a Soft 404).
+      const out = inject(html, notFoundBlock());
+      res.status(404).set('Cache-Control', 'no-cache, no-store, must-revalidate')
+        .type('html').send(out);
+      return;
+    }
 
     const out = inject(html, metaBlock(meta));
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.type('html').send(out);
   } catch (e) {
     console.error('[seoMeta]', e.message);
-    next(); // never block page delivery
+    next(); // on ANY error, never 404 a real page — fall through to static serve (200)
   }
 };
