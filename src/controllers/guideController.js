@@ -9,7 +9,10 @@ const bookings = new SupabaseDB('bookings');
 
 exports.searchGuides = async (req, res) => {
   try {
-    const { destination, governorate, language, date, specialisation, minRating, sortBy, minPrice, maxPrice } = req.query;
+    const { destination, governorate, language, date, specialisation, minRating, sortBy, minPrice, maxPrice, type } = req.query;
+    // `type=company` lists tourism companies instead of individual guides
+    // (used by the "View all companies" link). Anything else → guides.
+    const providerType = type === 'company' ? 'company' : 'guide';
     // Pagination — public API: ?page=1&pageSize=24
     const pageSize = Math.min(Math.max(parseInt(req.query.pageSize) || 24, 1), 60);
     const page     = Math.max(parseInt(req.query.page) || 1, 1);
@@ -27,8 +30,16 @@ exports.searchGuides = async (req, res) => {
     // on a boolean column EXCLUDES rows where the column is NULL, so any guide
     // whose isSuspended was never set would silently vanish from search. Fetch
     // by the reliable columns, then drop suspended guides in JS (NULL = active).
-    let guides = await users.findAllWhere({ userType: 'guide', isVerified: true });
+    let guides = await users.findAllWhere({ userType: providerType, isVerified: true });
     guides = guides.filter(g => !g.isSuspended);
+    // Companies store their areas under companyDestinations — mirror it to
+    // `destinations` so the shared destination/governorate filters below work.
+    if (providerType === 'company') {
+      guides = guides.map(g => ({
+        ...g,
+        destinations: (g.destinations && g.destinations.length) ? g.destinations : (g.companyDestinations || []),
+      }));
+    }
 
     if (destination) {
       guides = guides.filter(g => (g.destinations || []).some(d => d.toLowerCase().includes(destination.toLowerCase())));
