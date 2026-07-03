@@ -67,15 +67,17 @@
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Guideon',
+      legalName: 'Vision for Digital Thought',
       url: 'https://guideon.om',
       logo: 'https://guideon.om/logo.png',
       description: 'Tourism marketplace connecting tourists with certified local guides in Oman.',
       address: {
         '@type': 'PostalAddress',
-        addressCountry: 'OM',
+        addressLocality: 'Seeb',
         addressRegion: 'Muscat',
+        addressCountry: 'OM',
       },
-      sameAs: [],
+      areaServed: { '@type': 'Country', name: 'Oman' },
     });
   }
 
