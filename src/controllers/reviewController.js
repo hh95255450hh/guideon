@@ -89,6 +89,21 @@ exports.submitReview = async (req, res) => {
       totalReviews: guideReviews.length,
     });
 
+    // Keep the tour_package's stored rating/totalReviews in sync too (they were
+    // never updated → all packages sat at 0 despite having reviews). Best-effort.
+    if (review.packageId) {
+      try {
+        const pkgs = new SupabaseDB('tour_packages');
+        const pkgReviews = await reviews.findAllByField('packageId', review.packageId);
+        const pAvg = pkgReviews.length
+          ? pkgReviews.reduce((s, r) => s + (parseInt(r.rating) || 0), 0) / pkgReviews.length : 0;
+        await pkgs.update(review.packageId, {
+          rating: Math.round(pAvg * 10) / 10,
+          totalReviews: pkgReviews.length,
+        }).catch(() => {});
+      } catch (_) { /* non-critical */ }
+    }
+
     // Notify guide of new review (email + in-app)
     if (guide) {
       email.sendGuideNewReview({

@@ -94,10 +94,13 @@ exports.searchGuides = async (req, res) => {
       guides = matched;
     }
 
-    // Rating + price range filters (JS — treat missing values safely)
-    if (minRating) guides = guides.filter(g => (parseFloat(g.rating) || 0) >= parseFloat(minRating));
-    if (minPrice)  guides = guides.filter(g => (parseFloat(g.pricePerDay) || 0) >= parseFloat(minPrice));
-    if (maxPrice)  guides = guides.filter(g => (parseFloat(g.pricePerDay) || 0) <= parseFloat(maxPrice));
+    // Rating + price range filters (JS). Guard each bound with Number.isFinite:
+    // a malformed value (e.g. minPrice=abc → NaN) must be IGNORED, not compared
+    // (every `>= NaN` is false, which silently emptied the whole result set).
+    const nMinRating = parseFloat(minRating), nMinPrice = parseFloat(minPrice), nMaxPrice = parseFloat(maxPrice);
+    if (Number.isFinite(nMinRating)) guides = guides.filter(g => (parseFloat(g.rating) || 0) >= nMinRating);
+    if (Number.isFinite(nMinPrice))  guides = guides.filter(g => (parseFloat(g.pricePerDay) || 0) >= nMinPrice);
+    if (Number.isFinite(nMaxPrice))  guides = guides.filter(g => (parseFloat(g.pricePerDay) || 0) <= nMaxPrice);
 
     // Sort
     if (sortBy === 'price_asc')       guides.sort((a, b) => (a.pricePerDay || 0) - (b.pricePerDay || 0));

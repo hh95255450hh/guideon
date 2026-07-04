@@ -30,11 +30,15 @@ exports.list = async (req, res) => {
         return false;
       });
     }
-    if (difficulty)   pkgs = pkgs.filter(p => p.difficulty === difficulty);
-    if (minPrice)     pkgs = pkgs.filter(p => p.price_adult >= parseFloat(minPrice));
-    if (maxPrice)     pkgs = pkgs.filter(p => p.price_adult <= parseFloat(maxPrice));
-    if (minDays)      pkgs = pkgs.filter(p => p.duration_days >= parseInt(minDays));
-    if (maxDays)      pkgs = pkgs.filter(p => p.duration_days <= parseInt(maxDays));
+    // Case-insensitive difficulty (was exact === → a case/space mismatch
+    // silently returned nothing). Numeric bounds guarded with Number.isFinite so
+    // a malformed value is ignored instead of NaN-emptying the whole list.
+    if (difficulty)   pkgs = pkgs.filter(p => (p.difficulty || '').toLowerCase() === difficulty.toLowerCase());
+    const nMinP = parseFloat(minPrice), nMaxP = parseFloat(maxPrice), nMinD = parseInt(minDays), nMaxD = parseInt(maxDays);
+    if (Number.isFinite(nMinP)) pkgs = pkgs.filter(p => (parseFloat(p.price_adult) || 0) >= nMinP);
+    if (Number.isFinite(nMaxP)) pkgs = pkgs.filter(p => (parseFloat(p.price_adult) || 0) <= nMaxP);
+    if (Number.isFinite(nMinD)) pkgs = pkgs.filter(p => (parseInt(p.duration_days) || 0) >= nMinD);
+    if (Number.isFinite(nMaxD)) pkgs = pkgs.filter(p => (parseInt(p.duration_days) || 0) <= nMaxD);
 
     if (sortBy === 'price_asc')       pkgs.sort((a, b) => a.price_adult - b.price_adult);
     else if (sortBy === 'price_desc') pkgs.sort((a, b) => b.price_adult - a.price_adult);
