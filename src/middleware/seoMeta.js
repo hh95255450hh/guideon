@@ -155,6 +155,35 @@ async function companyMeta(id) {
   return { title, description, image, url, jsonld };
 }
 
+// Region + blog-post pages are static HTML that render one shared title/desc for
+// every ?id= → Google sees mass duplicate content. Inject per-entity meta from
+// the static JSON so each region/post URL is unique.
+let _regions = null, _posts = null;
+function loadJson(name, key) {
+  try { return JSON.parse(fs.readFileSync(path.join(PUBLIC, 'data', name), 'utf8'))[key] || []; }
+  catch { return []; }
+}
+async function regionMeta(id) {
+  if (!_regions) _regions = loadJson('regions.json', 'regions');
+  const r = _regions.find(x => x.id === id || x.slug === id);
+  if (!r) return null;
+  const name = r.name_en || r.name_ar || 'Region';
+  const title = `Tour Guides in ${name}, Oman | Guideon`;
+  const description = String(r.intro_en || r.tagline_en ||
+    `Discover ${name} in Oman — find verified local tour guides, top sites and things to do on Guideon.`).slice(0, 200);
+  const image = r.hero || `${APP_URL}/logo.png`;
+  return { title, description, image, url: `${APP_URL}/region.html?id=${id}` };
+}
+async function blogMeta(id) {
+  if (!_posts) _posts = loadJson('blog.json', 'posts');
+  const p = _posts.find(x => x.slug === id || x.id === id);
+  if (!p) return null;
+  const title = `${p.title_en || p.title_ar || 'Article'} | Guideon Blog`;
+  const description = String(p.excerpt_en || p.excerpt_ar || '').slice(0, 200);
+  const image = p.cover || `${APP_URL}/logo.png`;
+  return { title, description, image, url: `${APP_URL}/blog-post.html?id=${id}` };
+}
+
 // Served for an entity page whose id doesn't exist — a REAL 404 (+noindex) so
 // Google treats it as not-found instead of a soft 404 (the page still renders a
 // friendly "not found" to humans client-side).
@@ -167,6 +196,8 @@ const ENTITY_PAGES = {
   '/guide-profile.html':   { tpl: 'guide-profile.html',   meta: guideMeta },
   '/tour-package.html':    { tpl: 'tour-package.html',    meta: tourMeta },
   '/company-profile.html': { tpl: 'company-profile.html', meta: companyMeta },
+  '/region.html':          { tpl: 'region.html',          meta: regionMeta },
+  '/blog-post.html':       { tpl: 'blog-post.html',       meta: blogMeta },
 };
 
 module.exports = async function seoMeta(req, res, next) {

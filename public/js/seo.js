@@ -81,61 +81,11 @@
     });
   }
 
-  function seoGuide(guide) {
-    seoStructuredData({
-      '@context': 'https://schema.org',
-      '@type': 'Person',
-      name: guide.fullName,
-      jobTitle: 'Tourist Guide',
-      image: guide.photo || 'https://guideon.om/logo.png',
-      description: guide.bio || `Certified local guide in Oman specializing in ${(guide.destinations || []).join(', ')}.`,
-      knowsLanguage: guide.languages || [],
-      areaServed: guide.destinations || [],
-      aggregateRating: guide.rating > 0 ? {
-        '@type': 'AggregateRating',
-        ratingValue: guide.rating,
-        reviewCount: guide.totalReviews,
-        bestRating: 5,
-        worstRating: 1,
-      } : undefined,
-      worksFor: {
-        '@type': 'Organization',
-        name: 'Guideon',
-        url: 'https://guideon.om',
-      },
-    });
-  }
-
-  // Product schema for a tour package — boosts rich snippets in Google
-  function seoTour(tour) {
-    const provider = tour.provider || {};
-    seoStructuredData({
-      '@context': 'https://schema.org',
-      '@type': 'Product',
-      name: tour.title,
-      description: tour.description || '',
-      image: tour.cover_image || tour.coverImage || tour.image || (tour.images && tour.images[0]) || 'https://guideon.om/logo.png',
-      brand: { '@type': 'Brand', name: 'Guideon' },
-      offers: {
-        '@type': 'Offer',
-        url: location.href,
-        priceCurrency: tour.currency || 'OMR',
-        price: tour.price_adult || tour.priceAdult || 0,
-        availability: 'https://schema.org/InStock',
-        validFrom: tour.createdAt,
-        seller: provider.fullName ? {
-          '@type': 'Person',
-          name: provider.fullName,
-        } : undefined,
-      },
-      aggregateRating: tour.rating > 0 ? {
-        '@type': 'AggregateRating',
-        ratingValue: tour.rating,
-        reviewCount: tour.totalReviews || 1,
-        bestRating: 5,
-      } : undefined,
-    });
-  }
+  // NOTE: guide-profile / tour-package / company-profile JSON-LD is injected
+  // server-side by src/middleware/seoMeta.js (crawler-visible, correct rating
+  // suppression). The old client-side seoGuide()/seoTour() helpers here were
+  // never called AND fabricated an aggregateRating (reviewCount || 1) on zero
+  // reviews → invalid rich results. Removed to avoid duplicate/invalid schema.
 
   // BreadcrumbList helper
   function seoBreadcrumb(items) {
@@ -169,8 +119,6 @@
   global.seoSet            = seoSet;
   global.seoStructuredData = seoStructuredData;
   global.seoOrganization   = seoOrganization;
-  global.seoGuide          = seoGuide;
-  global.seoTour           = seoTour;
   global.seoBreadcrumb     = seoBreadcrumb;
   global.seoWebsite        = seoWebsite;
 })(window);
