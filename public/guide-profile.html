@@ -474,7 +474,10 @@ async function loadGuideTours() {
   try {
     const res = await fetch(`/api/packages?providerId=${encodeURIComponent(GUIDE.id)}`, { credentials:'include' });
     const data = await res.json();
-    const tours = (data.packages || data.data || []).filter(p => p.status !== 'draft' && p.status !== 'archived');
+    // The API already returns only published packages (isPublished:true).
+    // (Old filter checked a non-existent `status` field — a no-op that would
+    // silently drop tours if a `status` column were ever added.)
+    const tours = (data.packages || data.data || []);
 
     if (!tours.length) {
       list.innerHTML = `<div class="col-12 text-center text-muted py-4">${I18N.t('no_tours_yet') || 'No tours yet'}</div>`;

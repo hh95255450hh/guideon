@@ -151,7 +151,9 @@
   document.getElementById('cTitle').textContent = isAr?`اعثر على مرشد محلّي معتمد في ${r.name_ar}`:`Find a verified local guide in ${r.name_en}`;
   document.getElementById('cSub').textContent = isAr?'احجز مرشداً مرخّصاً من الوزارة يعرف هذه المنطقة عن ظهر قلب.':'Book a Ministry-licensed expert who knows this region inside out.';
   const btn = document.getElementById('cBtn');
-  btn.href = `/search.html?region=${encodeURIComponent(r.name_en)}`;
+  // search.html + guideController filter by `governorate` (regions.json name_en
+  // ARE governorate names); `region` was ignored → unfiltered results.
+  btn.href = `/search.html?governorate=${encodeURIComponent(r.name_en)}`;
   btn.textContent = isAr?'ابحث عن مرشدين →':'Browse guides →';
 })();
 </script>

@@ -1253,20 +1253,20 @@ async function loadFeaturedCompanies() {
       return `
       <div class="swiper-slide">
         <div class="guide-card guide-card-wrap h-100">
-          <div class="guide-card-header" ${cover ? `style="background-image:linear-gradient(rgba(15,28,62,.3),rgba(15,28,62,.55)),url('${cover}');background-size:cover;background-position:center"` : ''}>
+          <div class="guide-card-header" ${cover ? `style="background-image:linear-gradient(rgba(15,28,62,.3),rgba(15,28,62,.55)),url('${window.gdSafeUrl(cover)}');background-size:cover;background-position:center"` : ''}>
             ${c.isVerified ? `<span class="verified-badge" style="position:absolute;top:14px;left:14px;background:rgba(34,197,94,.92);color:#fff;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700">✓ ${I18N.t('status_verified') || 'موثّقة'}</span>` : ''}
             ${c.photo
-              ? `<div class="big-avatar" style="background-image:url('${c.photo}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff;border-radius:14px"></div>`
+              ? `<div class="big-avatar" style="background-image:url('${window.gdSafeUrl(c.photo)}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff;border-radius:14px"></div>`
               : `<div class="big-avatar" style="border-radius:14px">${initial || '🏢'}</div>`}
           </div>
           <div class="p-3">
             <div class="mb-1">
-              <h6 class="mb-0 fw-700">${name}</h6>
+              <h6 class="mb-0 fw-700">${window.gdEsc(name)}</h6>
               <span class="small text-muted">${I18N.t('co_label') || 'شركة سياحية'}</span>
             </div>
             <div class="rating small mb-1">${stars(Math.round(rating))} <span class="text-muted">${ratingTxt} · ${I18N.t('reviews_count', reviews)}</span></div>
-            ${services.length ? `<div class="mb-2">${services.slice(0,3).map(s => `<span class="lang-badge me-1">${s}</span>`).join('')}</div>` : ''}
-            ${dests.length   ? `<div class="mb-3 small text-muted">📍 ${dests.slice(0,3).join(' · ')}</div>` : '<div class="mb-3 small text-muted">📍 —</div>'}
+            ${services.length ? `<div class="mb-2">${services.slice(0,3).map(s => `<span class="lang-badge me-1">${window.gdEsc(s)}</span>`).join('')}</div>` : ''}
+            ${dests.length   ? `<div class="mb-3 small text-muted">📍 ${dests.slice(0,3).map(window.gdEsc).join(' · ')}</div>` : '<div class="mb-3 small text-muted">📍 —</div>'}
             <button class="btn-view btn btn-sm w-100" onclick="location.href='/company-profile.html?id=${c.id}'">${I18N.t('view_profile') || 'عرض الملف ←'}</button>
           </div>
         </div>
@@ -1313,18 +1313,18 @@ async function loadFeaturedTeams() {
       return `
       <div class="swiper-slide">
         <div class="guide-card guide-card-wrap h-100">
-          <div class="guide-card-header" ${t.photo ? `style="background-image:linear-gradient(rgba(15,28,62,.3),rgba(15,28,62,.55)),url('${t.photo}');background-size:cover;background-position:center"` : ''}>
+          <div class="guide-card-header" ${t.photo ? `style="background-image:linear-gradient(rgba(15,28,62,.3),rgba(15,28,62,.55)),url('${window.gdSafeUrl(t.photo)}');background-size:cover;background-position:center"` : ''}>
             ${t.isVerified ? `<span class="verified-badge" style="position:absolute;top:14px;left:14px;background:rgba(34,197,94,.92);color:#fff;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700">✓ موثّق</span>` : ''}
             ${t.photo
-              ? `<div class="big-avatar" style="background-image:url('${t.photo}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff;border-radius:14px"></div>`
+              ? `<div class="big-avatar" style="background-image:url('${window.gdSafeUrl(t.photo)}');background-size:cover;background-position:center;color:transparent;border:3px solid #fff;border-radius:14px"></div>`
               : `<div class="big-avatar" style="border-radius:14px">${initial || '🎪'}</div>`}
           </div>
           <div class="p-3">
             <div class="mb-1">
-              <h6 class="mb-0 fw-700">${name}</h6>
+              <h6 class="mb-0 fw-700">${window.gdEsc(name)}</h6>
               <span class="small text-muted">${CAT[t.teamCategory] || 'فريق فعاليّات'}</span>
             </div>
-            <div class="mb-3 small text-muted">📍 ${t.teamGovernorate || 'عُمان'}${t.membersCount ? ` · 👥 ${t.membersCount}` : ''}</div>
+            <div class="mb-3 small text-muted">📍 ${window.gdEsc(t.teamGovernorate || 'عُمان')}${t.membersCount ? ` · 👥 ${t.membersCount}` : ''}</div>
             <button class="btn-view btn btn-sm w-100" onclick="location.href='/team-profile.html?id=${t.id}'">عرض الفريق ←</button>
           </div>
         </div>
@@ -1363,7 +1363,7 @@ async function loadPopularTours() {
     let slides = tours.slice();
     while (slides.length > 0 && slides.length < 8) slides = slides.concat(tours);
     el.innerHTML = slides.map(t => {
-      const img = t.cover_image || (t.images && t.images[0]) || '';
+      const img = window.gdSafeUrl(t.cover_image || (t.images && t.images[0]) || '');
       const price = t.price_adult || 0;
       const bookings = t.totalBookings || 0;
       const bookLbl = isAr ? 'حجز' : 'bookings';
