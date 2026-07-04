@@ -101,7 +101,10 @@ exports.matchingRequests = async (req, res) => {
       return destMatch || langMatch;
     });
     matched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    res.json({ success: true, requests: matched });
+    // Don't leak the tourist's email to matched guides — contact must go through
+    // the platform (messages/booking), not a direct email before any engagement.
+    const safe = matched.map(({ touristEmail, touristPhone, ...t }) => t);
+    res.json({ success: true, requests: safe });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error.' });
   }

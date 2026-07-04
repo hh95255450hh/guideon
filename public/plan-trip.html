@@ -302,7 +302,7 @@ async function loadMyRequests() {
       <div class="trip-request-card ${t.status === 'closed' ? 'closed' : ''}">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <div>
-            <h6 class="fw-700 mb-0">📍 ${t.destination}</h6>
+            <h6 class="fw-700 mb-0">📍 ${window.gdEsc(t.destination)}</h6>
             <div class="small text-muted">${formatDate(t.startDate)}${t.endDate ? ' → ' + formatDate(t.endDate) : ''}</div>
           </div>
           <span class="${t.status === 'open' ? 'open-badge' : 'closed-badge'}">
@@ -310,11 +310,11 @@ async function loadMyRequests() {
           </span>
         </div>
         <div class="small text-muted mb-2">
-          👥 ${t.groupSize} ${I18N.t('persons_lbl')}
-          ${t.language ? ` · 🌐 ${t.language}` : ''}
-          ${t.budget ? ` · 💰 ${I18N.t('omr_day')} ${t.budget}/day` : ''}
+          👥 ${window.gdEsc(String(t.groupSize||''))} ${I18N.t('persons_lbl')}
+          ${t.language ? ` · 🌐 ${window.gdEsc(t.language)}` : ''}
+          ${t.budget ? ` · 💰 ${I18N.t('omr_day')} ${window.gdEsc(String(t.budget))}/day` : ''}
         </div>
-        ${t.notes ? `<div class="small text-muted border-top pt-2 mt-2" style="line-height:1.5">${t.notes}</div>` : ''}
+        ${t.notes ? `<div class="small text-muted border-top pt-2 mt-2" style="line-height:1.5">${window.gdEsc(t.notes)}</div>` : ''}
         ${t.status === 'open' ? `<button class="btn btn-sm btn-outline-danger mt-2" onclick="closeRequest('${t.id}')">${I18N.t('close_request')}</button>` : ''}
       </div>`).join('');
   } catch {}

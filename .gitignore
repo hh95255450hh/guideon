@@ -38,3 +38,4 @@ android/.gradle/
 # Local ops/debug scratch scripts (kept on disk, never committed)
 deploy/_*
 deploy/*.tgz
+src/data/

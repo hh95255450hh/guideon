@@ -37,11 +37,11 @@ async function load() {
       <a href="/guide-profile.html?id=${g.id}" class="text-decoration-none text-dark">
       <div class="card h-100 shadow-sm">
         ${g.photo
-          ? `<img loading="lazy" decoding="async" src="${g.photo}" class="card-img-top" style="height:200px;object-fit:cover" alt="${g.fullName}">`
-          : `<div class="card-img-top d-flex align-items-center justify-content-center" style="height:200px;background:linear-gradient(135deg,#0f7b6c,#1abc9c);color:#fff;font-size:3rem;font-weight:700">${(g.fullName||'?').charAt(0).toUpperCase()}</div>`}
+          ? `<img loading="lazy" decoding="async" src="${window.gdSafeUrl(g.photo)}" class="card-img-top" style="height:200px;object-fit:cover" alt="${window.gdEsc(g.fullName)}">`
+          : `<div class="card-img-top d-flex align-items-center justify-content-center" style="height:200px;background:linear-gradient(135deg,#0f7b6c,#1abc9c);color:#fff;font-size:3rem;font-weight:700">${window.gdEsc((g.fullName||'?').charAt(0).toUpperCase())}</div>`}
         <div class="card-body">
-          <h5>${g.fullName}</h5>
-          <p class="text-muted small mb-2">${(g.destinations || []).join(' · ') || 'Oman'}</p>
+          <h5>${window.gdEsc(g.fullName)}</h5>
+          <p class="text-muted small mb-2">${(g.destinations || []).map(window.gdEsc).join(' · ') || 'Oman'}</p>
           <div class="d-flex justify-content-between">
             <span class="text-warning">★ ${g.rating || '—'}</span>
             <strong>${g.pricePerDay || 0} OMR/day</strong>
