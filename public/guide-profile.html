@@ -29,7 +29,7 @@
   document.head.appendChild(l);
 })();
 </script>
-<link rel="stylesheet" href="/css/style.css?v=40">
+<link rel="stylesheet" href="/css/style.css?v=41">
 <style>
 /* ── Hero ─────────────────────────────────────────────────── */
 .gp-hero { background:linear-gradient(140deg,#0f1c3e 0%,#1a2c5b 45%,#0f7b6c 100%); color:#fff; padding:0; }
@@ -127,6 +127,7 @@
 <script src="/js/image-compress.js?v=3"></script>
 </head>
 <body>
+<a class="skip-link" href="#mainContent" data-i18n="skip_to_content">Skip to main content</a>
 
 <!-- NAV -->
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -241,7 +242,7 @@
   </div>
   <!-- /HERO -->
 
-  <div class="container py-4">
+  <div class="container py-4" id="mainContent">
     <div class="row g-4">
 
       <!-- ═══ LEFT COLUMN ═══ -->
@@ -407,7 +408,7 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=53"></script>
+<script src="/js/i18n.js?v=54"></script>
 <script src="/js/chatbot.js?v=13" defer></script>
 <script src="/js/seo.js" defer></script>
 <script>
@@ -759,8 +760,11 @@ function renderCalendar() {
     if (isAvail)    cls += ' avail';
     if (isSelected) cls += ' selected';
     if (isToday)    cls += ' today';
-    const click = isAvail && !isPast ? `onclick="selectDate('${ds}')"` : '';
-    html += `<div class="${cls}" ${click} title="${isAvail&&!isPast?'Available · Click to select':''}">${day}</div>`;
+    const selectable = isAvail && !isPast;
+    const a11y = selectable
+      ? `role="button" tabindex="0" aria-label="${ds} — available, select this date"${isSelected?' aria-pressed="true"':''} onclick="selectDate('${ds}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectDate('${ds}');}"`
+      : '';
+    html += `<div class="${cls}" ${a11y} title="${selectable?'Available · Click to select':''}">${day}</div>`;
   }
 
   document.getElementById('calGrid').innerHTML = html;

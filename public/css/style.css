@@ -1016,3 +1016,24 @@ body.dark-mode .pwd-toggle:hover { background: rgba(255,255,255,0.1); }
     gap: 6px;
   }
 }
+
+/* ─── Accessibility (council Batch 4) ─────────────────────────────── */
+/* Visible keyboard focus for all interactive elements (mouse users unaffected) */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, [role="button"]:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.cal-day[role="button"]:focus-visible { outline: 3px solid var(--teal); outline-offset: 1px; }
+/* Darker gold so white button text meets WCAG AA contrast on bold CTAs */
+.btn-gold, .badge-gold { background: #9c7c2b !important; }
+.btn-gold:hover { background: #856a24 !important; }
+/* Skip-to-content link — visible only when focused via keyboard */
+.skip-link {
+  position: absolute; left: 8px; top: -48px; z-index: 2000;
+  background: var(--navy-dark); color: #fff; padding: 10px 18px;
+  border-radius: 0 0 8px 8px; font-weight: 700; text-decoration: none;
+  transition: top .15s;
+}
+.skip-link:focus { top: 0; color: #fff; outline: 3px solid var(--gold); }
