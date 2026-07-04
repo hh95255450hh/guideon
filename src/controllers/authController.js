@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('../services/emailService');
+const { filterOmanDestinations } = require('../utils/omanPlaces');
 
 const users = new SupabaseDB('users');
 
@@ -120,7 +121,8 @@ exports.register = async (req, res) => {
       const isLicensed = hasMinistryLicence === true || hasMinistryLicence === 'true';
       const langArr = Array.isArray(languages) ? languages : (languages ? languages.split(',').map(s => s.trim()) : []);
       const specArr = Array.isArray(specialisations) ? specialisations : (specialisations ? specialisations.split(',').map(s => s.trim()) : []);
-      const destArr = Array.isArray(destinations) ? destinations : (destinations ? destinations.split(',').map(s => s.trim()) : []);
+      const destRaw = Array.isArray(destinations) ? destinations : (destinations ? destinations.split(',').map(s => s.trim()) : []);
+      const destArr = filterOmanDestinations(destRaw);
       record = {
         ...base,
         isMinistryLicensed: isLicensed,
@@ -132,7 +134,7 @@ exports.register = async (req, res) => {
       };
     } else if (userType === 'company') {
       const svcArr  = Array.isArray(companyServices)     ? companyServices     : (companyServices     ? companyServices.split(',').map(s => s.trim())     : []);
-      const destArr = Array.isArray(companyDestinations) ? companyDestinations : (companyDestinations ? companyDestinations.split(',').map(s => s.trim()) : []);
+      const destArr = filterOmanDestinations(Array.isArray(companyDestinations) ? companyDestinations : (companyDestinations ? companyDestinations.split(',').map(s => s.trim()) : []));
       record = {
         ...base,
         companyName: companyName || '',

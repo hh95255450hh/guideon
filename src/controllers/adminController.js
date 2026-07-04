@@ -1032,8 +1032,25 @@ exports.verifyGuide = async (req, res) => {
     if (!guide || guide.userType !== 'guide') {
       return res.status(404).json({ success: false, message: 'Guide not found.' });
     }
+    // Completeness gate — don't publish a half-empty profile in search results.
+    // Admin can override with { force: true } for known-good edge cases.
+    if (req.body?.force !== true) {
+      const missing = [];
+      if (!guide.bio || String(guide.bio).trim().length < 20) missing.push('bio');
+      if (!Array.isArray(guide.destinations) || !guide.destinations.length) missing.push('destinations');
+      if (!Array.isArray(guide.languages) || !guide.languages.length) missing.push('languages');
+      if (!(parseFloat(guide.pricePerDay) > 0)) missing.push('pricePerDay');
+      if (missing.length) {
+        return res.status(422).json({
+          success: false,
+          incomplete: true,
+          missing,
+          message: `Profile is incomplete (missing: ${missing.join(', ')}). Verify anyway to override.`,
+        });
+      }
+    }
     await users.update(id, { isVerified: true });
-    audit.logAction(req, { action: 'verifyGuide', targetType: 'user', targetId: id, details: { name: guide.fullName } });
+    audit.logAction(req, { action: 'verifyGuide', targetType: 'user', targetId: id, details: { name: guide.fullName, forced: req.body?.force === true } });
     email.sendGuideVerified({ email: guide.email, name: guide.fullName }).catch(() => {});
     res.json({ success: true, message: `${guide.fullName} has been verified and is now visible in search results.` });
   } catch (err) {

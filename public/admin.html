@@ -1522,11 +1522,21 @@ function jattr(s){return String(s==null?'':s)
   .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
   .replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'\\u003c').replace(/\r?\n/g,' ');}
 
-async function verifyGuide(id, name) {
-  if (!confirm(`Approve guide: ${name}?`)) return;
+async function verifyGuide(id, name, force) {
+  if (!force && !confirm(`Approve guide: ${name}?`)) return;
   try {
-    const r = await fetch(`/api/admin/guides/${id}/verify`,{method:'PATCH',credentials:'include'});
+    const r = await fetch(`/api/admin/guides/${id}/verify`,{
+      method:'PATCH', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(force ? { force: true } : {}),
+    });
     const d = await r.json();
+    if (r.status === 422 && d.incomplete) {
+      if (confirm(`${name}'s profile is incomplete (missing: ${(d.missing||[]).join(', ')}).\nVerify and publish anyway?`)) {
+        return verifyGuide(id, name, true);
+      }
+      return;
+    }
     if (!r.ok) throw new Error(d.message);
     toast(d.message, 'success');
     loadStats(); loadPending(); if (ACTIVE_TAB==='guides') loadGuides();

@@ -1,6 +1,7 @@
 const SupabaseDB = require('../models/SupabaseDB');
 const { publicUser } = require('../utils/sanitizeUser');
 const { sanitizeContact } = require('../utils/sanitizeContact');
+const { filterOmanDestinations } = require('../utils/omanPlaces');
 
 const users    = new SupabaseDB('users');
 const reviews  = new SupabaseDB('reviews', 'reviewId');
@@ -295,7 +296,7 @@ exports.updateProfile = async (req, res) => {
     if (maxConcurrentTours !== undefined) changes.maxConcurrentTours = Math.max(1, parseInt(maxConcurrentTours) || 1);
     if (languages)      changes.languages      = Array.isArray(languages)      ? languages      : languages.split(',').map(s => s.trim());
     if (specialisations) changes.specialisations = Array.isArray(specialisations) ? specialisations : specialisations.split(',').map(s => s.trim());
-    if (destinations)   changes.destinations   = Array.isArray(destinations)   ? destinations   : destinations.split(',').map(s => s.trim());
+    if (destinations)   changes.destinations   = filterOmanDestinations(Array.isArray(destinations) ? destinations : destinations.split(',').map(s => s.trim()));
 
     const updated = await users.update(guideId, changes);
     res.json({ success: true, message: 'Profile updated.', guide: publicUser(updated) });
