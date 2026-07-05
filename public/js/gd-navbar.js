@@ -89,9 +89,6 @@
   }
   .gd-nav-icon-btn:hover { background: rgba(255,255,255,.12); color: #fff; }
   .gd-nav-icon-btn svg { width: 20px; height: 20px; }
-  .gd-nav-langbtn { width: auto; min-width: 40px; padding: 0 10px; border-radius: 999px;
-    border: 1px solid rgba(255,255,255,.22); font-weight: 800; font-size: 14px; line-height: 1; }
-  .gd-nav-langbtn:hover { background: rgba(255,255,255,.15); }
   .gd-nav-chip {
     background: rgba(255,255,255,.10); color: #fff; border: 1px solid rgba(255,255,255,.18);
     padding: 7px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
@@ -432,10 +429,6 @@
             </label>
           </div>
 
-          <button class="gd-nav-icon-btn gd-nav-langbtn" id="gdNavLangBtn" aria-label="${tr('Change language','تغيير اللغة')}" title="${tr('Change language','تغيير اللغة')}">
-            <span id="gdNavLangLbl"></span>
-          </button>
-
           <button class="gd-nav-icon-btn" id="gdNavBell" aria-label="${tr('Notifications','الإشعارات')}" style="display:none">
             ${svg('bell')}
           </button>
@@ -679,19 +672,6 @@
     curSel?.addEventListener('change', e => {
       localStorage.setItem('gd_currency', e.target.value);
       if (window.onCurrencyChange) try { window.onCurrencyChange(e.target.value); } catch {}
-      else location.reload();
-    });
-
-    // Always-visible language toggle (esp. mobile, where the select is hidden).
-    // Shows the OTHER language you'd switch to; toggles Arabic ⇄ English.
-    const langBtn = document.getElementById('gdNavLangBtn');
-    const langLbl = document.getElementById('gdNavLangLbl');
-    const paintLang = () => { if (langLbl) langLbl.textContent = currentLang() === 'ar' ? 'EN' : 'ع'; };
-    paintLang();
-    langBtn?.addEventListener('click', () => {
-      const target = currentLang() === 'ar' ? 'en' : 'ar';
-      localStorage.setItem('gd_lang', target);
-      if (window.I18N && typeof I18N.setLang === 'function') { I18N.setLang(target); paintLang(); if (langSel) langSel.value = target; }
       else location.reload();
     });
 

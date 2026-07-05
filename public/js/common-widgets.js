@@ -271,7 +271,7 @@
     if (document.querySelector('script[data-gd-nav]')) return;
     if (document.body && document.body.dataset.noGdNav !== undefined) return;
     const s = document.createElement('script');
-    s.src = '/js/gd-navbar.js?v=17';
+    s.src = '/js/gd-navbar.js?v=18';
     s.dataset.gdNav = '1';
     document.body.appendChild(s);
   }
