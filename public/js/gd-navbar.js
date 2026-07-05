@@ -176,8 +176,22 @@
   .gd-drawer-section:first-child { border-top: 0; margin-top: 0; padding-top: 12px; }
   .gd-drawer-foot {
     padding: 16px 20px; border-top: 1px solid var(--gd-ink-100);
-    display: grid; gap: 8px;
+    display: grid; gap: 10px;
   }
+  .gd-drawer-foot svg { width: 18px; height: 18px; flex: 0 0 18px; }
+  .gd-drawer-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 14px; border-radius: 10px; font-weight: 700; font-size: 14px;
+    cursor: pointer; text-decoration: none; width: 100%;
+    border: 1px solid var(--gd-ink-100); background: #fff; color: var(--gd-ink-900);
+    transition: background .15s, border-color .15s;
+  }
+  .gd-drawer-btn:hover { background: var(--gd-ink-50); }
+  .gd-drawer-btn--logout { color: #a32d2d; border-color: #f0c9c9; background: #fcebeb; }
+  .gd-drawer-btn--logout:hover { background: #f7dede; }
+  .gd-drawer-btn--primary { background: var(--gd-teal-500); border-color: var(--gd-teal-500); color: #fff; }
+  .gd-drawer-btn--primary:hover { background: var(--gd-teal-600, #0a5c50); }
+  .gd-drawer-btn--ghost { color: var(--gd-teal-600, #0a5c50); border-color: var(--gd-teal-500); background: #fff; }
 
   /* ── Responsive switches ── */
   @media (min-width: 768px) {
@@ -488,9 +502,9 @@
             </label>
           </div>
           ${user
-            ? `<button class="btn btn-outline-secondary" id="gdDrawerLogout">${svg('logout')} ${tr('Sign Out','تسجيل الخروج')}</button>`
-            : `<a href="/login.html" class="btn" style="background:var(--gd-teal-500);color:#fff;font-weight:700;border-radius:10px;padding:10px;text-align:center;text-decoration:none">${tr('Sign In','تسجيل الدخول')}</a>
-               <a href="/register.html" class="btn" style="background:#fff;color:var(--gd-teal-500);border:1.5px solid var(--gd-teal-500);font-weight:700;border-radius:10px;padding:10px;text-align:center;text-decoration:none">${tr('Create Account','إنشاء حساب')}</a>`}
+            ? `<button class="gd-drawer-btn gd-drawer-btn--logout" id="gdDrawerLogout">${svg('logout')} ${tr('Sign Out','تسجيل الخروج')}</button>`
+            : `<a href="/login.html" class="gd-drawer-btn gd-drawer-btn--primary">${tr('Sign In','تسجيل الدخول')}</a>
+               <a href="/register.html" class="gd-drawer-btn gd-drawer-btn--ghost">${tr('Create Account','إنشاء حساب')}</a>`}
         </div>
       </aside>
     `;
