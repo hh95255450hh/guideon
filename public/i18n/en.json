@@ -962,7 +962,7 @@
   "faq_a_q4": "Is my data safe?",
   "faq_a_a4": "Yes. Passwords are encrypted (bcrypt), all traffic uses HTTPS, optional 2FA available, regular security audits. Read our full <a href=\"/privacy.html\">Privacy Policy</a>.",
   "faq_p_q1": "What payment methods do you accept?",
-  "faq_p_a1": "<strong>Currently free</strong> — during the launch period you arrange payment directly with your guide (cash, bank transfer, or another method of mutual choice). Online card payments (Visa, Mastercard, Apple Pay) will be added soon via Stripe.",
+  "faq_p_a1": "<strong>Secure online payment is available</strong> — pay by card (Visa, Mastercard, Apple Pay) through our Omani payment gateway when you book. You can also arrange payment directly with your guide where offered.",
   "faq_p_q2": "Which currencies can I use?",
   "faq_p_a2": "All prices are in Omani Rial (OMR) — the only currency for payment. The site can display equivalent USD / EUR / GBP for reference using approximate rates.",
   "faq_p_q3": "Do you charge a service fee?",
@@ -1140,5 +1140,7 @@
   "load_more": "Load more",
   "back_btn": "Back",
   "skip_to_content": "Skip to main content",
-  "cat_aerial": "Aerial Adventures"
+  "cat_aerial": "Aerial Adventures",
+  "edit_profile_title": "Edit profile",
+  "save_btn": "Save"
 }
