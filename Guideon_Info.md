@@ -7,7 +7,7 @@
 
 | الخدمة | الرابط |
 |--------|--------|
-| الموقع (Railway) | https://guideon-production.up.railway.app |
+| الموقع (Oman Data Park VPS) | https://guideon.om — نشر: `bash /opt/deploy.sh` على 185.64.25.111 |
 | GitHub Repository | https://github.com/hh95255450hh/guideon |
 | Supabase Dashboard | https://supabase.com/dashboard/project/uwgkszszsogivhphlfdy |
 | Supabase REST API | https://uwgkszszsogivhphlfdy.supabase.co/rest/v1/ |
@@ -96,6 +96,24 @@
 | bookings | الحجوزات |
 | reviews | المراجعات |
 | trip_requests | طلبات الرحلات |
+
+---
+
+## ✅ آخر التحديثات — 2026-07-05 (تعديل الأدمن للملفات + بداية نظام التصميم)
+
+- **تعديل كامل من الأدمن لملفات المرشدين والشركات:** نقطة `PATCH /api/admin/users/:id`
+  (صلاحية `edit_users`) وُسّعت لتقبل **كل حقول الملف الشخصي** (نصوص، أرقام، منطقية،
+  مصفوفات نصية، وحقول JSON بنيوية) مع حفظ مرن يُسقط أي عمود غير موجود ويُعيد المحاولة،
+  وتسجيل كامل في سجل التدقيق. مستبعَد: كلمة المرور والتوكنات ونوع الحساب والتقييم.
+- **واجهة:** زر ✏️ بجانب كل مرشد وشركة في لوحة الأدمن يفتح نافذة تعديل تبني الحقول
+  تلقائياً حسب نوع الحساب وتحفظ عبر الـAPI ثم تُحدّث القائمة.
+- **نظام التصميم:** ملف `public/css/design-system.css` (توكنات ألوان/خطوط/مسافات +
+  أصناف `gd-*` قابلة لإعادة الاستخدام: بطاقات KPI، شارات حالة، أزرار أيقونات موحّدة،
+  Avatar، جداول مصقولة). يُحمَّل على كل الصفحات عبر `common-widgets.js` (رُفع إلى `?v=24`).
+  أُعيد تصميم أزرار إجراءات جداول المرشدين/الشركات لتصبح موحّدة (`gd-iconbtn`).
+- **توثيق:** مولّدا الوثائق (`scripts/generate-docs.js` و`_gen_credentials_doc.js`)
+  استُبدلت فيهما تعليمات Railway القديمة ببنية Oman Data Park VPS (نشر عبر SSH و
+  `bash /opt/deploy.sh`، سجل A → 185.64.25.111، nginx + Docker Compose).
 
 ---
 

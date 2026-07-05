@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   GUIDEON DESIGN SYSTEM — shared token + component layer
+   ---------------------------------------------------------------------------
+   Loaded on every page (via common-widgets.js) AFTER style.css/Bootstrap.
+   ADDITIVE ONLY: it extends :root tokens and adds namespaced `gd-*` component
+   classes. It never restyles raw Bootstrap selectors, so existing pages keep
+   working; pages opt in by using the new classes. Brand colours reuse the
+   existing --teal / --gold defined in style.css.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand ramp (Teal) ── */
+  --gd-teal-50:  #e1f5ee;
+  --gd-teal-100: #b7e6d8;
+  --gd-teal-600: #0f7b6c;
+  --gd-teal-700: #0a5c50;
+  --gd-teal-800: #08463c;
+
+  /* ── Semantic roles (fill = -50 tint, text = -600/-700 for AA on tint) ── */
+  --gd-success:      #1d9e75;  --gd-success-bg: #e4f6ee;  --gd-success-tx: #0f6e56;
+  --gd-warning:      #ba7517;  --gd-warning-bg: #fbeed9;  --gd-warning-tx: #854f0b;
+  --gd-danger:       #e24b4a;  --gd-danger-bg:  #fcebeb;  --gd-danger-tx:  #a32d2d;
+  --gd-info:         #378add;  --gd-info-bg:    #e6f1fb;  --gd-info-tx:    #185fa5;
+
+  /* ── Neutral surfaces + text ── */
+  --gd-surface-0: #f4f6fb;   /* page bg      */
+  --gd-surface-1: #f8fafc;   /* subtle panel */
+  --gd-surface-2: #ffffff;   /* card         */
+  --gd-text:      #0f1c3e;
+  --gd-text-2:    #55617a;   /* secondary    */
+  --gd-text-3:    #8a93a6;   /* muted/hint   */
+  --gd-border:    #e6e9f0;
+  --gd-border-strong: #cfd5e2;
+
+  /* ── Spacing / radius / typography scale ── */
+  --gd-gap-xs: 6px; --gd-gap-sm: 10px; --gd-gap-md: 16px; --gd-gap-lg: 24px; --gd-gap-xl: 32px;
+  --gd-radius: 10px; --gd-radius-lg: 14px; --gd-radius-pill: 999px;
+  --gd-fs-h1: 24px; --gd-fs-h2: 20px; --gd-fs-h3: 16px;
+  --gd-fs-body: 14px; --gd-fs-label: 13px; --gd-fs-hint: 12px;
+  --gd-shadow-sm: 0 1px 2px rgba(15,28,62,.04), 0 4px 14px rgba(15,28,62,.05);
+  --gd-shadow-md: 0 6px 24px rgba(15,28,62,.10);
+}
+
+/* ── Metric / KPI cards ─────────────────────────────────────────────────── */
+.gd-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:var(--gd-gap-md); }
+.gd-kpi { background:var(--gd-surface-1); border:.5px solid var(--gd-border); border-radius:var(--gd-radius); padding:16px 18px; }
+.gd-kpi__label { font-size:var(--gd-fs-label); color:var(--gd-text-3); margin:0 0 4px; }
+.gd-kpi__value { font-size:var(--gd-fs-h1); font-weight:700; line-height:1.1; color:var(--gd-text); }
+.gd-kpi__value.is-success { color:var(--gd-success-tx); }
+.gd-kpi__value.is-warning { color:var(--gd-warning-tx); }
+.gd-kpi__value.is-danger  { color:var(--gd-danger-tx); }
+
+/* ── Status pills ───────────────────────────────────────────────────────── */
+.gd-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:var(--gd-radius-pill);
+  font-size:var(--gd-fs-hint); font-weight:700; line-height:1.4; white-space:nowrap; }
+.gd-pill--success { background:var(--gd-success-bg); color:var(--gd-success-tx); }
+.gd-pill--warning { background:var(--gd-warning-bg); color:var(--gd-warning-tx); }
+.gd-pill--danger  { background:var(--gd-danger-bg);  color:var(--gd-danger-tx); }
+.gd-pill--info    { background:var(--gd-info-bg);    color:var(--gd-info-tx); }
+.gd-pill--neutral { background:var(--gd-surface-1);  color:var(--gd-text-2); border:.5px solid var(--gd-border); }
+
+/* ── Avatar / initials circle ───────────────────────────────────────────── */
+.gd-avatar { width:38px; height:38px; flex:0 0 38px; border-radius:50%; display:inline-flex; align-items:center;
+  justify-content:center; font-weight:700; font-size:13px; background:var(--gd-teal-50); color:var(--gd-teal-700);
+  overflow:hidden; }
+.gd-avatar img { width:100%; height:100%; object-fit:cover; }
+
+/* ── Uniform icon buttons (action clusters) ─────────────────────────────── */
+.gd-actions { display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.gd-iconbtn { width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+  border-radius:8px; border:.5px solid var(--gd-border-strong); background:var(--gd-surface-2); color:var(--gd-text-2);
+  font-size:15px; line-height:1; cursor:pointer; transition:background .15s, color .15s, border-color .15s, transform .12s; }
+.gd-iconbtn:hover { background:var(--gd-surface-1); transform:translateY(-1px); }
+.gd-iconbtn--primary { border-color:var(--gd-teal-600); color:var(--gd-teal-700); }
+.gd-iconbtn--primary:hover { background:var(--gd-teal-50); }
+.gd-iconbtn--danger { border-color:var(--gd-danger); color:var(--gd-danger-tx); }
+.gd-iconbtn--danger:hover { background:var(--gd-danger-bg); }
+@media (prefers-reduced-motion: reduce) { .gd-iconbtn:hover { transform:none; } }
+
+/* ── Section header (title + actions row) ───────────────────────────────── */
+.gd-section-head { display:flex; align-items:center; justify-content:space-between; gap:var(--gd-gap-md);
+  flex-wrap:wrap; margin-bottom:var(--gd-gap-md); }
+.gd-section-head h2 { font-size:var(--gd-fs-h2); font-weight:700; margin:0; color:var(--gd-text); }
+
+/* ── Refined data-table surface (opt-in via .gd-table) ──────────────────── */
+.gd-table-wrap { background:var(--gd-surface-2); border:.5px solid var(--gd-border); border-radius:var(--gd-radius-lg);
+  overflow:hidden; box-shadow:var(--gd-shadow-sm); }
+.gd-table { width:100%; border-collapse:collapse; }
+.gd-table thead th { background:var(--gd-surface-1); font-size:var(--gd-fs-hint); font-weight:700; color:var(--gd-text-3);
+  padding:12px 16px; text-align:inherit; border-bottom:.5px solid var(--gd-border); }
+.gd-table tbody td { padding:12px 16px; border-top:.5px solid var(--gd-border); font-size:var(--gd-fs-body);
+  color:var(--gd-text); vertical-align:middle; }
+.gd-table tbody tr:hover { background:var(--gd-surface-1); }
+
+/* ── Identity cell (avatar + name + sub) ────────────────────────────────── */
+.gd-identity { display:flex; align-items:center; gap:10px; min-width:0; }
+.gd-identity__name { font-weight:700; font-size:var(--gd-fs-body); color:var(--gd-text); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; }
+.gd-identity__sub { font-size:var(--gd-fs-hint); color:var(--gd-text-3); white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; }

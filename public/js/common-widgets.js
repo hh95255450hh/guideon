@@ -355,6 +355,11 @@ window.gdTrack = function (event, meta) {
 /* ── Polish layer loader — adds motion + micro-interactions site-wide.
    Injected here so it ships on every page that already loads common-widgets. */
 (function () {
+  if (!document.getElementById('gd-ds-css')) {
+    var ds = document.createElement('link');
+    ds.id = 'gd-ds-css'; ds.rel = 'stylesheet'; ds.href = '/css/design-system.css?v=1';
+    document.head.appendChild(ds);
+  }
   if (!document.getElementById('gd-polish-css')) {
     var l = document.createElement('link');
     l.id = 'gd-polish-css'; l.rel = 'stylesheet'; l.href = '/css/polish.css?v=4';
