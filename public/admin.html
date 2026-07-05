@@ -399,6 +399,24 @@ window.showToast = function (msg, type) {
     </div>
   </div>
 
+  <!-- Edit guide / company profile modal -->
+  <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">✏️ <span id="editUserTitle" data-i18n="edit_profile_title">تعديل الملف / Edit profile</span></h5>
+          <button type="button" class="btn-close" onclick="closeEditUser()" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="editUserBody" style="max-height:72vh;overflow-y:auto"></div>
+        <div class="modal-footer">
+          <span id="editUserMsg" class="small text-muted me-auto"></span>
+          <button class="btn btn-secondary" onclick="closeEditUser()" data-i18n="cancel_btn">إلغاء / Cancel</button>
+          <button class="btn btn-primary" id="editUserSaveBtn" onclick="saveEditUser()" data-i18n="save_btn">حفظ / Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═════════════════════════ STAFF ═════════════════════════ -->
   <div id="tab-staff" class="d-none">
     <div class="t-card mb-3 p-4">
@@ -1304,6 +1322,7 @@ function renderGuides() {
       </td>
       <td class="d-flex gap-1 flex-wrap py-2">
         ${!g.isVerified && !g.isSuspended ? `<button class="btn-approve" onclick="verifyGuide('${g.id}','${jattr(g.fullName)}')">${I18N.t('approve_btn')}</button>` : ''}
+        <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openEditUser('${g.id}','guide')" title="${I18N.t('edit_btn')||'تعديل'}">✏️</button>
         <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}">💬</button>
         ${!g.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${g.id}','${jattr(g.fullName)}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${g.id}','${jattr(g.fullName)}')">${I18N.t('reactivate_btn')}</button>`}
         <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
@@ -1356,6 +1375,7 @@ function renderCompanies() {
       </td>
       <td class="d-flex gap-1 flex-wrap py-2">
         ${!c.isVerified && !c.isSuspended ? `<button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
+        <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openEditUser('${c.id}','company')" title="${I18N.t('edit_btn')||'تعديل'}">✏️</button>
         <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}">💬</button>
         ${!c.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${c.id}','${c.companyName||c.fullName}')">${I18N.t('reactivate_btn')}</button>`}
         <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
@@ -1514,6 +1534,105 @@ function viewBookingDetails(id) {
   else { modalEl.style.display='flex'; }
 }
 function closeBookingDetail(){ const m=document.getElementById('bookingDetailModal'); if(window.bootstrap&&bootstrap.Modal){const i=bootstrap.Modal.getInstance(m);if(i)i.hide();} m.style.display='none'; }
+
+// ── Admin edit of guide / company profiles ────────────────────
+// Field spec per user type. `t` = input type; csv arrays are joined for
+// display and split back on save (matches the backend's toArray()).
+const EDIT_FIELDS = {
+  common: [
+    { k:'fullName',         t:'text',  ar:'الاسم الكامل' },
+    { k:'email',            t:'email', ar:'البريد الإلكتروني' },
+    { k:'phone',            t:'text',  ar:'الهاتف' },
+    { k:'nationality',      t:'text',  ar:'الجنسية' },
+    { k:'preferredLanguage',t:'text',  ar:'اللغة المفضلة' },
+    { k:'photo',            t:'text',  ar:'رابط الصورة الشخصية' },
+    { k:'coverImage',       t:'text',  ar:'رابط صورة الغلاف' },
+    { k:'videoUrl',         t:'text',  ar:'رابط الفيديو' },
+    { k:'maxConcurrentTours',t:'number',ar:'أقصى جولات متزامنة (فارغ = بلا حد)' },
+    { k:'isVerified',       t:'bool',  ar:'موثّق' },
+  ],
+  guide: [
+    { k:'pricePerDay',      t:'number',ar:'السعر لليوم' },
+    { k:'bio',              t:'textarea',ar:'النبذة' },
+    { k:'licenceNumber',    t:'text',  ar:'رقم الترخيص' },
+    { k:'isMinistryLicensed',t:'bool', ar:'مرخّص من الوزارة' },
+    { k:'languages',        t:'csv',   ar:'اللغات (يفصلها فاصلة)' },
+    { k:'specialisations',  t:'csv',   ar:'التخصصات (يفصلها فاصلة)' },
+    { k:'destinations',     t:'csv',   ar:'الوجهات (يفصلها فاصلة)' },
+  ],
+  company: [
+    { k:'companyName',       t:'text', ar:'اسم الشركة' },
+    { k:'companyRegNo',      t:'text', ar:'رقم السجل التجاري' },
+    { k:'companyDescription',t:'textarea',ar:'وصف الشركة' },
+    { k:'companyServices',   t:'csv',  ar:'الخدمات (يفصلها فاصلة)' },
+    { k:'companyDestinations',t:'csv', ar:'الوجهات (يفصلها فاصلة)' },
+    { k:'website',           t:'text', ar:'الموقع الإلكتروني' },
+  ],
+};
+let EDIT_TARGET = null;   // { id, type }
+
+function editFieldsFor(type){ return EDIT_FIELDS.common.concat(EDIT_FIELDS[type] || []); }
+
+function openEditUser(id, type) {
+  const src = (type === 'company' ? ALL_COMPANIES : ALL_GUIDES) || [];
+  const u = src.find(x => String(x.id) === String(id));
+  if (!u) { alert('User not found'); return; }
+  EDIT_TARGET = { id, type };
+  const esc = window.gdEsc || (s => s);
+  const rows = editFieldsFor(type).map(f => {
+    const val = u[f.k];
+    const id2 = 'ef_' + f.k;
+    let input;
+    if (f.t === 'bool') {
+      input = `<div class="form-check"><input class="form-check-input" type="checkbox" id="${id2}" ${val ? 'checked' : ''}></div>`;
+    } else if (f.t === 'textarea') {
+      input = `<textarea class="form-control" id="${id2}" rows="3">${esc(val || '')}</textarea>`;
+    } else if (f.t === 'csv') {
+      input = `<input class="form-control" id="${id2}" value="${esc(Array.isArray(val) ? val.join(', ') : (val || ''))}">`;
+    } else {
+      input = `<input class="form-control" type="${f.t}" id="${id2}" value="${esc(val == null ? '' : val)}">`;
+    }
+    return `<div class="mb-3"><label class="form-label small fw-600" for="${id2}">${f.ar}</label>${input}</div>`;
+  }).join('');
+  document.getElementById('editUserTitle').textContent =
+    (type === 'company' ? '🏢 ' : '🧭 ') + (u.companyName || u.fullName || '');
+  document.getElementById('editUserBody').innerHTML =
+    `<div class="row"><div class="col-md-12">${rows}</div></div>` +
+    `<div class="small text-muted">المعرض والأصول وباقات وأوقات التوفر تُحرَّر من لوحة المزوّد نفسه.</div>`;
+  document.getElementById('editUserMsg').textContent = '';
+  const m = document.getElementById('editUserModal');
+  if (window.bootstrap && bootstrap.Modal) bootstrap.Modal.getOrCreateInstance(m).show();
+  else m.style.display = 'flex';
+}
+
+function closeEditUser(){ const m=document.getElementById('editUserModal'); if(window.bootstrap&&bootstrap.Modal){const i=bootstrap.Modal.getInstance(m);if(i)i.hide();} m.style.display='none'; }
+
+async function saveEditUser() {
+  if (!EDIT_TARGET) return;
+  const payload = {};
+  for (const f of editFieldsFor(EDIT_TARGET.type)) {
+    const el = document.getElementById('ef_' + f.k);
+    if (!el) continue;
+    if (f.t === 'bool') payload[f.k] = el.checked;
+    else payload[f.k] = el.value;   // csv splitting happens server-side (toArray)
+  }
+  const btn = document.getElementById('editUserSaveBtn');
+  const msg = document.getElementById('editUserMsg');
+  btn.disabled = true; msg.textContent = '…جارٍ الحفظ';
+  try {
+    const r = await fetch('/api/admin/users/' + EDIT_TARGET.id, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (!r.ok || !d.success) { msg.textContent = d.message || 'فشل الحفظ'; btn.disabled = false; return; }
+    closeEditUser();
+    if (EDIT_TARGET.type === 'company') loadCompanies(); else loadGuides();
+  } catch (e) {
+    msg.textContent = 'خطأ في الاتصال';
+  } finally { btn.disabled = false; }
+}
 
 // ── Actions ───────────────────────────────────────────────────
 // Escape user text for safe embedding in a single-quoted JS string inside a

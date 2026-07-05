@@ -1256,34 +1256,88 @@ exports.editUser = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
     if (blockPrivilegedTarget(user, req, res)) return;
 
-    // Allowlist of editable fields (never expose password/tokens via this endpoint)
-    const allowed = ['fullName', 'email', 'phone', 'nationality', 'preferredLanguage',
-      'pricePerDay', 'bio', 'languages', 'specialisations', 'destinations', 'isVerified',
-      'isMinistryLicensed', 'licenceNumber', 'companyName', 'companyRegNo',
-      'companyServices', 'companyDestinations', 'companyDescription', 'photo'];
+    // Editable profile fields grouped by type. Admin can edit EVERYTHING a
+    // guide/company can set on their own profile — but never password/tokens,
+    // and never role/rating aggregates (those are system-managed).
+    const STRING_FIELDS = ['fullName', 'email', 'phone', 'nationality', 'preferredLanguage',
+      'bio', 'licenceNumber', 'companyName', 'companyRegNo', 'companyDescription',
+      'photo', 'coverImage', 'videoUrl', 'videoFileUrl', 'address', 'website'];
+    const NUMBER_FIELDS = ['pricePerDay', 'maxConcurrentTours'];
+    const BOOL_FIELDS = ['isVerified', 'isMinistryLicensed'];
+    // Arrays a UI may send as a comma-separated string OR a real array.
+    const CSV_ARRAY_FIELDS = ['languages', 'specialisations', 'destinations',
+      'companyServices', 'companyDestinations'];
+    // Structured fields (objects/arrays of objects) — only accepted as-is when
+    // the client sends real JSON, never coerced from a string.
+    const PASSTHROUGH_FIELDS = ['galleryPhotos', 'guideAssets', 'availabilitySlots', 'packages'];
+
+    const toArray = (v) => Array.isArray(v)
+      ? v
+      : String(v).split(',').map(s => s.trim()).filter(Boolean);
 
     const changes = {};
     const before = {};
-    for (const field of allowed) {
-      if (req.body[field] !== undefined) {
-        before[field] = user[field];
-        changes[field] = req.body[field];
+    const track = (field) => { before[field] = user[field]; };
+
+    for (const f of STRING_FIELDS) {
+      if (req.body[f] !== undefined) { track(f); changes[f] = req.body[f]; }
+    }
+    for (const f of NUMBER_FIELDS) {
+      if (req.body[f] !== undefined) {
+        track(f);
+        const n = parseFloat(req.body[f]);
+        changes[f] = Number.isFinite(n) ? n : (f === 'maxConcurrentTours' ? null : 0);
       }
     }
-    if (req.body.email) changes.email = req.body.email.toLowerCase();
-    if (req.body.pricePerDay !== undefined) changes.pricePerDay = parseFloat(req.body.pricePerDay) || 0;
+    for (const f of BOOL_FIELDS) {
+      if (req.body[f] !== undefined) {
+        track(f);
+        changes[f] = req.body[f] === true || req.body[f] === 'true' || req.body[f] === 1;
+      }
+    }
+    for (const f of CSV_ARRAY_FIELDS) {
+      if (req.body[f] !== undefined) { track(f); changes[f] = toArray(req.body[f]); }
+    }
+    for (const f of PASSTHROUGH_FIELDS) {
+      if (req.body[f] !== undefined && (Array.isArray(req.body[f]) || typeof req.body[f] === 'object')) {
+        track(f); changes[f] = req.body[f];
+      }
+    }
+    if (changes.email) changes.email = String(changes.email).toLowerCase();
 
     if (Object.keys(changes).length === 0) {
       return res.status(400).json({ success: false, message: 'No changes provided.' });
     }
 
-    const updated = await users.update(id, changes);
+    // Resilient update: drop any field the DB has no column for and retry, so
+    // an outstanding migration on one field doesn't fail the whole admin save.
+    let updated;
+    const droppedCols = [];
+    let attempts = 0;
+    while (true) {
+      try {
+        updated = await users.update(id, changes);
+        break;
+      } catch (e) {
+        attempts++;
+        const m = String(e?.message || '').match(/Could not find the '([^']+)' column|column "([^"]+)" of relation/);
+        const col = m && (m[1] || m[2]);
+        if (col && changes[col] !== undefined && attempts < 20) {
+          droppedCols.push(col);
+          delete changes[col];
+          delete before[col];
+          continue;
+        }
+        throw e;
+      }
+    }
+    if (droppedCols.length) console.warn('[admin.editUser] columns not yet in DB:', droppedCols.join(', '));
     audit.logAction(req, {
       action: 'editUser', targetType: 'user', targetId: id,
       details: { before, after: changes },
     });
     const { password, resetPasswordToken, emailVerifyToken, ...safe } = updated;
-    res.json({ success: true, message: 'User updated.', user: safe });
+    res.json({ success: true, message: 'User updated. — تم تحديث الملف.', user: safe });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });

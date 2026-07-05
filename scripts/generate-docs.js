@@ -444,56 +444,53 @@ const doc = new Document({
 
       // ── 9. DEPLOYMENT ─────────────────────────────────────────────────────
       pageBreak(),
-      h1('9. Deployment Guide (Railway)'),
+      h1('9. Deployment Guide (Oman Data Park VPS)'),
 
       h2('Step 1 — Push to GitHub'),
-      code('git remote add origin https://github.com/YOUR_USERNAME/GUIDEON.git'),
-      code('git branch -M main'),
-      code('git push -u origin main'),
+      code('git add -A && git commit -m "..."'),
+      code('git push origin main'),
 
       divider(),
-      h2('Step 2 — Railway Setup'),
-      bullet('1. Go to railway.app → Sign in with GitHub'),
-      bullet('2. New Project → Deploy from GitHub repo → Select GUIDEON'),
-      bullet('3. New → Database → PostgreSQL'),
-      bullet('4. Link DATABASE_URL to the Node service'),
+      h2('Step 2 — Deploy on the ODP VPS'),
+      bullet('1. SSH into the server: ssh root@185.64.25.111  (SSH key auth)'),
+      bullet('2. Run the deploy script: bash /opt/deploy.sh'),
+      bullet('3. It pulls the latest code and rebuilds the Docker Compose stack (guideon-app + guideon-nginx)'),
+      bullet('4. After any --build, restart nginx: docker restart guideon-nginx'),
 
       divider(),
-      h2('Step 3 — Railway Environment Variables'),
+      h2('Step 3 — Environment Variables'),
+      p('Env vars live in /opt/guideon/deploy/.env on the VPS. Rotate a secret with: /opt/rotate-secret.sh VAR'),
       table(
         ['Variable', 'Value'],
         [
           ['NODE_ENV',              'production'],
-          ['DATABASE_URL',          '(auto-link from Railway PostgreSQL)'],
-          ['JWT_SECRET',            '(strong random string)'],
-          ['JWT_EXPIRES_IN',        '7d'],
-          ['JWT_REFRESH_SECRET',    '(strong random string)'],
-          ['JWT_REFRESH_EXPIRES_IN','30d'],
-          ['STRIPE_SECRET_KEY',     'sk_test_...'],
-          ['STRIPE_WEBHOOK_SECRET', 'whsec_...'],
-          ['RESEND_API_KEY',        're_43dnbDNB_C59XJtiSgQcWMvzxQFoac1qi'],
-          ['EMAIL_FROM',            'GUIDEON <onboarding@resend.dev>'],
-          ['OPENAI_API_KEY',        'sk-proj-...'],
-          ['APP_URL',               'https://api.guideon.com'],
-          ['CLIENT_URL',            '*'],
+          ['SUPABASE_URL',          'https://guideon.om  (self-hosted, Kong on :8000)'],
+          ['SUPABASE_SERVICE_KEY',  '(service-role key)'],
+          ['SESSION_SECRET',        '(strong random string)'],
+          ['PAYMENT_PROVIDER',      'paymob'],
+          ['PAYMENTS_ENABLED',      'true'],
+          ['RESEND_API_KEY',        're_...'],
+          ['EMAIL_FROM',            'Guideon <noreply@guideon.om>'],
+          ['ANTHROPIC_API_KEY',     'sk-ant-...'],
+          ['APP_URL',               'https://guideon.om'],
         ]
       ),
 
       divider(),
-      h2('Step 4 — Run DB Migration on Railway'),
-      code('npm run migrate'),
-      p('Run this in Railway Shell after first deploy to create all tables and triggers.'),
+      h2('Step 4 — Run DB Migrations'),
+      p('Numbered SQL files in database/migrations/ are applied MANUALLY in the self-hosted Supabase SQL editor (there is no automated migrate step).'),
 
       divider(),
       h2('Step 5 — Connect Domain'),
       table(
         ['Type', 'Name', 'Value'],
         [
-          ['CNAME', 'api', '(your-service).up.railway.app'],
+          ['A', '@', '185.64.25.111'],
         ]
       ),
-      p('Add this DNS record in NameBright → DNS Records for guideon.com'),
-      p('Final API URL: https://api.guideon.com'),
+      p('Add this DNS record with the registrar (Otech — Oman Data Park .om platform) for guideon.om'),
+      p('nginx terminates TLS and routes /rest|storage|auth|realtime|functions/v1/ → Kong (self-hosted Supabase); all other traffic → guideon-app:3000'),
+      p('Final URL: https://guideon.om'),
 
       // ── 10. POSTMAN ───────────────────────────────────────────────────────
       pageBreak(),

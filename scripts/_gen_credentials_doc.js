@@ -104,14 +104,14 @@ const doc = new Document({
       kvTable([
         ['النطاق الرسمي', 'guideon.om', TEAL],
         ['المُسجّل', 'Otech — Oman Data Park (منصة .om)'],
-        ['DNS', 'A record + _railway-verify TXT'],
+        ['DNS', 'A record → 185.64.25.111'],
       ]),
 
       // 4. Hosting
       heading('٤) الاستضافة (Hosting)'),
       kvTable([
-        ['المزوّد', 'Railway'],
-        ['المشروع', 'guideon-production.up.railway.app'],
+        ['المزوّد', 'Oman Data Park — VPS (185.64.25.111)'],
+        ['النشر', 'SSH ثم: bash /opt/deploy.sh  (nginx + Docker Compose)'],
         ['الموقع المباشر', 'https://guideon.om', TEAL],
       ]),
 

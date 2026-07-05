@@ -149,7 +149,7 @@ const servicesTable = new Table({
     new TableRow({ children: [cell('Admin Panel', { bold: true, width: 2340 }), cell('https://guideon.om/admin.html', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Tourist Register', { bold: true, width: 2340 }), cell('https://guideon.om/register.html', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('GitHub', { bold: true, width: 2340 }), cell('https://github.com/hh95255450hh/guideon', { mono: true, width: 7020 })] }),
-    new TableRow({ children: [cell('Railway', { bold: true, width: 2340 }), cell('proactive-perception (production)', { mono: true, width: 7020 })] }),
+    new TableRow({ children: [cell('Hosting (ODP VPS)', { bold: true, width: 2340 }), cell('185.64.25.111 — deploy: bash /opt/deploy.sh', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Supabase', { bold: true, width: 2340 }), cell('https://supabase.com/dashboard/project/uwgkszszsogivhphlfdy', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Cloudflare', { bold: true, width: 2340 }), cell('https://dash.cloudflare.com — Zone: guideon.om', { mono: true, width: 7020 })] }),
     new TableRow({ children: [cell('Resend', { bold: true, width: 2340 }), cell('https://resend.com — Domain: guideon.om (verified)', { mono: true, width: 7020 })] }),
