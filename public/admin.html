@@ -1318,7 +1318,7 @@ function renderGuides() {
     <tr>
       <td>
         <div class="gd-identity">
-          <span class="gd-avatar">${g.photo ? `<img src="${window.gdSafeUrl(g.photo)}" alt="">` : initials(g.fullName)}</span>
+          <span class="gd-avatar">${g.photo ? `<img src="${window.gdSafeUrl(g.photo)}" alt="">` : window.gdEsc(initials(g.fullName))}</span>
           <div style="min-width:0">
             <div class="gd-identity__name"><a href="/guide-profile.html?id=${g.id}" target="_blank" style="color:var(--teal);text-decoration:none">${window.gdEsc(g.fullName)} ↗</a></div>
             ${contactLinks(g)}
@@ -1393,7 +1393,7 @@ function renderCompanies() {
     <tr>
       <td>
         <div class="gd-identity">
-          <span class="gd-avatar">${c.photo ? `<img src="${window.gdSafeUrl(c.photo)}" alt="">` : initials(c.companyName||c.fullName)}</span>
+          <span class="gd-avatar">${c.photo ? `<img src="${window.gdSafeUrl(c.photo)}" alt="">` : window.gdEsc(initials(c.companyName||c.fullName))}</span>
           <div style="min-width:0">
             <div class="gd-identity__name">${window.gdEsc(c.companyName || '—')}</div>
             ${c.companyWebsite ? `<div class="small"><a href="${window.gdSafeUrl(c.companyWebsite)}" target="_blank" rel="noopener" style="color:var(--teal)">${window.gdEsc(c.companyWebsite)}</a></div>` : ''}
