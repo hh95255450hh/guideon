@@ -284,11 +284,12 @@ exports.whatsappTest = async (req, res) => {
       // Use approved template (works outside 24h window too)
       const tplName = process.env.WHATSAPP_TEMPLATE_NAME || 'guideon_alert';
       const tplLang = process.env.WHATSAPP_TEMPLATE_LANG || 'ar';
-      result = await whatsapp.sendTemplate(to, tplName, tplLang, [
-        'Guideon اختبار',
-        'تكامل الواتساب يعمل بنجاح ✅',
+      // Verbose so the response carries the exact Graph API error (not approved,
+      // name mismatch, param count, etc.) instead of a generic failure string.
+      result = await whatsapp.sendTemplateVerbose(to, tplName, tplLang, [
+        'تم تأكيد حجزك ✅',
+        'المرشد خالد الرواحي · 2026-07-10 · GD-10245 · https://guideon.om',
       ]);
-      result = result ? { ok: true, data: result } : { ok: false, error: 'Template send failed' };
     }
     res.json({ success: true, config: whatsapp.config(), sentTo: to, mode, result });
   } catch (err) {
