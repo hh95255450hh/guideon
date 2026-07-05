@@ -148,6 +148,9 @@
   }
   html[dir="rtl"] .gd-drawer { transform: translateX(100%); }
   .gd-drawer.open { transform: translateX(0); }
+  /* RTL open needs equal specificity, else html[dir="rtl"] .gd-drawer wins
+     and the drawer never slides in (only the backdrop shows). */
+  html[dir="rtl"] .gd-drawer.open { transform: translateX(0); }
   .gd-drawer-head {
     padding: 16px 20px; border-bottom: 1px solid var(--gd-ink-100);
     display: flex; align-items: center; gap: 12px;
