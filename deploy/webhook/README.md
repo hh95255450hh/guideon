@@ -53,3 +53,5 @@ curl -s http://127.0.0.1:9000/healthz         # idle | deploying
 
 Rotate the secret: edit `/etc/guideon-deploy-hook.env`, then
 `systemctl restart guideon-deploy-hook`, and update the secret in GitHub.
+
+<!-- deploy webhook smoke test: 2026-07-05T07:29:11Z -->
