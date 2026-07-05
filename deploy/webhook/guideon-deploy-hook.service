@@ -1,0 +1,17 @@
+[Unit]
+Description=Guideon self-hosted deploy webhook
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+# Reads the shared secret from a root-only env file (created during setup).
+EnvironmentFile=/etc/guideon-deploy-hook.env
+ExecStart=/usr/bin/node /opt/guideon/deploy/webhook/deploy-hook.js
+Restart=always
+RestartSec=3
+User=root
+# The hook needs to run docker + deploy.sh, so it runs as root (like manual deploy).
+
+[Install]
+WantedBy=multi-user.target
