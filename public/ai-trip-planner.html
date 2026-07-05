@@ -4,123 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>مخطّط الرحلات الذكي — Guideon</title>
-<meta name="description" content="صف رحلتك في عُمان ودَع الذكاء الاصطناعي يبني لك برنامجاً يوميّاً كاملاً مع أفضل المرشدين المرخّصين.">
-<link rel="canonical" href="https://guideon.om/ai-trip-planner.html">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<script>
-(function(){var s=localStorage.getItem('gd_lang');try{if(localStorage.getItem('gd_theme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}var nav=(navigator.language||'en').slice(0,2).toLowerCase();var lang=s||(['en','ar','zh','hi','es','fr','bn','pt','ru','ur'].indexOf(nav)>=0?nav:'en');var rtl=lang==='ar'||lang==='ur';var l=document.createElement('link');l.id=rtl?'bs-rtl':'bs-ltr';l.rel='stylesheet';l.href=rtl?'/css/bootstrap.rtl.min.css':'/css/bootstrap.min.css';document.head.appendChild(l);})();
-</script>
-<link rel="stylesheet" href="/css/style.css?v=41">
-<style>
-  .hero{background:linear-gradient(135deg,#0a5c50,#0f7b6c);color:#fff;padding:48px 0 36px;text-align:center}
-  .ai-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:4px 14px;font-size:.8rem;font-weight:700;margin-bottom:12px}
-  .planner-card{background:#fff;border:1px solid #e7eaee;border-radius:16px;padding:22px;box-shadow:0 6px 24px rgba(15,28,62,.06)}
-  .day-card{background:#fff;border:1px solid #e7eaee;border-radius:14px;overflow:hidden;margin-bottom:16px}
-  .day-head{background:#f0faf8;padding:12px 16px;border-bottom:1px solid #d6efe9;display:flex;align-items:center;gap:10px}
-  .day-num{width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
-  .guide-pick{display:flex;align-items:center;gap:12px;background:#fafbfc;border:1px solid #eef1f4;border-radius:12px;padding:10px;margin-top:12px}
-  .guide-pick img,.guide-pick .ph{width:52px;height:52px;border-radius:10px;object-fit:cover;background:#e2f0ee;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#0f7b6c;flex-shrink:0}
-  .typing span{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;margin:0 2px;animation:bnc 1.2s infinite}
-  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
-  @keyframes bnc{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-5px)}}
-  .chip{cursor:pointer;border:1px solid #dee2e6;border-radius:20px;padding:5px 13px;font-size:.82rem;font-weight:600;background:#fff;transition:.15s}
-  .chip:hover{border-color:var(--teal);color:var(--teal)}
-</style>
-<script src="/js/image-compress.js?v=3"></script>
+<!-- Merged into the unified planner. Redirect old links + bookmarks. -->
+<link rel="canonical" href="https://guideon.om/plan-trip.html">
+<meta http-equiv="refresh" content="0; url=/plan-trip.html">
+<script>location.replace('/plan-trip.html' + (location.search || ''));</script>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-  <div class="container">
-    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="48"></a>
-    <div class="ms-auto d-flex gap-2">
-      <a href="/search.html" class="btn btn-sm btn-outline-light">ابحث عن مرشد</a>
-    </div>
-  </div>
-</nav>
-
-<div class="hero">
-  <div class="ai-badge">✨ مدعوم بالذكاء الاصطناعي</div>
-  <h1 class="fw-800 mb-2">مخطّط الرحلات الذكي</h1>
-  <p class="opacity-90 mb-0">صف رحلتك… ودَعنا نبني لك برنامجاً يوميّاً كاملاً مع أفضل المرشدين المرخّصين 🇴🇲</p>
-</div>
-
-<div class="container py-4" style="max-width:820px">
-  <div class="planner-card mb-4">
-    <label class="fw-700 mb-2">صف رحلتك بكلماتك 👇</label>
-    <textarea id="reqText" class="form-control mb-3" rows="3" placeholder="مثال: 4 أيّام في عُمان، أحبّ الجبال والتاريخ، مع عائلتي، ميزانيّة متوسّطة"></textarea>
-    <div class="d-flex flex-wrap gap-2 mb-3" id="chips"></div>
-    <div class="row g-2 mb-3">
-      <div class="col-6 col-md-3"><input id="days" type="number" min="1" max="14" class="form-control" placeholder="عدد الأيّام"></div>
-      <div class="col-6 col-md-4"><input id="budget" class="form-control" placeholder="الميزانيّة (اختياري)"></div>
-      <div class="col-12 col-md-5"><input id="interests" class="form-control" placeholder="اهتماماتك (جبال، بحر، تاريخ…)"></div>
-    </div>
-    <button id="goBtn" class="btn btn-teal w-100 fw-700" onclick="plan()">✨ ابنِ خطتي</button>
-  </div>
-
-  <div id="out"></div>
-</div>
-
-<script src="/js/i18n.js?v=55"></script>
-<script src="/js/common-widgets.js?v=28"></script>
-<script>
-const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const CHIPS=['جبال ومغامرات','شواطئ وغوص','تاريخ وتراث','صحراء وتخييم','عائلي','رحلة رومانسيّة','تصوير','طعام محلي'];
-document.getElementById('chips').innerHTML=CHIPS.map(c=>`<span class="chip" onclick="addChip('${c}')">${c}</span>`).join('');
-function addChip(c){const t=document.getElementById('interests');t.value=t.value?t.value+'، '+c:c;}
-
-async function plan(){
-  const request=document.getElementById('reqText').value.trim();
-  const interests=document.getElementById('interests').value.trim();
-  if(!request && !interests){ alert('اكتب وصفاً لرحلتك أوّلاً'); return; }
-  const days=document.getElementById('days').value;
-  const budget=document.getElementById('budget').value.trim();
-  const btn=document.getElementById('goBtn'); btn.disabled=true; btn.textContent='✨ جارٍ التخطيط…';
-  const out=document.getElementById('out');
-  out.innerHTML=`<div class="planner-card text-center" style="background:var(--teal);color:#fff">
-    <div class="typing mb-2"><span></span><span></span><span></span></div>
-    <div class="fw-700">يبني الذكاء الاصطناعي خطّتك ويختار أفضل المرشدين…</div>
-    <div class="small opacity-75 mt-1">قد يستغرق ذلك بضع ثوانٍ</div></div>`;
-  try{
-    const r=await fetch('/api/ai/trip-plan',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({request,interests,days:days?+days:null,budget,lang:(localStorage.getItem('gd_lang')||'ar')})});
-    const d=await r.json();
-    if(!d.success) throw new Error(d.message||'تعذّر إنشاء الخطة');
-    render(d.plan);
-  }catch(e){ out.innerHTML=`<div class="planner-card text-center text-danger">${esc(e.message)}</div>`; }
-  finally{ btn.disabled=false; btn.textContent='✨ ابنِ خطتي'; }
-}
-
-function render(p){
-  const days=(p.days||[]).map(d=>`
-    <div class="day-card">
-      <div class="day-head">
-        <div class="day-num">${d.day}</div>
-        <div><div class="fw-800">${esc(d.theme)}</div><div class="small text-muted">📍 ${esc(d.governorate)}${d.estimatedCostOMR?` · ~${d.estimatedCostOMR} ر.ع`:''}</div></div>
-      </div>
-      <div class="p-3">
-        <ul class="mb-0 ps-3">${(d.activities||[]).map(a=>`<li class="mb-1">${esc(a)}</li>`).join('')}</ul>
-        ${d.suggestedGuideId?`
-          <a class="guide-pick text-decoration-none text-dark" href="/guide-profile.html?id=${esc(d.suggestedGuideId)}">
-            ${d.suggestedGuidePhoto?`<img src="${esc(d.suggestedGuidePhoto)}" alt="">`:`<div class="ph">👤</div>`}
-            <div class="flex-grow-1">
-              <div class="small text-muted">المرشد المقترح</div>
-              <div class="fw-700">${esc(d.suggestedGuideName)}</div>
-            </div>
-            <span class="btn btn-sm btn-teal">احجز</span>
-          </a>`:''}
-      </div>
-    </div>`).join('');
-  document.getElementById('out').innerHTML=`
-    <div class="planner-card mb-3">
-      <h4 class="fw-800 mb-1">${esc(p.title)}</h4>
-      <p class="text-muted mb-2">${esc(p.summary)}</p>
-      ${p.totalEstimatedOMR?`<div class="fw-700" style="color:var(--teal)">التكلفة التقديريّة: ${p.totalEstimatedOMR} ر.ع</div>`:''}
-    </div>
-    ${days}
-    ${(p.tips&&p.tips.length)?`<div class="planner-card"><h6 class="fw-800 mb-2">💡 نصائح</h6><ul class="mb-0 ps-3">${p.tips.map(t=>`<li class="mb-1">${esc(t)}</li>`).join('')}</ul></div>`:''}
-    <div class="text-center text-muted small mt-3">✨ خطّة مُولّدة بالذكاء الاصطناعي — تحقّق من التفاصيل قبل الحجز</div>`;
-  document.getElementById('out').scrollIntoView({behavior:'smooth'});
-}
-</script>
+<p style="font-family:sans-serif;padding:24px">جارٍ التحويل إلى مخطّط الرحلات… <a href="/plan-trip.html">اضغط هنا إن لم يتم التحويل</a>.</p>
 </body>
 </html>

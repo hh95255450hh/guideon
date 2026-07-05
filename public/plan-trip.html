@@ -60,17 +60,43 @@
 <!-- HERO BANNER -->
 <div class="plan-trip-banner mx-0" style="border-radius:0;padding:48px 0">
   <div class="container">
-    <div class="badge-gold d-inline-block mb-3" style="background:var(--gold);color:#fff;padding:6px 16px;border-radius:20px;font-weight:700">✈️ <span data-i18n="plan_trip_title">Plan My Holiday</span></div>
-    <h2 class="fw-800 mb-2 text-white" style="font-size:2rem" data-i18n="plan_trip_title">Plan My Holiday</h2>
-    <p class="text-white opacity-75 mb-0" style="max-width:520px" data-i18n="plan_trip_sub">Tell us your dream trip — our verified guides will tailor an itinerary just for you.</p>
+    <div class="badge-gold d-inline-block mb-3" style="background:var(--gold);color:#fff;padding:6px 16px;border-radius:20px;font-weight:700">✨ خطّط رحلتك · Plan your trip</div>
+    <h2 class="fw-800 mb-2 text-white" style="font-size:2rem">خطّط رحلتك في عُمان 🇴🇲</h2>
+    <p class="text-white opacity-75 mb-0" style="max-width:560px">ابنِ برنامجاً كاملاً بالذكاء الاصطناعي في ثوانٍ، أو اطلب من مرشد معتمد يفصّل رحلتك يدويّاً. <span class="opacity-75">Build an instant AI itinerary, or have a verified guide tailor it for you.</span></p>
   </div>
 </div>
 
 <div class="container py-5">
   <div class="row g-4">
 
-    <!-- LEFT: Form -->
+    <!-- LEFT: Planner -->
     <div class="col-lg-7">
+
+      <!-- Segmented mode toggle -->
+      <div class="pt-toggle mb-4">
+        <button class="pt-seg active" id="segAi" type="button" onclick="setPlanMode('ai')">✨ <span>خطة ذكية فورية · AI</span></button>
+        <button class="pt-seg" id="segGuide" type="button" onclick="setPlanMode('guide')">🧭 <span>اطلب من مرشد · Ask a guide</span></button>
+      </div>
+
+      <!-- ══ MODE 1: AI SMART PLANNER ══ -->
+      <div id="aiMode">
+        <div class="planner-card mb-4">
+          <div class="ai-badge mb-3">✨ مدعوم بالذكاء الاصطناعي · AI-powered</div>
+          <label class="fw-700 mb-2 d-block">صف رحلتك بكلماتك · Describe your trip 👇</label>
+          <textarea id="reqText" class="form-control mb-3" rows="3" placeholder="مثال: ٤ أيّام في عُمان، أحبّ الجبال والتاريخ، مع عائلتي، ميزانيّة متوسّطة"></textarea>
+          <div class="d-flex flex-wrap gap-2 mb-3" id="chips"></div>
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-3"><input id="days" type="number" min="1" max="14" class="form-control" placeholder="عدد الأيّام"></div>
+            <div class="col-6 col-md-4"><input id="budget" class="form-control" placeholder="الميزانيّة (اختياري)"></div>
+            <div class="col-12 col-md-5"><input id="interests" class="form-control" placeholder="اهتماماتك (جبال، بحر…)"></div>
+          </div>
+          <button id="goBtn" class="btn btn-teal w-100 py-3 fw-700" type="button" onclick="aiPlan()">✨ ابنِ خطتي · Build my plan</button>
+        </div>
+        <div id="out"></div>
+      </div>
+
+      <!-- ══ MODE 2: ASK A GUIDE (request form) ══ -->
+      <div id="guideMode" class="d-none">
       <div class="trip-form-card">
         <h4 class="fw-800 mb-1" data-i18n="plan_trip_title">Plan My Holiday</h4>
         <p class="text-muted small mb-4" data-i18n="plan_trip_sub">Tell us your dream trip — verified guides will respond with proposals.</p>
@@ -152,6 +178,7 @@
           <button type="submit" class="btn-teal btn w-100 py-3 fw-700" id="submitBtn" data-i18n="trip_submit">Post Trip Request</button>
         </form>
       </div>
+      </div><!-- /guideMode -->
     </div>
 
     <!-- RIGHT: How it works + My Requests -->
@@ -335,7 +362,106 @@ window.onLangChange = () => { if (SESSION?.userType === 'tourist') loadMyRequest
 
 checkAuth();
 </script>
-<style>.btn-teal{background:var(--teal)!important;color:#fff!important;border:none}</style>
+<style>
+  .btn-teal{background:var(--teal)!important;color:#fff!important;border:none}
+  /* Unified planner — segmented toggle */
+  .pt-toggle{display:flex;gap:6px;background:#eef2f7;border-radius:14px;padding:5px}
+  .pt-seg{flex:1;border:0;background:transparent;border-radius:10px;padding:11px 10px;font-weight:800;font-size:.95rem;color:#55617a;cursor:pointer;transition:.18s;white-space:nowrap}
+  .pt-seg.active{background:#fff;color:var(--teal);box-shadow:0 2px 8px rgba(15,28,62,.08)}
+  .ai-badge{display:inline-block;background:var(--teal-light,#e8f5f3);border:1px solid #cfeae4;color:#0a5c50;border-radius:20px;padding:4px 14px;font-size:.8rem;font-weight:700}
+  .planner-card{background:#fff;border:1px solid #e7eaee;border-radius:16px;padding:22px;box-shadow:0 6px 24px rgba(15,28,62,.06)}
+  .day-card{background:#fff;border:1px solid #e7eaee;border-radius:14px;overflow:hidden;margin-bottom:16px}
+  .day-head{background:#f0faf8;padding:12px 16px;border-bottom:1px solid #d6efe9;display:flex;align-items:center;gap:10px}
+  .day-num{width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+  .guide-pick{display:flex;align-items:center;gap:12px;background:#fafbfc;border:1px solid #eef1f4;border-radius:12px;padding:10px;margin-top:12px}
+  .guide-pick img,.guide-pick .ph{width:52px;height:52px;border-radius:10px;object-fit:cover;background:#e2f0ee;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#0f7b6c;flex-shrink:0}
+  .typing span{display:inline-block;width:8px;height:8px;border-radius:50%;background:#fff;margin:0 2px;animation:bnc 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+  @keyframes bnc{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-5px)}}
+  .chip{cursor:pointer;border:1px solid #dee2e6;border-radius:20px;padding:5px 13px;font-size:.82rem;font-weight:600;background:#fff;transition:.15s}
+  .chip:hover{border-color:var(--teal);color:var(--teal)}
+</style>
+<script>
+/* ── Unified planner: AI mode + Ask-a-guide mode ── */
+(function(){
+  const escp = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const CHIPS=['جبال ومغامرات','شواطئ وغوص','تاريخ وتراث','صحراء وتخييم','رحلات جوية','عائلي','رحلة رومانسيّة','تصوير','طعام محلي'];
+  const chipsEl=document.getElementById('chips');
+  if(chipsEl) chipsEl.innerHTML=CHIPS.map(c=>`<span class="chip" onclick="addChip('${c}')">${c}</span>`).join('');
+  window.addChip=function(c){const t=document.getElementById('interests');t.value=t.value?t.value+'، '+c:c;};
+
+  window.setPlanMode=function(mode){
+    const ai=mode!=='guide';
+    document.getElementById('aiMode').classList.toggle('d-none',!ai);
+    document.getElementById('guideMode').classList.toggle('d-none',ai);
+    document.getElementById('segAi').classList.toggle('active',ai);
+    document.getElementById('segGuide').classList.toggle('active',!ai);
+  };
+
+  window.aiPlan=async function(){
+    const request=document.getElementById('reqText').value.trim();
+    const interests=document.getElementById('interests').value.trim();
+    if(!request && !interests){ alert('اكتب وصفاً لرحلتك أوّلاً · Describe your trip first'); return; }
+    const days=document.getElementById('days').value;
+    const budget=document.getElementById('budget').value.trim();
+    const btn=document.getElementById('goBtn'); btn.disabled=true; btn.textContent='✨ جارٍ التخطيط…';
+    const out=document.getElementById('out');
+    out.innerHTML=`<div class="planner-card text-center" style="background:var(--teal);color:#fff">
+      <div class="typing mb-2"><span></span><span></span><span></span></div>
+      <div class="fw-700">يبني الذكاء الاصطناعي خطّتك ويختار أفضل المرشدين…</div>
+      <div class="small opacity-75 mt-1">قد يستغرق بضع ثوانٍ</div></div>`;
+    try{
+      const r=await fetch('/api/ai/trip-plan',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({request,interests,days:days?+days:null,budget,lang:(localStorage.getItem('gd_lang')||'ar')})});
+      const d=await r.json();
+      if(!d.success) throw new Error(d.message||'تعذّر إنشاء الخطة');
+      aiRender(d.plan);
+    }catch(e){ out.innerHTML=`<div class="planner-card text-center text-danger">${escp(e.message)}</div>`; }
+    finally{ btn.disabled=false; btn.textContent='✨ ابنِ خطتي · Build my plan'; }
+  };
+
+  function aiRender(p){
+    const days=(p.days||[]).map(d=>`
+      <div class="day-card">
+        <div class="day-head"><div class="day-num">${d.day}</div>
+          <div><div class="fw-800">${escp(d.theme)}</div><div class="small text-muted">📍 ${escp(d.governorate)}${d.estimatedCostOMR?` · ~${d.estimatedCostOMR} ر.ع`:''}</div></div></div>
+        <div class="p-3">
+          <ul class="mb-0 ps-3">${(d.activities||[]).map(a=>`<li class="mb-1">${escp(a)}</li>`).join('')}</ul>
+          ${d.suggestedGuideId?`<a class="guide-pick text-decoration-none text-dark" href="/guide-profile.html?id=${escp(d.suggestedGuideId)}">
+            ${d.suggestedGuidePhoto?`<img src="${escp(d.suggestedGuidePhoto)}" alt="">`:`<div class="ph">👤</div>`}
+            <div class="flex-grow-1"><div class="small text-muted">المرشد المقترح</div><div class="fw-700">${escp(d.suggestedGuideName)}</div></div>
+            <span class="btn btn-sm btn-teal">احجز</span></a>`:''}
+        </div></div>`).join('');
+    document.getElementById('out').innerHTML=`
+      <div class="planner-card mb-3">
+        <h4 class="fw-800 mb-1">${escp(p.title)}</h4>
+        <p class="text-muted mb-2">${escp(p.summary)}</p>
+        ${p.totalEstimatedOMR?`<div class="fw-700" style="color:var(--teal)">التكلفة التقديريّة: ${p.totalEstimatedOMR} ر.ع</div>`:''}
+      </div>
+      ${days}
+      ${(p.tips&&p.tips.length)?`<div class="planner-card"><h6 class="fw-800 mb-2">💡 نصائح</h6><ul class="mb-0 ps-3">${p.tips.map(t=>`<li class="mb-1">${escp(t)}</li>`).join('')}</ul></div>`:''}
+      <div class="planner-card text-center mt-3" style="background:#f8fafc">
+        <div class="fw-700 mb-2">أعجبتك الخطة؟ دَع مرشداً معتمداً ينفّذها لك 🧭</div>
+        <button class="btn btn-teal fw-700" type="button" onclick="bridgeToGuide()">اطلب من مرشد ينفّذ هذه الرحلة</button>
+      </div>
+      <div class="text-center text-muted small mt-3">✨ خطّة مُولّدة بالذكاء الاصطناعي — تحقّق من التفاصيل قبل الحجز</div>`;
+    document.getElementById('out').scrollIntoView({behavior:'smooth'});
+  }
+
+  // Bridge: pre-fill the guide-request form from the AI inputs, then switch.
+  window.bridgeToGuide=function(){
+    const notes=document.getElementById('tNotes');
+    const desc=document.getElementById('reqText').value.trim();
+    const ints=document.getElementById('interests').value.trim();
+    if(notes && !notes.value) notes.value=[desc,ints].filter(Boolean).join(' — ');
+    const dEl=document.getElementById('days').value, bEl=document.getElementById('budget').value;
+    if(dEl){ const t=document.getElementById('tTo'); /* leave dates to user */ }
+    if(bEl){ const b=document.getElementById('tBudget'); if(b && !b.value) b.value=parseInt(bEl)||''; }
+    setPlanMode('guide');
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+})();
+</script>
 <script src="/js/pwa.js?v=15" defer></script>
 <script src="/js/common-widgets.js?v=28"></script>
 </body>
