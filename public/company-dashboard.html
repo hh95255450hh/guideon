@@ -377,6 +377,19 @@
           <input type="text" class="form-control" id="pkgDestination" placeholder="Wahiba Sands">
         </div>
         <div class="mb-3">
+          <label class="form-label fw-600 small">الفئة · Category</label>
+          <select class="form-select" id="pkgCategory">
+            <option value="Cultural">🏰 ثقافية · Cultural</option>
+            <option value="Historical">🕌 تاريخية · Historical</option>
+            <option value="Desert">🐪 صحراوية · Desert</option>
+            <option value="Mountain">🏔️ جبلية · Mountain</option>
+            <option value="Marine">🐬 بحرية · Marine</option>
+            <option value="Adventure">⚡ مغامرات · Adventure</option>
+            <option value="Aerial">🎈 رحلات جوية · Aerial Tours</option>
+            <option value="Food">🍽️ طعام · Food</option>
+          </select>
+        </div>
+        <div class="mb-3">
           <label class="form-label fw-600 small" data-i18n="pkg_includes_lbl">ما تشمله الرحلة</label>
           <input type="text" class="form-control" id="pkgIncludes" data-i18n-ph="pkg_includes_ph" placeholder="نقل، تخييم، وجبات">
           <div class="form-text">افصل بفواصل ،</div>
@@ -868,6 +881,7 @@ function editPackage(id) {
   document.getElementById('pkgPrice').value       = pkg.price       || '';
   document.getElementById('pkgDuration').value    = pkg.duration    || '';
   document.getElementById('pkgDestination').value = pkg.destination || '';
+  document.getElementById('pkgCategory').value    = pkg.category    || 'Cultural';
   document.getElementById('pkgIncludes').value    = pkg.includes    || '';
   document.getElementById('pkgDescription').value = pkg.description || '';
   // Tiers + add-ons + offer
@@ -945,7 +959,7 @@ async function savePackage() {
       duration_days: days,
       includes:      includesStr ? includesStr.split(',').map(s => s.trim()).filter(Boolean) : [],
       isPublished:   true,
-      category:      'Cultural',
+      category:      (document.getElementById('pkgCategory') || {}).value || 'Cultural',
       images,
       cover_image:   images[0] || '',
       meetingPoint:  mapData.meetingPoint,

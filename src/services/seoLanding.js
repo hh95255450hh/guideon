@@ -61,6 +61,8 @@ const CATEGORIES = [
     blurb: 'diving, snorkelling, dolphin-watching and dhow cruises along the coast.' },
   { slug: 'adventure',  en: 'Adventure',  ar: 'مغامرات', terms: ['adventure','canyon','wadi','caving','climb'],
     blurb: 'wadi swimming, canyoning, caving and off-road expeditions.' },
+  { slug: 'aerial',     en: 'Aerial Tours', ar: 'رحلات جوية', terms: ['aerial','flight','flying','scenic flight','balloon','hot air balloon','paraglide','paragliding','glider','gliding','skydive','helicopter','طيران','منطاد','شراعي'],
+    blurb: 'hot-air balloon rides, scenic flights, paragliding and aerial views of Oman.' },
 ];
 
 const PLACE_BY_SLUG = Object.fromEntries(PLACES.map(p => [p.slug, p]));
