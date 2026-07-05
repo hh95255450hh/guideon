@@ -55,3 +55,5 @@ Rotate the secret: edit `/etc/guideon-deploy-hook.env`, then
 `systemctl restart guideon-deploy-hook`, and update the secret in GitHub.
 
 <!-- deploy webhook smoke test: 2026-07-05T07:29:11Z -->
+
+<!-- secret rotation verify: 2026-07-05T09:46:51Z -->
