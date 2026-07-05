@@ -30,7 +30,7 @@ const sentry = require('./config/sentry');
 
 app.set('trust proxy', 1);
 
-// Stripe webhook needs raw body — register BEFORE express.json()
+// Payment webhook (Paymob) needs raw body — register BEFORE express.json()
 app.post('/api/payments/webhook',
   express.raw({ type: 'application/json' }),
   require('./controllers/paymentController').webhook
@@ -48,7 +48,7 @@ app.use(helmet({
   // Allow cross-origin popups (e.g. Google Sign-In) to communicate back via postMessage
   crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
   // HSTS — tell browsers to always use HTTPS for guideon.om for a year
-  // (with subdomains). Safe because Railway redirects http→https.
+  // (with subdomains). Safe because nginx (ODP) redirects http→https.
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
   // Stop browsers from MIME-sniffing JSON/JS as HTML (XSS escape vector)
   noSniff: true,
@@ -97,7 +97,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Session store
-// Note: Supabase Postgres direct (port 5432) is IPv6-only and unreachable from Railway.
+// Note: Supabase Postgres direct (port 5432) is IPv6-only; the app uses the Kong REST API, not a direct Postgres socket.
 // Set USE_PG_SESSIONS=true ONLY if DATABASE_URL points to the Supabase Pooler (port 6543).
 let sessionStore;
 const usePgSessions = process.env.USE_PG_SESSIONS === 'true' && !!process.env.DATABASE_URL;

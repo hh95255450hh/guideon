@@ -4,7 +4,7 @@
  * Keyed by userId. Each user may have several open tabs/devices (a Set of
  * response objects). publish(userId, event, data) fans out to all of them.
  *
- * NOTE: This is in-process only. It works perfectly for a single Railway
+ * NOTE: This is in-process only. It works perfectly for a single ODP
  * instance (the current setup). If the app is ever scaled to multiple
  * instances, swap this for a Redis pub/sub — the public API can stay the same.
  * The frontend keeps a polling fallback, so messaging never breaks even if a

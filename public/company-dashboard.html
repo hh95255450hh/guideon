@@ -553,12 +553,12 @@ function renderPkgPhotoStrip() {
   if (!wrap) return;
   const kept = PKG_KEPT_PHOTOS.map((url, i) => `
     <div style="position:relative">
-      <img src="${url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <img alt="" src="${url}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
       <button type="button" onclick="removeKeptPkgPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
   const pending = PKG_PENDING_FILES.map((f, i) => `
     <div style="position:relative">
-      <img src="${URL.createObjectURL(f)}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #0f7b6c">
+      <img alt="" src="${URL.createObjectURL(f)}" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid #0f7b6c">
       <button type="button" onclick="removePendingPkgPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
   wrap.innerHTML = kept + pending || '<span class="small text-muted">لم تُضف صور بعد</span>';
@@ -656,7 +656,7 @@ function render() {
   // Company logo/photo
   const logoEl = document.getElementById('companyLogo');
   if (COMPANY.photo) {
-    logoEl.innerHTML = `<img loading="lazy" decoding="async" src="${COMPANY.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+    logoEl.innerHTML = `<img alt="" loading="lazy" decoding="async" src="${COMPANY.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
   } else {
     logoEl.textContent = '🏢';
   }
@@ -674,7 +674,7 @@ function renderPackages() {
     <div class="service-card mb-3">
       <div class="d-flex gap-3 align-items-start">
         ${pkg.cover_image
-          ? `<img src="${pkg.cover_image}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0">`
+          ? `<img alt="" src="${pkg.cover_image}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0">`
           : `<div style="width:90px;height:90px;background:#eef0f4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">📦</div>`}
         <div style="flex:1">
           <div class="d-flex justify-content-between align-items-start">
@@ -1029,7 +1029,7 @@ function renderGallery() {
   }
   el.innerHTML = photos.map((url, i) => `
     <div style="position:relative">
-      <img loading="lazy" decoding="async" src="${url}" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in" onclick="GdGallery.open(COMPANY.galleryPhotos, ${i})">
+      <img alt="" loading="lazy" decoding="async" src="${url}" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in" onclick="GdGallery.open(COMPANY.galleryPhotos, ${i})">
       <button onclick="removeGallery('${url}')" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
 }
@@ -1045,7 +1045,7 @@ async function uploadCompanyPhoto(input) {
     if (d.success) {
       COMPANY.photo = d.photo;
       const logoEl = document.getElementById('companyLogo');
-      logoEl.innerHTML = `<img loading="lazy" decoding="async" src="${d.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
+      logoEl.innerHTML = `<img alt="" loading="lazy" decoding="async" src="${d.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`;
       showToast(I18N.t('photo_change') + ' ✓', 'success');
     } else { showToast(d.message, 'danger'); }
   } catch { showToast('Upload failed.', 'danger'); }

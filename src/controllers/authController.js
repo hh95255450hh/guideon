@@ -653,7 +653,7 @@ exports.forgotPassword = async (req, res) => {
     const user = await users.findByField('email', normalized);
 
     // Always return success to avoid email enumeration — but log server-side
-    // so we can diagnose "no email arrived" reports from the Railway logs.
+    // so we can diagnose "no email arrived" reports from the server logs.
     if (!user) {
       console.warn(`[forgot-password] No account found for "${normalized}" — no email sent.`);
       return res.json({ success: true, message: 'If that email is registered, you will receive a reset link shortly.' });

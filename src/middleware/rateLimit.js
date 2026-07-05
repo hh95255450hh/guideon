@@ -1,6 +1,6 @@
 const rateLimit = require('express-rate-limit');
 
-// All limits are configurable via environment variables — change in Railway
+// All limits are configurable via environment variables — change in the ODP .env
 // without redeploying code. Set RATE_LIMIT_DISABLED=true to disable everything
 // (useful during launch / promotions). Defaults are sensible production values.
 const DISABLED = process.env.RATE_LIMIT_DISABLED === 'true';

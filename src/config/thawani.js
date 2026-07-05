@@ -4,7 +4,7 @@
  * Thawani is Oman's leading payment gateway (cards + Thawani wallet).
  * Amounts are in BAISA — 1 OMR = 1000 baisa — and must be integers.
  *
- * Required env vars (set in Railway when going live):
+ * Required env vars (set in /opt/guideon/deploy/.env (ODP VPS) when going live):
  *   THAWANI_MODE             'test' (default) | 'live'
  *   THAWANI_API_KEY          secret API key  (server-side only, never exposed)
  *   THAWANI_PUBLISHABLE_KEY  publishable key (used in the redirect URL)

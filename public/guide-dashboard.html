@@ -656,7 +656,7 @@ function renderGuideHeader() {
   document.getElementById('navName').textContent = GUIDE.fullName.split(' ')[0];
   const av = document.getElementById('guideAvatar');
   if (GUIDE.photo) {
-    av.innerHTML = `<img loading="lazy" decoding="async" src="${GUIDE.photo}" style="width:100%;height:100%;object-fit:cover">`;
+    av.innerHTML = `<img alt="" loading="lazy" decoding="async" src="${GUIDE.photo}" style="width:100%;height:100%;object-fit:cover">`;
   } else {
     av.textContent = initials(GUIDE.fullName);
   }
@@ -677,7 +677,7 @@ async function uploadPhoto(input) {
     if (d.success) {
       GUIDE.photo = d.photo;
       const av = document.getElementById('guideAvatar');
-      av.innerHTML = `<img loading="lazy" decoding="async" src="${d.photo}" style="width:100%;height:100%;object-fit:cover">`;
+      av.innerHTML = `<img alt="" loading="lazy" decoding="async" src="${d.photo}" style="width:100%;height:100%;object-fit:cover">`;
       toast(I18N.t('photo_change') + ' ✓', 'success');
     } else { toast(d.message, 'error'); }
   } catch { toast('Upload failed.', 'error'); }
@@ -693,7 +693,7 @@ function renderGallery() {
   }
   grid.innerHTML = photos.map((url, i) => `
     <div style="position:relative">
-      <img loading="lazy" decoding="async" src="${url}" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in" onclick="GdGallery.open(GUIDE.galleryPhotos, ${i})">
+      <img alt="" loading="lazy" decoding="async" src="${url}" style="width:84px;height:84px;object-fit:cover;border-radius:10px;cursor:zoom-in" onclick="GdGallery.open(GUIDE.galleryPhotos, ${i})">
       <button onclick="removeGallery('${url}')" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:.65rem;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
 }
@@ -996,12 +996,12 @@ function renderTourGalleryStrip() {
   if (!wrap) return;
   const kept = TOUR_GALLERY_KEPT.map((url, i) => `
     <div style="position:relative">
-      <img src="${url}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <img alt="" src="${url}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
       <button type="button" onclick="removeKeptTourPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
   const pending = TOUR_GALLERY_PENDING.map((f, i) => `
     <div style="position:relative">
-      <img src="${URL.createObjectURL(f)}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #0f7b6c">
+      <img alt="" src="${URL.createObjectURL(f)}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #0f7b6c">
       <button type="button" onclick="removePendingTourPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;line-height:1">✕</button>
     </div>`).join('');
   wrap.innerHTML = kept + pending || '<span class="small text-muted">لم تُضف صور إضافية</span>';
@@ -1796,7 +1796,7 @@ function editAsset(id) {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;display:inline-block';
     wrap.innerHTML = `
-      <img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <img alt="" src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
       <button onclick="removeKeptPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1">✕</button>`;
     prev.appendChild(wrap);
   });
@@ -1820,7 +1820,7 @@ function removeKeptPhoto(index) {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'position:relative;display:inline-block';
     wrap.innerHTML = `
-      <img src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
+      <img alt="" src="${url}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:2px solid #d0ede8">
       <button onclick="removeKeptPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1">✕</button>`;
     prev.appendChild(wrap);
   });
@@ -1894,7 +1894,7 @@ function renderAssets() {
         ${a.description ? `<div class="small text-muted mb-2">${a.description}</div>` : ''}
         ${a.photos && a.photos.length ? `
           <div class="d-flex gap-2 flex-wrap">
-            ${a.photos.map(u=>`<img src="${u}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #e0e0e0">`).join('')}
+            ${a.photos.map(u=>`<img alt="" src="${u}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid #e0e0e0">`).join('')}
           </div>` : '<div class="small text-muted">بدون صور</div>'}
       </div>
       <div class="d-flex flex-column gap-1">

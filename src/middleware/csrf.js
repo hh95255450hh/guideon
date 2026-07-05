@@ -6,7 +6,7 @@
  *
  * Skips:
  *  - Safe methods (GET, HEAD, OPTIONS)
- *  - Stripe webhook (validates signature instead)
+ *  - Payment webhook /api/payments/... (validates HMAC signature instead)
  *  - Requests without a session (public API)
  */
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||

@@ -138,7 +138,7 @@ async function loadWishlist() {
           <button class="wishlist-btn saved" onclick="removeFromWishlist('${g.id}')" title="Remove">
             <span class="heart-icon">♥</span>
           </button>
-          <div class="big-avatar">${g.photo ? `<img loading="lazy" decoding="async" src="${window.gdSafeUrl(g.photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : initials(g.fullName)}</div>
+          <div class="big-avatar">${g.photo ? `<img alt="" loading="lazy" decoding="async" src="${window.gdSafeUrl(g.photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : initials(g.fullName)}</div>
         </div>
         <div class="p-3">
           <div class="d-flex justify-content-between align-items-start mb-1">

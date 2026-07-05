@@ -257,7 +257,7 @@ async function loadProfile() {
     // Avatar
     const av = document.getElementById('avatarCircle');
     if (u.photo) {
-      av.innerHTML = `<img loading="lazy" decoding="async" src="${u.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      av.innerHTML = `<img alt="" loading="lazy" decoding="async" src="${u.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     } else {
       av.textContent = initials(u.fullName);
     }
@@ -347,7 +347,7 @@ async function uploadPhoto(input) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.message);
     const av = document.getElementById('avatarCircle');
-    av.innerHTML = `<img loading="lazy" decoding="async" src="${d.photo}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    av.innerHTML = `<img alt="" loading="lazy" decoding="async" src="${d.photo}?t=${Date.now()}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
     status.textContent = '✅ Photo updated!';
     setTimeout(() => { status.textContent = ''; }, 3000);
   } catch (err) { status.textContent = '❌ ' + err.message; }

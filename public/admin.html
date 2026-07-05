@@ -1876,7 +1876,7 @@ function adminRenderThread(msgs){
   el.innerHTML=msgs.map(m=>{
     const mine=m.fromId===me;
     let body='';
-    if(m.attachmentUrl&&m.attachmentType==='image')body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img src="${m.attachmentUrl}" style="max-width:200px;border-radius:10px;display:block;margin-bottom:${m.content?'6px':'0'}"></a>`;
+    if(m.attachmentUrl&&m.attachmentType==='image')body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img alt="" src="${m.attachmentUrl}" style="max-width:200px;border-radius:10px;display:block;margin-bottom:${m.content?'6px':'0'}"></a>`;
     else if(m.attachmentUrl)body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${admEsc(m.attachmentName||'file')}</a>`;
     if(m.content)body+=`<div class="txt">${admEsc(m.content)}</div>`;
     const tick=mine?`<span class="tick">${m.isRead?'✓✓':'✓'}</span>`:'';
@@ -2015,7 +2015,7 @@ function cmRender() {
       </div>
       <div class="row g-2 align-items-start">
         <div class="col-md-3 text-center">
-          <img src="${img||'/logo.png'}" id="cmImg_${idx}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.src='/logo.png'">
+          <img alt="" src="${img||'/logo.png'}" id="cmImg_${idx}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.src='/logo.png'">
           <input type="file" accept="image/*" id="cmFile_${idx}" style="display:none" onchange="cmUpload(${idx},this)">
           <button class="btn btn-sm btn-outline-teal w-100 mt-2" onclick="document.getElementById('cmFile_${idx}').click()">📷 رفع صورة</button>
           <input class="form-control form-control-sm mt-1" placeholder="أو الصق رابط صورة" value="${String(img).replace(/"/g,'&quot;')}" data-idx="${idx}" data-k="${schema.img}" data-t="text" oninput="document.getElementById('cmImg_${idx}').src=this.value||'/logo.png'">
