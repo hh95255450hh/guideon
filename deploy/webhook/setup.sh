@@ -16,6 +16,14 @@ ENV_FILE=/etc/guideon-deploy-hook.env
 UNIT_SRC=/opt/guideon/deploy/webhook/guideon-deploy-hook.service
 UNIT_DST=/etc/systemd/system/guideon-deploy-hook.service
 
+# The systemd unit runs /usr/bin/node — make sure Node exists on the host.
+NODE_BIN=$(command -v node || true)
+if [ -z "$NODE_BIN" ]; then
+  echo "ERROR: node not found on the host. Install it first, e.g.:"
+  echo "  curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs"
+  exit 1
+fi
+
 if [ ! -f "$ENV_FILE" ]; then
   SECRET=$(openssl rand -hex 32)
   printf 'DEPLOY_HOOK_SECRET=%s\nDEPLOY_HOOK_PORT=9000\nDEPLOY_HOOK_BRANCH=main\n' "$SECRET" > "$ENV_FILE"
@@ -26,6 +34,8 @@ else
 fi
 
 cp "$UNIT_SRC" "$UNIT_DST"
+# Point the installed unit at the actual node path (edits the copy, not the repo).
+sed -i "s#^ExecStart=/usr/bin/node#ExecStart=$NODE_BIN#" "$UNIT_DST"
 systemctl daemon-reload
 systemctl enable guideon-deploy-hook
 systemctl restart guideon-deploy-hook
