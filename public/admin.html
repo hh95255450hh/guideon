@@ -247,6 +247,7 @@ window.showToast = function (msg, type) {
 
   <!-- ════════════════ ALL GUIDES ════════════════ -->
   <div id="tab-guides" class="d-none">
+    <div class="gd-kpis mb-3" id="guideKpis"></div>
     <div class="filter-bar" id="guideFilters">
       <button class="filter-btn on" onclick="filterGuides('all',this)">All</button>
       <button class="filter-btn" onclick="filterGuides('verified',this)">✅ Verified</button>
@@ -274,6 +275,7 @@ window.showToast = function (msg, type) {
 
   <!-- ════════════════ COMPANIES ════════════════ -->
   <div id="tab-companies" class="d-none">
+    <div class="gd-kpis mb-3" id="companyKpis"></div>
     <div class="filter-bar" id="companyFilters">
       <button class="filter-btn on" onclick="filterCompanies('all',this)">All</button>
       <button class="filter-btn" onclick="filterCompanies('verified',this)">✅ Approved</button>
@@ -1292,7 +1294,20 @@ function filterGuides(f, btn) {
   renderGuides();
 }
 function renderGuides() {
-  let list = ALL_GUIDES;
+  const all = ALL_GUIDES || [];
+  const kpiEl = document.getElementById('guideKpis');
+  if (kpiEl) {
+    const total = all.length;
+    const verified = all.filter(g=>g.isVerified && !g.isSuspended).length;
+    const pending = all.filter(g=>!g.isVerified && !g.isSuspended).length;
+    const suspended = all.filter(g=>g.isSuspended).length;
+    kpiEl.innerHTML = `
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('col_guide')||'المرشدون'} — ${I18N.t('all_lbl')||'الكل'}</div><div class="gd-kpi__value">${total}</div></div>
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('status_verified')||'موثّق'}</div><div class="gd-kpi__value is-success">${verified}</div></div>
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('status_pending2')||'بانتظار التوثيق'}</div><div class="gd-kpi__value is-warning">${pending}</div></div>
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('status_suspended')||'معلّق'}</div><div class="gd-kpi__value is-danger">${suspended}</div></div>`;
+  }
+  let list = all;
   if (GUIDE_FILTER==='verified')   list=list.filter(g=>g.isVerified && !g.isSuspended);
   if (GUIDE_FILTER==='pending')    list=list.filter(g=>!g.isVerified && !g.isSuspended);
   if (GUIDE_FILTER==='licensed')   list=list.filter(g=>g.isMinistryLicensed);
@@ -1302,9 +1317,14 @@ function renderGuides() {
   document.getElementById('guidesTable').innerHTML = list.length ? list.map(g => `
     <tr>
       <td>
-        <div class="fw-700"><a href="/guide-profile.html?id=${g.id}" target="_blank" style="color:var(--teal);text-decoration:none">${window.gdEsc(g.fullName)} ↗</a></div>
-        ${contactLinks(g)}
-        <div class="small text-muted">${fdate(g.createdAt)}</div>
+        <div class="gd-identity">
+          <span class="gd-avatar">${g.photo ? `<img src="${window.gdSafeUrl(g.photo)}" alt="">` : initials(g.fullName)}</span>
+          <div style="min-width:0">
+            <div class="gd-identity__name"><a href="/guide-profile.html?id=${g.id}" target="_blank" style="color:var(--teal);text-decoration:none">${window.gdEsc(g.fullName)} ↗</a></div>
+            ${contactLinks(g)}
+            <div class="small text-muted">${fdate(g.createdAt)}</div>
+          </div>
+        </div>
       </td>
       <td>
         ${g.isMinistryLicensed
@@ -1316,9 +1336,9 @@ function renderGuides() {
       <td class="small">${stars(g.rating)} <span class="text-muted">(${g.totalReviews||0})</span></td>
       <td class="small fw-600">${g.pricePerDay || '—'}</td>
       <td>
-        ${g.isVerified  && !g.isSuspended ? `<span class="chip chip-verified">${I18N.t('status_verified')}</span>` : ''}
-        ${g.isSuspended                   ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : ''}
-        ${!g.isVerified && !g.isSuspended ? `<span class="chip chip-pending">${I18N.t('status_pending2')}</span>` : ''}
+        ${g.isVerified  && !g.isSuspended ? `<span class="gd-pill gd-pill--success">✓ ${I18N.t('status_verified')}</span>` : ''}
+        ${g.isSuspended                   ? `<span class="gd-pill gd-pill--danger">⛔ ${I18N.t('status_suspended')}</span>` : ''}
+        ${!g.isVerified && !g.isSuspended ? `<span class="gd-pill gd-pill--warning">⏳ ${I18N.t('status_pending2')}</span>` : ''}
       </td>
       <td class="py-2">
         <div class="gd-actions">
@@ -1351,7 +1371,20 @@ function filterCompanies(f, btn) {
   renderCompanies();
 }
 function renderCompanies() {
-  let list = ALL_COMPANIES;
+  const all = ALL_COMPANIES || [];
+  const kpiEl = document.getElementById('companyKpis');
+  if (kpiEl) {
+    const total = all.length;
+    const verified = all.filter(c=>c.isVerified && !c.isSuspended).length;
+    const pending = all.filter(c=>!c.isVerified && !c.isSuspended).length;
+    const suspended = all.filter(c=>c.isSuspended).length;
+    kpiEl.innerHTML = `
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('companies_col')||'الشركات'} — ${I18N.t('all_lbl')||'الكل'}</div><div class="gd-kpi__value">${total}</div></div>
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('status_approved')||'معتمد'}</div><div class="gd-kpi__value is-success">${verified}</div></div>
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('status_pending2')||'بانتظار'}</div><div class="gd-kpi__value is-warning">${pending}</div></div>
+      <div class="gd-kpi"><div class="gd-kpi__label">${I18N.t('status_suspended')||'معلّق'}</div><div class="gd-kpi__value is-danger">${suspended}</div></div>`;
+  }
+  let list = all;
   if (COMPANY_FILTER==='verified')  list=list.filter(c=>c.isVerified && !c.isSuspended);
   if (COMPANY_FILTER==='pending')   list=list.filter(c=>!c.isVerified && !c.isSuspended);
   if (COMPANY_FILTER==='suspended') list=list.filter(c=>c.isSuspended);
@@ -1359,8 +1392,13 @@ function renderCompanies() {
   document.getElementById('companiesTable').innerHTML = list.length ? list.map(c => `
     <tr>
       <td>
-        <div class="fw-700">${c.companyName || '—'}</div>
-        ${c.companyWebsite ? `<div class="small"><a href="${c.companyWebsite}" target="_blank" rel="noopener" style="color:var(--teal)">${c.companyWebsite}</a></div>` : ''}
+        <div class="gd-identity">
+          <span class="gd-avatar">${c.photo ? `<img src="${window.gdSafeUrl(c.photo)}" alt="">` : initials(c.companyName||c.fullName)}</span>
+          <div style="min-width:0">
+            <div class="gd-identity__name">${window.gdEsc(c.companyName || '—')}</div>
+            ${c.companyWebsite ? `<div class="small"><a href="${window.gdSafeUrl(c.companyWebsite)}" target="_blank" rel="noopener" style="color:var(--teal)">${window.gdEsc(c.companyWebsite)}</a></div>` : ''}
+          </div>
+        </div>
       </td>
       <td>
         <div class="small fw-600">${window.gdEsc(c.fullName)}</div>
@@ -1371,9 +1409,9 @@ function renderCompanies() {
       <td class="small">${(c.companyDestinations||[]).slice(0,3).join(', ') || '—'}</td>
       <td class="small">${fdate(c.createdAt)}</td>
       <td>
-        ${c.isVerified  && !c.isSuspended ? `<span class="chip chip-verified">${I18N.t('status_approved')}</span>` : ''}
-        ${c.isSuspended                   ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : ''}
-        ${!c.isVerified && !c.isSuspended ? `<span class="chip chip-pending">${I18N.t('status_pending2')}</span>` : ''}
+        ${c.isVerified  && !c.isSuspended ? `<span class="gd-pill gd-pill--success">✓ ${I18N.t('status_approved')}</span>` : ''}
+        ${c.isSuspended                   ? `<span class="gd-pill gd-pill--danger">⛔ ${I18N.t('status_suspended')}</span>` : ''}
+        ${!c.isVerified && !c.isSuspended ? `<span class="gd-pill gd-pill--warning">⏳ ${I18N.t('status_pending2')}</span>` : ''}
       </td>
       <td class="py-2">
         <div class="gd-actions">
