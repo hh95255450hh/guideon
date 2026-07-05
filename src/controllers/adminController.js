@@ -297,6 +297,25 @@ exports.whatsappTest = async (req, res) => {
   }
 };
 
+// GET /api/admin/reminder-test — run the pre-tour reminder pass now, or force a
+// single booking's reminder (?bookingId=...) regardless of the 12h window.
+exports.reminderTest = async (req, res) => {
+  try {
+    const scheduler = require('../services/reminderScheduler');
+    const { bookingId } = req.query;
+    if (bookingId) {
+      const bk = await bookings.findById(bookingId);
+      if (!bk) return res.status(404).json({ success: false, message: 'Booking not found.' });
+      await scheduler.sendReminderFor(bk);
+      return res.json({ success: true, message: 'Forced reminder sent for booking ' + bookingId + ' (check WhatsApp/email/in-app).' });
+    }
+    await scheduler.runOnce();
+    res.json({ success: true, message: 'Reminder pass executed (12h window). See server logs for count.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // CSV helper: convert array of objects to CSV
 function toCSV(rows, columns) {
   if (!rows?.length) return '';

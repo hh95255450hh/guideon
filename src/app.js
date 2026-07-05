@@ -278,6 +278,9 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   logger.info(`Guideon running on port ${PORT}`);
+  // Pre-tour reminder scheduler (fires ~12h before each tour via notify()).
+  try { require('./services/reminderScheduler').start(); }
+  catch (e) { logger.error({ err: e.message }, 'reminderScheduler failed to start'); }
 });
 
 process.on('unhandledRejection', (reason) => {
