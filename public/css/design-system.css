@@ -98,3 +98,53 @@
   overflow:hidden; text-overflow:ellipsis; }
 .gd-identity__sub { font-size:var(--gd-fs-hint); color:var(--gd-text-3); white-space:nowrap; overflow:hidden;
   text-overflow:ellipsis; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL PROFESSIONAL POLISH — site-wide, additive, low-risk.
+   Gentle brand-consistent refinements to common Bootstrap elements so every
+   page feels enterprise-grade without per-page work. Deliberately avoids
+   .btn radius (breaks button groups) and layout properties (breaks grids).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Inputs & selects: softer radius, smooth focus, brand focus ring. */
+.form-control, .form-select {
+  border-radius: 10px;
+  border-color: var(--gd-border);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.form-control:hover, .form-select:hover { border-color: var(--gd-border-strong); }
+.form-control:focus, .form-select:focus {
+  border-color: var(--gd-teal-600);
+  box-shadow: 0 0 0 3px rgba(15,123,108,.14);
+}
+.form-control::placeholder { color: var(--gd-text-3); opacity: 1; }
+
+/* Cards: consistent hairline + soft corners across the whole site. */
+.card {
+  border-radius: 14px;
+  border: .5px solid var(--gd-border);
+}
+
+/* Modals & dropdowns: refined corners + softer elevation. */
+.modal-content { border-radius: 16px; border: .5px solid var(--gd-border); }
+.dropdown-menu { border-radius: 12px; border: .5px solid var(--gd-border); box-shadow: var(--gd-shadow-md); }
+
+/* Tables: lighter, more legible default. */
+.table > :not(caption) > * > * { padding: 12px 14px; }
+
+/* Text selection + focus visibility in brand colour. */
+::selection { background: rgba(15,123,108,.16); }
+:focus-visible { outline: 2px solid var(--gd-teal-600); outline-offset: 2px; }
+
+/* Slimmer, modern scrollbars (WebKit). */
+* { scrollbar-width: thin; scrollbar-color: var(--gd-border-strong) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--gd-border-strong); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--gd-text-3); }
+
+/* Badges: gentle rounding for the common Bootstrap badge. */
+.badge { border-radius: 8px; font-weight: 700; letter-spacing: .1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .form-control, .form-select { transition: none; }
+}

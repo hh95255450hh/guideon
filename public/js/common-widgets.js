@@ -357,7 +357,7 @@ window.gdTrack = function (event, meta) {
 (function () {
   if (!document.getElementById('gd-ds-css')) {
     var ds = document.createElement('link');
-    ds.id = 'gd-ds-css'; ds.rel = 'stylesheet'; ds.href = '/css/design-system.css?v=1';
+    ds.id = 'gd-ds-css'; ds.rel = 'stylesheet'; ds.href = '/css/design-system.css?v=2';
     document.head.appendChild(ds);
   }
   if (!document.getElementById('gd-polish-css')) {
