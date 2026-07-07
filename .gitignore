@@ -39,3 +39,8 @@ android/.gradle/
 deploy/_*
 deploy/*.tgz
 src/data/
+
+# Promo media — large, keep out of git
+promo/images/
+promo/*.mp4
+promo/*.webm

@@ -297,6 +297,20 @@ exports.whatsappTest = async (req, res) => {
   }
 };
 
+// GET /api/admin/users/:id/packages — all tour packages of a provider (incl.
+// unpublished) so admin can review/edit their tours + prices. Editing/deleting
+// a package reuses PUT/DELETE /api/packages/:id (already admin-allowed).
+exports.userPackages = async (req, res) => {
+  try {
+    const list = await packages.findAllWhere({ providerId: req.params.id });
+    list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    res.json({ success: true, count: list.length, packages: list });
+  } catch (err) {
+    console.error('[admin.userPackages]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
 // GET /api/admin/reminder-test — run the pre-tour reminder pass now, or force a
 // single booking's reminder (?bookingId=...) regardless of the 12h window.
 exports.reminderTest = async (req, res) => {

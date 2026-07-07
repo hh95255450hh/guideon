@@ -1640,11 +1640,81 @@ function openEditUser(id, type) {
     (type === 'company' ? '🏢 ' : '🧭 ') + (u.companyName || u.fullName || '');
   document.getElementById('editUserBody').innerHTML =
     `<div class="row"><div class="col-md-12">${rows}</div></div>` +
-    `<div class="small text-muted">المعرض والأصول وباقات وأوقات التوفر تُحرَّر من لوحة المزوّد نفسه.</div>`;
+    `<hr class="my-3">` +
+    `<div class="d-flex align-items-center justify-content-between mb-2">
+       <h6 class="fw-800 mb-0">🗺️ الرحلات والأسعار · Tours &amp; prices</h6>
+       <span class="small text-muted" id="pkgCount"></span>
+     </div>` +
+    `<div id="editPkgs"><div class="text-muted small py-2">…جارٍ تحميل الرحلات</div></div>` +
+    `<div class="small text-muted mt-2">المعرض والأصول وأوقات التوفر تُحرَّر من لوحة المزوّد نفسه.</div>`;
   document.getElementById('editUserMsg').textContent = '';
+  loadEditPkgs(id);
   const m = document.getElementById('editUserModal');
   if (window.bootstrap && bootstrap.Modal) bootstrap.Modal.getOrCreateInstance(m).show();
   else m.style.display = 'flex';
+}
+
+// Load + render the provider's tour packages inside the edit modal (admin can
+// edit title/price/duration/published per tour; each saves independently).
+async function loadEditPkgs(uid) {
+  const box = document.getElementById('editPkgs');
+  try {
+    const r = await fetch('/api/admin/users/' + uid + '/packages', { credentials: 'include' });
+    const d = await r.json();
+    const list = d.packages || [];
+    document.getElementById('pkgCount').textContent = list.length + ' رحلة';
+    if (!list.length) { box.innerHTML = '<div class="text-muted small py-2">لا توجد رحلات لهذا المزوّد.</div>'; return; }
+    box.innerHTML = list.map(p => {
+      const esc = window.gdEsc || (s => s);
+      return `<div class="border rounded p-2 mb-2" data-pkg="${p.id}">
+        <input class="form-control form-control-sm mb-1" data-k="title" value="${esc(p.title || '')}" placeholder="عنوان الرحلة">
+        <div class="row g-1">
+          <div class="col-4"><input type="number" min="0" step="0.5" class="form-control form-control-sm" data-k="price_adult" value="${p.price_adult != null ? p.price_adult : ''}" placeholder="السعر (ر.ع)"></div>
+          <div class="col-4"><input type="number" min="0" class="form-control form-control-sm" data-k="duration_days" value="${p.duration_days != null ? p.duration_days : ''}" placeholder="أيام"></div>
+          <div class="col-4 d-flex align-items-center gap-1">
+            <div class="form-check mb-0"><input class="form-check-input" type="checkbox" data-k="isPublished" ${p.isPublished ? 'checked' : ''}><label class="form-check-label small">منشورة</label></div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <span class="small text-muted">${esc(p.destination || '')} · ${esc(p.category || '')}</span>
+          <div class="d-flex gap-1">
+            <button class="btn btn-sm btn-primary py-0 px-2" onclick="savePkg('${p.id}', this)">حفظ</button>
+            <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deletePkg('${p.id}', this)">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { box.innerHTML = '<div class="text-danger small">تعذّر تحميل الرحلات</div>'; }
+}
+
+async function savePkg(pid, btn) {
+  const row = btn.closest('[data-pkg]');
+  const body = {};
+  row.querySelectorAll('[data-k]').forEach(el => {
+    const k = el.getAttribute('data-k');
+    body[k] = el.type === 'checkbox' ? el.checked : (el.type === 'number' ? (el.value === '' ? null : parseFloat(el.value)) : el.value);
+  });
+  btn.disabled = true; const t = btn.textContent; btn.textContent = '…';
+  try {
+    const r = await fetch('/api/packages/' + pid, {
+      method: 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    btn.textContent = (r.ok && d.success) ? '✓' : '✗';
+    if (!(r.ok && d.success)) alert(d.message || 'فشل الحفظ');
+  } catch { btn.textContent = '✗'; }
+  finally { setTimeout(() => { btn.disabled = false; btn.textContent = t; }, 1200); }
+}
+
+async function deletePkg(pid, btn) {
+  if (!confirm('حذف هذه الرحلة نهائياً؟')) return;
+  try {
+    const r = await fetch('/api/packages/' + pid, { method: 'DELETE', credentials: 'include' });
+    const d = await r.json();
+    if (r.ok && d.success) { btn.closest('[data-pkg]').remove(); }
+    else alert(d.message || 'فشل الحذف');
+  } catch { alert('خطأ في الاتصال'); }
 }
 
 function closeEditUser(){ const m=document.getElementById('editUserModal'); if(window.bootstrap&&bootstrap.Modal){const i=bootstrap.Modal.getInstance(m);if(i)i.hide();} m.style.display='none'; }
