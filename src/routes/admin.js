@@ -63,6 +63,7 @@ router.patch('/users/:id/unsuspend', requirePermission('suspend_users'), admin.u
 
 // User editing
 router.get('/users/:id/packages',           requirePermission('edit_users'),     admin.userPackages);
+router.post('/users/:id/packages',          requirePermission('edit_users'),     admin.createUserPackage);
 router.patch('/users/:id',                  requirePermission('edit_users'),     admin.editUser);
 router.post('/users/:id/reset-password',    requirePermission('reset_passwords'), admin.adminResetPassword);
 router.delete('/users/:id',                 requirePermission('delete_users'),   admin.deleteUser);

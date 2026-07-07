@@ -311,6 +311,60 @@ exports.userPackages = async (req, res) => {
   }
 };
 
+// POST /api/admin/users/:id/packages — create a tour package on behalf of a
+// guide/company (admin action). Minimal required fields; provider can enrich later.
+exports.createUserPackage = async (req, res) => {
+  try {
+    const owner = await users.findById(req.params.id);
+    if (!owner) return res.status(404).json({ success: false, message: 'Provider not found.' });
+    if (!['guide', 'company'].includes(owner.userType)) {
+      return res.status(400).json({ success: false, message: 'Target is not a guide or company.' });
+    }
+    const b = req.body || {};
+    if (!b.title || !(parseFloat(b.price_adult) > 0)) {
+      return res.status(400).json({ success: false, message: 'Title and a price are required.' });
+    }
+    const days = Math.max(0, parseInt(b.duration_days) || 0);
+    const pkg = {
+      id: 'pkg-' + uuidv4().slice(0, 12),
+      providerId: owner.id, providerType: owner.userType,
+      guideId: owner.userType === 'guide' ? owner.id : null,
+      title: String(b.title).slice(0, 160),
+      description: b.description ? String(b.description) : String(b.title),
+      destination: b.destination || '',
+      category: b.category || 'Cultural',
+      categories: b.category ? [b.category] : [],
+      difficulty: 'moderate',
+      duration_days: days > 0 ? days : 1,   // satisfy the duration-nonzero constraint
+      duration_hours: 0, duration_minutes: 0,
+      max_group_size: 10,
+      price_adult: parseFloat(b.price_adult),
+      price_child: 0, currency: 'OMR',
+      includes: [], excludes: [], itinerary: [], images: [], cover_image: '',
+      cancellation_policy: 'flexible',
+      isPublished: !!b.isPublished,
+      isFeatured: false,
+      createdAt: new Date().toISOString(),
+    };
+    let created;
+    const dropped = [];
+    while (true) {
+      try { created = await packages.insert(pkg); break; }
+      catch (e) {
+        const m = String(e?.message || '').match(/Could not find the '([^']+)' column|column "([^"]+)" of relation/);
+        const col = m && (m[1] || m[2]);
+        if (col && pkg[col] !== undefined) { dropped.push(col); delete pkg[col]; continue; }
+        throw e;
+      }
+    }
+    audit.logAction(req, { action: 'createUserPackage', targetType: 'package', targetId: created.id, details: { providerId: owner.id, title: pkg.title } });
+    res.json({ success: true, package: created });
+  } catch (err) {
+    console.error('[admin.createUserPackage]', err.message);
+    res.status(500).json({ success: false, message: 'Could not create the tour.' });
+  }
+};
+
 // GET /api/admin/reminder-test — run the pre-tour reminder pass now, or force a
 // single booking's reminder (?bookingId=...) regardless of the 12h window.
 exports.reminderTest = async (req, res) => {
