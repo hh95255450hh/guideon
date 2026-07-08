@@ -21,8 +21,14 @@ set -uo pipefail   # deliberately NOT -e: we handle each failure and alert.
 REPO=/opt/guideon
 TAG='== Guideon Deploy =='
 
-# Load Resend creds (RESEND_API_KEY / EMAIL_FROM / ADMIN_EMAIL) for alerting.
-set -a; [ -f "$REPO/deploy/.env" ] && . "$REPO/deploy/.env"; set +a
+# Load ONLY the Resend creds we need. We do NOT `source` .env: bash chokes on
+# unquoted values that contain spaces or <> — e.g. EMAIL_FROM=Guideon
+# <noreply@guideon.om> is a syntax error that aborts sourcing and would leave
+# RESEND_API_KEY unset, silently breaking the very alerts we rely on.
+_env() { grep -E "^$1=" "$REPO/deploy/.env" 2>/dev/null | head -1 | cut -d= -f2-; }
+RESEND_API_KEY=$(_env RESEND_API_KEY)
+EMAIL_FROM=$(_env EMAIL_FROM)
+ADMIN_EMAIL=$(_env ADMIN_EMAIL)
 
 # alert "subject" "body"  — best-effort email; never blocks the deploy.
 alert() {
