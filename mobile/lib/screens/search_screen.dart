@@ -4,6 +4,7 @@ import '../models/guide.dart';
 import '../services/api.dart';
 import '../services/guide_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/gd_states.dart';
 import '../widgets/guide_card.dart';
 import 'guide_detail_screen.dart';
 
@@ -175,20 +176,16 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _body() {
     if (_loading) return const Center(child: CircularProgressIndicator(color: GdColors.teal));
-    if (_error != null) return Center(
-      child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.wifi_off, size: 56, color: GdColors.muted),
-        const SizedBox(height: 14),
-        Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: GdColors.muted)),
-        const SizedBox(height: 18),
-        FilledButton.icon(onPressed: _load, icon: const Icon(Icons.refresh), label: const Text('إعادة المحاولة')),
-      ])),
-    );
-    if (_guides.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.search_off, size: 56, color: GdColors.muted),
-      const SizedBox(height: 12),
-      Text('لا نتائج', style: const TextStyle(color: GdColors.muted, fontSize: 15)),
-    ]));
+    if (_error != null) return GdErrorState(message: _error!, onRetry: _load);
+    if (_guides.isEmpty) {
+      return GdEmptyState(
+        icon: Icons.search_off,
+        title: 'لا نتائج',
+        subtitle: _providerType == 'company'
+            ? 'لم نجد شركات تطابق بحثك. جرّب كلمة أخرى.'
+            : 'لم نجد مرشدين يطابقون بحثك. جرّب كلمة أخرى.',
+      );
+    }
     return RefreshIndicator(
       onRefresh: _load, color: GdColors.teal,
       child: ListView.builder(

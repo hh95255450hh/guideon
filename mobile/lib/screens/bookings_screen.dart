@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/api.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/gd_states.dart';
 import 'login_screen.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -144,26 +145,7 @@ class _BookingsScreenState extends State<BookingsScreen>
           child: CircularProgressIndicator(color: GdColors.teal, strokeWidth: 2.5));
     }
     if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.wifi_off_outlined, size: 56, color: GdColors.muted),
-              const SizedBox(height: 16),
-              Text(_error!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: GdColors.muted)),
-              const SizedBox(height: 20),
-              OutlinedButton.icon(
-                  onPressed: _load,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('إعادة المحاولة')),
-            ],
-          ),
-        ),
-      );
+      return GdErrorState(message: _error!, onRetry: _load);
     }
 
     return TabBarView(
@@ -196,31 +178,10 @@ class _BookingsScreenState extends State<BookingsScreen>
     );
   }
 
-  Widget _emptyState() => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                color: GdColors.teal.withValues(alpha: .08),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.event_note_outlined,
-                  size: 44, color: GdColors.teal),
-            ),
-            const SizedBox(height: 16),
-            const Text('لا توجد حجوزات',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: GdColors.navy)),
-            const SizedBox(height: 6),
-            const Text('حجوزاتك ستظهر هنا عند إتمامها',
-                style: TextStyle(color: GdColors.muted, fontSize: 13)),
-          ],
-        ),
+  Widget _emptyState() => const GdEmptyState(
+        icon: Icons.event_note_outlined,
+        title: 'لا توجد حجوزات',
+        subtitle: 'حجوزاتك ستظهر هنا عند إتمامها',
       );
 
   Widget _bookingCard(Map<String, dynamic> b, bool isGuide) {
