@@ -92,8 +92,16 @@ if [ "$BUILD_OK" -ne 1 ]; then
 fi
 
 # ── 2. Recreate the container from the freshly built image ──
-if ! docker compose up -d; then
-  alert "🔴 Guideon deploy FAILED (up -d)" "docker compose up -d failed for commit $AFTER after a successful build."
+# Retry: overlapping deploys can leave a stale container ref, so `up -d` throws
+# a transient "No such container" that resolves on a second attempt.
+UP_OK=0
+for i in 1 2 3; do
+  if docker compose up -d; then UP_OK=1; break; fi
+  echo ">> up -d attempt $i failed"
+  [ "$i" -lt 3 ] && { echo ">> retrying in 8s..."; sleep 8; }
+done
+if [ "$UP_OK" -ne 1 ]; then
+  alert "🔴 Guideon deploy FAILED (up -d ×3)" "docker compose up -d failed 3 times for commit $AFTER after a successful build."
   echo "$TAG up -d FAILED"; exit 1
 fi
 # git pull creates new inodes nginx must remount.
