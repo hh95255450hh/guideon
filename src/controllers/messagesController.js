@@ -49,7 +49,7 @@ async function send(req, res) {
     // Get sender and recipient names
     const [{ data: fromUser }, { data: toUser }] = await Promise.all([
       supabase.from('users').select('fullName,email,photo').eq('id', fromId).single(),
-      supabase.from('users').select('fullName').eq('id', toId).single(),
+      supabase.from('users').select('fullName,userType').eq('id', toId).single(),
     ]);
     if (!toUser) return res.status(404).json({ success: false, message: 'Recipient not found.' });
 
@@ -94,7 +94,11 @@ async function send(req, res) {
       titleAr: 'رسالة جديدة',
       body:   `${data.fromName}: ${snippet}`,
       bodyAr: `من ${data.fromName}: ${snippet}`,
-      link: '/' + (req.session.userType === 'tourist' ? 'tourist-dashboard' : req.session.userType === 'guide' ? 'guide-dashboard' : 'company-dashboard') + '.html#messages',
+      // Link must point at the RECIPIENT's dashboard, not the sender's — using
+      // req.session.userType (the sender) sent e.g. a guide a /tourist-dashboard
+      // link, which they can't access, so clicking the notification bounced them
+      // out of the platform instead of opening their messages.
+      link: '/' + (toUser.userType === 'tourist' ? 'tourist-dashboard' : toUser.userType === 'guide' ? 'guide-dashboard' : 'company-dashboard') + '.html#messages',
       metadata: { fromId, conversationId: convId(fromId, toId) },
     });
 
