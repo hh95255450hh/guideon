@@ -2,19 +2,28 @@ import '../models/guide.dart';
 import 'api.dart';
 
 class GuideService {
+  /// [type] mirrors the web "View all companies" toggle: pass 'company' to
+  /// list tourism companies instead of individual guides (same endpoint,
+  /// GET /api/guides?type=company — the backend branches on this param).
   static Future<List<Guide>> search({
     String? query,
     String? sortBy,
+    String? type,
     int limit = 24,
   }) async {
     final params = <String, dynamic>{'limit': limit};
     if (query != null && query.trim().isNotEmpty) params['destination'] = query.trim();
+    if (type != null && type.isNotEmpty) params['type'] = type;
     final res = await Api.instance.get('/guides', query: params);
     final list = (res.data is Map && res.data['guides'] is List)
         ? res.data['guides'] as List
         : const [];
     return list.whereType<Map<String, dynamic>>().map(Guide.fromJson).toList();
   }
+
+  /// Convenience wrapper — top/all tourism companies.
+  static Future<List<Guide>> companies({int limit = 24}) =>
+      search(type: 'company', limit: limit);
 
   static Future<Guide?> byId(String id) async {
     final res = await Api.instance.get('/guides/$id');

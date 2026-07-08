@@ -23,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<Guide> _companies = [];
   List<Guide> _top = [];
   List<Guide> _all = [];
   List<TourPackage> _packages = [];
@@ -51,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       final results = await Future.wait([
+        GuideService.companies(limit: 10),
         GuideService.search(limit: 6),
         GuideService.search(limit: 20),
         _activeCategory == null
@@ -59,10 +61,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ]);
       if (!mounted) return;
       setState(() {
-        _top      = results[0] as List<Guide>;
-        _all      = results[1] as List<Guide>;
-        _packages = results[2] as List<TourPackage>;
-        _loading  = false;
+        _companies = results[0] as List<Guide>;
+        _top       = results[1] as List<Guide>;
+        _all       = results[2] as List<Guide>;
+        _packages  = results[3] as List<TourPackage>;
+        _loading   = false;
       });
     } catch (e) {
       if (mounted) setState(() { _loading = false; _error = 'تعذّر الاتصال. تحقق من الإنترنت.'; });
@@ -336,6 +339,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
+            // ── COMPANIES (shown first, per platform order: companies →
+            // guides → trips) ─────────────────────────────────────
+            if (_loading || _companies.isNotEmpty)
+              SliverToBoxAdapter(
+                child: _section(
+                  title: '🏢 شركات سياحية',
+                  action: TextButton(
+                    onPressed: _openSearch,
+                    child: const Text('عرض الكل',
+                        style: TextStyle(color: GdColors.teal, fontSize: 13)),
+                  ),
+                  child: _loading
+                      ? _shimmerRow()
+                      : SizedBox(
+                          height: 230,
+                          child: _AutoScrollList(
+                            itemCount: _companies.length,
+                            itemWidth: 162,
+                            itemBuilder: (i) => _guideChip(_companies[i]),
+                          ),
+                        ),
+                ),
+              ),
 
             // ── TOP GUIDES ───────────────────────────────────────
             SliverToBoxAdapter(

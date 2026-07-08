@@ -142,10 +142,18 @@ class Guide {
   factory Guide.fromJson(Map<String, dynamic> j) {
     final dests = _strList(j['destinations']);
     final coords = _resolveCoords(dests, j);
+    final userType = (j['userType'] ?? 'guide').toString();
+    // Companies show their business name (companyName), not the signup
+    // contact person's name (fullName) — the two can differ, e.g. a company
+    // registered by "Ali Al Kindi" trading as "Duroob Oman Tourism".
+    final companyName = (j['companyName'] ?? '').toString().trim();
+    final displayName = (userType == 'company' && companyName.isNotEmpty)
+        ? companyName
+        : (j['fullName'] ?? '').toString();
     return Guide(
       id:             (j['id'] ?? '').toString(),
-      fullName:       (j['fullName'] ?? '').toString(),
-      userType:       (j['userType'] ?? 'guide').toString(),
+      fullName:       displayName,
+      userType:       userType,
       bio:            (j['bio'] ?? '').toString(),
       photo:          j['photo']?.toString(),
       profileImage:   j['profileImage']?.toString() ?? j['photo']?.toString(),
