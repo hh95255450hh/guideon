@@ -68,6 +68,11 @@ class GuideonApp extends StatelessWidget {
       title: 'Guideon',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      // Dark theme is fully defined but not auto-activated yet: individual
+      // screens still hardcode some light-only colors, so flip to
+      // ThemeMode.system only after each screen is audited for dark contrast.
+      themeMode: ThemeMode.light,
       locale: const Locale('ar'),
       supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: const [
