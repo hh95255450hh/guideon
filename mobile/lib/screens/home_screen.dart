@@ -588,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '${p.durationDays} ${p.durationDays == 1 ? 'يوم' : 'أيام'}',
+                        p.durationLabel,
                         style: const TextStyle(
                           color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
                       ),

@@ -8,6 +8,7 @@ import '../models/guide.dart';
 import '../models/tour_package.dart';
 import '../services/api.dart';
 import '../services/auth_service.dart';
+import '../services/crash_reporter.dart';
 import '../services/guide_service.dart';
 import '../services/package_service.dart';
 import '../theme/app_theme.dart';
@@ -52,7 +53,11 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
         _packages = pkgs;
         _loading = false;
       });
-    } catch (_) {
+    } catch (e, s) {
+      // Report so a fetch/parse failure here is visible in future — this used
+      // to fail silently, which made a "tours section title shows but no
+      // cards" report impossible to diagnose from server-side telemetry.
+      CrashReporter.report('GuideDetailScreen._load(${_guide.id}): $e', s);
       if (mounted) setState(() => _loading = false); // keep the summary we have
     }
   }
@@ -190,7 +195,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                         maxLines: 2, overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                     const SizedBox(height: 4),
-                    Text('📍 ${p.destination} · ${p.durationDays} يوم',
+                    Text('📍 ${p.destination} · ${p.durationLabel}',
                         style: const TextStyle(color: GdColors.muted, fontSize: 12)),
                     const SizedBox(height: 4),
                     Text(
