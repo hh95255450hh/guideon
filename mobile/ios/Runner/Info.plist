@@ -4,6 +4,15 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- Location: map "my location" + nearest guides. When-in-use only. -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>يُستخدم موقعك لعرض المرشدين والشركات السياحية الأقرب إليك على الخارطة. Your location is used to show the nearest guides and tour companies on the map.</string>
+	<!-- Camera + photo library: capture/pick images for profile, tour photos,
+	     reviews, and message attachments inside the in-app pages. -->
+	<key>NSCameraUsageDescription</key>
+	<string>تُستخدم الكاميرا لالتقاط صور ملفك الشخصي والرحلات والتقييمات ومرفقات الرسائل. The camera is used to capture photos for your profile, tours, reviews, and message attachments.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>تُستخدم مكتبة الصور لاختيار صور ملفك الشخصي والرحلات والتقييمات ومرفقات الرسائل. Your photo library is used to select images for your profile, tours, reviews, and message attachments.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

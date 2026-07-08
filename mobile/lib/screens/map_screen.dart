@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/guide.dart';
 import '../services/guide_service.dart';
+import '../services/location_service.dart';
 import '../theme/app_theme.dart';
 import 'guide_detail_screen.dart';
 
@@ -23,6 +24,8 @@ class _MapScreenState extends State<MapScreen>
   bool _loading = true;
   String? _error;
   Guide? _selected;
+  LatLng? _me;            // last known user location (null until located)
+  bool _locating = false; // "my location" request in flight
 
   // Center that frames the whole Sultanate (Musandam → Dhofar), not just Muscat.
   static const _oman = LatLng(21.8, 56.8);
@@ -77,11 +80,47 @@ class _MapScreenState extends State<MapScreen>
       .where((g) => g.latitude != null && g.longitude != null)
       .toList();
 
+  /// Locate the user, drop a "you" marker, and center the map on them.
+  Future<void> _locateMe() async {
+    if (_locating) return;
+    setState(() => _locating = true);
+    final res = await LocationService.current();
+    if (!mounted) return;
+    setState(() => _locating = false);
+    if (!res.ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res.message), backgroundColor: GdColors.danger),
+      );
+      return;
+    }
+    final me = LatLng(res.lat!, res.lng!);
+    setState(() => _me = me);
+    _mapCtrl.move(me, 11);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
       backgroundColor: GdColors.navy,
+      floatingActionButton: (_loading || _error != null)
+          ? null
+          : FloatingActionButton(
+              onPressed: _locating ? null : _locateMe,
+              backgroundColor: Colors.white,
+              foregroundColor: GdColors.teal,
+              tooltip: 'موقعي',
+              child: _locating
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          color: GdColors.teal, strokeWidth: 2.5),
+                    )
+                  : Icon(_me == null
+                      ? Icons.my_location
+                      : Icons.gps_fixed),
+            ),
       body: Stack(
         children: [
           // ── Map ──────────────────────────────────────────────────────────
@@ -99,6 +138,28 @@ class _MapScreenState extends State<MapScreen>
                 maxZoom: 18,
               ),
               MarkerLayer(markers: _buildMarkers()),
+              // "You are here" — drawn above the guide markers.
+              if (_me != null)
+                MarkerLayer(markers: [
+                  Marker(
+                    point: _me!,
+                    width: 26,
+                    height: 26,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blueAccent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.blueAccent.withOpacity(0.5),
+                              blurRadius: 10,
+                              spreadRadius: 2),
+                        ],
+                      ),
+                    ),
+                  ),
+                ]),
             ],
           ),
 
@@ -177,6 +238,12 @@ class _MapScreenState extends State<MapScreen>
               right: 16,
               child: _GuideCard(
                 guide: _selected!,
+                distanceKm: (_me != null &&
+                        _selected!.latitude != null &&
+                        _selected!.longitude != null)
+                    ? LocationService.distanceKm(_me!.latitude, _me!.longitude,
+                        _selected!.latitude!, _selected!.longitude!)
+                    : null,
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -224,11 +291,13 @@ class _GuideCard extends StatelessWidget {
   final Guide guide;
   final VoidCallback onTap;
   final VoidCallback onClose;
+  final double? distanceKm;
 
   const _GuideCard({
     required this.guide,
     required this.onTap,
     required this.onClose,
+    this.distanceKm,
   });
 
   @override
@@ -276,6 +345,20 @@ class _GuideCard extends StatelessWidget {
                     const SizedBox(width: 3),
                     Text(guide.rating.toStringAsFixed(1),
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    if (distanceKm != null) ...[
+                      const SizedBox(width: 10),
+                      const Icon(Icons.near_me, color: GdColors.teal, size: 13),
+                      const SizedBox(width: 3),
+                      Text(
+                        distanceKm! < 1
+                            ? 'أقل من كم'
+                            : '${distanceKm!.toStringAsFixed(distanceKm! < 10 ? 1 : 0)} كم',
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: GdColors.teal),
+                      ),
+                    ],
                   ]),
                 ],
               ),

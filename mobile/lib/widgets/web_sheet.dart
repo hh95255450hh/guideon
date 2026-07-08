@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import '../services/api.dart';
 import '../theme/app_theme.dart';
@@ -49,6 +51,16 @@ class _WebSheetState extends State<WebSheet> {
         onPageStarted: (_) => setState(() { _loading = true; }),
         onPageFinished: (_) => setState(() { _loading = false; }),
       ));
+
+    // Android: grant the WebView camera/mic when a guideon.om page requests it
+    // (e.g. live-capture photo uploads via getUserMedia). File-input uploads
+    // (<input type=file>) work without this — the native picker + the CAMERA
+    // manifest permission surface the camera option automatically.
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final android = _ctrl.platform as AndroidWebViewController;
+      android.setOnPlatformPermissionRequest((request) => request.grant());
+    }
+
     _syncCookiesThenLoad();
   }
 

@@ -35,6 +35,8 @@ dependencies:
   # Native map (replaces WebView-based explore.html — more reliable on all devices)
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  # Device geolocation — "my location" on the map + nearest-guides sorting.
+  geolocator: ^13.0.2
 
 dev_dependencies:
   flutter_test:

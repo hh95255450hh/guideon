@@ -6,11 +6,25 @@
          transitive dependency adds this permission automatically; strip it so
          the manifest matches the "no advertising ID" Play Console declaration. -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
-    <!-- No CAMERA / READ_MEDIA_IMAGES / LOCATION: the native map uses a fixed
-         Oman view (no device geolocation), and photo uploads happen inside the
-         WebView via the system file/photo picker, which needs no app-level
-         permission. Declaring unused permissions triggered Google Play's
-         photo/video + data-safety declarations, so we request none of them. -->
+
+    <!-- Location: powers the native map's "my location" button and the
+         "nearest guides/companies" sorting. Coarse + fine; both optional —
+         the app degrades gracefully to the fixed Oman view if denied. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Camera + media: lets users capture or pick a photo directly from the
+         in-app WebView upload flows (profile photo, tour images, review photos,
+         message attachments) without leaving the app. READ_MEDIA_IMAGES is the
+         Android 13+ scoped replacement for READ_EXTERNAL_STORAGE. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <!-- Camera hardware is optional so the app still installs on camera-less
+         devices; the picker falls back to the gallery. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
     <application
         android:label="Guideon"
         android:name="${applicationName}"
