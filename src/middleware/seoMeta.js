@@ -36,8 +36,12 @@ function esc(s) {
 function metaBlock({ title, description, image, url, jsonld }) {
   const t = esc(title), d = esc(description), img = esc(image), u = esc(url);
   // JSON-LD is machine-readable, so it just needs to be safe inside a <script>.
+  // Accept a single object or an array (entity + BreadcrumbList) → one <script> each.
   const ld = jsonld
-    ? `\n<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, '\\u003c')}</script>`
+    ? (Array.isArray(jsonld) ? jsonld : [jsonld])
+        .filter(Boolean)
+        .map(o => `\n<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>`)
+        .join('')
     : '';
   return `<title>${t}</title>
 <meta name="description" content="${d}">
@@ -65,6 +69,17 @@ function rating(score, count) {
 function places(list) {
   const arr = (Array.isArray(list) ? list : []).filter(Boolean).slice(0, 6);
   return arr.length ? arr.map(n => ({ '@type': 'Place', name: n })) : undefined;
+}
+// BreadcrumbList so Google shows a Home › Section › Page trail in results.
+// items: [{ name, url }] top-to-bottom.
+function crumbs(items) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((it, i) => ({
+      '@type': 'ListItem', position: i + 1, name: it.name, item: it.url,
+    })),
+  };
 }
 
 // Replace the first <title>…</title> with our title + meta block.
@@ -99,7 +114,12 @@ async function guideMeta(id) {
     knowsLanguage: (Array.isArray(g.languages) ? g.languages.filter(Boolean) : undefined),
     aggregateRating: rating(g.rating, g.totalReviews),
   };
-  return { title, description, image, url, jsonld };
+  const breadcrumb = crumbs([
+    { name: 'Guideon', url: APP_URL },
+    { name: 'Tour Guides', url: `${APP_URL}/#guides` },
+    { name: g.fullName, url },
+  ]);
+  return { title, description, image, url, jsonld: [jsonld, breadcrumb] };
 }
 
 async function tourMeta(id) {
@@ -126,7 +146,12 @@ async function tourMeta(id) {
     } : undefined,
     aggregateRating: rating(p.rating, p.totalReviews ?? p.total_reviews),
   };
-  return { title, description, image, url, jsonld };
+  const breadcrumb = crumbs([
+    { name: 'Guideon', url: APP_URL },
+    { name: 'Tours', url: `${APP_URL}/#tours` },
+    { name: p.title, url },
+  ]);
+  return { title, description, image, url, jsonld: [jsonld, breadcrumb] };
 }
 
 async function companyMeta(id) {
@@ -152,7 +177,12 @@ async function companyMeta(id) {
     areaServed: places(dests),
     aggregateRating: rating(c.rating, c.totalReviews),
   };
-  return { title, description, image, url, jsonld };
+  const breadcrumb = crumbs([
+    { name: 'Guideon', url: APP_URL },
+    { name: 'Tourism Companies', url: `${APP_URL}/#companies` },
+    { name, url },
+  ]);
+  return { title, description, image, url, jsonld: [jsonld, breadcrumb] };
 }
 
 // Region + blog-post pages are static HTML that render one shared title/desc for
