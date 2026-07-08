@@ -117,6 +117,17 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
           if (g.specialisations.isNotEmpty) _chips('التخصّصات', g.specialisations),
           if (g.destinations.isNotEmpty) _chips('الوجهات', g.destinations),
 
+          // ── Intro video ────────────────────────────────────────────────────
+          if ((g.videoFileUrl != null && g.videoFileUrl!.isNotEmpty) ||
+              (g.videoUrl != null && g.videoUrl!.isNotEmpty))
+            _videoSection(g),
+
+          // ── Photo gallery ──────────────────────────────────────────────────
+          if (g.galleryPhotos.isNotEmpty) _gallerySection(g.galleryPhotos),
+
+          // ── What the guide provides (assets: car, boat, equipment…) ─────────
+          if (g.assets.isNotEmpty) _assetsSection(g.assets),
+
           // ── Tours / packages ──────────────────────────────────────────────
           if (_loading)
             const Padding(
@@ -312,6 +323,137 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
           const SizedBox(height: 16),
         ],
       );
+
+  // ── Intro video: tap to play inside the in-app WebView ────────────────────
+  Widget _videoSection(Guide g) {
+    final raw = (g.videoFileUrl != null && g.videoFileUrl!.isNotEmpty)
+        ? g.videoFileUrl!
+        : g.videoUrl!;
+    final url = raw.startsWith('http') ? raw : 'https://guideon.om/$raw';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('فيديو تعريفي'),
+        InkWell(
+          onTap: () => _openWeb(url, 'فيديو ${g.fullName}'),
+          child: Container(
+            height: 170,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [GdColors.navy, GdColors.tealDark],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Center(
+              child: Icon(Icons.play_circle_fill, color: Colors.white, size: 60),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  // ── Horizontally-scrolling photo gallery ──────────────────────────────────
+  Widget _gallerySection(List<String> photos) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('معرض الصور'),
+        SizedBox(
+          height: 150,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: photos.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, i) => InkWell(
+              onTap: () => _openWeb(photos[i], 'صورة'),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: CachedNetworkImage(
+                  imageUrl: photos[i],
+                  width: 200,
+                  height: 150,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 400,
+                  errorWidget: (_, __, ___) => Container(
+                    width: 200,
+                    height: 150,
+                    color: const Color(0xFFE2F0EE),
+                    child: const Icon(Icons.image, color: GdColors.teal),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  // ── Assets the guide showcases (car, boat, gear…) ─────────────────────────
+  Widget _assetsSection(List<GuideAsset> assets) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle('ما يوفّره المرشد'),
+        ...assets.map((a) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFD6EFE9)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (a.photos.isNotEmpty)
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(14)),
+                      child: CachedNetworkImage(
+                        imageUrl: a.photos.first,
+                        height: 170,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        memCacheWidth: 720,
+                        errorWidget: (_, __, ___) => Container(
+                          height: 170,
+                          color: const Color(0xFFE2F0EE),
+                          child: const Icon(Icons.directions_car,
+                              color: GdColors.teal, size: 40),
+                        ),
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(a.title,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w800, fontSize: 15)),
+                        if (a.description.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(a.description,
+                              style: const TextStyle(
+                                  height: 1.5,
+                                  fontSize: 13,
+                                  color: GdColors.muted)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
 }
 
 class _SectionTitle extends StatelessWidget {

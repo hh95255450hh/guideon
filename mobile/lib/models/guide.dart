@@ -1,3 +1,27 @@
+/// A single asset a guide/company showcases (car, boat, equipment, …).
+class GuideAsset {
+  final String title;
+  final String type;
+  final String description;
+  final List<String> photos;
+
+  GuideAsset({
+    required this.title,
+    required this.type,
+    required this.description,
+    required this.photos,
+  });
+
+  factory GuideAsset.fromJson(Map<String, dynamic> j) => GuideAsset(
+        title: (j['title'] ?? '').toString(),
+        type: (j['type'] ?? '').toString(),
+        description: (j['description'] ?? '').toString(),
+        photos: (j['photos'] is List)
+            ? (j['photos'] as List).map((e) => e.toString()).where((e) => e.isNotEmpty).toList()
+            : const [],
+      );
+}
+
 /// A tour guide as returned by GET /api/guides.
 class Guide {
   final String id;
@@ -15,6 +39,11 @@ class Guide {
   final bool isVerified;
   final double? latitude;
   final double? longitude;
+  // Rich profile content (populated by GET /guides/:id; empty in list summaries).
+  final List<String> galleryPhotos;
+  final List<GuideAsset> assets;
+  final String? videoUrl;      // external (e.g. YouTube) link
+  final String? videoFileUrl;  // uploaded video file
 
   Guide({
     required this.id,
@@ -32,6 +61,10 @@ class Guide {
     required this.isVerified,
     this.latitude,
     this.longitude,
+    this.galleryPhotos = const [],
+    this.assets = const [],
+    this.videoUrl,
+    this.videoFileUrl,
   });
 
   static List<String> _strList(dynamic v) {
@@ -166,6 +199,15 @@ class Guide {
       isVerified:     j['isVerified'] == true,
       latitude:       coords?.$1,
       longitude:      coords?.$2,
+      galleryPhotos:  _strList(j['galleryPhotos']),
+      assets: (j['guideAssets'] is List)
+          ? (j['guideAssets'] as List)
+              .whereType<Map>()
+              .map((e) => GuideAsset.fromJson(e.cast<String, dynamic>()))
+              .toList()
+          : const [],
+      videoUrl:       (j['videoUrl'] ?? '').toString().isEmpty ? null : j['videoUrl'].toString(),
+      videoFileUrl:   (j['videoFileUrl'] ?? '').toString().isEmpty ? null : j['videoFileUrl'].toString(),
     );
   }
 }

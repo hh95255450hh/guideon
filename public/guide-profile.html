@@ -481,7 +481,18 @@ async function loadGuideTours() {
     const tours = (data.packages || data.data || []);
 
     if (!tours.length) {
-      list.innerHTML = `<div class="col-12 text-center text-muted py-4">${I18N.t('no_tours_yet') || 'No tours yet'}</div>`;
+      // No ready-made tours — but the guide still takes custom trip requests
+      // (the booking panel below is always present). Make that path obvious so
+      // the user doesn't read "no tours" as "can't book" (esp. inside the app's
+      // in-app WebView where the form sits below the fold).
+      list.innerHTML = `<div class="col-12 text-center text-muted py-4">
+        <div class="mb-2" style="font-size:2rem">🗺️</div>
+        <div class="fw-700 mb-1" style="color:#0f1c3e">${I18N.t('no_ready_tours_title') || 'لا توجد رحلات جاهزة بعد'}</div>
+        <div class="small mb-3">${I18N.t('no_ready_tours_sub') || 'يمكنك طلب رحلة مخصّصة بمتطلباتك والحصول على عرض سعر.'}</div>
+        <button class="btn btn-success fw-700 px-4" onclick="(document.querySelector('.booking-panel')||document.body).scrollIntoView({behavior:'smooth'})">
+          ${I18N.t('request_custom_trip') || '✨ اطلب رحلة مخصصة'}
+        </button>
+      </div>`;
       return;
     }
 
