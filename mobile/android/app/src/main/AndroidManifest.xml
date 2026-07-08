@@ -13,14 +13,15 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
-    <!-- Camera + media: lets users capture or pick a photo directly from the
-         in-app WebView upload flows (profile photo, tour images, review photos,
-         message attachments) without leaving the app. READ_MEDIA_IMAGES is the
-         Android 13+ scoped replacement for READ_EXTERNAL_STORAGE. -->
+    <!-- Camera: lets users capture a photo directly from the in-app WebView
+         upload flows (profile photo, tour images, review photos, message
+         attachments). We deliberately do NOT declare READ_MEDIA_IMAGES /
+         READ_EXTERNAL_STORAGE: our photo uploads are occasional, and Google
+         Play's Photos & Videos policy forbids those permissions for one-off /
+         infrequent access. Gallery selection goes through the Android Photo
+         Picker (via the WebView <input type=file> chooser), which needs no
+         media-read permission at all — so nothing is lost by omitting them. -->
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32"/>
     <!-- Camera hardware is optional so the app still installs on camera-less
          devices; the picker falls back to the gallery. -->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
