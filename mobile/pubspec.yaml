@@ -29,9 +29,14 @@ dependencies:
   webview_flutter_android: ^4.3.0
   # App version (force-update gate) + crash reporting context
   package_info_plus: ^8.0.2
-  # Push notifications (backend already exposes /auth/fcm-token)
-  firebase_core: ^2.27.0
-  firebase_messaging: ^14.7.19
+  # Push notifications (backend already exposes /auth/fcm-token).
+  # Gen-3 suite: gen-2 (core 2.x / messaging 14.x) can't satisfy the newer
+  # firebase_*_web packages on pub (they need firebase_core_platform_interface
+  # ^6, which core 2.x caps at ^5) — that mismatch broke `pub get`. The APIs
+  # this app uses (initializeApp, FirebaseMessaging.instance, onBackgroundMessage,
+  # getToken, requestPermission, onTokenRefresh) are unchanged across the major.
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.1.6
   # Native map (replaces WebView-based explore.html — more reliable on all devices)
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
