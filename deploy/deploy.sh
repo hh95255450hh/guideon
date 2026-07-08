@@ -29,24 +29,39 @@ _env() { grep -E "^$1=" "$REPO/deploy/.env" 2>/dev/null | head -1 | cut -d= -f2-
 RESEND_API_KEY=$(_env RESEND_API_KEY)
 EMAIL_FROM=$(_env EMAIL_FROM)
 ADMIN_EMAIL=$(_env ADMIN_EMAIL)
+# Alert recipients: prefer ADMIN_ALERT_EMAIL (comma-separated list, matches the
+# app's emailService convention) so deploy alerts can fan out to several inboxes
+# (e.g. a reliable hotmail + the official admin@guideon.om). Falls back to
+# ADMIN_EMAIL, then a hard default.
+ADMIN_ALERT_EMAIL=$(_env ADMIN_ALERT_EMAIL)
 
 # alert "subject" "body"  — best-effort email; never blocks the deploy.
+# Sends ONE message PER recipient. Critical: Resend suppresses the ENTIRE
+# message if ANY single "to" address is on its suppression list — so bundling a
+# suppressed address (e.g. admin@guideon.om) together with a good one (hotmail)
+# would silently drop the alert for BOTH. Separate sends isolate each address so
+# a healthy inbox always gets the alert regardless of the others.
 alert() {
   [ -z "${RESEND_API_KEY:-}" ] && { echo "!! alert (no RESEND key): $1"; return 0; }
   local from="${EMAIL_FROM:-Guideon <noreply@guideon.om>}"
-  local to="${ADMIN_EMAIL:-admin@guideon.om}"
-  # jq builds valid JSON (safe escaping); fall back to printf if jq is absent.
-  local payload
-  if command -v jq >/dev/null 2>&1; then
-    payload=$(jq -n --arg f "$from" --arg t "$to" --arg s "$1" --arg b "$2" \
-      '{from:$f,to:$t,subject:$s,text:$b}')
-  else
-    payload=$(printf '{"from":"%s","to":"%s","subject":"%s","text":"%s"}' \
-      "$from" "$to" "$1" "$2")
-  fi
-  curl -s --max-time 15 -X POST https://api.resend.com/emails \
-    -H "Authorization: Bearer $RESEND_API_KEY" \
-    -H "Content-Type: application/json" -d "$payload" >/dev/null 2>&1 || true
+  local recips="${ADMIN_ALERT_EMAIL:-${ADMIN_EMAIL:-admin@guideon.om}}"
+  local addr payload oldIFS="$IFS"
+  IFS=','
+  for addr in $recips; do
+    addr="$(printf '%s' "$addr" | tr -d '[:space:]')"   # trim
+    [ -z "$addr" ] && continue
+    if command -v jq >/dev/null 2>&1; then
+      payload=$(jq -n --arg f "$from" --arg t "$addr" --arg s "$1" --arg b "$2" \
+        '{from:$f,to:[$t],subject:$s,text:$b}')
+    else
+      payload=$(printf '{"from":"%s","to":"%s","subject":"%s","text":"%s"}' \
+        "$from" "$addr" "$1" "$2")
+    fi
+    curl -s --max-time 15 -X POST https://api.resend.com/emails \
+      -H "Authorization: Bearer $RESEND_API_KEY" \
+      -H "Content-Type: application/json" -d "$payload" >/dev/null 2>&1 || true
+  done
+  IFS="$oldIFS"
 }
 
 echo "$TAG start $(date -u +%FT%TZ)"
