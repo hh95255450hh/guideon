@@ -606,8 +606,13 @@ async function checkAuth() {
   try {
     const r = await fetch('/api/auth/me', { credentials: 'include' });
     const d = await r.json();
-    if (!d.success || d.user.userType !== 'guide') {
-      window.location.href = '/login.html'; return;
+    if (!d.success) { window.location.href = '/login.html'; return; }
+    if (d.user.userType !== 'guide') {
+      // Logged in but on the wrong dashboard (e.g. followed a stale notification
+      // deep-link). Send them to THEIR dashboard, not /login.html — landing on
+      // login while still authenticated looked like a forced logout.
+      const homes = { tourist:'/tourist-dashboard.html', guide:'/guide-dashboard.html', company:'/company-dashboard.html', admin:'/admin.html', staff:'/admin.html' };
+      window.location.href = (homes[d.user.userType] || '/') + (window.location.hash || ''); return;
     }
     GUIDE = d.user;
     AVAILABILITY = [...(GUIDE.availability || [])];
