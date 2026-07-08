@@ -39,7 +39,13 @@ class _MapScreenState extends State<MapScreen>
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final guides = await GuideService.search(limit: 100);
+      // Companies were previously never fetched here, so they never appeared
+      // on the map even when they had resolvable coordinates.
+      final results = await Future.wait([
+        GuideService.search(limit: 100),
+        GuideService.companies(limit: 100),
+      ]);
+      final guides = [...results[0], ...results[1]];
       if (mounted) {
         setState(() { _guides = guides; _loading = false; });
         // Frame the map around the guides that actually have coordinates.
@@ -157,7 +163,7 @@ class _MapScreenState extends State<MapScreen>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '${_mapped.length} مرشد على الخارطة',
+                  '${_mapped.length} مرشد وشركة على الخارطة',
                   style: const TextStyle(color: Colors.white70, fontSize: 12),
                 ),
               ),
@@ -187,6 +193,7 @@ class _MapScreenState extends State<MapScreen>
   List<Marker> _buildMarkers() {
     return _mapped.map((g) {
       final isSelected = _selected?.id == g.id;
+      final isCompany = g.userType == 'company';
       return Marker(
         point: LatLng(g.latitude!, g.longitude!),
         width: isSelected ? 48 : 36,
@@ -195,14 +202,16 @@ class _MapScreenState extends State<MapScreen>
           onTap: () => setState(() => _selected = g),
           child: Container(
             decoration: BoxDecoration(
-              color: isSelected ? GdColors.gold : GdColors.teal,
+              color: isSelected
+                  ? GdColors.gold
+                  : (isCompany ? GdColors.navy : GdColors.teal),
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2),
               boxShadow: [
                 BoxShadow(color: Colors.black26, blurRadius: 6, offset: const Offset(0, 3)),
               ],
             ),
-            child: const Icon(Icons.person_pin_circle,
+            child: Icon(isCompany ? Icons.storefront : Icons.person_pin_circle,
                 color: Colors.white, size: 20),
           ),
         ),

@@ -21,6 +21,10 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _loading = true;
   String? _error;
   String _activeFilter = 'all';
+  // 'guide' | 'company' — the backend's /api/guides?type= param decides which
+  // provider kind to search; without this, companies never appear anywhere
+  // in the app since this screen is the main discovery/search surface.
+  String _providerType = 'guide';
 
   final List<Map<String, String>> _filters = [
     {'key': 'all',     'label': 'الكل'},
@@ -50,7 +54,8 @@ class _SearchScreenState extends State<SearchScreen> {
       final q = _ctrl.text.trim().isNotEmpty ? _ctrl.text.trim()
           : (_activeFilter != 'all' && _activeFilter != 'top' && _activeFilter != 'cheap')
               ? _activeFilter : null;
-      final g = await GuideService.search(query: q, limit: 30);
+      final g = await GuideService.search(
+          query: q, type: _providerType == 'company' ? 'company' : null, limit: 30);
       List<Guide> sorted = g;
       if (_activeFilter == 'top') {
         sorted = [...g]..sort((a, b) => b.rating.compareTo(a.rating));
@@ -95,6 +100,20 @@ class _SearchScreenState extends State<SearchScreen> {
         ],
       ),
       body: Column(children: [
+        // Provider-type toggle — guides vs. companies (two separate result
+        // pools on the backend; without this switch companies are unreachable
+        // from search).
+        Container(
+          color: GdColors.navy,
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+          child: Row(
+            children: [
+              Expanded(child: _typeTab('guide', '🧭 مرشدون')),
+              const SizedBox(width: 8),
+              Expanded(child: _typeTab('company', '🏢 شركات')),
+            ],
+          ),
+        ),
         // Filter pills
         Container(
           color: GdColors.navy,
@@ -126,6 +145,31 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         Expanded(child: _body()),
       ]),
+    );
+  }
+
+  Widget _typeTab(String type, String label) {
+    final active = _providerType == type;
+    return GestureDetector(
+      onTap: active
+          ? null
+          : () {
+              setState(() => _providerType = type);
+              _load();
+            },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          color: active ? GdColors.teal : Colors.white12,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: active ? FontWeight.w800 : FontWeight.w600)),
+      ),
     );
   }
 

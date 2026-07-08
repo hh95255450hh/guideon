@@ -1,16 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../models/guide.dart';
 import '../models/tour_package.dart';
-import '../services/api.dart';
 import '../services/auth_service.dart';
 import '../services/guide_service.dart';
 import '../services/package_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/guide_card.dart';
+import '../widgets/web_sheet.dart';
 import 'guide_detail_screen.dart';
 import 'map_screen.dart';
 import 'search_screen.dart';
@@ -689,12 +688,8 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   void _openPackage(TourPackage p) {
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _WebSheet(
-        url: 'https://guideon.om/tour-package.html?id=${p.id}',
-        title: p.title,
-      ),
-    ));
+    openInAppWeb(
+        context, 'https://guideon.om/tour-package.html?id=${p.id}', p.title);
   }
 
   Widget _section({
@@ -893,81 +888,3 @@ class _ShimmerState extends State<_Shimmer>
       );
 }
 
-/// In-app WebView — used for tour package pages and booking flows.
-class _WebSheet extends StatefulWidget {
-  final String url;
-  final String title;
-  const _WebSheet({required this.url, required this.title});
-  @override
-  State<_WebSheet> createState() => _WebSheetState();
-}
-
-class _WebSheetState extends State<_WebSheet> {
-  late final WebViewController _ctrl;
-  bool _loading = true;
-  double _progress = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(NavigationDelegate(
-        onProgress: (p) => setState(() => _progress = p / 100),
-        onPageStarted: (_) => setState(() => _loading = true),
-        onPageFinished: (_) => setState(() => _loading = false),
-      ));
-    _syncCookiesThenLoad();
-  }
-
-  // Copy the app's express-session cookie into the WebView's own cookie store
-  // so booking/payment pages open logged-in (see guide_detail_screen).
-  Future<void> _syncCookiesThenLoad() async {
-    try {
-      final cm = WebViewCookieManager();
-      for (final c in await Api.instance.sessionCookies()) {
-        await cm.setCookie(WebViewCookie(
-          name: c.name,
-          value: c.value,
-          domain: 'guideon.om',
-          path: (c.path == null || c.path!.isEmpty) ? '/' : c.path!,
-        ));
-      }
-    } catch (_) {/* not logged in / no cookies — load anyway */}
-    if (mounted) _ctrl.loadRequest(Uri.parse(widget.url));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title,
-            style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
-        backgroundColor: GdColors.teal,
-        foregroundColor: Colors.white,
-        bottom: _loading
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(3),
-                child: LinearProgressIndicator(
-                  value: _progress == 0 ? null : _progress,
-                  color: GdColors.gold,
-                  backgroundColor: Colors.white30,
-                ),
-              )
-            : null,
-      ),
-      body: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, _) async {
-          if (didPop) return;
-          if (await _ctrl.canGoBack()) {
-            _ctrl.goBack();
-          } else {
-            if (context.mounted) Navigator.of(context).pop();
-          }
-        },
-        child: WebViewWidget(controller: _ctrl),
-      ),
-    );
-  }
-}

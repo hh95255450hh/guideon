@@ -56,7 +56,10 @@ class _BookingsScreenState extends State<BookingsScreen>
     final id = b['id']?.toString() ?? '';
     if (id.isEmpty) return;
     try {
-      await Api.instance.put('/bookings/$id/status', data: {'status': status});
+      // Backend only registers this route as PATCH (router.patch in
+      // src/routes/bookings.js) — a PUT here 404s, which previously made
+      // accept/reject silently fail for every guide/company.
+      await Api.instance.patch('/bookings/$id/status', data: {'status': status});
       await _load();
     } catch (e) {
       if (!mounted) return;

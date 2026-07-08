@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/web_sheet.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -97,11 +97,18 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 12),
           TextButton(
-            onPressed: () => _openWeb('register.html'),
+            onPressed: () async {
+              await openInAppWeb(context, 'register.html', 'إنشاء حساب');
+              // Registration happens inside the WebView's own cookie store;
+              // re-check /auth/me so a freshly created account is picked up
+              // by the native app the moment the sheet closes.
+              if (context.mounted) context.read<AuthService>().restore();
+            },
             child: const Text('ليس لديك حساب؟ سجّل الآن'),
           ),
           TextButton(
-            onPressed: () => _openWeb('forgot-password.html'),
+            onPressed: () => openInAppWeb(
+                context, 'forgot-password.html', 'نسيت كلمة المرور'),
             child: const Text('نسيت كلمة المرور؟',
                 style: TextStyle(color: GdColors.muted)),
           ),
@@ -110,8 +117,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> _openWeb(String page) async {
-    await launchUrl(Uri.parse('https://guideon.om/$page'),
-        mode: LaunchMode.externalApplication);
-  }
 }

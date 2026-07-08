@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/web_sheet.dart';
 import 'login_screen.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -54,7 +54,8 @@ class AccountScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               OutlinedButton(
-                onPressed: () => _web('register.html'),
+                onPressed: () =>
+                    openInAppWeb(context, 'register.html', 'إنشاء حساب'),
                 child: const Text('إنشاء حساب جديد'),
               ),
             ],
@@ -132,11 +133,14 @@ class AccountScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: GestureDetector(
-              onTap: () => _web(isCompany
-                  ? 'company-dashboard.html'
-                  : isGuide
-                      ? 'guide-dashboard.html'
-                      : 'team-dashboard.html'),
+              onTap: () => openInAppWeb(
+                  context,
+                  isCompany
+                      ? 'company-dashboard.html'
+                      : isGuide
+                          ? 'guide-dashboard.html'
+                          : 'team-dashboard.html',
+                  'لوحة التحكّم'),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -197,20 +201,21 @@ class AccountScreen extends StatelessWidget {
         // ── Menu items ─────────────────────────────────────────
         _section([
           _tile(Icons.person_outline, 'الملفّ الشخصي',
-              () => _web('profile.html')),
+              () => openInAppWeb(context, 'profile.html', 'الملفّ الشخصي')),
           _tile(Icons.chat_bubble_outline, 'الرسائل',
-              () => _web('${_dashboardPage(u.userType)}#messages')),
+              () => openInAppWeb(context,
+                  '${_dashboardPage(u.userType)}#messages', 'الرسائل')),
           _tile(Icons.favorite_border, 'المفضّلة',
-              () => _web('wishlist.html')),
+              () => openInAppWeb(context, 'wishlist.html', 'المفضّلة')),
         ]),
 
         _section([
           _tile(Icons.help_outline, 'المساعدة والدعم',
-              () => _web('contact.html')),
+              () => openInAppWeb(context, 'contact.html', 'المساعدة والدعم')),
           _tile(Icons.privacy_tip_outlined, 'سياسة الخصوصية',
-              () => _web('privacy.html')),
+              () => openInAppWeb(context, 'privacy.html', 'سياسة الخصوصية')),
           _tile(Icons.description_outlined, 'شروط الاستخدام',
-              () => _web('terms.html')),
+              () => openInAppWeb(context, 'terms.html', 'شروط الاستخدام')),
         ]),
 
         _section([
@@ -333,8 +338,4 @@ class AccountScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _web(String page) async {
-    await launchUrl(Uri.parse('https://guideon.om/$page'),
-        mode: LaunchMode.externalApplication);
-  }
 }
