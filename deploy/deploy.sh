@@ -65,6 +65,17 @@ alert() {
 }
 
 echo "$TAG start $(date -u +%FT%TZ)"
+
+# Serialize deploys: the push webhook and a manual `bash /opt/deploy.sh` can
+# fire at once and race on git/docker (transient "git pull"/"up -d" failures
+# that triggered false-alarm alerts). Take an exclusive lock; if another deploy
+# already holds it, exit cleanly (0) — the running one covers this commit.
+exec 9>/tmp/guideon-deploy.lock
+if ! flock -n 9; then
+  echo "$TAG another deploy is already running — skipping this one."
+  exit 0
+fi
+
 cd "$REPO" || { echo "FATAL: $REPO missing"; exit 1; }
 
 BEFORE=$(git rev-parse --short HEAD 2>/dev/null || echo '?')
