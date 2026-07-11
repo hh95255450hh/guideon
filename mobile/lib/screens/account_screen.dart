@@ -90,6 +90,7 @@ class AccountScreen extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: u.photo!,
                           fit: BoxFit.cover,
+                          memCacheWidth: 240,
                           errorWidget: (_, __, ___) => _avatarFallback(u.fullName),
                         )
                       : _avatarFallback(u.fullName),

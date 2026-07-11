@@ -77,6 +77,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
                       width: 120,
                       height: 120,
                       fit: BoxFit.cover,
+                      memCacheWidth: 240,
                       errorWidget: (_, __, ___) => _ph(),
                     )
                   : _ph(),
@@ -190,6 +191,7 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
               child: (p.coverImage != null && p.coverImage!.isNotEmpty)
                   ? CachedNetworkImage(
                       imageUrl: p.coverImage!, width: 96, height: 96, fit: BoxFit.cover,
+                      memCacheWidth: 192,
                       errorWidget: (_, __, ___) => _pkgPh())
                   : _pkgPh(),
             ),

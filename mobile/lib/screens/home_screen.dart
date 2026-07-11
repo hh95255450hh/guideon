@@ -493,6 +493,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 110,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      memCacheWidth: 400,
                       errorWidget: (_, __, ___) => _photoPlaceholder(),
                     )
                   : _photoPlaceholder(),
@@ -600,6 +601,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 110,
                           width: double.infinity,
                           fit: BoxFit.cover,
+                          memCacheWidth: 400,
                           errorWidget: (_, __, ___) => _pkgPlaceholder(),
                         )
                       : _pkgPlaceholder(),

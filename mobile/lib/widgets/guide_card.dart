@@ -130,6 +130,7 @@ class GuideCard extends StatelessWidget {
         child: CachedNetworkImage(
           imageUrl: guide.photo!,
           width: size, height: size, fit: BoxFit.cover,
+          memCacheWidth: (size * 2).round(),
           placeholder: (_, __) => _ph(size),
           errorWidget: (_, __, ___) => _ph(size),
         ),
