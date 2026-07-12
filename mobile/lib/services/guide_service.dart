@@ -40,13 +40,18 @@ class GuideService {
   /// Full public profile PLUS the guide's reviews (GET /api/guides/:id returns
   /// { guide, reviews }). The list/search Guide object is only a summary, so the
   /// detail screen must fetch this to show the complete bio + reviews.
-  static Future<({Guide? guide, List<Map<String, dynamic>> reviews})> profile(String id) async {
-    final res = await Api.instance.get('/guides/$id');
+  /// Full profile + reviews. Companies MUST hit /companies/:id — the /guides/:id
+  /// endpoint 404s for a company, which made the entire company detail screen
+  /// come back empty (no name, photo, tours or reviews).
+  static Future<({Guide? guide, List<Map<String, dynamic>> reviews})> profile(
+      String id, {bool isCompany = false}) async {
+    final res = await Api.instance.get(isCompany ? '/companies/$id' : '/guides/$id');
     final data = res.data;
     Guide? g;
     var revs = <Map<String, dynamic>>[];
     if (data is Map) {
-      final gm = data['guide'];
+      // Guide endpoint wraps as {guide:…}; company endpoint as {company:…} or flat.
+      final gm = data['guide'] ?? data['company'];
       if (gm is Map) {
         g = Guide.fromJson(gm.cast<String, dynamic>());
       } else if (data['id'] != null) {

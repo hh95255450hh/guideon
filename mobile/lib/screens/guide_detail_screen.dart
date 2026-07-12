@@ -44,7 +44,8 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
 
   Future<void> _loadProfile() async {
     try {
-      final prof = await GuideService.profile(_guide.id);
+      final prof = await GuideService.profile(_guide.id,
+          isCompany: _guide.userType == 'company');
       if (!mounted) return;
       setState(() {
         if (prof.guide != null) _guide = prof.guide!;
