@@ -34,29 +34,34 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
   }
 
   Future<void> _load() async {
-    // Fetch the FULL profile (+reviews) and the guide's tours in parallel. The
-    // object passed from the list is only a summary — without this the detail
-    // screen showed a truncated bio and no tours at all.
+    // Load the full profile and the tours INDEPENDENTLY. They used to share one
+    // Future.wait, so a hiccup in EITHER call wiped out BOTH — the tourist saw a
+    // bare summary with no bio/gallery/assets AND no tours. Now each failure is
+    // isolated: tours still render if the profile call fails, and vice versa.
+    await Future.wait([_loadProfile(), _loadPackages()]);
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _loadProfile() async {
     try {
-      final results = await Future.wait([
-        GuideService.profile(_guide.id),
-        PackageService.byProvider(_guide.id),
-      ]);
-      final prof = results[0] as ({Guide? guide, List<Map<String, dynamic>> reviews});
-      final pkgs = results[1] as List<TourPackage>;
+      final prof = await GuideService.profile(_guide.id);
       if (!mounted) return;
       setState(() {
         if (prof.guide != null) _guide = prof.guide!;
         _reviews = prof.reviews;
-        _packages = pkgs;
-        _loading = false;
       });
     } catch (e, s) {
-      // Report so a fetch/parse failure here is visible in future — this used
-      // to fail silently, which made a "tours section title shows but no
-      // cards" report impossible to diagnose from server-side telemetry.
-      CrashReporter.report('GuideDetailScreen._load(${_guide.id}): $e', s);
-      if (mounted) setState(() => _loading = false); // keep the summary we have
+      CrashReporter.report('GuideDetail.profile(${_guide.id}): $e', s);
+    }
+  }
+
+  Future<void> _loadPackages() async {
+    try {
+      final pkgs = await PackageService.byProvider(_guide.id);
+      if (!mounted) return;
+      setState(() => _packages = pkgs);
+    } catch (e, s) {
+      CrashReporter.report('GuideDetail.packages(${_guide.id}): $e', s);
     }
   }
 
