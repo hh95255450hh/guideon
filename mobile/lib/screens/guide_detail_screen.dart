@@ -141,10 +141,22 @@ class _GuideDetailScreenState extends State<GuideDetailScreen> {
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(child: CircularProgressIndicator(color: GdColors.teal)),
             )
-          else if (_packages.isNotEmpty) ...[
+          else ...[
+            // Always render the tours section with an explicit state — never a
+            // bare title with nothing under it. If the provider has no ready
+            // tours, say so and point to a custom request.
             const SizedBox(height: 8),
             const _SectionTitle('الرحلات المتاحة'),
-            ..._packages.map(_packageCard),
+            if (_packages.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 14),
+                child: Text(
+                  'لا توجد رحلات جاهزة حالياً — يمكنك طلب رحلة مخصّصة عبر «احجز الآن».',
+                  style: TextStyle(color: GdColors.muted, height: 1.5),
+                ),
+              )
+            else
+              ..._packages.map(_packageCard),
             const SizedBox(height: 8),
           ],
 
