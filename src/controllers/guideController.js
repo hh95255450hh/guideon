@@ -193,7 +193,12 @@ exports.topCompanies = async (req, res) => {
 exports.getGuide = async (req, res) => {
   try {
     const guide = await users.findById(req.params.id);
-    if (!guide || guide.userType !== 'guide') {
+    // Accept guides AND companies here: the mobile app opens both a guide and a
+    // company detail via /api/guides/:id, and a hard 404 for companies left the
+    // whole company screen empty (no name, photo, tours or reviews). Companies
+    // are public entities with the same sanitised shape, so serve them too.
+    // Only genuine non-providers (tourist/admin/staff) still 404.
+    if (!guide || (guide.userType !== 'guide' && guide.userType !== 'company')) {
       return res.status(404).json({ success: false, message: 'Guide not found.' });
     }
     const { password, ...safe } = guide;
