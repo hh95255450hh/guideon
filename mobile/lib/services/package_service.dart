@@ -14,9 +14,14 @@ class PackageService {
     final out = <TourPackage>[];
     var dropped = 0;
     for (final item in list) {
-      if (item is! Map<String, dynamic>) continue;
+      // Accept ANY map: Dio/jsonDecode can hand back Map<dynamic,dynamic> for
+      // nested list items, and the old strict `is Map<String,dynamic>` check
+      // then silently skipped EVERY package — the tours section rendered empty
+      // even though the API returned them (and no error was ever reported).
+      // .cast<String,dynamic>() coerces it, matching the working profile code.
+      if (item is! Map) continue;
       try {
-        out.add(TourPackage.fromJson(item));
+        out.add(TourPackage.fromJson(item.cast<String, dynamic>()));
       } catch (e, s) {
         dropped++;
         CrashReporter.report(
