@@ -30,6 +30,7 @@ class _WebTabState extends State<WebTab> with AutomaticKeepAliveClientMixin {
   late final WebViewController _ctrl;
   double _progress = 0;
   bool _loading = true;
+  bool _firstLoad = true; // show a full spinner only until the first paint
 
   @override
   bool get wantKeepAlive => true;
@@ -39,10 +40,15 @@ class _WebTabState extends State<WebTab> with AutomaticKeepAliveClientMixin {
     super.initState();
     _ctrl = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.white) // no black flash before first paint
+      ..enableZoom(false) // app-like: no pinch-zoom on the page
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (p) => setState(() => _progress = p / 100),
         onPageStarted: (_) => setState(() => _loading = true),
-        onPageFinished: (_) => setState(() => _loading = false),
+        onPageFinished: (_) => setState(() {
+          _loading = false;
+          _firstLoad = false;
+        }),
       ));
 
     // Android: let guideon.om pages use the camera (photo uploads) when asked.
@@ -84,7 +90,22 @@ class _WebTabState extends State<WebTab> with AutomaticKeepAliveClientMixin {
             backgroundColor: const Color(0xFFE6F2EF),
             minHeight: 2.5,
           ),
-        Expanded(child: WebViewWidget(controller: _ctrl)),
+        Expanded(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: _ctrl),
+              // A clean branded spinner covers the blank page only on the very
+              // first load, so the tab never shows an empty white void.
+              if (_firstLoad)
+                const ColoredBox(
+                  color: Colors.white,
+                  child: Center(
+                    child: CircularProgressIndicator(color: GdColors.teal),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }

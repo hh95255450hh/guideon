@@ -66,9 +66,17 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
+  // Only tabs the user has actually opened get a live WebView. Loading all five
+  // at launch meant five simultaneous page loads → very slow startup. Home (0)
+  // loads immediately; the rest load lazily on first tap and stay alive after.
+  final Set<int> _visited = {0};
+
   void _onTap(int i) {
     HapticFeedback.selectionClick();
-    setState(() => _index = i);
+    setState(() {
+      _index = i;
+      _visited.add(i);
+    });
   }
 
   // Hardware back: step back through the active tab's web history first;
@@ -98,7 +106,10 @@ class _HomeShellState extends State<HomeShell> {
         index: _index,
         children: [
           for (var i = 0; i < _tabUrls.length; i++)
-            WebTab(url: _tabUrls[i], onReady: (c) => _controllers[i] = c),
+            if (_visited.contains(i))
+              WebTab(url: _tabUrls[i], onReady: (c) => _controllers[i] = c)
+            else
+              const SizedBox.shrink(),
         ],
       ),
       bottomNavigationBar: Container(
