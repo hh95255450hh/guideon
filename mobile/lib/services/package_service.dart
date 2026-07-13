@@ -45,7 +45,18 @@ class PackageService {
     final res = await Api.instance.get('/packages',
         query: {'providerId': providerId, 'limit': limit});
     final data = res.data is Map ? res.data['packages'] : null;
-    return _parseList(data, limit, 'byProvider');
+    final result = _parseList(data, limit, 'byProvider');
+    // TEMP DIAGNOSTIC (remove after root-cause): report the exact shapes so the
+    // "tours fetched but not shown" bug can be pinned from the server logs.
+    CrashReporter.report(
+        'DIAG byProvider($providerId): '
+        'dataType=${res.data.runtimeType} '
+        'packagesType=${data.runtimeType} '
+        'rawLen=${data is List ? data.length : "n/a"} '
+        'parsed=${result.length} '
+        'firstItemType=${data is List && data.isNotEmpty ? data.first.runtimeType : "n/a"}',
+        null);
+    return result;
   }
 
   /// Fetches the most popular/featured published tour packages.
