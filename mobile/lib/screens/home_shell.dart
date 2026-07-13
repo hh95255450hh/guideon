@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../services/app_update.dart';
 import '../theme/app_theme.dart';
-import 'home_screen.dart';
-import 'search_screen.dart';
-import 'bookings_screen.dart';
-import 'map_screen.dart';
-import 'account_screen.dart';
+import '../widgets/web_tab.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -18,6 +15,22 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+
+  // The app mirrors the guideon.om platform: each tab is a session-synced
+  // WebView of the matching page. Bookings/Account point at the dashboard,
+  // which the web guard routes to the right role's page (or login).
+  static const _tabUrls = [
+    'https://guideon.om/',                                 // الرئيسية
+    'https://guideon.om/search.html',                      // بحث
+    'https://guideon.om/tourist-dashboard.html#bookings',  // حجوزاتي
+    'https://guideon.om/explore.html',                     // الخارطة
+    'https://guideon.om/tourist-dashboard.html',           // حسابي
+  ];
+
+  // Controllers per tab so the hardware back button drives the active tab's
+  // web history instead of exiting the app on the first back press.
+  final List<WebViewController?> _controllers =
+      List<WebViewController?>.filled(5, null);
 
   @override
   void initState() {
@@ -53,23 +66,41 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
-  static const _pages = [
-    HomeScreen(),
-    SearchScreen(),
-    BookingsScreen(),
-    MapScreen(),
-    AccountScreen(),
-  ];
-
   void _onTap(int i) {
     HapticFeedback.selectionClick();
     setState(() => _index = i);
   }
 
+  // Hardware back: step back through the active tab's web history first;
+  // only leave the app when there's nowhere left to go back to.
+  Future<void> _handleBack() async {
+    final c = _controllers[_index];
+    if (c != null && await c.canGoBack()) {
+      c.goBack();
+      return;
+    }
+    if (_index != 0) {
+      setState(() => _index = 0); // fall back to Home before exiting
+      return;
+    }
+    await SystemNavigator.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _index, children: _pages),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack();
+      },
+      child: Scaffold(
+      body: IndexedStack(
+        index: _index,
+        children: [
+          for (var i = 0; i < _tabUrls.length; i++)
+            WebTab(url: _tabUrls[i], onReady: (c) => _controllers[i] = c),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -97,6 +128,7 @@ class _HomeShellState extends State<HomeShell> {
           ),
         ),
       ),
+    ),
     );
   }
 
