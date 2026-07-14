@@ -5,6 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import '../services/api.dart';
+import '../services/push_service.dart';
 import '../theme/app_theme.dart';
 
 /// A full-screen, session-synced WebView used as a bottom-nav tab. The app now
@@ -49,10 +50,13 @@ class _WebTabState extends State<WebTab> with AutomaticKeepAliveClientMixin {
           _loading = true;
           _error = false;
         }),
-        onPageFinished: (_) => setState(() {
-          _loading = false;
-          _firstLoad = false;
-        }),
+        onPageFinished: (_) {
+          setState(() {
+            _loading = false;
+            _firstLoad = false;
+          });
+          _registerPushToken(); // link this device's FCM token to the logged-in user
+        },
         // Show a friendly retry screen instead of Chrome's raw error page
         // (e.g. net::ERR_INTERNET_DISCONNECTED when the device drops offline).
         onWebResourceError: (err) {
@@ -123,6 +127,20 @@ class _WebTabState extends State<WebTab> with AutomaticKeepAliveClientMixin {
           ),
         ),
       ],
+    );
+  }
+
+  // Register the device's FCM token through the WebView's own authenticated
+  // session (which holds the express-session cookie after a web login). On a
+  // logged-out page /auth/fcm-token just 401s and is ignored — harmless.
+  void _registerPushToken() {
+    final t = PushService.instance.token;
+    if (t == null || t.isEmpty) return;
+    final safe = t.replaceAll("'", "");
+    _ctrl.runJavaScript(
+      "fetch('/api/auth/fcm-token',{method:'POST',"
+      "headers:{'Content-Type':'application/json'},credentials:'include',"
+      "body:JSON.stringify({token:'$safe'})}).catch(function(){});",
     );
   }
 

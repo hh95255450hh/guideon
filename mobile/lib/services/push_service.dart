@@ -21,6 +21,11 @@ class PushService {
 
   bool _ready = false;
 
+  /// The current FCM token. Exposed so the WebView tabs can register it via the
+  /// authenticated web session (login now happens inside the WebView, so the
+  /// native Dio jar may not hold the session cookie).
+  String? token;
+
   Future<void> init() async {
     if (_ready) return;
     try {
@@ -38,8 +43,12 @@ class PushService {
     // iOS/Android 13+ runtime permission.
     await messaging.requestPermission(alert: true, badge: true, sound: true);
 
-    // Refresh the server token whenever it rotates.
-    messaging.onTokenRefresh.listen(_registerToken);
+    // Cache the token (for WebView registration) and keep it fresh on rotation.
+    token = await messaging.getToken();
+    messaging.onTokenRefresh.listen((t) {
+      token = t;
+      _registerToken(t);
+    });
   }
 
   /// Call after a successful login (and on app start when already logged in).
