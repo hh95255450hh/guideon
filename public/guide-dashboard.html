@@ -393,12 +393,19 @@
                 <!-- DATES + ITINERARY -->
                 <div id="tt-dates" class="tour-tab" style="display:none">
                   <h6 class="fw-700 mb-2" data-i18n="available_dates_title">📅 Available Departure Dates</h6>
-                  <p class="small text-muted" data-i18n="available_dates_desc">Tourists can only book these specific dates.</p>
-                  <div class="d-flex gap-2 mb-2 flex-wrap">
-                    <input type="date" class="form-control form-control-sm" id="newDateInput" style="max-width:200px">
-                    <button type="button" class="btn btn-sm btn-outline-teal" onclick="addAvailableDate()" data-i18n="add_date_btn">+ Add Date</button>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="dailyAvailableCheck" onchange="toggleDailyAvailable()">
+                    <label class="form-check-label fw-600" for="dailyAvailableCheck">🗓️ متاح كل يوم — Available every day</label>
                   </div>
-                  <div id="availableDatesList" class="d-flex flex-wrap gap-1 mb-4"></div>
+                  <div id="specificDatesWrap">
+                    <p class="small text-muted" data-i18n="available_dates_desc">Tourists can only book these specific dates.</p>
+                    <div class="d-flex gap-2 mb-2 flex-wrap">
+                      <input type="date" class="form-control form-control-sm" id="newDateInput" style="max-width:200px">
+                      <button type="button" class="btn btn-sm btn-outline-teal" onclick="addAvailableDate()" data-i18n="add_date_btn">+ Add Date</button>
+                    </div>
+                    <div id="availableDatesList" class="d-flex flex-wrap gap-1 mb-4"></div>
+                  </div>
+                  <div id="dailyAvailableNote" class="small text-muted mb-4" style="display:none">✅ الرحلة متاحة كل يوم — يختار السائح أي تاريخ مستقبلي.</div>
 
                   <hr>
                   <h6 class="fw-700 mb-2 mt-3" data-i18n="itinerary_title">🗺️ Day-by-day Itinerary</h6>
@@ -865,6 +872,16 @@ function addAvailableDate() {
 }
 function removeDate(i) { TOUR_DATES.splice(i,1); renderAvailableDates(); }
 
+// "Available every day": the tour is bookable on any future date, so the guide
+// doesn't add each date. Stored as the sentinel availableDates:['daily'].
+function toggleDailyAvailable() {
+  const on = document.getElementById('dailyAvailableCheck').checked;
+  document.getElementById('specificDatesWrap').style.display = on ? 'none' : '';
+  document.getElementById('dailyAvailableNote').style.display = on ? '' : 'none';
+  TOUR_DATES = on ? ['daily'] : TOUR_DATES.filter(d => d !== 'daily');
+  if (!on) renderAvailableDates();
+}
+
 function renderItinerary() {
   const el = document.getElementById('itineraryList');
   const T = (k, en) => (window.I18N && I18N.t(k)) || en;
@@ -938,6 +955,11 @@ function openTourModal(tour) {
   TOUR_ADDONS    = Array.isArray(tour?.addons)         ? [...tour.addons]         : [];
   TOUR_DATES     = Array.isArray(tour?.availableDates) ? [...tour.availableDates] : [];
   TOUR_ITINERARY = Array.isArray(tour?.itinerary)      ? [...tour.itinerary]      : [];
+  // Reflect the "available every day" state (sentinel availableDates:['daily']).
+  const daily = TOUR_DATES.includes('daily');
+  document.getElementById('dailyAvailableCheck').checked = daily;
+  document.getElementById('specificDatesWrap').style.display = daily ? 'none' : '';
+  document.getElementById('dailyAvailableNote').style.display = daily ? '' : 'none';
   renderVariants(); renderAddons(); renderAvailableDates(); renderItinerary();
   document.querySelectorAll('#tourModal .nav-tabs .nav-link').forEach((b,i) => b.classList.toggle('active', i===0));
   document.querySelectorAll('.tour-tab').forEach((t,i) => t.style.display = i===0 ? '' : 'none');

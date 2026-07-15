@@ -104,7 +104,9 @@ async function createBooking(touristId, body, guest = null) {
     if (!packageData.isPublished) throw new BookingError(400, 'Package is not available for booking.', 'PACKAGE_UNPUBLISHED');
 
     const pkgDates = Array.isArray(packageData.availableDates) ? packageData.availableDates : [];
-    if (pkgDates.length && !pkgDates.includes(tourDate)) {
+    // 'daily' sentinel = tour is available every day → any future date is fine.
+    const dailyAvailable = pkgDates.includes('daily');
+    if (!dailyAvailable && pkgDates.length && !pkgDates.includes(tourDate)) {
       throw new BookingError(400, 'Selected date is not available for this tour.', 'DATE_UNAVAILABLE');
     }
 

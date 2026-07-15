@@ -348,9 +348,19 @@ function renderPackage() {
   const today = new Date().toISOString().slice(0,10);
   const dates = Array.isArray(p.availableDates) ? p.availableDates : [];
   const datesEl = document.getElementById('datesContainer');
-  const future = dates.filter(d => d >= today).sort();
+  const isDaily = dates.includes('daily'); // available every day
+  const future = dates.filter(d => d !== 'daily' && d >= today).sort();
   const isAr = window.I18N && I18N.lang === 'ar';
-  if (future.length) {
+  if (isDaily) {
+    // Available every day → free date picker for any future date.
+    datesEl.innerHTML = `
+      <input type="date" id="freeDateInput" class="form-control form-control-sm" min="${today}"
+             onchange="selectFreeDate(this.value)" style="max-width:210px">
+      <div class="small text-muted mt-1" style="width:100%">
+        ${isAr ? '🗓️ متاحة كل يوم — اختر أي تاريخ يناسبك.'
+               : '🗓️ Available every day — pick any date that suits you.'}
+      </div>`;
+  } else if (future.length) {
     // Guide set specific dates → show them as quick-pick buttons
     datesEl.innerHTML = future.map(d => `
       <button class="date-btn" onclick="selectDate('${d}',this)">${formatDate(d)}</button>
