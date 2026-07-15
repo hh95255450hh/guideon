@@ -44,11 +44,14 @@ function verify(sig, body) {
 function runDeploy() {
   deploying = true;
   log('deploy started');
-  // Mirror the proven manual sequence: conclude any leftover merge, then
-  // deploy.sh (git pull + docker compose build), then remount nginx.
-  const cmd = 'cd /opt/guideon && (git commit --no-edit 2>/dev/null || true) && '
-            + 'bash /opt/deploy.sh && docker restart guideon-nginx';
-  execFile('/bin/bash', ['-lc', cmd], { timeout: 20 * 60 * 1000, maxBuffer: 10 * 1024 * 1024 },
+  // deploy.sh is the single source of truth: it does git pull + docker build
+  // (3x retry) + up -d (3x retry) + nginx remount + HTTP health check + email
+  // alerts, all under a flock. We deliberately DON'T wrap it with a local
+  // `git commit` (that created merge commits and left the server tree diverged)
+  // or a manual nginx restart (deploy.sh already remounts nginx). Timeout is
+  // 40min so a cold build (chromium ~100MB + npm ci) never gets killed midway.
+  const cmd = 'bash /opt/deploy.sh';
+  execFile('/bin/bash', ['-lc', cmd], { timeout: 40 * 60 * 1000, maxBuffer: 10 * 1024 * 1024 },
     (err, stdout, stderr) => {
       deploying = false;
       if (stdout) log('stdout:\n' + stdout.trim());
