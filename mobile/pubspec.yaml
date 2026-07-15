@@ -42,6 +42,9 @@ dependencies:
   latlong2: ^0.9.1
   # Device geolocation — "my location" on the map + nearest-guides sorting.
   geolocator: ^13.0.2
+  # File selection for the WebView's <input type=file> (photo uploads). Uses the
+  # system picker (Storage Access Framework) — needs no media permission.
+  file_picker: ^8.1.4
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
@@ -70,10 +71,14 @@ class _WebTabState extends State<WebTab> with AutomaticKeepAliveClientMixin {
         },
       ));
 
-    // Android: let guideon.om pages use the camera (photo uploads) when asked.
+    // Android: grant camera/mic when asked, and — crucially — wire the file
+    // chooser so <input type=file> on guideon.om (profile/tour/review photo
+    // uploads) actually opens a picker. Without setOnShowFileSelector the
+    // upload buttons do nothing on Android.
     if (defaultTargetPlatform == TargetPlatform.android) {
-      (_ctrl.platform as AndroidWebViewController)
-          .setOnPlatformPermissionRequest((r) => r.grant());
+      final android = _ctrl.platform as AndroidWebViewController;
+      android.setOnPlatformPermissionRequest((r) => r.grant());
+      android.setOnShowFileSelector(_pickFiles);
     }
 
     widget.onReady?.call(_ctrl);
@@ -128,6 +133,27 @@ class _WebTabState extends State<WebTab> with AutomaticKeepAliveClientMixin {
         ),
       ],
     );
+  }
+
+  // Opens the system file picker for a web <input type=file> and returns the
+  // chosen file URIs to the WebView. Image inputs get the image picker; others
+  // get any file. Uses the Storage Access Framework — no media permission.
+  Future<List<String>> _pickFiles(FileSelectorParams params) async {
+    final wantsImage = params.acceptTypes.isEmpty ||
+        params.acceptTypes.any((t) => t.contains('image'));
+    try {
+      final res = await FilePicker.platform.pickFiles(
+        type: wantsImage ? FileType.image : FileType.any,
+        allowMultiple: params.mode == FileSelectorMode.openMultiple,
+      );
+      if (res == null) return const <String>[];
+      return res.paths
+          .whereType<String>()
+          .map((p) => Uri.file(p).toString())
+          .toList();
+    } catch (_) {
+      return const <String>[];
+    }
   }
 
   // Register the device's FCM token through the WebView's own authenticated
