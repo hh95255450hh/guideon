@@ -23,14 +23,16 @@ subprojects {
 // compileSdk (file_picker ships with 34), but flutter_plugin_android_lifecycle
 // requires consumers to compile against 36 — checkReleaseAarMetadata fails the
 // release build otherwise. Overriding here fixes all current & future plugins.
-// (plugins.withId fires immediately if the plugin is already applied, so it is
-// safe even though evaluationDependsOn(":app") pre-evaluates the subprojects —
-// afterEvaluate blows up there with "project is already evaluated".)
+// The override must run AFTER each plugin's own build script (file_picker sets
+// compileSdk 34 in its body — plugins.withId fired too early and 34 won). Some
+// projects are already evaluated here because of evaluationDependsOn(":app"),
+// where afterEvaluate throws — so branch on the evaluation state.
 subprojects {
-    plugins.withId("com.android.library") {
-        extensions.findByType(com.android.build.gradle.BaseExtension::class.java)
+    val forceSdk: (Project) -> Unit = { p ->
+        p.extensions.findByType(com.android.build.gradle.BaseExtension::class.java)
             ?.compileSdkVersion(36)
     }
+    if (state.executed) forceSdk(this) else afterEvaluate { forceSdk(this) }
 }
 
 tasks.register<Delete>("clean") {
