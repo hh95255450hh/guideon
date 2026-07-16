@@ -24,7 +24,9 @@ if (hasReleaseKey) {
 
 android {
     namespace = "om.guideon.guideon"
-    compileSdk = flutter.compileSdkVersion
+    // file_picker / flutter_plugin_android_lifecycle need API 36+; the Flutter
+    // default (flutter.compileSdkVersion = 34) fails checkReleaseAarMetadata.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
