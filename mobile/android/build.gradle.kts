@@ -19,6 +19,17 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Force every plugin module to compile against SDK 36. Plugins pin their own
+// compileSdk (file_picker ships with 34), but flutter_plugin_android_lifecycle
+// requires consumers to compile against 36 — checkReleaseAarMetadata fails the
+// release build otherwise. Overriding here fixes all current & future plugins.
+subprojects {
+    afterEvaluate {
+        extensions.findByType(com.android.build.gradle.BaseExtension::class.java)
+            ?.compileSdkVersion(36)
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
