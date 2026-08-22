@@ -326,13 +326,23 @@
                       <option value="easy">Easy</option><option value="moderate" selected>Moderate</option><option value="hard">Hard</option>
                     </select>
                   </div>
+                  <!-- Companies kept missing the extra-person price (it sat unlabelled
+                       mid-form). A clear pricing header + how-it-works note makes the
+                       2-people-base + per-extra model findable and understandable. -->
+                  <div class="col-12">
+                    <h6 class="fw-700 mt-2 mb-1" style="color:#0f7b6c">💰 تسعير الرحلة · Pricing</h6>
+                    <div class="small" style="background:#eef8f5;border:1px solid #cfe9e2;border-radius:10px;padding:9px 12px;line-height:1.6;color:#245">
+                      كيف يعمل التسعير: <b>السعر الأساسي يشمل شخصين</b>، ثم يُضاف <b>سعر الشخص الإضافي</b> عن كل شخص بعد الاثنين.
+                      <span dir="ltr" style="display:block;margin-top:2px">Base price covers 2 people, then the extra-person price is added for each additional guest.</span>
+                    </div>
+                  </div>
                   <div class="col-md-4">
                     <label class="form-label small fw-600" data-i18n="tour_base_price">Tour Starting Price (for 2 people) (OMR) *</label>
                     <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" required placeholder="80">
                     <div class="form-text small" data-i18n="tour_base_price_hint">This price covers 2 people. No extra charge for the second person.</div>
                   </div>
                   <div class="col-md-4">
-                    <label class="form-label small fw-600" data-i18n="tour_extra_person">Price per Extra Person (OMR) *</label>
+                    <label class="form-label small fw-600" data-i18n="tour_extra_person">💠 Price per Extra Person (OMR) *</label>
                     <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" required placeholder="30">
                     <div class="form-text small" data-i18n="tour_extra_person_hint">Added for each person beyond 2.</div>
                   </div>
