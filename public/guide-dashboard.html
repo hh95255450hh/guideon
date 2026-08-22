@@ -393,6 +393,7 @@
                 <!-- DATES + ITINERARY -->
                 <div id="tt-dates" class="tour-tab" style="display:none">
                   <h6 class="fw-700 mb-2" data-i18n="available_dates_title">📅 Available Departure Dates</h6>
+                  <p class="small text-muted mb-2" style="line-height:1.6">هذه <b>تواريخ بدء الرحلة</b> فقط — النظام يحسب مدتها تلقائيًا من حقل «المدة». <span dir="ltr">These are trip <b>start</b> dates; the duration is added automatically.</span></p>
                   <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" id="dailyAvailableCheck" onchange="toggleDailyAvailable()">
                     <label class="form-check-label fw-600" for="dailyAvailableCheck">🗓️ متاح كل يوم — Available every day</label>
@@ -475,6 +476,14 @@
     <div class="col-lg-4">
       <div class="info-card sticky-top" id="availability" style="top:80px">
         <h5 class="fw-700 mb-2">📅 إدارة المواعيد</h5>
+
+        <!-- Guides kept trying to schedule multi-day trips here (slot duration
+             maxes at a full day), so point them to Tour Packages instead. -->
+        <div class="small" style="background:#fbf4e6;border:1px solid #ecdcb4;color:#7a5a12;border-radius:10px;padding:9px 12px;margin-bottom:14px;line-height:1.6">
+          ⏱️ <b>للمواعيد القصيرة داخل اليوم فقط</b> (ساعة، نصف يوم، يوم كامل).<br>
+          للرحلات متعددة الأيام (مثل ٣ أيام وليلتان) أنشئها من قسم
+          <b>«الرحلات»</b> وحدّد المدة بالأيام هناك.
+        </div>
 
         <!-- Add slot form -->
         <div style="background:#f8fffe;border:1px solid #d0ede8;border-radius:10px;padding:14px;margin-bottom:14px">
