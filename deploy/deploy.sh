@@ -126,4 +126,11 @@ if [ "$CODE" != "200" ]; then
   echo "$TAG UNHEALTHY: HTTP $CODE"; exit 1
 fi
 
+# ── 4. Housekeeping: stop Docker build-cache bloat that once starved the host
+# (a 57GB cache drove load to 45, 170MB free RAM, and every build timed out).
+# Prune layers/images unused for a week. Runs only AFTER a healthy deploy, in
+# the background, and never fails the deploy.
+( docker builder prune -af --filter until=168h >/dev/null 2>&1 || true
+  docker image   prune -af --filter until=168h >/dev/null 2>&1 || true ) &
+
 echo "$TAG Done — commit $AFTER live, site HTTP $CODE"
