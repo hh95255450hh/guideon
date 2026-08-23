@@ -362,14 +362,43 @@
           <label class="form-label fw-600 small" data-i18n="pkg_name_lbl">Package Name *</label>
           <input type="text" class="form-control" id="pkgName" data-i18n-ph="pkg_name_ph" placeholder="3-Day Desert Safari">
         </div>
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label fw-600 small" data-i18n="pkg_price_lbl">Price (OMR) *</label>
-            <input type="number" class="form-control" id="pkgPrice" placeholder="120" min="1">
+        <!-- Duration: proper days/hours/minutes (was a single free-text box that
+             companies filled with "30" for a 30-minute tour → stored as 30 days). -->
+        <div class="mb-3">
+          <label class="form-label fw-600 small">⏱ المدة · Duration</label>
+          <div class="row g-2">
+            <div class="col-4"><div class="input-group input-group-sm"><input type="number" class="form-control" id="pkgDurDays" min="0" max="30" value="0"><span class="input-group-text">يوم</span></div></div>
+            <div class="col-4"><div class="input-group input-group-sm"><input type="number" class="form-control" id="pkgDurHours" min="0" max="23" value="1"><span class="input-group-text">ساعة</span></div></div>
+            <div class="col-4"><div class="input-group input-group-sm"><input type="number" class="form-control" id="pkgDurMinutes" min="0" max="59" step="5" value="0"><span class="input-group-text">دقيقة</span></div></div>
           </div>
-          <div class="col-6">
-            <label class="form-label fw-600 small" data-i18n="pkg_dur_lbl">Duration</label>
-            <input type="text" class="form-control" id="pkgDuration" data-i18n-ph="pkg_dur_ph" placeholder="3 Days / 2 Nights">
+          <div class="form-text small">مثال: 0 يوم · 1 ساعة · 30 دقيقة (لرحلة نصف يوم) — للرحلات متعددة الأيام استخدم خانة اليوم.</div>
+        </div>
+
+        <!-- Pricing: flat OR group-size tiers + age (TripAdvisor-style) -->
+        <div class="mb-3">
+          <label class="form-label fw-600 small">💰 التسعير · Pricing</label>
+          <div class="btn-group w-100 mb-2" role="group">
+            <input type="radio" class="btn-check" name="pkgPmode" id="pmodeSimple" value="simple" checked onchange="togglePkgPricing()">
+            <label class="btn btn-outline-teal btn-sm" for="pmodeSimple">سعر ثابت · Flat</label>
+            <input type="radio" class="btn-check" name="pkgPmode" id="pmodeTiered" value="tiered" onchange="togglePkgPricing()">
+            <label class="btn btn-outline-teal btn-sm" for="pmodeTiered">شرائح حسب العدد · By group size</label>
+          </div>
+
+          <div id="pkgSimpleBox">
+            <input type="number" class="form-control" id="pkgPrice" placeholder="السعر (ر.ع)" min="1">
+            <div class="form-text small">سعر الرحلة (يشمل شخصين، ويُضاف سعر الشخص الإضافي إن حُدّد).</div>
+          </div>
+
+          <div id="pkgTieredBox" style="display:none">
+            <div class="small text-muted mb-1">حدّد السعر حسب عدد الأشخاص. اترك خانة «إلى» فارغة لتعني «فأكثر».</div>
+            <div id="pkgTiersList" class="d-flex flex-column gap-1 mb-2"></div>
+            <button type="button" class="btn btn-sm btn-outline-teal" onclick="addPkgTier()">➕ إضافة شريحة</button>
+            <div class="row g-2 mt-2">
+              <div class="col-4"><label class="form-label small mb-1">سعر الطفل (ر.ع)</label><input type="number" class="form-control form-control-sm" id="pkgChildPrice" min="0" step="0.5" value="0"></div>
+              <div class="col-4"><label class="form-label small mb-1">عمر الطفل من–إلى</label><div class="input-group input-group-sm"><input type="number" class="form-control" id="pkgChildMin" min="0" max="17" value="6"><input type="number" class="form-control" id="pkgChildMax" min="0" max="17" value="12"></div></div>
+              <div class="col-4"><label class="form-label small mb-1">مجاني تحت عمر</label><input type="number" class="form-control form-control-sm" id="pkgFreeUnder" min="0" max="17" value="6"></div>
+            </div>
+            <div class="form-text small">مثال: ١-٢ = ٦ ر.ع · ٣-٤ = ٨ · ٨ فأكثر = ١.٥ للشخص · الطفل ٦-١٢ = ٢ · تحت ٦ مجانًا.</div>
           </div>
         </div>
         <div class="mb-3">
@@ -520,6 +549,15 @@ async function init() {
   } catch (_) {}
 }
 
+// Human duration string from days/hours/minutes (was "N أيام" for everything).
+function fmtPkgDuration(p) {
+  const parts = [];
+  if (p.duration_days)    parts.push(p.duration_days + ' يوم');
+  if (p.duration_hours)   parts.push(p.duration_hours + ' ساعة');
+  if (p.duration_minutes) parts.push(p.duration_minutes + ' دقيقة');
+  return parts.join(' · ');
+}
+
 async function loadCompanyPackages() {
   try {
     // Cache-bust so we never re-read a stale list right after creating one
@@ -537,13 +575,18 @@ async function loadCompanyPackages() {
         id:          p.id,
         name:        p.title || '',
         price:       p.price_adult,
-        duration:    p.duration_days ? p.duration_days + ' أيام' : '',
+        duration:    fmtPkgDuration(p),
         destination: p.destination || '',
         includes:    Array.isArray(p.includes) ? p.includes.join(', ') : (p.includes || ''),
         description: p.description || '',
         images:      Array.isArray(p.images) ? p.images : [],
         cover_image: p.cover_image || (Array.isArray(p.images) && p.images[0]) || '',
         isPublished: !!p.isPublished,
+        // raw fields for the editor
+        durationDays: p.duration_days || 0, durationHours: p.duration_hours || 0, durationMinutes: p.duration_minutes || 0,
+        pricingMode: p.pricing_mode || 'simple',
+        pricingTiers: Array.isArray(p.pricing_tiers) ? p.pricing_tiers : [],
+        childPrice: p.child_price || 0, childMin: p.child_age_min || 6, childMax: p.child_age_max || 12, freeUnder: p.free_under_age || 6,
       }));
   } catch (e) {
     PACKAGES = [];
@@ -861,9 +904,20 @@ async function _mountPkgMap(initial, tries = 0) {
 function openAddPackage() {
   document.getElementById('pkgModalTitle').textContent = I18N.t('pkg_add_title') || 'إضافة حزمة سياحية';
   document.getElementById('pkgEditIndex').value = '';
-  ['pkgName','pkgPrice','pkgDuration','pkgDestination','pkgIncludes','pkgDescription','pkgDiscount','pkgOfferLabel','pkgOfferUntil'].forEach(id => {
+  ['pkgName','pkgPrice','pkgDestination','pkgIncludes','pkgDescription','pkgDiscount','pkgOfferLabel','pkgOfferUntil'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  // reset duration + pricing
+  document.getElementById('pkgDurDays').value = 0;
+  document.getElementById('pkgDurHours').value = 1;
+  document.getElementById('pkgDurMinutes').value = 0;
+  document.getElementById('pmodeSimple').checked = true;
+  document.getElementById('pkgTiersList').innerHTML = '';
+  document.getElementById('pkgChildPrice').value = 0;
+  document.getElementById('pkgChildMin').value = 6;
+  document.getElementById('pkgChildMax').value = 12;
+  document.getElementById('pkgFreeUnder').value = 6;
+  togglePkgPricing();
   PKG_KEPT_PHOTOS    = [];
   PKG_PENDING_FILES  = [];
   PKG_VARIANTS = [];
@@ -886,7 +940,20 @@ function editPackage(id) {
   document.getElementById('pkgEditIndex').value = pkg.id;
   document.getElementById('pkgName').value        = pkg.name        || '';
   document.getElementById('pkgPrice').value       = pkg.price       || '';
-  document.getElementById('pkgDuration').value    = pkg.duration    || '';
+  document.getElementById('pkgDurDays').value     = pkg.durationDays || 0;
+  document.getElementById('pkgDurHours').value    = pkg.durationHours || 0;
+  document.getElementById('pkgDurMinutes').value  = pkg.durationMinutes || 0;
+  // pricing mode + tiers + age
+  const isTiered = pkg.pricingMode === 'tiered';
+  document.getElementById('pmodeTiered').checked = isTiered;
+  document.getElementById('pmodeSimple').checked = !isTiered;
+  document.getElementById('pkgTiersList').innerHTML = '';
+  (pkg.pricingTiers || []).forEach(t => addPkgTier(t));
+  document.getElementById('pkgChildPrice').value = pkg.childPrice || 0;
+  document.getElementById('pkgChildMin').value   = pkg.childMin || 6;
+  document.getElementById('pkgChildMax').value   = pkg.childMax || 12;
+  document.getElementById('pkgFreeUnder').value  = pkg.freeUnder || 6;
+  togglePkgPricing();
   document.getElementById('pkgDestination').value = pkg.destination || '';
   document.getElementById('pkgCategory').value    = pkg.category    || 'Cultural';
   document.getElementById('pkgIncludes').value    = pkg.includes    || '';
@@ -914,23 +981,66 @@ function editPackage(id) {
 // packages the user reported).
 let _pkgSaving = false;
 
+// ── Group-size pricing tiers editor ────────────────────────────────────────
+function togglePkgPricing() {
+  const tiered = document.getElementById('pmodeTiered').checked;
+  document.getElementById('pkgTieredBox').style.display = tiered ? '' : 'none';
+  document.getElementById('pkgSimpleBox').style.display = tiered ? 'none' : '';
+  if (tiered && !document.querySelectorAll('#pkgTiersList .tier-row').length) addPkgTier();
+}
+function tierRowHtml(t) {
+  t = t || {};
+  const toVal = (t.to === null || t.to === undefined) ? '' : t.to;
+  return `<div class="tier-row d-flex gap-1 align-items-center">
+    <div class="input-group input-group-sm" style="max-width:150px"><span class="input-group-text">من</span>
+      <input type="number" class="form-control tier-from" min="1" value="${t.from || 1}">
+      <span class="input-group-text">إلى</span>
+      <input type="number" class="form-control tier-to" min="1" placeholder="∞" value="${toVal}"></div>
+    <div class="input-group input-group-sm" style="max-width:120px">
+      <input type="number" class="form-control tier-price" min="0" step="0.5" placeholder="السعر" value="${t.price != null ? t.price : ''}"><span class="input-group-text">ر.ع</span></div>
+    <select class="form-select form-select-sm tier-mode" style="max-width:120px">
+      <option value="flat"${t.mode !== 'per_person' ? ' selected' : ''}>للمجموعة</option>
+      <option value="per_person"${t.mode === 'per_person' ? ' selected' : ''}>للشخص</option></select>
+    <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.tier-row').remove()">✕</button>
+  </div>`;
+}
+function addPkgTier(t) {
+  document.getElementById('pkgTiersList').insertAdjacentHTML('beforeend', tierRowHtml(t));
+}
+function readPkgTiers() {
+  return [...document.querySelectorAll('#pkgTiersList .tier-row')].map(r => {
+    const toRaw = r.querySelector('.tier-to').value.trim();
+    return {
+      from: Math.max(1, parseInt(r.querySelector('.tier-from').value) || 1),
+      to: toRaw === '' ? null : Math.max(1, parseInt(toRaw) || 1),
+      price: Math.max(0, parseFloat(r.querySelector('.tier-price').value) || 0),
+      mode: r.querySelector('.tier-mode').value === 'per_person' ? 'per_person' : 'flat',
+    };
+  });
+}
+
 async function savePackage() {
   if (_pkgSaving) return; // ignore re-entries from a double-click
   const errEl = document.getElementById('pkgErrMsg');
   errEl.classList.add('d-none');
   const name  = document.getElementById('pkgName').value.trim();
-  const price = parseFloat(document.getElementById('pkgPrice').value);
   const dest  = document.getElementById('pkgDestination').value.trim();
-  if (!name || !(price > 0) || !dest) {
-    errEl.textContent = I18N.t('co_pkg_required') || 'الاسم والسعر والوجهة مطلوبة.';
+  const tiered = document.getElementById('pmodeTiered').checked;
+  const price = parseFloat(document.getElementById('pkgPrice').value);
+  const tiers = tiered ? readPkgTiers().filter(t => t.price > 0) : [];
+  const priceOk = tiered ? tiers.length > 0 : (price > 0);
+  if (!name || !priceOk || !dest) {
+    errEl.textContent = tiered
+      ? 'الاسم والوجهة مطلوبة، وأضف شريحة سعر واحدة على الأقل.'
+      : (I18N.t('co_pkg_required') || 'الاسم والسعر والوجهة مطلوبة.');
     errEl.classList.remove('d-none');
     return;
   }
 
   const includesStr = document.getElementById('pkgIncludes').value.trim();
-  const durationStr = document.getElementById('pkgDuration').value.trim();
-  const daysMatch = durationStr.match(/(\d+)/);
-  const days = daysMatch ? Math.max(1, parseInt(daysMatch[1])) : 1;
+  const durDays = Math.max(0, parseInt(document.getElementById('pkgDurDays').value) || 0);
+  const durHours = Math.min(23, Math.max(0, parseInt(document.getElementById('pkgDurHours').value) || 0));
+  const durMinutes = Math.min(59, Math.max(0, parseInt(document.getElementById('pkgDurMinutes').value) || 0));
 
   const editId = document.getElementById('pkgEditIndex').value;
   const url    = editId ? `/api/packages/${editId}` : '/api/packages';
@@ -962,8 +1072,16 @@ async function savePackage() {
       title:         name,
       description:   document.getElementById('pkgDescription').value.trim() || name,
       destination:   dest,
-      price_adult:   price,
-      duration_days: days,
+      price_adult:   tiered ? (price > 0 ? price : (tiers[0] && tiers[0].price) || 1) : price,
+      duration_days: durDays,
+      duration_hours: durHours,
+      duration_minutes: durMinutes,
+      pricing_mode:  tiered ? 'tiered' : 'simple',
+      pricing_tiers: tiers,
+      child_price:   Math.max(0, parseFloat(document.getElementById('pkgChildPrice').value) || 0),
+      child_age_min: Math.max(0, parseInt(document.getElementById('pkgChildMin').value) || 6),
+      child_age_max: Math.max(0, parseInt(document.getElementById('pkgChildMax').value) || 12),
+      free_under_age: Math.max(0, parseInt(document.getElementById('pkgFreeUnder').value) || 6),
       includes:      includesStr ? includesStr.split(',').map(s => s.trim()).filter(Boolean) : [],
       isPublished:   true,
       category:      (document.getElementById('pkgCategory') || {}).value || 'Cultural',

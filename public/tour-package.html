@@ -135,9 +135,20 @@
         <div class="mb-3">
           <label class="form-label small fw-700" data-i18n="num_travelers">👥 Number of Travelers</label>
           <input type="number" class="form-control" id="adultCount" value="2" min="2" max="50" onchange="recalcPrice()">
-          <div class="form-text small" data-i18n="travelers_hint">Tour starts at 2 people. Each extra person is charged separately.</div>
-          <!-- legacy hidden field kept for backward compat in JS -->
-          <input type="hidden" id="childCount" value="0">
+          <div class="form-text small" id="adultHint" data-i18n="travelers_hint">Tour starts at 2 people. Each extra person is charged separately.</div>
+          <!-- children input shown only for tiered (age-based) pricing -->
+          <div id="childWrap" style="display:none;margin-top:8px">
+            <label class="form-label small fw-700" id="childLbl">🧒 الأطفال · Children</label>
+            <input type="number" class="form-control" id="childCount" value="0" min="0" max="50" onchange="recalcPrice()">
+            <div class="form-text small" id="childHint"></div>
+          </div>
+          <!-- keep a hidden mirror for the simple (non-tiered) flow -->
+          <input type="hidden" id="childCountHidden" value="0">
+        </div>
+        <!-- provider's group-size price table (tiered pricing) -->
+        <div class="mb-3" id="tierTableWrap" style="display:none">
+          <div class="small fw-700 mb-1">💰 الأسعار حسب العدد · Group pricing</div>
+          <div id="tierTable" class="small" style="background:#f8f9fa;border-radius:8px;padding:8px 10px"></div>
         </div>
         <div class="mb-3 small" id="priceBreakdown" style="background:#f8f9fa;padding:12px;border-radius:8px">
           <div class="text-muted" data-i18n="pick_pkg_first">Pick a package above to see price breakdown.</div>
@@ -245,6 +256,7 @@ function renderPackage() {
   document.getElementById('pkgMaxGroup').textContent    = p.max_group_size || 10;
   const ac = document.getElementById('adultCount');
   if (ac) { ac.max = p.max_group_size || 50; ac.title = `Max ${p.max_group_size || 50} travelers`; }
+  setupTieredUI(p);
   document.getElementById('pkgRating').textContent      = p.rating ? (p.rating + ' ★ (' + p.totalReviews + ' reviews)') : 'New';
 
   if (p.cover_image) document.getElementById('pkgHero').style.backgroundImage = `linear-gradient(135deg,rgba(15,28,62,0.6),rgba(15,123,108,0.6)),url('${p.cover_image}')`;
@@ -500,8 +512,83 @@ function escapeHtml(s) {
   return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// ── Tiered (group-size + age) pricing — mirrors src/domain/bookingRules.js.
+// Display only; the server re-computes the authoritative charge on booking.
+function isTieredPkg(p) {
+  return p && p.pricing_mode === 'tiered' && Array.isArray(p.pricing_tiers) && p.pricing_tiers.length;
+}
+function priceFromTiersJS(tiers, adults) {
+  if (!Array.isArray(tiers) || !tiers.length || adults <= 0) return null;
+  const sorted = tiers.map(t => ({
+    from: parseInt(t.from) || 0, to: (t.to === null || t.to === undefined || t.to === '') ? null : parseInt(t.to),
+    price: parseFloat(t.price) || 0, mode: t.mode === 'per_person' ? 'per_person' : 'flat',
+  })).sort((a, b) => a.from - b.from);
+  const tier = sorted.find(t => adults >= t.from && (t.to === null || adults <= t.to));
+  if (!tier) return null;
+  return tier.mode === 'per_person' ? tier.price * adults : tier.price;
+}
+function setupTieredUI(p) {
+  const tiered = isTieredPkg(p);
+  document.getElementById('childWrap').style.display = tiered ? '' : 'none';
+  document.getElementById('tierTableWrap').style.display = tiered ? '' : 'none';
+  const ac = document.getElementById('adultCount');
+  if (tiered) {
+    ac.min = 1; if (parseInt(ac.value) < 1) ac.value = 1;
+    document.getElementById('adultHint').textContent = 'عدد البالغين · Adults';
+    const cmin = p.child_age_min || 6, cmax = p.child_age_max || 12, free = p.free_under_age || 6;
+    document.getElementById('childLbl').textContent = `🧒 الأطفال (${cmin}-${cmax}) · Children`;
+    document.getElementById('childHint').textContent = `تحت ${free} سنوات مجانًا · Under ${free} free`;
+    // render the price table
+    const rows = (p.pricing_tiers || []).slice().sort((a, b) => (a.from || 0) - (b.from || 0)).map(t => {
+      const range = (t.to === null || t.to === undefined || t.to === '') ? `${t.from}+` : `${t.from}–${t.to}`;
+      const price = t.mode === 'per_person' ? `${money(t.price)} / للشخص` : `${money(t.price)} للمجموعة`;
+      return `<div class="d-flex justify-content-between"><span>${range} أشخاص</span><span>${price}</span></div>`;
+    }).join('');
+    const childLine = (p.child_price > 0) ? `<div class="d-flex justify-content-between"><span>طفل (${cmin}-${cmax})</span><span>${money(p.child_price)}</span></div>` : '';
+    document.getElementById('tierTable').innerHTML = rows + childLine +
+      `<div class="d-flex justify-content-between text-muted"><span>تحت ${free} سنوات</span><span>مجانًا</span></div>`;
+  } else {
+    ac.min = 2; if (parseInt(ac.value) < 2) ac.value = 2;
+  }
+}
+
 function recalcPrice() {
   if (SELECTED_VARIANT === null || !PACKAGE) return;
+  // Tiered pricing path (group-size brackets + per-child) — display breakdown.
+  if (isTieredPkg(PACKAGE)) {
+    const maxGroup = parseInt(PACKAGE.max_group_size) || 50;
+    let adults = Math.max(1, parseInt(document.getElementById('adultCount').value) || 1);
+    let children = Math.max(0, parseInt(document.getElementById('childCount').value) || 0);
+    if (adults + children > maxGroup) {
+      adults = Math.max(1, maxGroup - children);
+      document.getElementById('adultCount').value = adults;
+      if (typeof toast === 'function') toast(`الحد الأقصى ${maxGroup} مسافرًا`, 'error');
+    }
+    const adultCost = priceFromTiersJS(PACKAGE.pricing_tiers, adults);
+    const childCost = children * (parseFloat(PACKAGE.child_price) || 0);
+    let addonsTotal = 0; const addonLines = [];
+    SELECTED_ADDONS.forEach(i => { const a = PACKAGE.addons[i]; if (a) { addonsTotal += (a.price || 0); addonLines.push(a); } });
+    const discount = PACKAGE.discountPercent || 0;
+    const bd = document.getElementById('priceBreakdown');
+    if (adultCost === null) {
+      bd.innerHTML = `<div style="color:#cc0000">لا يوجد سعر لعدد ${adults} من البالغين — تواصل مع المزوّد.</div>`;
+      document.getElementById('bookBtn').disabled = true; return;
+    }
+    const subtotal = adultCost + childCost + addonsTotal;
+    const total = subtotal * (1 - discount / 100);
+    let html = `<div class="price-line"><span>${adults} بالغ</span><span>${money(adultCost)}</span></div>`;
+    if (children > 0) html += `<div class="price-line"><span>${children} طفل × ${money(PACKAGE.child_price)}</span><span>${money(childCost)}</span></div>`;
+    addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${a.name}</span><span>${money(a.price)}</span></div>`; });
+    if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 خصم (${discount}%)</span><span>−${money(subtotal*discount/100)}</span></div>`;
+    html += `<div class="price-line price-total"><span>الإجمالي (${adults + children} أشخاص)</span><span style="color:var(--teal)">${money(total)}</span></div>`;
+    bd.innerHTML = html;
+    const ready = SELECTED_DATE && adults >= 1;
+    document.getElementById('bookBtn').disabled = !ready;
+    document.getElementById('bookHint').textContent = ready
+      ? 'بعد الدفع يُرسَل حجزك للمزوّد لتأكيده.'
+      : ((window.I18N && I18N.t('select_date_to_book')) || 'Select a date to enable booking.');
+    return;
+  }
   const v = PACKAGE._variants[SELECTED_VARIANT];
   const maxGroup = parseInt(PACKAGE.max_group_size) || 50;
   let people = parseInt(document.getElementById('adultCount').value) || 2;
@@ -554,10 +641,34 @@ async function bookTour() {
   if (SELECTED_VARIANT === null || !SELECTED_DATE) return;
   const v = PACKAGE._variants[SELECTED_VARIANT];
   const maxGroup = parseInt(PACKAGE.max_group_size) || 50;
+  const addons = Array.from(SELECTED_ADDONS).map(i => PACKAGE.addons[i]);
+  const tiered = isTieredPkg(PACKAGE);
+
+  let body;
+  if (tiered) {
+    let adults = Math.max(1, parseInt(document.getElementById('adultCount').value) || 1);
+    let children = Math.max(0, parseInt(document.getElementById('childCount').value) || 0);
+    if (adults + children > maxGroup) adults = Math.max(1, maxGroup - children);
+    const adultCost = priceFromTiersJS(PACKAGE.pricing_tiers, adults);
+    if (adultCost === null) { toast('لا يوجد سعر لهذا العدد — تواصل مع المزوّد.', 'error'); return; }
+    let total = adultCost + children * (parseFloat(PACKAGE.child_price) || 0) + addons.reduce((s, a) => s + (a.price || 0), 0);
+    if (PACKAGE.discountPercent > 0) total = total * (1 - PACKAGE.discountPercent / 100);
+    body = {
+      guideId: PACKAGE.providerId, packageId: PACKAGE.id, tourDate: SELECTED_DATE,
+      startTime: SELECTED_SLOT ? SELECTED_SLOT.startTime : undefined,
+      tourTime: SELECTED_SLOT ? 'slot' : undefined,
+      duration: (parseInt(PACKAGE.duration_days) || 0) >= 1 ? 'multi' : 'full',
+      destination: PACKAGE.destination,
+      participants: adults + children, adultCount: adults, childCount: children,
+      // NO variantPrice → server uses the tiered engine (variantPrice would force simple mode)
+      addons: addons.map(a => ({ name: a.name, price: a.price })),
+      totalAmount: parseFloat(total.toFixed(2)),
+      deposit: SELECTED_DEPOSIT, specialRequests: '',
+    };
+  } else {
   let people = parseInt(document.getElementById('adultCount').value) || 2;
   if (people < 2) people = 2;
   if (people > maxGroup) people = maxGroup;
-  const addons = Array.from(SELECTED_ADDONS).map(i => PACKAGE.addons[i]);
 
   const base     = v.priceAdult || 0;
   const perExtra = v.priceChild || 0;
@@ -565,7 +676,7 @@ async function bookTour() {
   let total = base + (perExtra * extras) + addons.reduce((s, a) => s + (a.price || 0), 0);
   if (PACKAGE.discountPercent > 0) total = total * (1 - PACKAGE.discountPercent / 100);
 
-  const body = {
+  body = {
     guideId:       PACKAGE.providerId,
     packageId:     PACKAGE.id,
     tourDate:      SELECTED_DATE,
@@ -583,6 +694,7 @@ async function bookTour() {
     deposit:       SELECTED_DEPOSIT,   // 25 | 50 | 100
     specialRequests: '',
   };
+  }
 
   const btn = document.getElementById('bookBtn');
   const origLabel = btn.textContent;

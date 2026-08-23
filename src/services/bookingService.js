@@ -96,6 +96,7 @@ async function createBooking(touristId, body, guest = null) {
   const tourTime = rules.normalizeTourTime(reqTourTime || 'full_day');
   let packageData = null;
   let totalAmount;
+  let people;            // hoisted: authoritative seat count, reused for participantCount
   let slotData = null;
 
   if (packageId) {
@@ -110,9 +111,8 @@ async function createBooking(touristId, body, guest = null) {
       throw new BookingError(400, 'Selected date is not available for this tour.', 'DATE_UNAVAILABLE');
     }
 
-    let people;
     try {
-      ({ totalAmount, people } = rules.calculatePackagePrice({ packageData, participants, adultCount, variantPrice, addons }));
+      ({ totalAmount, people } = rules.calculatePackagePrice({ packageData, participants, adultCount, childCount, variantPrice, addons }));
     } catch (e) {
       throw new BookingError(400, e.message, e.code || 'PRICING_ERROR');
     }
@@ -178,8 +178,10 @@ async function createBooking(touristId, body, guest = null) {
     }
   }
 
+  // For packages the authoritative seat count is what the pricing engine used
+  // (adults + children for tiered pricing; min-2 base party for the simple model).
   const participantCount = packageId
-    ? Math.max(2, parseInt(participants) || parseInt(adultCount) || 2)
+    ? (parseInt(people) || Math.max(2, parseInt(participants) || parseInt(adultCount) || 2))
     : Math.max(1, parseInt(participants) || 1);
 
   // Every booking still needs the guide's approval — we never auto-confirm.

@@ -3,6 +3,18 @@ const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('../services/emailService');
 const { sanitizeContact } = require('../utils/sanitizeContact');
 
+// Coerce a client-supplied group-size price table into safe, well-formed rows.
+// Guards the money math: only finite, non-negative numbers survive; bad rows drop.
+function sanitizeTiers(tiers) {
+  if (!Array.isArray(tiers)) return [];
+  return tiers.map(t => ({
+    from: Math.max(1, parseInt(t && t.from) || 1),
+    to: (t && (t.to === null || t.to === '' || t.to === undefined)) ? null : Math.max(1, parseInt(t.to) || 1),
+    price: Math.max(0, parseFloat(t && t.price) || 0),
+    mode: (t && t.mode === 'per_person') ? 'per_person' : 'flat',
+  })).filter(t => t.to === null || t.to >= t.from).slice(0, 30);
+}
+
 const packages = new SupabaseDB('tour_packages');
 const users    = new SupabaseDB('users');
 
@@ -106,6 +118,7 @@ exports.create = async (req, res) => {
       title, description, destination, region, category, categories, difficulty,
       duration_days, duration_hours, duration_minutes,
       max_group_size, price_adult, price_child, currency,
+      pricing_mode, pricing_tiers, child_price, child_age_min, child_age_max, free_under_age,
       includes, excludes, itinerary, meeting_point, languages, images,
       cover_image, cancellation_policy,
       isPublished, discountPercent, offerLabel, offerUntil,
@@ -136,6 +149,15 @@ exports.create = async (req, res) => {
       max_group_size: parseInt(max_group_size) || 10,
       price_adult: parseFloat(price_adult),
       price_child: parseFloat(price_child) || 0,
+      // Flexible tiered/age pricing (companies price by group size + age, like
+      // TripAdvisor). 'simple' keeps the legacy base+extra model. Sanitized so a
+      // malformed tier table can never poison the money math server-side.
+      pricing_mode: pricing_mode === 'tiered' ? 'tiered' : 'simple',
+      pricing_tiers: sanitizeTiers(pricing_tiers),
+      child_price: Math.max(0, parseFloat(child_price) || 0),
+      child_age_min: Math.max(0, parseInt(child_age_min) || 0),
+      child_age_max: Math.max(0, parseInt(child_age_max) || 0),
+      free_under_age: Math.max(0, parseInt(free_under_age) || 0),
       currency: currency || 'OMR',
       includes: includes || [],
       excludes: excludes || [],
@@ -250,6 +272,7 @@ exports.update = async (req, res) => {
     const allowed = ['title', 'description', 'destination', 'region', 'category', 'categories', 'difficulty',
       'duration_days', 'duration_hours', 'duration_minutes',
       'max_group_size', 'price_adult', 'price_child', 'currency',
+      'pricing_mode', 'pricing_tiers', 'child_price', 'child_age_min', 'child_age_max', 'free_under_age',
       'includes', 'excludes', 'itinerary', 'meeting_point', 'languages', 'images',
       'cover_image', 'cancellation_policy', 'isPublished',
       'discountPercent', 'offerLabel', 'offerUntil',
@@ -260,6 +283,10 @@ exports.update = async (req, res) => {
     for (const k of allowed) {
       if (req.body[k] !== undefined) changes[k] = req.body[k];
     }
+    // Sanitize money-sensitive fields on the way in (never trust the client table).
+    if (changes.pricing_tiers !== undefined) changes.pricing_tiers = sanitizeTiers(changes.pricing_tiers);
+    if (changes.pricing_mode !== undefined) changes.pricing_mode = changes.pricing_mode === 'tiered' ? 'tiered' : 'simple';
+    if (changes.child_price !== undefined) changes.child_price = Math.max(0, parseFloat(changes.child_price) || 0);
 
     // Resilient update: same missing-column retry pattern as create, so
     // new fields (e.g. meetingPoint / route from migration 036) don't
