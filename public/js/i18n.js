@@ -169,4 +169,14 @@ const I18N = {
   init() { return this.apply(); },
 };
 
-document.addEventListener('DOMContentLoaded', () => I18N.init());
+// A promise pages can await before rendering strings via I18N.t() — without it,
+// code that renders on DOMContentLoaded (in parallel with init) can call t()
+// before the language pack has loaded and get raw keys back (e.g. the guide
+// profile badges showed "mot_pending_short" in Arabic). Resolves once the
+// active pack + English fallback are in memory.
+let _markReady;
+I18N.ready = new Promise((res) => { _markReady = res; });
+
+document.addEventListener('DOMContentLoaded', () => {
+  Promise.resolve(I18N.init()).finally(() => _markReady());
+});

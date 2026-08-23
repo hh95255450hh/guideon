@@ -225,6 +225,9 @@ async function loadPackage() {
     PACKAGE.providerSlots = Array.isArray(PACKAGE.provider?.availabilitySlots)
       ? PACKAGE.provider.availabilitySlots
       : [];
+    // Await the language pack so I18N.t() labels don't render as raw keys when
+    // the package data arrives before the async pack (notably in Arabic).
+    if (window.I18N && window.I18N.ready) { try { await window.I18N.ready; } catch (_) {} }
     renderPackage();
   } catch (e) {
     document.body.innerHTML = '<div class="container py-5 text-center"><h3>Tour not found</h3><a href="/search.html" class="btn btn-teal mt-3">Browse tours</a></div>';

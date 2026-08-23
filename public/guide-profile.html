@@ -459,6 +459,11 @@ async function init() {
     if (md.success) SESSION = md.user;
   }
 
+  // Wait for the language pack before rendering — badges/labels are built with
+  // I18N.t() and would otherwise show raw keys (mot_pending_short, super_guide…)
+  // when the guide data arrives before the async pack (notably in Arabic).
+  if (window.I18N && window.I18N.ready) { try { await window.I18N.ready; } catch (_) {} }
+
   renderAll();
   document.getElementById('loadingState').classList.add('d-none');
   document.getElementById('pageContent').classList.remove('d-none');
