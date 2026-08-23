@@ -331,20 +331,33 @@
                        2-people-base + per-extra model findable and understandable. -->
                   <div class="col-12">
                     <h6 class="fw-700 mt-2 mb-1" style="color:#0f7b6c">💰 تسعير الرحلة · Pricing</h6>
-                    <div class="small" style="background:#eef8f5;border:1px solid #cfe9e2;border-radius:10px;padding:9px 12px;line-height:1.6;color:#245">
-                      كيف يعمل التسعير: <b>السعر الأساسي يشمل شخصين</b>، ثم يُضاف <b>سعر الشخص الإضافي</b> عن كل شخص بعد الاثنين.
-                      <span dir="ltr" style="display:block;margin-top:2px">Base price covers 2 people, then the extra-person price is added for each additional guest.</span>
+                    <div class="btn-group w-100 mb-2" role="group">
+                      <input type="radio" class="btn-check" name="gtPmode" id="gtSimple" value="simple" checked onchange="toggleGtPricing()">
+                      <label class="btn btn-outline-teal btn-sm" for="gtSimple">سعر ثابت · Flat</label>
+                      <input type="radio" class="btn-check" name="gtPmode" id="gtTiered" value="tiered" onchange="toggleGtPricing()">
+                      <label class="btn btn-outline-teal btn-sm" for="gtTiered">شرائح حسب العدد · By group size</label>
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-4 gt-simple">
                     <label class="form-label small fw-600" data-i18n="tour_base_price">Tour Starting Price (for 2 people) (OMR) *</label>
-                    <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" required placeholder="80">
+                    <input type="number" class="form-control" id="tourPriceAdult" min="0" step="0.5" placeholder="80">
                     <div class="form-text small" data-i18n="tour_base_price_hint">This price covers 2 people. No extra charge for the second person.</div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-4 gt-simple">
                     <label class="form-label small fw-600" data-i18n="tour_extra_person">💠 Price per Extra Person (OMR) *</label>
-                    <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" required placeholder="30">
+                    <input type="number" class="form-control" id="tourPriceChild" min="0" step="0.5" placeholder="30">
                     <div class="form-text small" data-i18n="tour_extra_person_hint">Added for each person beyond 2.</div>
+                  </div>
+                  <div class="col-12 gt-tiered" style="display:none">
+                    <div class="small text-muted mb-1">حدّد السعر حسب عدد الأشخاص. اترك خانة «إلى» فارغة لتعني «فأكثر».</div>
+                    <div id="gtTiersList" class="d-flex flex-column gap-1 mb-2"></div>
+                    <button type="button" class="btn btn-sm btn-outline-teal" onclick="addGtTier()">➕ إضافة شريحة</button>
+                    <div class="row g-2 mt-2">
+                      <div class="col-md-4"><label class="form-label small mb-1">سعر الطفل (ر.ع)</label><input type="number" class="form-control form-control-sm" id="gtChildPrice" min="0" step="0.5" value="0"></div>
+                      <div class="col-md-4"><label class="form-label small mb-1">عمر الطفل من–إلى</label><div class="input-group input-group-sm"><input type="number" class="form-control" id="gtChildMin" min="0" max="17" value="6"><input type="number" class="form-control" id="gtChildMax" min="0" max="17" value="12"></div></div>
+                      <div class="col-md-4"><label class="form-label small mb-1">مجاني تحت عمر</label><input type="number" class="form-control form-control-sm" id="gtFreeUnder" min="0" max="17" value="6"></div>
+                    </div>
+                    <div class="form-text small">مثال: ١-٢ = ٦ · ٣-٤ = ٨ · ٨ فأكثر = ١.٥ للشخص · الطفل ٦-١٢ = ٢ · تحت ٦ مجانًا.</div>
                   </div>
                   <div class="col-md-4">
                     <label class="form-label small fw-600" data-i18n="tour_max_group">Max Group Size *</label>
@@ -961,6 +974,17 @@ function openTourModal(tour) {
   document.getElementById('tourDifficulty').value  = tour?.difficulty || 'moderate';
   document.getElementById('tourPriceAdult').value  = tour?.price_adult || '';
   document.getElementById('tourPriceChild').value  = tour?.price_child || '';
+  // Group-size tiers + age (load into the editor; default to simple mode)
+  const gtIsTiered = tour?.pricing_mode === 'tiered';
+  document.getElementById('gtTiered').checked = gtIsTiered;
+  document.getElementById('gtSimple').checked = !gtIsTiered;
+  document.getElementById('gtTiersList').innerHTML = '';
+  (Array.isArray(tour?.pricing_tiers) ? tour.pricing_tiers : []).forEach(t => addGtTier(t));
+  document.getElementById('gtChildPrice').value = tour?.child_price || 0;
+  document.getElementById('gtChildMin').value   = tour?.child_age_min || 6;
+  document.getElementById('gtChildMax').value   = tour?.child_age_max || 12;
+  document.getElementById('gtFreeUnder').value  = tour?.free_under_age || 6;
+  toggleGtPricing();
   document.getElementById('tourMaxGroup').value    = tour?.max_group_size || 10;
   document.getElementById('tourDescription').value = tour?.description || '';
   document.getElementById('tourMeeting').value     = tour?.meeting_point || '';
@@ -1077,6 +1101,42 @@ async function uploadPendingTourPhotos() {
   return out;
 }
 
+// ── Group-size pricing tiers editor (guide dashboard) ──────────────────────
+function gtTiered() { return document.getElementById('gtTiered').checked; }
+function toggleGtPricing() {
+  const tiered = gtTiered();
+  document.querySelectorAll('.gt-simple').forEach(e => e.style.display = tiered ? 'none' : '');
+  document.querySelectorAll('.gt-tiered').forEach(e => e.style.display = tiered ? '' : 'none');
+  if (tiered && !document.querySelectorAll('#gtTiersList .tier-row').length) addGtTier();
+}
+function gtTierRowHtml(t) {
+  t = t || {};
+  const toVal = (t.to === null || t.to === undefined) ? '' : t.to;
+  return `<div class="tier-row d-flex gap-1 align-items-center">
+    <div class="input-group input-group-sm" style="max-width:160px"><span class="input-group-text">من</span>
+      <input type="number" class="form-control tier-from" min="1" value="${t.from || 1}">
+      <span class="input-group-text">إلى</span>
+      <input type="number" class="form-control tier-to" min="1" placeholder="∞" value="${toVal}"></div>
+    <div class="input-group input-group-sm" style="max-width:120px">
+      <input type="number" class="form-control tier-price" min="0" step="0.5" placeholder="السعر" value="${t.price != null ? t.price : ''}"><span class="input-group-text">ر.ع</span></div>
+    <select class="form-select form-select-sm tier-mode" style="max-width:120px">
+      <option value="flat"${t.mode !== 'per_person' ? ' selected' : ''}>للمجموعة</option>
+      <option value="per_person"${t.mode === 'per_person' ? ' selected' : ''}>للشخص</option></select>
+    <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.closest('.tier-row').remove()">✕</button></div>`;
+}
+function addGtTier(t) { document.getElementById('gtTiersList').insertAdjacentHTML('beforeend', gtTierRowHtml(t)); }
+function readGtTiers() {
+  return [...document.querySelectorAll('#gtTiersList .tier-row')].map(r => {
+    const toRaw = r.querySelector('.tier-to').value.trim();
+    return {
+      from: Math.max(1, parseInt(r.querySelector('.tier-from').value) || 1),
+      to: toRaw === '' ? null : Math.max(1, parseInt(toRaw) || 1),
+      price: Math.max(0, parseFloat(r.querySelector('.tier-price').value) || 0),
+      mode: r.querySelector('.tier-mode').value === 'per_person' ? 'per_person' : 'flat',
+    };
+  });
+}
+
 // Prevent double-submit duplicating tour packages.
 let _saveTourInFlight = false;
 
@@ -1103,9 +1163,15 @@ async function saveTour() {
     duration_hours:   parseInt(document.getElementById('tourDurationHours').value) || 0,
     duration_minutes: parseInt(document.getElementById('tourDurationMinutes').value) || 0,
     difficulty:     document.getElementById('tourDifficulty').value,
-    price_adult:    parseFloat(document.getElementById('tourPriceAdult').value),
+    price_adult:    parseFloat(document.getElementById('tourPriceAdult').value) || (gtTiered() ? ((readGtTiers()[0]||{}).price || 1) : NaN),
     price_child:    parseFloat(document.getElementById('tourPriceChild').value) || 0,
     max_group_size: parseInt(document.getElementById('tourMaxGroup').value),
+    pricing_mode:   gtTiered() ? 'tiered' : 'simple',
+    pricing_tiers:  gtTiered() ? readGtTiers().filter(t => t.price > 0) : [],
+    child_price:    Math.max(0, parseFloat(document.getElementById('gtChildPrice').value) || 0),
+    child_age_min:  Math.max(0, parseInt(document.getElementById('gtChildMin').value) || 6),
+    child_age_max:  Math.max(0, parseInt(document.getElementById('gtChildMax').value) || 12),
+    free_under_age: Math.max(0, parseInt(document.getElementById('gtFreeUnder').value) || 6),
     description:    document.getElementById('tourDescription').value.trim(),
     meeting_point:  document.getElementById('tourMeeting').value.trim(),
     // Interactive map data (meeting pin + route waypoints from gd-map.js)
@@ -1121,7 +1187,10 @@ async function saveTour() {
     offerUntil:     document.getElementById('tourOfferUntil').value || null,
     isPublished:    document.getElementById('tourPublished').checked,
   };
-  if (!body.title || !body.destination || !body.price_adult || !body.description) {
+  if (gtTiered() && !readGtTiers().filter(t => t.price > 0).length) {
+    toast('أضف شريحة سعر واحدة على الأقل', 'error'); return;
+  }
+  if (!body.title || !body.destination || (!gtTiered() && !body.price_adult) || !body.description) {
     toast('Please fill all required fields', 'error'); return;
   }
   _saveTourInFlight = true;
