@@ -5,9 +5,9 @@
 -- (price_adult = base for 2, price_child = per extra) still works when
 -- pricing_mode = 'simple' (the default), so existing packages are unaffected.
 --
--- Run once in the Supabase SQL editor. Safe to re-run (IF NOT EXISTS).
+-- Applied 2026-08-23 on the ODP self-hosted DB (docker exec supabase-db psql). Table is tour_packages.
 
-ALTER TABLE packages
+ALTER TABLE tour_packages
   ADD COLUMN IF NOT EXISTS pricing_mode   text    NOT NULL DEFAULT 'simple',
   ADD COLUMN IF NOT EXISTS pricing_tiers  jsonb   NOT NULL DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS child_price    numeric NOT NULL DEFAULT 0,
