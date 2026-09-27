@@ -131,12 +131,24 @@ git add -A && git commit && git push   # then SSH: bash /opt/deploy.sh
 - `public/` — all frontend pages + assets. Dashboards: tourist/guide/company/
   admin. `public/js/gd-messages.js` is the shared chat engine for all 3
   dashboards. `public/admin-revenue.html` is the finance dashboard.
-- `database/migrations/` — 54 numbered SQL files (001–054), applied MANUALLY in
-  the Supabase SQL editor. There is no applied-migrations tracking table, so the
-  highest-applied number may lag. **`ALL_MIGRATIONS.sql` is stale (covers only
-  001–005)** — do not trust it as the full schema; apply new numbered files
-  individually. `npm run migrate` / `scripts/migrate.js` is broken/dead (points
-  at a non-existent `database/schema.sql`); don't use it.
+- `database/migrations/` — 56 numbered SQL files (001–056), applied MANUALLY —
+  either in the Supabase SQL editor, or directly on the ODP box via
+  `docker exec supabase-db psql -U postgres -d postgres -f file.sql` (Claude
+  has done this before; safe for additive `IF NOT EXISTS` migrations). **As of
+  056, there IS an applied-migrations tracking table**: `schema_migrations`
+  (version, filename, applied_at, applied_by) — query it to see what's really
+  live: `SELECT version, filename FROM schema_migrations ORDER BY version;`.
+  Every migration from 057 onward must end with an INSERT into this table (see
+  the template at the bottom of `056_migration_tracking.sql`) — **do not add a
+  new migration without that final INSERT**, or the tracking table drifts from
+  reality again. `ALL_MIGRATIONS.sql` is regenerated (concatenation of every
+  file, 001–056) but is reference-only — `schema_migrations` is the source of
+  truth for what's actually applied. `_backfill_applied.sql` documents the
+  2026-09-27 audit that built this table's initial history (found and fixed a
+  real gap: 006_admin_features.sql had never been applied — admin_audit_log
+  and bookings cancellation columns were missing, silently breaking the
+  admin audit trail). `npm run migrate` / `scripts/migrate.js` is broken/dead
+  (points at a non-existent `database/schema.sql`); don't use it.
 - `android/` — Bubblewrap TWA config + build guide for the Play Store app.
 - `Guideon_Info.md` — owner-facing changelog/credentials doc; **update it and
   push after every significant change** (owner preference).

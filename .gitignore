@@ -44,3 +44,4 @@ src/data/
 promo/images/
 promo/*.mp4
 promo/*.webm
+graphify-out/

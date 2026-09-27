@@ -1,37 +1,22 @@
--- ============================================================================
--- GUIDEON — ALL MIGRATIONS (001–054), concatenated in order.
--- Auto-generated 2026-07-02. Do NOT edit by hand — regenerate via:
---   ls *.sql | grep -v ALL_MIGRATIONS | sort -t_ -k1 -n | while read f; do ...
---
--- Intended for a FRESH database. Migrations should be idempotent (IF NOT
--- EXISTS), so re-running is generally safe, but on a partially-migrated DB
--- prefer applying individual numbered files. In production the owner applies
--- new numbered files manually in the Supabase SQL editor.
--- ============================================================================
+-- ALL_MIGRATIONS.sql — regenerated 2026-09-27, covers 001-056.
+-- Concatenation of every numbered migration in this directory, in order.
+-- Reference only — the source of truth for what is APPLIED on a given DB
+-- is the schema_migrations table (see 056_migration_tracking.sql).
 
-
--- ============================================================================
--- 001_add_fcm_token.sql
--- ============================================================================
+-- ===== 001_add_fcm_token.sql =====
 -- Migration: add FCM device token to users table
 -- Run: psql -U postgres -d oman_explorer -f database/migrations/001_add_fcm_token.sql
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token TEXT;
 
-
--- ============================================================================
--- 002_booking_unique_constraint.sql
--- ============================================================================
+-- ===== 002_booking_unique_constraint.sql =====
 -- Prevent two active bookings on the same date for the same guide.
 -- Cancelled bookings are excluded so the date can be re-booked after cancellation.
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_active_booking_per_guide_date
 ON bookings ("guideId", "tourDate")
 WHERE status IN ('pending', 'confirmed', 'completed');
 
-
--- ============================================================================
--- 003_performance_indexes.sql
--- ============================================================================
+-- ===== 003_performance_indexes.sql =====
 -- Indexes for production-grade query performance.
 -- Run after baseline schema is in place.
 
@@ -64,10 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_createdAt    ON messages ("createdAt" DE
 CREATE INDEX IF NOT EXISTS idx_trip_requests_touristId ON trip_requests ("touristId");
 CREATE INDEX IF NOT EXISTS idx_trip_requests_status    ON trip_requests (status);
 
-
--- ============================================================================
--- 004_tour_packages.sql
--- ============================================================================
+-- ===== 004_tour_packages.sql =====
 -- Tour packages — full tour products offered by companies or guides.
 CREATE TABLE IF NOT EXISTS tour_packages (
   id              TEXT PRIMARY KEY,
@@ -125,10 +107,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "packageId"     TEXT;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "adultCount"    INTEGER DEFAULT 0;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "childCount"    INTEGER DEFAULT 0;
 
-
--- ============================================================================
--- 005_reviews_with_photos.sql
--- ============================================================================
+-- ===== 005_reviews_with_photos.sql =====
 -- Reviews with photos (up to 3 per review)
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS "helpfulCount" INTEGER DEFAULT 0;
@@ -172,10 +151,7 @@ CREATE TABLE IF NOT EXISTS shared_wishlists (
   "createdAt" TIMESTAMPTZ DEFAULT NOW()
 );
 
-
--- ============================================================================
--- 006_admin_features.sql
--- ============================================================================
+-- ===== 006_admin_features.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 006 — Admin features (audit log + cancellation reasons)
 -- ════════════════════════════════════════════════════════════════════
@@ -209,10 +185,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "cancelledBy" TEXT;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "cancelledAt" TIMESTAMPTZ;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "adminNotes" TEXT;
 
-
--- ============================================================================
--- 007_staff_roles.sql
--- ============================================================================
+-- ===== 007_staff_roles.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 007 — Staff system with granular permissions
 -- ════════════════════════════════════════════════════════════════════
@@ -238,10 +211,7 @@ BEGIN
   END IF;
 END $$;
 
-
--- ============================================================================
--- 008_tour_offers.sql
--- ============================================================================
+-- ===== 008_tour_offers.sql =====
 -- Migration 008 — Add offers/discounts to tour_packages
 ALTER TABLE tour_packages ADD COLUMN IF NOT EXISTS "discountPercent" INTEGER DEFAULT 0 CHECK ("discountPercent" >= 0 AND "discountPercent" <= 90);
 ALTER TABLE tour_packages ADD COLUMN IF NOT EXISTS "offerLabel"      TEXT;
@@ -252,10 +222,7 @@ CREATE INDEX IF NOT EXISTS idx_tour_packages_active_offer
   ON tour_packages ("discountPercent")
   WHERE "discountPercent" > 0 AND "isPublished" = true;
 
-
--- ============================================================================
--- 009_tour_variants.sql
--- ============================================================================
+-- ===== 009_tour_variants.sql =====
 -- Migration 009 — Hotel-style tour variants & add-ons
 -- Variants = tiered packages (like hotel rooms): Standard / Premium / VIP
 -- Add-ons  = optional extras: lunch, transport, photographer, etc.
@@ -277,10 +244,7 @@ ALTER TABLE tour_packages ADD COLUMN IF NOT EXISTS highlights   JSONB DEFAULT '[
 -- highlights example:
 -- ["Sunset views", "Camel ride included", "Traditional meal"]
 
-
--- ============================================================================
--- 010_guide_analytics.sql
--- ============================================================================
+-- ===== 010_guide_analytics.sql =====
 -- Migration 010 — Guide analytics, achievements & payouts
 
 -- ─── TOUR VIEWS (track popularity) ────────────────────────────
@@ -323,10 +287,7 @@ CREATE POLICY "payouts_all" ON guide_payouts FOR ALL USING (true) WITH CHECK (tr
 
 -- Achievements are computed dynamically (no table needed)
 
-
--- ============================================================================
--- 011_2fa.sql
--- ============================================================================
+-- ===== 011_2fa.sql =====
 -- Two-Factor Authentication (TOTP) — for admin and any user who opts in
 ALTER TABLE users ADD COLUMN IF NOT EXISTS twoFactorSecret    text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS twoFactorEnabled   boolean NOT NULL DEFAULT false;
@@ -334,10 +295,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS twoFactorBackupCodes jsonb;
 
 CREATE INDEX IF NOT EXISTS idx_users_twoFactorEnabled ON users(twoFactorEnabled) WHERE twoFactorEnabled = true;
 
-
--- ============================================================================
--- 012_missing_columns.sql
--- ============================================================================
+-- ===== 012_missing_columns.sql =====
 -- Add columns referenced by the app but missing from the DB.
 -- Safe to run multiple times (IF NOT EXISTS).
 
@@ -360,10 +318,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS "updatedAt" timestamptz;
 CREATE INDEX IF NOT EXISTS idx_users_ministry_licensed
   ON users("isMinistryLicensed") WHERE "userType" = 'guide';
 
-
--- ============================================================================
--- 013_tour_duration_hours_minutes.sql
--- ============================================================================
+-- ===== 013_tour_duration_hours_minutes.sql =====
 -- Add hours and minutes to tour duration alongside existing duration_days.
 -- A tour duration is now: duration_days + duration_hours + duration_minutes.
 ALTER TABLE tour_packages
@@ -381,10 +336,7 @@ DO $$ BEGIN
     ADD CONSTRAINT check_duration_minutes_range CHECK (duration_minutes BETWEEN 0 AND 59);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-
--- ============================================================================
--- 014_tour_categories.sql
--- ============================================================================
+-- ===== 014_tour_categories.sql =====
 -- Multi-category support for tour packages.
 -- The legacy `category` text column stays for back-compat; a tour can also
 -- expose multiple categories via the new `categories` jsonb array.
@@ -402,10 +354,7 @@ WHERE category IS NOT NULL
   AND category <> ''
   AND (categories IS NULL OR categories = '[]'::jsonb);
 
-
--- ============================================================================
--- 015_fix_duration_days_constraint.sql
--- ============================================================================
+-- ===== 015_fix_duration_days_constraint.sql =====
 -- Old constraint required duration_days >= 1.
 -- Now that we have separate hours/minutes, a tour can be (0 days · 4 hours).
 -- Drop the old constraint and replace it with one that allows 0+.
@@ -425,10 +374,7 @@ DO $$ BEGIN
     CHECK (duration_days > 0 OR duration_hours > 0 OR duration_minutes > 0);
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
-
--- ============================================================================
--- 016_fix_storage_policies.sql
--- ============================================================================
+-- ===== 016_fix_storage_policies.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 016 — Fix Storage bucket policies so uploads work
 -- ════════════════════════════════════════════════════════════════════
@@ -481,10 +427,7 @@ CREATE POLICY "media_anon_delete"
   TO public
   USING (bucket_id = 'media');
 
-
--- ============================================================================
--- 017_notifications.sql
--- ============================================================================
+-- ===== 017_notifications.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 017 — In-app Notifications
 -- ════════════════════════════════════════════════════════════════════
@@ -528,10 +471,7 @@ ALTER TABLE users
     '{"email":{"bookings":true,"messages":true,"reminders":true,"marketing":false},
       "inapp":{"bookings":true,"messages":true,"reminders":true,"system":true}}'::jsonb;
 
-
--- ============================================================================
--- 018_admin_password_audit_trigger.sql
--- ============================================================================
+-- ===== 018_admin_password_audit_trigger.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 018 — Admin password change audit trigger
 -- ════════════════════════════════════════════════════════════════════
@@ -582,10 +522,7 @@ CREATE TRIGGER trg_log_admin_password
   FOR EACH ROW
   EXECUTE FUNCTION log_admin_password_change();
 
-
--- ============================================================================
--- 019_site_settings.sql
--- ============================================================================
+-- ===== 019_site_settings.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 019 — Site Settings (admin-controllable homepage CMS)
 -- ════════════════════════════════════════════════════════════════════
@@ -629,10 +566,7 @@ INSERT INTO site_settings (key, value) VALUES
   ('activities', '{"items": []}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 
-
--- ============================================================================
--- 020_2fa_login_counter.sql
--- ============================================================================
+-- ===== 020_2fa_login_counter.sql =====
 -- Migration 020: 2FA "remember for N logins" counter
 -- Lets users with 2FA enabled skip the code for a configurable number of
 -- logins (default 10). The admin asked to be prompted only every 10th login
@@ -651,10 +585,7 @@ UPDATE users
   SET "loginsSince2FA" = 0
   WHERE "loginsSince2FA" IS NULL;
 
-
--- ============================================================================
--- 021_booking_lifecycle_columns.sql
--- ============================================================================
+-- ===== 021_booking_lifecycle_columns.sql =====
 -- 021_booking_lifecycle_columns.sql
 -- Adds the booking lifecycle + package columns the app writes but were missing
 -- from the bookings table. Without these, guides could not start/complete trips
@@ -667,10 +598,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "completedAt" timestamptz;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "variantName" text;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "addons"      jsonb DEFAULT '[]'::jsonb;
 
-
--- ============================================================================
--- 022_review_columns.sql
--- ============================================================================
+-- ===== 022_review_columns.sql =====
 -- 022_review_columns.sql
 -- Adds the review columns the app writes but were missing from the reviews
 -- table. Without these, tourists could not submit ANY review (insert failed
@@ -681,10 +609,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "addons"      jsonb DEFAULT '[]'::
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS "packageId"    text;
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS "touristPhoto" text;
 
-
--- ============================================================================
--- 023_message_attachments.sql
--- ============================================================================
+-- ===== 023_message_attachments.sql =====
 -- 023_message_attachments.sql
 -- Adds attachment support to the messages table (images / files in chat).
 -- Safe to run multiple times (IF NOT EXISTS). Until this runs, the app strips
@@ -694,10 +619,7 @@ ALTER TABLE messages ADD COLUMN IF NOT EXISTS "attachmentUrl"  text;
 ALTER TABLE messages ADD COLUMN IF NOT EXISTS "attachmentType" text;  -- 'image' | 'file'
 ALTER TABLE messages ADD COLUMN IF NOT EXISTS "attachmentName" text;
 
-
--- ============================================================================
--- 024_push_subscriptions.sql
--- ============================================================================
+-- ===== 024_push_subscriptions.sql =====
 -- 024_push_subscriptions.sql
 -- Stores browser Web Push (VAPID) subscriptions so the server can send push
 -- notifications even when the site is closed. One user may have several
@@ -723,10 +645,7 @@ DROP POLICY IF EXISTS push_subs_all ON push_subscriptions;
 CREATE POLICY push_subs_all ON push_subscriptions
   FOR ALL TO public USING (true) WITH CHECK (true);
 
-
--- ============================================================================
--- 025_app_sessions.sql
--- ============================================================================
+-- ===== 025_app_sessions.sql =====
 -- 025_app_sessions.sql
 -- Persistent session storage so users stay logged in across server restarts
 -- and deploys (fixes "Please log in to continue" after every deploy).
@@ -747,10 +666,7 @@ DROP POLICY IF EXISTS app_sessions_all ON app_sessions;
 CREATE POLICY app_sessions_all ON app_sessions
   FOR ALL TO public USING (true) WITH CHECK (true);
 
-
--- ============================================================================
--- 026_users_createdby.sql
--- ============================================================================
+-- ===== 026_users_createdby.sql =====
 -- 026_users_createdby.sql
 -- Adds the createdBy column the staff-creation flow writes (who created the
 -- staff/admin account). Optional — the app already strips it when missing,
@@ -760,10 +676,7 @@ CREATE POLICY app_sessions_all ON app_sessions
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS "createdBy" text;
 
-
--- ============================================================================
--- 027_enable_rls_lockdown.sql
--- ============================================================================
+-- ===== 027_enable_rls_lockdown.sql =====
 -- ============================================================================
 -- 027_enable_rls_lockdown.sql
 -- ----------------------------------------------------------------------------
@@ -826,10 +739,7 @@ END $$;
 --   SELECT * FROM pg_policies WHERE schemaname='public';
 -- ----------------------------------------------------------------------------
 
-
--- ============================================================================
--- 028_booking_slot_unique_constraint.sql
--- ============================================================================
+-- ===== 028_booking_slot_unique_constraint.sql =====
 -- ============================================================================
 -- 028_booking_slot_unique_constraint.sql
 -- ----------------------------------------------------------------------------
@@ -845,10 +755,7 @@ ON bookings ("guideId", "tourDate", "startTime")
 WHERE status IN ('pending', 'confirmed', 'completed')
   AND "startTime" IS NOT NULL;
 
-
--- ============================================================================
--- 029_composite_and_gin_indexes.sql
--- ============================================================================
+-- ===== 029_composite_and_gin_indexes.sql =====
 -- ============================================================================
 -- 029_composite_and_gin_indexes.sql
 -- ----------------------------------------------------------------------------
@@ -894,10 +801,7 @@ CREATE INDEX IF NOT EXISTS idx_packages_published
   ON tour_packages ("isPublished")
   WHERE "isPublished" = true;
 
-
--- ============================================================================
--- 030_booking_quote.sql
--- ============================================================================
+-- ===== 030_booking_quote.sql =====
 -- ============================================================================
 -- 030_booking_quote.sql
 -- ----------------------------------------------------------------------------
@@ -921,10 +825,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_active_booking_per_guide_slot
   WHERE status IN ('pending', 'quoted', 'confirmed', 'completed')
     AND "startTime" IS NOT NULL;
 
-
--- ============================================================================
--- 031_review_guide_reply.sql
--- ============================================================================
+-- ===== 031_review_guide_reply.sql =====
 -- ============================================================================
 -- 031_review_guide_reply.sql
 -- ----------------------------------------------------------------------------
@@ -934,10 +835,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_active_booking_per_guide_slot
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS "guideReply"   text;
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS "guideReplyAt" timestamptz;
 
-
--- ============================================================================
--- 032_user_guide_assets.sql
--- ============================================================================
+-- ===== 032_user_guide_assets.sql =====
 -- ============================================================================
 -- 032_user_guide_assets.sql
 -- ----------------------------------------------------------------------------
@@ -949,10 +847,7 @@ ALTER TABLE reviews ADD COLUMN IF NOT EXISTS "guideReplyAt" timestamptz;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS "guideAssets" jsonb DEFAULT '[]'::jsonb;
 
-
--- ============================================================================
--- 033_ensure_user_columns.sql
--- ============================================================================
+-- ===== 033_ensure_user_columns.sql =====
 -- ============================================================================
 -- 033_ensure_user_columns.sql
 -- ----------------------------------------------------------------------------
@@ -1029,10 +924,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS "companyDescription"   text DEFAULT '
 ALTER TABLE users ADD COLUMN IF NOT EXISTS "notifPrefs"  jsonb;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS "fcmToken"    text;
 
-
--- ============================================================================
--- 034_ensure_tour_package_columns.sql
--- ============================================================================
+-- ===== 034_ensure_tour_package_columns.sql =====
 -- ============================================================================
 -- 034_ensure_tour_package_columns.sql
 -- ----------------------------------------------------------------------------
@@ -1100,10 +992,7 @@ ALTER TABLE tour_packages ADD COLUMN IF NOT EXISTS "updatedAt"    timestamptz DE
 -- "Server error" because this column didn't exist.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS packages jsonb DEFAULT '[]'::jsonb;
 
-
--- ============================================================================
--- 035_booking_payment_columns.sql
--- ============================================================================
+-- ===== 035_booking_payment_columns.sql =====
 -- 035_booking_payment_columns.sql
 -- Adds the columns the Thawani payment flow needs on the bookings table.
 -- Safe to run multiple times.
@@ -1116,10 +1005,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "paymentRef"        text;
 -- Helpful index for "unpaid confirmed bookings" lookups.
 CREATE INDEX IF NOT EXISTS idx_bookings_ispaid ON bookings ("isPaid");
 
-
--- ============================================================================
--- 036_package_map_fields.sql
--- ============================================================================
+-- ===== 036_package_map_fields.sql =====
 -- 036_package_map_fields.sql
 -- Adds the interactive-map fields to tour_packages so guides/companies
 -- can mark a meeting point and an expected route on a map, and tourists
@@ -1133,10 +1019,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_ispaid ON bookings ("isPaid");
 ALTER TABLE tour_packages ADD COLUMN IF NOT EXISTS "meetingPoint" jsonb;
 ALTER TABLE tour_packages ADD COLUMN IF NOT EXISTS "route"        jsonb;
 
-
--- ============================================================================
--- 037_finance_expenses.sql
--- ============================================================================
+-- ===== 037_finance_expenses.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 037 — Financial management: expenses / salaries / discounts
 -- ════════════════════════════════════════════════════════════════════
@@ -1172,10 +1055,7 @@ ALTER TABLE finance_expenses ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "fexp_all" ON finance_expenses;
 CREATE POLICY "fexp_all" ON finance_expenses FOR ALL USING (true) WITH CHECK (true);
 
-
--- ============================================================================
--- 038_payouts_and_commission.sql
--- ============================================================================
+-- ===== 038_payouts_and_commission.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 038 — Provider payouts + per-user commission override
 -- ════════════════════════════════════════════════════════════════════
@@ -1201,10 +1081,7 @@ INSERT INTO site_settings (key, value)
 VALUES ('commission', '{"guide": 0.10, "company": 0.15, "vat": 0, "vatNumber": ""}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 
-
--- ============================================================================
--- 039_event_teams.sql
--- ============================================================================
+-- ===== 039_event_teams.sql =====
 -- ════════════════════════════════════════════════════════════════════
 --  Migration 039 — Event teams vertical
 -- ════════════════════════════════════════════════════════════════════
@@ -1257,20 +1134,14 @@ UPDATE site_settings
 SET value = value || '{"team": 0.10}'::jsonb
 WHERE key = 'commission' AND NOT (value ? 'team');
 
-
--- ============================================================================
--- 040_company_concurrency.sql
--- ============================================================================
+-- ===== 040_company_concurrency.sql =====
 -- Company concurrency capacity: how many tours a company can run at the same
 -- time (it has multiple guides). NULL/0 = unlimited. Individual guides ignore
 -- this (their capacity is always 1, enforced in bookingService).
 ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS "maxConcurrentTours" integer;
 
-
--- ============================================================================
--- 041_treasury.sql
--- ============================================================================
+-- ===== 041_treasury.sql =====
 -- Treasury: the company's main vault. Manual deposits/withdrawals/sends are
 -- recorded here; auto income (platform commission) + expenses are computed.
 CREATE TABLE IF NOT EXISTS public.treasury_transactions (
@@ -1285,10 +1156,7 @@ CREATE TABLE IF NOT EXISTS public.treasury_transactions (
 );
 GRANT ALL ON public.treasury_transactions TO anon, authenticated, service_role;
 
-
--- ============================================================================
--- 042_invoices.sql
--- ============================================================================
+-- ===== 042_invoices.sql =====
 -- Admin-issued invoices for providers (guides / companies / teams), line items.
 CREATE TABLE IF NOT EXISTS public.invoices (
   id             text PRIMARY KEY,
@@ -1307,10 +1175,7 @@ CREATE TABLE IF NOT EXISTS public.invoices (
 );
 GRANT ALL ON public.invoices TO anon, authenticated, service_role;
 
-
--- ============================================================================
--- 043_booking_capacity_indexes.sql
--- ============================================================================
+-- ===== 043_booking_capacity_indexes.sql =====
 -- ============================================================================
 -- 043_booking_capacity_indexes.sql
 -- ----------------------------------------------------------------------------
@@ -1364,10 +1229,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_active_guide_slot
 -- Companies + packages: intentionally NO unique index. Their capacity is
 -- enforced in bookingService (maxConcurrentTours / max_group_size seats).
 
-
--- ============================================================================
--- 044_uploaded_video.sql
--- ============================================================================
+-- ===== 044_uploaded_video.sql =====
 -- ============================================================================
 -- 044_uploaded_video.sql
 -- ----------------------------------------------------------------------------
@@ -1380,10 +1242,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_active_guide_slot
 ALTER TABLE users          ADD COLUMN IF NOT EXISTS "videoFileUrl" TEXT;
 ALTER TABLE tour_packages  ADD COLUMN IF NOT EXISTS "videoFileUrl" TEXT;
 
-
--- ============================================================================
--- 045_deposit_pay_first.sql
--- ============================================================================
+-- ===== 045_deposit_pay_first.sql =====
 -- ============================================================================
 -- 045_deposit_pay_first.sql
 -- ----------------------------------------------------------------------------
@@ -1407,10 +1266,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "depositAmount"  NUMERIC(10,3);  -
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "balanceAmount"  NUMERIC(10,3);  -- remaining after deposit
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "depositPaidAt"  TIMESTAMPTZ;    -- when the deposit was paid
 
-
--- ============================================================================
--- 046_payment_ref_columns.sql
--- ============================================================================
+-- ===== 046_payment_ref_columns.sql =====
 -- ============================================================================
 -- 046_payment_ref_columns.sql
 -- ----------------------------------------------------------------------------
@@ -1424,10 +1280,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "depositPaidAt"  TIMESTAMPTZ;    -
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "paymentSessionId" TEXT;
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "paymentRef"       TEXT;
 
-
--- ============================================================================
--- 047_invoice_booking_link.sql
--- ============================================================================
+-- ===== 047_invoice_booking_link.sql =====
 -- Link auto-generated guide payout invoices to their booking (for idempotency
 -- and traceability), and record the gross/commission/net split.
 ALTER TABLE invoices ADD COLUMN IF NOT EXISTS "bookingId"   TEXT;
@@ -1439,18 +1292,12 @@ ALTER TABLE invoices ADD COLUMN IF NOT EXISTS "paidOutAt"   TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS idx_invoices_booking   ON invoices ("bookingId");
 CREATE INDEX IF NOT EXISTS idx_invoices_recipient ON invoices ("recipientId");
 
-
--- ============================================================================
--- 048_invoice_paidout_by.sql
--- ============================================================================
+-- ===== 048_invoice_paidout_by.sql =====
 -- Record WHO settled a payout invoice (transferred the money to the provider).
 ALTER TABLE invoices ADD COLUMN IF NOT EXISTS "paidOutBy"     TEXT;  -- admin/staff user id
 ALTER TABLE invoices ADD COLUMN IF NOT EXISTS "paidOutByName" TEXT;  -- display name
 
-
--- ============================================================================
--- 049_payout_requested.sql
--- ============================================================================
+-- ===== 049_payout_requested.sql =====
 -- 049_payout_requested.sql
 -- Lets a provider (guide/company) request payment for an earned-but-unsettled
 -- invoice. Stamped when they press "Request payment" on their dashboard.
@@ -1462,10 +1309,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_payout_requested
 
 NOTIFY pgrst, 'reload schema';
 
-
--- ============================================================================
--- 050_tour_views.sql
--- ============================================================================
+-- ===== 050_tour_views.sql =====
 -- 050_tour_views.sql
 -- Tour-page view tracking. The feature (recordView + guide analytics) shipped
 -- but this table was never created, so every view insert failed silently and
@@ -1490,10 +1334,7 @@ CREATE POLICY tour_views_all ON tour_views USING (true) WITH CHECK (true);
 
 NOTIFY pgrst, 'reload schema';
 
-
--- ============================================================================
--- 051_guest_bookings.sql
--- ============================================================================
+-- ===== 051_guest_bookings.sql =====
 -- 051_guest_bookings.sql
 -- Guest (no-account) checkout: a visitor can book a tour with just their
 -- name + email/phone. touristId stays NULL; we store the contact here.
@@ -1506,10 +1347,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_guest_email
 
 NOTIFY pgrst, 'reload schema';
 
-
--- ============================================================================
--- 052_payment_idempotency.sql
--- ============================================================================
+-- ===== 052_payment_idempotency.sql =====
 -- 052_payment_idempotency.sql
 -- Prevent a payment webhook from being processed twice by adding a unique
 -- index on paymentRef. A partial index (WHERE paymentRef IS NOT NULL) means
@@ -1525,10 +1363,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_paid_at
 
 NOTIFY pgrst, 'reload schema';
 
-
--- ============================================================================
--- 053_referral_system.sql
--- ============================================================================
+-- ===== 053_referral_system.sql =====
 -- 053_referral_system.sql
 -- Simple referral system: every user gets a unique 6-char referralCode.
 -- When a new user signs up with ?ref=CODE the referredBy column records
@@ -1552,10 +1387,7 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS "referralDiscount" numeric(10,3) D
 
 NOTIFY pgrst, 'reload schema';
 
-
--- ============================================================================
--- 054_analytics_events.sql
--- ============================================================================
+-- ===== 054_analytics_events.sql =====
 -- 054_analytics_events.sql
 -- Lightweight funnel event table to track conversion steps:
 --   page_view → book_click → checkout_start → payment_complete
@@ -1577,4 +1409,60 @@ CREATE INDEX IF NOT EXISTS idx_analytics_event_pkg  ON analytics_events ("packag
 CREATE INDEX IF NOT EXISTS idx_analytics_event_time ON analytics_events ("createdAt");
 
 NOTIFY pgrst, 'reload schema';
+
+-- ===== 055_package_pricing_tiers.sql =====
+-- 055_package_pricing_tiers.sql
+-- Flexible group-size + age-based tour pricing (TripAdvisor-style).
+-- Companies price by number of guests (e.g. 1-2 = 6 OMR flat, 3-4 = 8, 8+ = 1.5/person)
+-- and by age (adult / child 6-12 / free under 6). The legacy simple model
+-- (price_adult = base for 2, price_child = per extra) still works when
+-- pricing_mode = 'simple' (the default), so existing packages are unaffected.
+--
+-- Applied 2026-08-23 on the ODP self-hosted DB (docker exec supabase-db psql). Table is tour_packages.
+
+ALTER TABLE tour_packages
+  ADD COLUMN IF NOT EXISTS pricing_mode   text    NOT NULL DEFAULT 'simple',
+  ADD COLUMN IF NOT EXISTS pricing_tiers  jsonb   NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS child_price    numeric NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS child_age_min  integer NOT NULL DEFAULT 6,
+  ADD COLUMN IF NOT EXISTS child_age_max  integer NOT NULL DEFAULT 12,
+  ADD COLUMN IF NOT EXISTS free_under_age integer NOT NULL DEFAULT 6;
+
+-- pricing_tiers shape (array of brackets, chosen by adult count):
+--   [{ "from": 1, "to": 2,    "price": 6,   "mode": "flat" },
+--    { "from": 3, "to": 4,    "price": 8,   "mode": "flat" },
+--    { "from": 8, "to": null, "price": 1.5, "mode": "per_person" }]
+
+-- ===== 056_migration_tracking.sql =====
+-- 056_migration_tracking.sql
+-- Adds a tracking table so "which numbered migrations have actually been
+-- applied to this database" is a query, not a guess. Migrations 001-055 were
+-- applied manually over time with no record kept (ALL_MIGRATIONS.sql is stale,
+-- covering only 001-005) — this is the fix going forward.
+--
+-- Run once in this order:
+--   1) This file (creates the table).
+--   2) database/migrations/_backfill_applied.sql (marks 001-055 as already
+--      applied — they ARE already live on this DB; this just records that fact,
+--      it does NOT re-run their DDL).
+--   Every migration from 057 onward should INSERT itself into this table as
+--   its last statement (see the template at the bottom of this file).
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  version     integer PRIMARY KEY,        -- e.g. 56 for 056_migration_tracking.sql
+  filename    text NOT NULL,
+  applied_at  timestamptz NOT NULL DEFAULT now(),
+  applied_by  text                        -- free-text: who/what ran it (owner name, "claude", etc.)
+);
+
+INSERT INTO schema_migrations (version, filename, applied_by)
+VALUES (56, '056_migration_tracking.sql', 'system')
+ON CONFLICT (version) DO NOTHING;
+
+-- ── Template for every future migration file — copy this as the LAST
+-- statement in any new NNN_description.sql (replace NNN and the filename):
+--
+-- INSERT INTO schema_migrations (version, filename, applied_by)
+-- VALUES (NNN, 'NNN_description.sql', 'owner')
+-- ON CONFLICT (version) DO NOTHING;
 
