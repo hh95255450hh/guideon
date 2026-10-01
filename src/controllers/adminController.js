@@ -56,12 +56,13 @@ exports.recentActivity = async (req, res) => {
       reviews.findAll().catch(() => []),
     ]);
 
-    const nameById = {};
-    (allUsers || []).forEach(u => { nameById[u.id] = u.companyName || u.fullName || u.email || u.id; });
+    const nameById = {}, typeById = {};
+    (allUsers || []).forEach(u => { nameById[u.id] = u.companyName || u.fullName || u.email || u.id; typeById[u.id] = u.userType; });
     const events = [];
-    const push = (at, type, icon, actor, actorType, en, ar) => {
+    // actorId lets the admin UI link the actor's name to their profile.
+    const push = (at, type, icon, actor, actorType, en, ar, actorId) => {
       if (!at) return;
-      events.push({ at, type, icon, actor, actorType, text_en: en, text_ar: ar });
+      events.push({ at, type, icon, actor, actorType, actorId: actorId || null, text_en: en, text_ar: ar });
     };
 
     // Registrations (guides & companies emphasised; tourists included)
@@ -70,14 +71,14 @@ exports.recentActivity = async (req, res) => {
       const who = u.companyName || u.fullName || u.email;
       const label = u.userType === 'guide' ? ['Guide', 'مرشد'] : u.userType === 'company' ? ['Company', 'شركة'] : ['Tourist', 'سائح'];
       push(u.createdAt, 'register', u.userType === 'company' ? '🏢' : u.userType === 'guide' ? '🎒' : '👤', who, u.userType,
-        `${label[0]} "${who}" joined the platform`, `انضم ${label[1]} "${who}" إلى المنصة`);
+        `${label[0]} "${who}" joined the platform`, `انضم ${label[1]} "${who}" إلى المنصة`, u.id);
     });
 
     // New tours published
     (allPackages || []).forEach(p => {
       const who = p.providerName || nameById[p.providerId] || 'A provider';
-      push(p.createdAt, 'tour', '🗺️', who, 'guide',
-        `${who} added a tour "${p.title}"`, `أضاف ${who} رحلة "${p.title}"`);
+      push(p.createdAt, 'tour', '🗺️', who, typeById[p.providerId] || 'guide',
+        `${who} added a tour "${p.title}"`, `أضاف ${who} رحلة "${p.title}"`, p.providerId);
     });
 
     // Bookings: created + key status changes
@@ -85,13 +86,14 @@ exports.recentActivity = async (req, res) => {
       const guide = nameById[b.guideId] || 'a guide';
       const tourist = nameById[b.touristId] || 'a tourist';
       push(b.createdAt, 'booking', '📅', tourist, 'tourist',
-        `${tourist} booked ${b.destination || 'a tour'} with ${guide}`, `حجز ${tourist} رحلة ${b.destination || ''} مع ${guide}`);
-      if (b.status === 'confirmed') push(b.updatedAt || b.confirmedAt, 'confirm', '✅', guide, 'guide',
-        `${guide} confirmed a booking with ${tourist}`, `أكّد ${guide} حجزاً مع ${tourist}`);
-      if (b.startedAt) push(b.startedAt, 'trip_start', '🚐', guide, 'guide',
-        `${guide} started the ${b.destination || ''} tour`, `بدأ ${guide} رحلة ${b.destination || ''}`);
-      if (b.completedAt) push(b.completedAt, 'trip_end', '🏁', guide, 'guide',
-        `${guide} completed the ${b.destination || ''} tour`, `أنهى ${guide} رحلة ${b.destination || ''}`);
+        `${tourist} booked ${b.destination || 'a tour'} with ${guide}`, `حجز ${tourist} رحلة ${b.destination || ''} مع ${guide}`, b.touristId);
+      const gType = typeById[b.guideId] || 'guide';
+      if (b.status === 'confirmed') push(b.updatedAt || b.confirmedAt, 'confirm', '✅', guide, gType,
+        `${guide} confirmed a booking with ${tourist}`, `أكّد ${guide} حجزاً مع ${tourist}`, b.guideId);
+      if (b.startedAt) push(b.startedAt, 'trip_start', '🚐', guide, gType,
+        `${guide} started the ${b.destination || ''} tour`, `بدأ ${guide} رحلة ${b.destination || ''}`, b.guideId);
+      if (b.completedAt) push(b.completedAt, 'trip_end', '🏁', guide, gType,
+        `${guide} completed the ${b.destination || ''} tour`, `أنهى ${guide} رحلة ${b.destination || ''}`, b.guideId);
     });
 
     // Reviews
@@ -99,7 +101,7 @@ exports.recentActivity = async (req, res) => {
       const who = r.touristName || nameById[r.touristId] || 'A traveler';
       const guide = nameById[r.guideId] || 'a guide';
       push(r.createdAt, 'review', '⭐', who, 'tourist',
-        `${who} left a ${r.rating}★ review for ${guide}`, `ترك ${who} تقييماً ${r.rating}★ للمرشد ${guide}`);
+        `${who} left a ${r.rating}★ review for ${guide}`, `ترك ${who} تقييماً ${r.rating}★ للمرشد ${guide}`, r.touristId);
     });
 
     events.sort((a, b) => new Date(b.at) - new Date(a.at));

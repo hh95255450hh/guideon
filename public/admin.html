@@ -762,9 +762,16 @@ async function loadActivity() {
       if (lbl !== lastDay) { html += `<div class="tl-day">${lbl}</div>`; lastDay = lbl; }
       const text = isAr ? ev.text_ar : ev.text_en;
       const last = i === items.length - 1;
+      // Make the actor's name clickable: guides/companies → public profile,
+      // tourists → the Tourists tab with their row highlighted.
+      const actorLink = actorLinkHtml(ev);
+      const safeText = escapeHtml(text);
+      const safeActor = escapeHtml(ev.actor || '');
+      const linkedText = (actorLink && safeActor && safeText.includes(safeActor))
+        ? safeText.replace(safeActor, actorLink) : safeText;
       html += `<div class="tl-item">
         <div class="tl-line"><div class="tl-dot tl-c-${ev.type}">${ev.icon||'•'}</div>${last?'':'<div class="tl-stem"></div>'}</div>
-        <div class="tl-body"><div class="tl-text">${escapeHtml(text)}</div><div class="tl-meta">${timeFor(ev.at)} · ${escapeHtml(ev.actor||'')}</div></div>
+        <div class="tl-body"><div class="tl-text">${linkedText}</div><div class="tl-meta">${timeFor(ev.at)} · ${actorLink || safeActor}</div></div>
       </div>`;
     });
     el.innerHTML = html;
@@ -773,6 +780,36 @@ async function loadActivity() {
   }
 }
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// Link an activity actor to their page. Returns '' when there's nothing to link.
+function actorLinkHtml(ev) {
+  if (!ev || !ev.actorId || !ev.actor) return '';
+  const name = escapeHtml(ev.actor);
+  const id = encodeURIComponent(ev.actorId);
+  const style = 'class="tl-actor" style="color:var(--teal,#0f7b6c);font-weight:700;text-decoration:underline;cursor:pointer"';
+  if (ev.actorType === 'guide')   return `<a href="/guide-profile.html?id=${id}" target="_blank" rel="noopener" ${style}>${name}</a>`;
+  if (ev.actorType === 'company') return `<a href="/company-profile.html?id=${id}" target="_blank" rel="noopener" ${style}>${name}</a>`;
+  if (ev.actorType === 'tourist') return `<a href="#" onclick="goToTourist('${escapeHtml(String(ev.actorId))}');return false;" ${style}>${name}</a>`;
+  return '';
+}
+
+// Tourists have no public profile — open the Tourists tab and highlight their row.
+function goToTourist(id) {
+  const btn = document.querySelector(".admin-tab[onclick*=\"'tourists'\"]");
+  showTab('tourists', btn);
+  let tries = 0;
+  const t = setInterval(() => {
+    const row = document.getElementById('tourist-row-' + id);
+    if (row || ++tries > 40) {
+      clearInterval(t);
+      if (!row) return;
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      row.style.transition = 'background 0.4s';
+      row.style.background = '#fff3c4';
+      setTimeout(() => { row.style.background = ''; }, 2500);
+    }
+  }, 150);
+}
 
 // ── Staff Management ──────────────────────────────────────────
 let STAFF_ROLES = {};
@@ -1489,7 +1526,7 @@ async function loadTourists() {
     const r = await fetch('/api/admin/tourists',{credentials:'include'});
     const d = await r.json();
     document.getElementById('touristsTable').innerHTML = (d.tourists||[]).map(t=>`
-      <tr>
+      <tr id="tourist-row-${window.gdEsc(String(t.id))}">
         <td class="fw-700">${window.gdEsc(t.fullName)}</td>
         <td>${contactLinks(t)}</td>
         <td>${t.nationality||'—'}</td>
