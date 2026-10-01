@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>المرشد الفوري · Instant Guide — Guideon</title>
+<meta name="description" content="اعثر على أقرب مرشد سياحي مرخّص متاح الآن واطلبه فورًا · Find the nearest licensed guide available now">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f3d3a">
+<link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+<style>
+:root{--teal:#0f7b6c;--tealb:#14b892;--navy:#0f1c3e;--gold:#c8912f;--ink:#14203a;--body:#44506a;--muted:#7a869d;--line:#e3e8f0;--bg:#f5f7f6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:var(--teal)}
+.top{position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#0f1c3e,#0f3d3a);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.top a.back{color:#fff;text-decoration:none;font-size:22px;line-height:1}
+.top h1{font-size:18px;font-weight:800}
+.top .en{font-size:12px;color:#a9c7c0;display:block;font-weight:500}
+#map{position:fixed;top:58px;left:0;right:0;bottom:0;z-index:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:600;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(15,28,62,.18);max-height:52vh;display:flex;flex-direction:column}
+.sheet .grip{width:44px;height:5px;border-radius:3px;background:#d6dce6;margin:8px auto 4px}
+.sheet .hd{padding:6px 16px 10px;border-bottom:1px solid var(--line)}
+.sheet .hd b{font-size:16px}
+.sheet .hd small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.list{overflow-y:auto;padding:8px 12px 16px}
+.g{display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:14px;margin-bottom:8px;background:#fff}
+.g img,.g .ph{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:#e3f5ef;display:grid;place-items:center;font-size:22px;color:var(--teal);font-weight:800}
+.g .info{flex:1;min-width:0}
+.g .nm{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g .meta{font-size:12.5px;color:var(--body);margin-top:2px}
+.g .rate{font-weight:800;color:var(--teal);font-size:14px;white-space:nowrap}
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-teal:disabled{opacity:.55;cursor:default}
+.btn-light{background:#eef2f6;color:var(--ink)}
+.btn-red{background:#fdecea;color:#b3261e}
+.empty{text-align:center;color:var(--muted);padding:22px 10px;font-size:14px;line-height:1.7}
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:900;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:#fff;width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 18px 22px}
+.modal h3{font-size:18px;margin-bottom:4px}
+.modal .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+.chip{border:1.5px solid var(--line);border-radius:22px;padding:7px 14px;font-weight:700;cursor:pointer;background:#fff;font-family:inherit;font-size:14px}
+.chip.on{border-color:var(--teal);background:#e3f5ef;color:var(--teal)}
+textarea,input[type=number]{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px;font-family:inherit;font-size:14px}
+.total{display:flex;justify-content:space-between;align-items:center;background:#f6f4ef;border-radius:12px;padding:12px 14px;margin:12px 0;font-weight:800}
+.total .v{color:var(--teal);font-size:18px}
+.status{position:fixed;left:12px;right:12px;bottom:12px;z-index:800;background:#fff;border-radius:18px;box-shadow:0 10px 30px rgba(15,28,62,.25);padding:16px;display:none}
+.status.show{display:block}
+.status h4{font-size:16px;margin-bottom:6px}
+.status p{font-size:14px;color:var(--body);line-height:1.6}
+.status .acts{display:flex;gap:8px;margin-top:12px}
+.err{background:#fdecea;color:#b3261e;border-radius:10px;padding:8px 12px;font-size:13px;margin-top:8px;display:none}
+/* guide view */
+.gv{max-width:640px;margin:76px auto 40px;padding:0 14px;display:none}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 6px 20px rgba(15,28,62,.05)}
+.card h2{font-size:18px;margin-bottom:4px}
+.card .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#f6f4ef;border-radius:14px;padding:14px}
+.switch b{font-size:16px}
+.tog{position:relative;width:58px;height:32px;flex:0 0 auto}
+.tog input{display:none}
+.tog span{position:absolute;inset:0;border-radius:20px;background:#cfd6e0;transition:.2s;cursor:pointer}
+.tog span:before{content:"";position:absolute;width:26px;height:26px;border-radius:50%;background:#fff;top:3px;right:3px;transition:.2s}
+.tog input:checked+span{background:var(--tealb)}
+.tog input:checked+span:before{transform:translateX(-26px)}
+.req{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.req .t{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{font-size:12px;font-weight:800;border-radius:20px;padding:3px 10px}
+.b-pending{background:#fff3c4;color:#8a5e17}.b-accepted{background:#e3f5ef;color:var(--teal)}.b-declined,.b-expired,.b-cancelled{background:#eef2f6;color:var(--muted)}
+.leaflet-marker-icon.gmark{background:var(--teal);border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.35);color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px}
+.leaflet-marker-icon.me{background:#2f6fed;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 6px rgba(47,111,237,.25)}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="back" href="/explore.html" aria-label="رجوع">→</a>
+  <div><h1>⚡ المرشد الفوري <span class="en">Instant Guide — available now</span></h1></div>
+</div>
+
+<!-- ===== Tourist / visitor view ===== -->
+<div id="tv">
+  <div id="map"></div>
+  <div class="sheet" id="sheet">
+    <div class="grip"></div>
+    <div class="hd"><b id="sheetTitle">المرشدون المتاحون الآن قربك</b><small id="sheetSub">جارٍ تحديد موقعك…</small></div>
+    <div class="list" id="list"><div class="empty">جارٍ التحميل…</div></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="reqModal">
+  <div class="modal">
+    <h3 id="mName">—</h3>
+    <div class="sub" id="mSub">—</div>
+    <b>كم ساعة تحتاج المرشد؟</b>
+    <div class="row" id="hoursRow"></div>
+    <textarea id="mNote" rows="2" maxlength="500" placeholder="ملاحظة للمرشد (اختياري): مكانك بالتحديد، عدد الأشخاص، اللغة…"></textarea>
+    <div class="total"><span>الإجمالي</span><span class="v" id="mTotal">—</span></div>
+    <div class="err" id="mErr"></div>
+    <div class="row" style="margin-bottom:0">
+      <button class="btn btn-teal" id="mSend" style="flex:1">⚡ اطلب الآن</button>
+      <button class="btn btn-light" onclick="closeModal()">إلغاء</button>
+    </div>
+    <div class="sub" style="margin:10px 0 0">الدفع إلكترونيًا بعد قبول المرشد · لن يُخصم أي مبلغ قبل القبول.</div>
+  </div>
+</div>
+
+<div class="status" id="statusBox"><h4 id="stTitle"></h4><p id="stBody"></p><div class="acts" id="stActs"></div></div>
+
+<!-- ===== Guide view ===== -->
+<div class="gv" id="gv">
+  <div class="card">
+    <h2>⚡ استقبال الطلبات الفورية</h2>
+    <div class="sub">فعّل الإتاحة ليظهر موقعك التقريبي للسيّاح القريبين، ويطلبوك مباشرة. تُرسَل لك الطلبات وتردّ عليها خلال ١٠ دقائق.</div>
+    <label style="font-weight:700;font-size:14px">سعر الساعة (ريال عُماني)</label>
+    <input type="number" id="rate" min="1" max="200" step="0.5" placeholder="مثال: 10" style="margin:6px 0 12px">
+    <div class="switch">
+      <div><b id="avLabel">غير متاح</b><div class="sub" style="margin:2px 0 0" id="avSub">لن تظهر للسيّاح الآن</div></div>
+      <label class="tog"><input type="checkbox" id="avToggle"><span></span></label>
+    </div>
+    <div class="err" id="gErr"></div>
+  </div>
+  <div class="card">
+    <h2>الطلبات الواردة</h2>
+    <div class="sub">تتحدّث تلقائيًا كل ٢٠ ثانية.</div>
+    <div id="incoming"><div class="empty">لا توجد طلبات بعد.</div></div>
+  </div>
+</div>
+
+<script src="/vendor/leaflet/leaflet.js"></script>
+<script>
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const api = async (url, opts = {}) => {
+  const r = await fetch(url, Object.assign({ credentials: 'include', headers: { 'Content-Type': 'application/json' } }, opts));
+  let d = {}; try { d = await r.json(); } catch (_) {}
+  if (!r.ok || d.success === false) { const e = new Error(d.message || ('HTTP ' + r.status)); e.status = r.status; throw e; }
+  return d;
+};
+const fmtOMR = n => (Math.round(Number(n) * 1000) / 1000).toString() + ' ر.ع';
+let ME = null;
+
+// ─────────────────────────── Tourist view ───────────────────────────
+let map, meMarker, gMarkers = [], myLat = null, myLng = null, GUIDES = [], SELECTED = null, HOURS = 2;
+
+function initMap() {
+  map = L.map('map', { zoomControl: false, attributionControl: false }).setView([23.588, 58.383], 9);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+}
+
+function locate() {
+  const sub = document.getElementById('sheetSub');
+  if (!navigator.geolocation) { sub.textContent = 'المتصفح لا يدعم تحديد الموقع — نعرض كل المرشدين المتاحين.'; return loadGuides(); }
+  navigator.geolocation.getCurrentPosition(p => {
+    myLat = p.coords.latitude; myLng = p.coords.longitude;
+    const icon = L.divIcon({ className: 'me', iconSize: [18, 18] });
+    meMarker = L.marker([myLat, myLng], { icon }).addTo(map);
+    map.setView([myLat, myLng], 12);
+    loadGuides();
+  }, () => {
+    sub.textContent = 'لم نتمكّن من تحديد موقعك — نعرض كل المرشدين المتاحين.';
+    loadGuides();
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}
+
+async function loadGuides() {
+  const list = document.getElementById('list');
+  try {
+    const q = myLat != null ? `?lat=${myLat}&lng=${myLng}` : '';
+    const d = await api('/api/instant/guides' + q, { method: 'GET' });
+    GUIDES = d.guides || [];
+  } catch (e) { list.innerHTML = '<div class="empty">تعذّر تحميل المرشدين. حاول مجددًا.</div>'; return; }
+  gMarkers.forEach(m => m.remove()); gMarkers = [];
+  document.getElementById('sheetSub').textContent = GUIDES.length
+    ? `${GUIDES.length} مرشد متاح الآن · مرتّبون حسب الأقرب`
+    : 'لا يوجد مرشد متاح الآن في محيطك';
+  if (!GUIDES.length) {
+    list.innerHTML = '<div class="empty">لا يوجد مرشدون متاحون فوريًا الآن.<br>يمكنك <a href="/explore.html">تصفّح كل المرشدين</a> وحجز رحلة بموعد.</div>';
+    return;
+  }
+  list.innerHTML = GUIDES.map((g, i) => `
+    <div class="g">
+      ${g.photo ? `<img src="${esc(g.photo)}" alt="">` : `<div class="ph">${esc((g.fullName || '؟').trim().charAt(0))}</div>`}
+      <div class="info">
+        <div class="nm">${esc(g.fullName)}</div>
+        <div class="meta">${g.distanceKm != null ? '📍 ' + g.distanceKm + ' كم · ' : ''}⭐ ${g.rating ? g.rating.toFixed(1) : 'جديد'}${g.totalReviews ? ' (' + g.totalReviews + ')' : ''}</div>
+      </div>
+      <div style="text-align:center">
+        <div class="rate">${fmtOMR(g.hourlyRate)}<small style="font-weight:600;color:var(--muted)"> /ساعة</small></div>
+        <button class="btn btn-teal" style="margin-top:6px;padding:8px 14px" onclick="openModal(${i})">اطلب</button>
+      </div>
+    </div>`).join('');
+  GUIDES.forEach((g, i) => {
+    const icon = L.divIcon({ className: 'gmark', html: '⚡', iconSize: [30, 30] });
+    const m = L.marker([g.lat, g.lng], { icon }).addTo(map).on('click', () => openModal(i));
+    gMarkers.push(m);
+  });
+}
+
+function openModal(i) {
+  if (!ME) { location.href = '/login.html?next=' + encodeURIComponent('/instant.html'); return; }
+  if (ME.userType !== 'tourist') { alert('الطلب الفوري متاح لحسابات السيّاح.'); return; }
+  SELECTED = GUIDES[i];
+  document.getElementById('mName').textContent = SELECTED.fullName;
+  document.getElementById('mSub').textContent = `${fmtOMR(SELECTED.hourlyRate)} للساعة${SELECTED.distanceKm != null ? ' · يبعد ' + SELECTED.distanceKm + ' كم' : ''}`;
+  const row = document.getElementById('hoursRow');
+  row.innerHTML = [1, 2, 3, 4, 6, 8].map(h => `<button class="chip ${h === HOURS ? 'on' : ''}" onclick="setHours(${h})">${h} س</button>`).join('');
+  document.getElementById('mErr').style.display = 'none';
+  updateTotal();
+  document.getElementById('reqModal').classList.add('show');
+}
+function setHours(h) { HOURS = h; [...document.querySelectorAll('#hoursRow .chip')].forEach(c => c.classList.toggle('on', parseInt(c.textContent) === h)); updateTotal(); }
+function updateTotal() { document.getElementById('mTotal').textContent = SELECTED ? fmtOMR(SELECTED.hourlyRate * HOURS) : '—'; }
+function closeModal() { document.getElementById('reqModal').classList.remove('show'); }
+
+document.getElementById('mSend').onclick = async () => {
+  const btn = document.getElementById('mSend'), err = document.getElementById('mErr');
+  btn.disabled = true; err.style.display = 'none';
+  try {
+    await api('/api/instant/requests', { method: 'POST', body: JSON.stringify({ guideId: SELECTED.id, hours: HOURS, lat: myLat, lng: myLng, note: document.getElementById('mNote').value }) });
+    closeModal();
+    pollMine();
+  } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+  finally { btn.disabled = false; }
+};
+
+let pollTimer = null, countdownTimer = null;
+async function pollMine() {
+  clearTimeout(pollTimer);
+  if (!ME || ME.userType !== 'tourist') return;
+  let reqs = [];
+  try { reqs = (await api('/api/instant/requests/mine', { method: 'GET' })).requests || []; } catch (_) {}
+  const cur = reqs.find(r => r.status === 'pending') ||
+              reqs.find(r => r.status === 'accepted' && (Date.now() - new Date(r.respondedAt || r.createdAt)) < 6 * 3600e3);
+  renderStatus(cur, reqs[0]);
+  pollTimer = setTimeout(pollMine, cur && cur.status === 'pending' ? 5000 : 30000);
+}
+
+function renderStatus(cur, latest) {
+  const box = document.getElementById('statusBox'), t = document.getElementById('stTitle'), b = document.getElementById('stBody'), a = document.getElementById('stActs');
+  clearInterval(countdownTimer);
+  if (!cur) {
+    // Show a one-off note if the most recent request was just declined/expired.
+    if (latest && ['declined', 'expired'].includes(latest.status) && (Date.now() - new Date(latest.respondedAt || latest.createdAt)) < 15 * 60e3 && !sessionStorage.getItem('instSeen-' + latest.id)) {
+      t.textContent = latest.status === 'declined' ? 'المرشد غير متاح' : 'انتهت مهلة الطلب';
+      b.textContent = 'لم يُخصم أي مبلغ. جرّب مرشدًا آخر قريبًا منك.';
+      a.innerHTML = `<button class="btn btn-light" onclick="sessionStorage.setItem('instSeen-${esc(latest.id)}','1');document.getElementById('statusBox').classList.remove('show')">حسنًا</button>`;
+      box.classList.add('show');
+    } else box.classList.remove('show');
+    return;
+  }
+  box.classList.add('show');
+  if (cur.status === 'pending') {
+    t.textContent = `⏳ بانتظار ردّ ${cur.otherName || 'المرشد'}`;
+    const tick = () => {
+      const left = Math.max(0, new Date(cur.expiresAt) - Date.now());
+      const m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
+      b.textContent = `${cur.hours} ساعة · ${fmtOMR(cur.totalAmount)} · المهلة المتبقية ${m}:${String(s).padStart(2, '0')}`;
+    };
+    tick(); countdownTimer = setInterval(tick, 1000);
+    a.innerHTML = `<button class="btn btn-red" onclick="cancelReq('${esc(cur.id)}')">إلغاء الطلب</button>`;
+  } else if (cur.status === 'accepted') {
+    t.textContent = `✅ قبل ${cur.otherName || 'المرشد'} طلبك`;
+    b.textContent = `ادفع ${fmtOMR(cur.totalAmount)} الآن لتأكيد الحجز، وسيتوجّه المرشد إليك فورًا.`;
+    a.innerHTML = `<button class="btn btn-teal" style="flex:1" onclick="payNow('${esc(cur.bookingId)}', this)">💳 ادفع الآن</button>`;
+  }
+}
+
+async function cancelReq(id) {
+  try { await api(`/api/instant/requests/${encodeURIComponent(id)}/cancel`, { method: 'POST' }); } catch (e) { alert(e.message); }
+  pollMine();
+}
+async function payNow(bookingId, btn) {
+  btn.disabled = true;
+  try {
+    const d = await api('/api/payments/create-checkout', { method: 'POST', body: JSON.stringify({ bookingId }) });
+    if (d.url) location.href = d.url; else throw new Error('Payment link unavailable');
+  } catch (e) {
+    if (/already paid/i.test(e.message)) { document.getElementById('stTitle').textContent = '✅ تم الدفع — المرشد في طريقه إليك'; document.getElementById('stActs').innerHTML = ''; }
+    else alert(e.message);
+    btn.disabled = false;
+  }
+}
+
+// ─────────────────────────── Guide view ───────────────────────────
+let beatTimer = null, incTimer = null;
+function setAvUI(on) {
+  document.getElementById('avToggle').checked = on;
+  document.getElementById('avLabel').textContent = on ? '🟢 متاح الآن' : 'غير متاح';
+  document.getElementById('avSub').textContent = on ? 'يظهر موقعك التقريبي للسيّاح القريبين' : 'لن تظهر للسيّاح الآن';
+}
+function gErr(msg) { const e = document.getElementById('gErr'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+
+function sendAvailability(on) {
+  return new Promise(resolve => {
+    if (!on) {
+      api('/api/instant/me/availability', { method: 'PUT', body: JSON.stringify({ available: false }) })
+        .then(() => resolve(true)).catch(e => { gErr(e.message); resolve(false); });
+      return;
+    }
+    if (!navigator.geolocation) { gErr('المتصفح لا يدعم تحديد الموقع.'); return resolve(false); }
+    navigator.geolocation.getCurrentPosition(async p => {
+      try {
+        await api('/api/instant/me/availability', { method: 'PUT', body: JSON.stringify({
+          available: true, lat: p.coords.latitude, lng: p.coords.longitude, hourlyRate: parseFloat(document.getElementById('rate').value) }) });
+        gErr(''); resolve(true);
+      } catch (e) { gErr(e.message); resolve(false); }
+    }, () => { gErr('اسمح بالوصول إلى موقعك لتفعيل الإتاحة.'); resolve(false); }, { enableHighAccuracy: true, timeout: 12000 });
+  });
+}
+
+document.getElementById('avToggle').addEventListener('change', async e => {
+  const want = e.target.checked;
+  const ok = await sendAvailability(want);
+  setAvUI(ok ? want : !want);
+  clearInterval(beatTimer);
+  // Refresh location every 5 min while available so the map stays accurate.
+  if (ok && want) beatTimer = setInterval(() => sendAvailability(true), 5 * 60e3);
+});
+
+async function loadIncoming() {
+  clearTimeout(incTimer);
+  const el = document.getElementById('incoming');
+  try {
+    const reqs = (await api('/api/instant/requests/incoming', { method: 'GET' })).requests || [];
+    const labels = { pending: 'جديد', accepted: 'مقبول', declined: 'مرفوض', expired: 'منتهي', cancelled: 'ألغاه السائح' };
+    el.innerHTML = reqs.length ? reqs.map(r => {
+      const left = Math.max(0, Math.round((new Date(r.expiresAt) - Date.now()) / 60000));
+      const map = (r.lat != null && r.lng != null) ? `<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" rel="noopener">📍 موقع السائح</a>` : '';
+      return `<div class="req">
+        <div class="t"><b>${esc(r.otherName || 'سائح')}</b><span class="badge b-${esc(r.status)}">${labels[r.status] || esc(r.status)}</span></div>
+        <div class="sub" style="margin:6px 0">${r.hours} ساعة · ${fmtOMR(r.totalAmount)}${r.status === 'pending' ? ' · تنتهي خلال ' + left + ' د' : ''} ${map}</div>
+        ${r.note ? `<div style="font-size:13px;color:var(--body);margin-bottom:6px">💬 ${esc(r.note)}</div>` : ''}
+        ${r.status === 'pending' ? `<div class="row" style="margin:6px 0 0">
+          <button class="btn btn-teal" style="flex:1" onclick="respond('${esc(r.id)}','accept',this)">✅ قبول</button>
+          <button class="btn btn-light" onclick="respond('${esc(r.id)}','decline',this)">رفض</button></div>` : ''}
+        ${r.status === 'accepted' ? '<div class="sub" style="margin:4px 0 0">بانتظار دفع السائح — يصلك إشعار عند الدفع للتوجّه إليه.</div>' : ''}
+      </div>`;
+    }).join('') : '<div class="empty">لا توجد طلبات بعد.</div>';
+  } catch (_) { el.innerHTML = '<div class="empty">تعذّر تحميل الطلبات.</div>'; }
+  incTimer = setTimeout(loadIncoming, 20000);
+}
+async function respond(id, action, btn) {
+  btn.disabled = true;
+  try { await api(`/api/instant/requests/${encodeURIComponent(id)}/${action}`, { method: 'POST' }); }
+  catch (e) { alert(e.message); }
+  loadIncoming();
+}
+
+// ─────────────────────────── Boot ───────────────────────────
+(async () => {
+  try { ME = (await api('/api/auth/me', { method: 'GET' })).user; } catch (_) { ME = null; }
+  if (ME && ME.userType === 'guide') {
+    document.getElementById('tv').style.display = 'none';
+    document.getElementById('gv').style.display = 'block';
+    try {
+      const st = await api('/api/instant/me', { method: 'GET' });
+      if (st.hourlyRate) document.getElementById('rate').value = st.hourlyRate;
+      setAvUI(!!st.available);
+      if (!st.isVerified) gErr('يجب توثيق حسابك من الإدارة قبل استقبال الطلبات الفورية.');
+      if (st.available) beatTimer = setInterval(() => sendAvailability(true), 5 * 60e3);
+    } catch (_) {}
+    loadIncoming();
+  } else {
+    initMap(); locate(); pollMine();
+  }
+})();
+</script>
+<script src="/js/common-widgets.js?v=29" defer></script>
+</body>
+</html>

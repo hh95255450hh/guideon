@@ -236,6 +236,7 @@ app.use('/api/content', require('./routes/content'));
 app.use('/api/stats',    require('./routes/stats'));
 app.use('/api',          require('./routes/guideAnalytics'));
 app.use('/api/qa', require('./routes/qa'));
+app.use('/api/instant', require('./routes/instant'));
 app.use('/api', require('./routes/extras'));
 
 app.use('/health', require('./routes/health'));

@@ -301,9 +301,12 @@ async function finalizePaidBooking(bookingId, session) {
   // ── Pay-first deposit: submit the booking to the provider now ──
   if (isDeposit) {
     const fullyPaid = (parseInt(fresh.depositPercent) || 100) >= 100;
+    // Instant-guide bookings were already accepted by the guide before payment,
+    // so they go straight to 'confirmed' and the guide is told to head out.
+    const instantReq = await new SupabaseDB('instant_requests').findByField('bookingId', bookingId).catch(() => null);
     try {
       await updateBookingSafe(bookingId, {
-        status: 'pending', depositPaidAt: now, isPaid: fullyPaid,
+        status: instantReq ? 'confirmed' : 'pending', depositPaidAt: now, isPaid: fullyPaid,
         ...(fullyPaid && { paidAt: now }), paymentRef: ref,
       });
     } catch (dbErr) {
@@ -314,17 +317,29 @@ async function finalizePaidBooking(bookingId, session) {
       }
       throw dbErr;
     }
-    // The provider sees the booking for the FIRST time, now that it's paid.
-    try { require('../services/bookingService').notifyBookingSubmitted(bookingId); } catch (e) { /* non-critical */ }
+    if (instantReq) {
+      const mapLink = (instantReq.lat != null && instantReq.lng != null)
+        ? `https://www.google.com/maps?q=${instantReq.lat},${instantReq.lng}` : '/instant.html';
+      notify({
+        userId: fresh.guideId, type: 'instant_paid',
+        title: 'Instant booking paid — head to the tourist 🚗', titleAr: 'تم الدفع — توجّه إلى السائح 🚗',
+        body: `The tourist paid OMR ${fresh.totalAmount} for ${instantReq.hours}h. Open the map for their location.`,
+        bodyAr: `دفع السائح ${fresh.totalAmount} ر.ع لمدة ${instantReq.hours} ساعة. افتح الخريطة لموقعه.`,
+        link: mapLink, metadata: { bookingId, requestId: instantReq.id },
+      });
+    } else {
+      // The provider sees the booking for the FIRST time, now that it's paid.
+      try { require('../services/bookingService').notifyBookingSubmitted(bookingId); } catch (e) { /* non-critical */ }
+    }
     if (!fresh.touristId && fresh.guestEmail) _emailGuestPaid(fresh);
     const t = await users.findById(fresh.touristId);
     if (t) notify({
       userId: t.id, type: 'payment_received',
       title:   fullyPaid ? 'Payment successful 💳' : 'Deposit received ✅',
       titleAr: fullyPaid ? 'تم الدفع بنجاح 💳' : 'تم استلام العربون ✅',
-      body:   `Your ${fresh.destination} booking has been sent to the guide for confirmation.`,
-      bodyAr: `تم إرسال حجز ${fresh.destination} إلى المرشد لتأكيده.`,
-      link: '/tourist-dashboard.html#bookings', metadata: { bookingId },
+      body:   instantReq ? 'Your instant guide is confirmed and on the way.' : `Your ${fresh.destination} booking has been sent to the guide for confirmation.`,
+      bodyAr: instantReq ? 'تم تأكيد المرشد الفوري وهو في طريقه إليك.' : `تم إرسال حجز ${fresh.destination} إلى المرشد لتأكيده.`,
+      link: instantReq ? '/instant.html' : '/tourist-dashboard.html#bookings', metadata: { bookingId },
     });
     console.log(`[Payment] Booking ${bookingId} deposit paid → submitted to provider.`);
     return;
