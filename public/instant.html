@@ -146,7 +146,9 @@ let ME = null;
 let map, meMarker, gMarkers = [], myLat = null, myLng = null, GUIDES = [], SELECTED = null, HOURS = 2;
 
 function initMap() {
-  map = L.map('map', { zoomControl: false, attributionControl: false }).setView([23.588, 58.383], 9);
+  // fadeAnimation off: tiles appear fully at once even when the tab/WebView
+  // throttles requestAnimationFrame (otherwise they can stick half-transparent).
+  map = L.map('map', { zoomControl: false, attributionControl: false, fadeAnimation: false }).setView([23.588, 58.383], 9);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
 }
 
