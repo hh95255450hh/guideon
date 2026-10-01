@@ -14,11 +14,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
 a{color:var(--teal)}
-.top{position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,#0f1c3e,#0f3d3a);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.top{position:fixed;top:var(--navh,0px);left:0;right:0;z-index:500;background:linear-gradient(135deg,#0f1c3e,#0f3d3a);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px}
 .top a.back{color:#fff;text-decoration:none;font-size:22px;line-height:1}
 .top h1{font-size:18px;font-weight:800}
 .top .en{font-size:12px;color:#a9c7c0;display:block;font-weight:500}
-#map{position:fixed;top:58px;left:0;right:0;bottom:0;z-index:1}
+#map{position:fixed;top:calc(var(--navh,0px) + 58px);left:0;right:0;bottom:0;z-index:1}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:600;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(15,28,62,.18);max-height:52vh;display:flex;flex-direction:column}
 .sheet .grip{width:44px;height:5px;border-radius:3px;background:#d6dce6;margin:8px auto 4px}
 .sheet .hd{padding:6px 16px 10px;border-bottom:1px solid var(--line)}
@@ -55,7 +55,7 @@ textarea,input[type=number]{width:100%;border:1.5px solid var(--line);border-rad
 .status .acts{display:flex;gap:8px;margin-top:12px}
 .err{background:#fdecea;color:#b3261e;border-radius:10px;padding:8px 12px;font-size:13px;margin-top:8px;display:none}
 /* guide view */
-.gv{max-width:640px;margin:76px auto 40px;padding:0 14px;display:none}
+.gv{max-width:640px;margin:calc(var(--navh,0px) + 76px) auto 40px;padding:0 14px;display:none}
 .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 6px 20px rgba(15,28,62,.05)}
 .card h2{font-size:18px;margin-bottom:4px}
 .card .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
@@ -348,6 +348,19 @@ async function respond(id, action, btn) {
   catch (e) { alert(e.message); }
   loadIncoming();
 }
+
+// The site-wide nav (.gd-nav) is injected later by common-widgets.js, so
+// track its height and keep our bar + map below it; Leaflet must then be
+// told its container size changed or tiles render only partially.
+function syncLayout() {
+  const nav = document.querySelector('.gd-nav');
+  const h = nav ? nav.getBoundingClientRect().height : 0;
+  document.documentElement.style.setProperty('--navh', Math.round(h) + 'px');
+  if (map) map.invalidateSize();
+}
+window.addEventListener('resize', syncLayout);
+let syncTries = 0;
+const syncIv = setInterval(() => { syncLayout(); if (++syncTries > 20) clearInterval(syncIv); }, 250);
 
 // ─────────────────────────── Boot ───────────────────────────
 (async () => {
