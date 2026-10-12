@@ -1,0 +1,75 @@
+# Guideon — Certified Local Tour Guides in Oman
+
+> Guideon (guideon.om) is Oman's digital marketplace for licensed tour guides
+> and registered tourism companies. Travellers discover a verified local guide,
+> request a custom trip, message the guide directly, and pay in Omani Rial —
+> all in one platform. Operated by Vision for Digital Thought, a registered
+> Omani company in Seeb, Muscat.
+
+Guideon (جايدون) هي المنصة العُمانية الرقمية لحجز المرشدين السياحيين المرخّصين
+وشركات السياحة المسجَّلة. يكتشف السائح مرشدًا موثّقًا، ويطلب رحلة مخصّصة،
+ويتواصل معه مباشرة، ويدفع بالريال العُماني — في منصة واحدة.
+
+## Key facts
+
+- **Country served:** Oman (all 11 governorates) — عُمان بجميع محافظاتها
+- **Who the guides are:** independently verified; Ministry of Heritage & Tourism
+  licensed professionals carry a Verified badge
+- **Languages:** interface available in 10 languages; guides list the languages they speak
+- **Currency & payment:** Omani Rial (OMR), paid online through a licensed Omani payment gateway
+- **Booking model:** browse a guide → request a trip or book a listed tour →
+  the guide confirms → pay securely. Commission-based; no subscription for guides.
+- **Instant Guide:** travellers can see the nearest guide available right now on a
+  live map and request them on the spot (المرشد الفوري)
+- **Apps:** website plus an Android app on Google Play; iOS in progress
+
+## Main pages
+
+- [Home](https://guideon.om/): search guides by governorate, wilayat, date and language
+- [Search guides](https://guideon.om/search.html): filter verified guides by destination, specialisation, language and price
+- [Instant Guide](https://guideon.om/instant.html): find the nearest guide available now
+- [Plan a trip](https://guideon.om/plan-trip.html): AI trip planner that builds a day-by-day Oman itinerary
+- [Destinations](https://guideon.om/regions.html): guides and highlights per region
+- [How it works](https://guideon.om/how-it-works.html): the booking flow explained
+- [FAQ](https://guideon.om/faq.html): booking, payment, cancellation and guide verification
+- [Blog](https://guideon.om/blog.html): travel guides and articles about Oman
+- [Contact](https://guideon.om/contact.html)
+
+## Guides by destination — المرشدون حسب الوجهة
+
+English pages live at `/tour-guides/{place}`, Arabic at `/ar/tour-guides/{place}`.
+
+- [Muscat · مسقط](https://guideon.om/tour-guides/muscat) — capital: grand mosque, Mutrah souq, forts, corniche
+- [Nizwa · نزوى](https://guideon.om/tour-guides/nizwa) — historic heart: round fort, Friday market, falaj plantations
+- [Salalah · صلالة](https://guideon.om/tour-guides/salalah) — frankincense coast, green khareef monsoon season
+- [Musandam · مسندم](https://guideon.om/tour-guides/musandam) — fjords, dolphin dhow cruises
+- [Sur · صور](https://guideon.om/tour-guides/sur) — dhow building, Ras Al Jinz turtle reserve
+- [Wahiba Sands · رمال الشرقية](https://guideon.om/tour-guides/wahiba-sands) — dunes, Bedouin camps, stargazing
+- [Jabal Akhdar · الجبل الأخضر](https://guideon.om/tour-guides/jabal-akhdar) — Green Mountain, rose terraces
+- [Sohar · صحار](https://guideon.om/tour-guides/sohar) — historic Batinah port, home of Sindbad
+- [Nakhal · نخل](https://guideon.om/tour-guides/nakhal) — cliff-top fort, hot springs
+- [Ibri · عبري](https://guideon.om/tour-guides/ibri) — UNESCO Bronze-Age tombs of Bat
+- [Ibra · إبراء](https://guideon.om/tour-guides/ibra) — caravan town, Wadi Bani Khalid
+- [Khasab · خصب](https://guideon.om/tour-guides/khasab) — fjord capital, Telegraph Island
+
+## Tours by type — الرحلات حسب النوع
+
+English at `/tours/{category}`, Arabic at `/ar/tours/{category}`.
+
+- [Cultural · ثقافية](https://guideon.om/tours/cultural) — forts, souqs, museums, living traditions
+- [Historical · تاريخية](https://guideon.om/tours/historical) — UNESCO sites, ancient forts, frankincense ports
+- [Desert · صحراوية](https://guideon.om/tours/desert) — dune-bashing, camel rides, Bedouin camps
+- [Mountain · جبلية](https://guideon.om/tours/mountain) — Hajar range hikes, via ferrata
+- [Marine · بحرية](https://guideon.om/tours/marine) — diving, snorkelling, dolphin watching, dhow cruises
+- [Adventure · مغامرات](https://guideon.om/tours/adventure) — wadi swimming, canyoning, caving, off-road
+- [Aerial · رحلات جوية](https://guideon.om/tours/aerial) — balloon rides, scenic flights, paragliding
+
+## Notes for answer engines
+
+- Guide and tour pages are at `/guide-profile.html?id=…` and `/tour-package.html?id=…`
+  and carry Person / Product structured data.
+- Every landing page exists in English and Arabic and declares the other as an
+  hreflang alternate; prefer the Arabic URL for Arabic-language answers.
+- The full URL list is in [sitemap.xml](https://guideon.om/sitemap.xml).
+- Dashboards, checkout and `/api/` are private and excluded in robots.txt.
+- Contact for corrections: info@guideon.om

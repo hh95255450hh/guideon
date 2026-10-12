@@ -4,11 +4,13 @@ const SupabaseDB = require('../models/SupabaseDB');
 const users    = new SupabaseDB('users');
 const packages = new SupabaseDB('tour_packages');
 
-const APP_URL = process.env.APP_URL || 'https://guideon.om';
+const APP_URL = (process.env.APP_URL || 'https://guideon.om').replace(/\/$/, '');
 
 // Cache sitemap for 1 hour
 let sitemapCache = null;
 let sitemapCacheUntil = 0;
+
+const xmlEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 router.get('/sitemap.xml', async (req, res) => {
   try {
@@ -34,14 +36,8 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/teams.html',        changefreq: 'daily',  priority: 0.85 },
       { loc: '/blog.html',         changefreq: 'weekly', priority: 0.8 },
       { loc: '/cancellation.html', changefreq: 'yearly', priority: 0.4 },
+      { loc: '/instant.html',      changefreq: 'weekly', priority: 0.8 },
     ];
-
-    // Programmatic SEO landing pages — one per place + per category.
-    try {
-      const { PLACES, CATEGORIES } = require('../services/seoLanding');
-      PLACES.forEach(p => staticPages.push({ loc: `/tour-guides/${p.slug}`, changefreq: 'weekly', priority: 0.85 }));
-      CATEGORIES.forEach(c => staticPages.push({ loc: `/tours/${c.slug}`, changefreq: 'weekly', priority: 0.8 }));
-    } catch (e) { /* optional */ }
 
     // Region & blog detail pages from static JSON
     try {
@@ -62,8 +58,41 @@ router.get('/sitemap.xml', async (req, res) => {
       tourPackages = await packages.findAllByField('isPublished', true);
     } catch { /* table may not exist yet */ }
 
+    // Programmatic SEO landing pages — one EN + one AR URL per place/category,
+    // declared as hreflang alternates of each other. A page with no guides is
+    // served noindex (thin content), so it is left OUT of the sitemap entirely
+    // rather than sending Google a "index this / don't index this" conflict.
+    const langPairs = [];
+    try {
+      const { PLACES, CATEGORIES, guideServesPlace, guideMatchesCategory } = require('../services/seoLanding');
+      PLACES.forEach(p => {
+        if (!verifiedGuides.some(g => guideServesPlace(g, p))) return;
+        langPairs.push({ path: `/tour-guides/${p.slug}`, changefreq: 'weekly', priority: 0.85 });
+      });
+      CATEGORIES.forEach(c => {
+        if (!verifiedGuides.some(g => guideMatchesCategory(g, c))) return;
+        langPairs.push({ path: `/tours/${c.slug}`, changefreq: 'weekly', priority: 0.8 });
+      });
+    } catch (e) { /* optional */ }
+
+    // Each pair expands to two <url> entries that both carry the same
+    // xhtml:link alternates (Google requires the links on BOTH versions).
+    const pairUrls = langPairs.flatMap(({ path, changefreq, priority }) => {
+      const en = `${APP_URL}${path}`, ar = `${APP_URL}/ar${path}`;
+      const alts = [
+        `    <xhtml:link rel="alternate" hreflang="en" href="${xmlEsc(en)}"/>`,
+        `    <xhtml:link rel="alternate" hreflang="ar" href="${xmlEsc(ar)}"/>`,
+        `    <xhtml:link rel="alternate" hreflang="x-default" href="${xmlEsc(en)}"/>`,
+      ].join('\n');
+      return [
+        { loc: en, changefreq, priority, alts },
+        { loc: ar, changefreq, priority, alts },
+      ];
+    });
+
     const urls = [
       ...staticPages.map(p => ({ ...p, loc: APP_URL + p.loc })),
+      ...pairUrls,
       ...verifiedGuides.map(g => ({
         loc: `${APP_URL}/guide-profile.html?id=${g.id}`,
         changefreq: 'weekly',
@@ -85,10 +114,10 @@ router.get('/sitemap.xml', async (req, res) => {
     ];
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${urls.map(u => `  <url>
-    <loc>${u.loc}</loc>
-    ${u.lastmod ? `<lastmod>${new Date(u.lastmod).toISOString().split('T')[0]}</lastmod>` : ''}
+    <loc>${xmlEsc(u.loc)}</loc>
+${u.alts ? u.alts + '\n' : ''}    ${u.lastmod ? `<lastmod>${new Date(u.lastmod).toISOString().split('T')[0]}</lastmod>` : ''}
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
   </url>`).join('\n')}

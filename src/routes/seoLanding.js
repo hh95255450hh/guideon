@@ -1,12 +1,19 @@
 /**
- * Server-rendered programmatic SEO landing pages.
- *   GET /tour-guides/:place   — guides serving a destination
- *   GET /tours/:category      — guides offering a category of experience
+ * Server-rendered programmatic SEO landing pages — bilingual.
+ *   GET /tour-guides/:place      — guides serving a destination (English)
+ *   GET /tours/:category         — guides offering a category (English)
+ *   GET /ar/tour-guides/:place   — النسخة العربية
+ *   GET /ar/tours/:category
  *
  * Each page is fully rendered HTML (crawlers index it without running JS),
- * carries a unique <title>/description/canonical, lists real verified guides,
+ * carries a unique <title>/description/canonical, declares its hreflang pair so
+ * Google serves the right language per searcher, lists real verified guides,
  * cross-links to sibling pages for internal link equity, and embeds JSON-LD
  * (BreadcrumbList + ItemList) so Google can show rich results.
+ *
+ * A page with zero guides is marked noindex: an empty list is thin content and
+ * indexing it would dilute the whole site's quality signal. It flips back to
+ * indexable automatically as soon as a guide covers that place/category.
  */
 const router = require('express').Router();
 const SupabaseDB = require('../models/SupabaseDB');
@@ -41,23 +48,52 @@ function safeImg(u) {
   return /^https:\/\//i.test(s) || s.startsWith('/') ? s : '';
 }
 
+// ── UI strings per language ──
+const T = {
+  en: {
+    findGuide: 'Find a Guide', signUp: 'Sign Up', home: 'Home', destinations: 'Destinations', tours: 'Tours',
+    verified: '✓ Verified', newGuide: 'New', viewProfile: 'View profile', perDay: 'OMR/day',
+    exploreMore: 'Explore more of Oman', guidesIn: n => `Guides in ${n}`, catTours: n => `${n} tours`,
+    onboarding: n => `We're onboarding guides for ${n} right now.`,
+    browseAll: 'Browse all Oman guides', searchFilter: n => `🔍 Search & filter ${n} guides`,
+    otherLang: 'العربية', from: 'from',
+  },
+  ar: {
+    findGuide: 'ابحث عن مرشد', signUp: 'إنشاء حساب', home: 'الرئيسية', destinations: 'الوجهات', tours: 'الرحلات',
+    verified: '✓ موثّق', newGuide: 'جديد', viewProfile: 'عرض الملف', perDay: 'ر.ع/اليوم',
+    exploreMore: 'اكتشف المزيد من عُمان', guidesIn: n => `مرشدو ${n}`, catTours: n => `رحلات ${n}`,
+    onboarding: n => `نعمل حاليًا على ضمّ مرشدين في ${n}.`,
+    browseAll: 'تصفّح كل مرشدي عُمان', searchFilter: n => `🔍 ابحث وفلتر مرشدي ${n}`,
+    otherLang: 'English', from: 'من',
+  },
+};
+
 // Shared page shell — consistent header/footer + the site stylesheet.
-function shell({ title, description, canonical, h1, intro, bodyHtml, jsonld }) {
+function shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex }) {
+  const ar = lang === 'ar';
+  const t = T[lang];
+  const enUrl = ar ? altUrl : canonical;
+  const arUrl = ar ? canonical : altUrl;
   return `<!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="${ar ? 'ar' : 'en'}" dir="${ar ? 'rtl' : 'ltr'}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
-<meta name="robots" content="index, follow">
+<link rel="alternate" hreflang="en" href="${esc(enUrl)}">
+<link rel="alternate" hreflang="ar" href="${esc(arUrl)}">
+<link rel="alternate" hreflang="x-default" href="${esc(enUrl)}">
+<meta name="robots" content="${noindex ? 'noindex, follow' : 'index, follow'}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(canonical)}">
 <meta property="og:image" content="${APP_URL}/logo.png">
 <meta property="og:site_name" content="Guideon">
+<meta property="og:locale" content="${ar ? 'ar_OM' : 'en_US'}">
+<meta property="og:locale:alternate" content="${ar ? 'en_US' : 'ar_OM'}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
@@ -79,16 +115,19 @@ function shell({ title, description, canonical, h1, intro, bodyHtml, jsonld }) {
   .seo-links a:hover{border-color:#0f7b6c}
   .crumbs{font-size:.82rem;color:#64748b;margin-bottom:6px}
   .crumbs a{color:#0f7b6c;text-decoration:none}
+  .langsw{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:20px;padding:5px 14px;font-size:.82rem;font-weight:700;text-decoration:none}
+  .langsw:hover{background:rgba(255,255,255,.25);color:#fff}
 </style>
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
   <div class="container">
-    <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="46"></a>
-    <div class="ms-auto d-flex gap-2">
-      <a href="/search.html" class="btn btn-sm btn-outline-light">Find a Guide</a>
-      <a href="/register.html" class="btn btn-sm btn-gold">Sign Up</a>
+    <a class="navbar-brand" href="${ar ? '/?lang=ar' : '/'}"><img src="/logo.png" alt="Guideon" height="46"></a>
+    <div class="ms-auto d-flex gap-2 align-items-center">
+      <a href="${esc(altUrl)}" class="langsw">${t.otherLang}</a>
+      <a href="/search.html" class="btn btn-sm btn-outline-light">${t.findGuide}</a>
+      <a href="/register.html" class="btn btn-sm btn-gold">${t.signUp}</a>
     </div>
   </div>
 </nav>
@@ -104,13 +143,14 @@ ${bodyHtml}
 </html>`;
 }
 
-function guideCard(g) {
+function guideCard(g, lang) {
+  const t = T[lang];
   const photo = safeImg(g.photo);
   const initials = (g.fullName || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const specs = (g.specialisations || []).slice(0, 3)
     .map(s => `<span class="chip">${esc(s)}</span>`).join('');
   const rating = Number(g.rating) || 0;
-  const ratingHtml = rating ? `⭐ ${rating.toFixed(1)}` : 'New';
+  const ratingHtml = rating ? `⭐ ${rating.toFixed(1)}` : t.newGuide;
   return `<div class="col-12 col-sm-6 col-lg-4">
     <a href="/guide-profile.html?id=${esc(g.id)}" style="text-decoration:none;color:inherit">
       <div class="gcard">
@@ -118,66 +158,87 @@ function guideCard(g) {
         <div class="bd">
           <div class="d-flex justify-content-between align-items-start">
             <h3>${esc(g.fullName)}</h3>
-            ${g.isVerified ? '<span class="vbadge">✓ Verified</span>' : ''}
+            ${g.isVerified ? `<span class="vbadge">${t.verified}</span>` : ''}
           </div>
-          <div class="text-muted small mb-2">${ratingHtml}${g.pricePerDay ? ` · from ${esc(g.pricePerDay)} OMR/day` : ''}</div>
+          <div class="text-muted small mb-2">${ratingHtml}${g.pricePerDay ? ` · ${t.from} ${esc(g.pricePerDay)} ${t.perDay}` : ''}</div>
           <div class="mb-2">${specs}</div>
-          <span class="btn btn-sm btn-teal mt-auto w-100">View profile</span>
+          <span class="btn btn-sm btn-teal mt-auto w-100">${t.viewProfile}</span>
         </div>
       </div>
     </a>
   </div>`;
 }
 
-function relatedLinks(currentSlug, kind) {
+// Cross-links to sibling landing pages — stays inside the current language so
+// crawlers follow a clean per-language link graph.
+function relatedLinks(currentSlug, lang) {
+  const t = T[lang], pre = lang === 'ar' ? '/ar' : '';
+  const name = o => lang === 'ar' ? o.ar : o.en;
   const places = PLACES.filter(p => p.slug !== currentSlug).slice(0, 8)
-    .map(p => `<a href="/tour-guides/${p.slug}">Guides in ${esc(p.en)}</a>`).join('');
+    .map(p => `<a href="${pre}/tour-guides/${p.slug}">${esc(t.guidesIn(name(p)))}</a>`).join('');
   const cats = CATEGORIES.filter(c => c.slug !== currentSlug).slice(0, 6)
-    .map(c => `<a href="/tours/${c.slug}">${esc(c.en)} tours</a>`).join('');
+    .map(c => `<a href="${pre}/tours/${c.slug}">${esc(t.catTours(name(c)))}</a>`).join('');
   return `
-    <h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">Explore more of Oman</h2>
+    <h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">${t.exploreMore}</h2>
     <div class="seo-links">${places}${cats}</div>`;
 }
 
-// ── /tour-guides/:place ──
-router.get('/tour-guides/:place', async (req, res, next) => {
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+// ── Place pages ──
+async function renderPlace(req, res, next, lang) {
   const place = PLACE_BY_SLUG[String(req.params.place).toLowerCase()];
   if (!place) return next(); // unknown slug → fall through to static/404
+  const ar = lang === 'ar', t = T[lang];
 
   try {
     const all = await verifiedGuides();
     const matches = all.filter(g => guideServesPlace(g, place))
       .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+    const n = matches.length;
 
-    const canonical = `${APP_URL}/tour-guides/${place.slug}`;
-    const title = `Tour Guides in ${place.en}, Oman — Book Verified Local Guides | Guideon`;
-    const description = `Find and book licensed local tour guides in ${place.en}, Oman. Compare ${matches.length || 'top'} verified guides by rating, language and price. ${place.en} is ${place.blurb}`;
-    const h1 = `Tour Guides in ${place.en}, Oman`;
-    const intro = `Discover ${esc(place.en)} (${esc(place.ar)}) with a licensed local guide. ${esc(place.blurb.charAt(0).toUpperCase() + place.blurb.slice(1))} Browse verified Guideon guides below and book securely.`;
+    const canonical = `${APP_URL}${ar ? '/ar' : ''}/tour-guides/${place.slug}`;
+    const altUrl    = `${APP_URL}${ar ? '' : '/ar'}/tour-guides/${place.slug}`;
 
-    const cardsHtml = matches.length
-      ? `<div class="row g-3">${matches.map(guideCard).join('')}</div>`
+    const title = ar
+      ? `مرشدون سياحيون في ${place.ar}، عُمان — احجز مرشدًا محليًا موثّقًا | Guideon`
+      : `Tour Guides in ${place.en}, Oman — Book Verified Local Guides | Guideon`;
+    const description = ar
+      ? `ابحث واحجز مرشدين سياحيين مرخّصين في ${place.ar} بسلطنة عُمان. قارن ${n || 'أفضل'} مرشدًا موثّقًا حسب التقييم واللغة والسعر. ${place.blurbAr}`
+      : `Find and book licensed local tour guides in ${place.en}, Oman. Compare ${n || 'top'} verified guides by rating, language and price. ${place.en} is ${place.blurb}`;
+    const h1 = ar ? `مرشدون سياحيون في ${place.ar}، عُمان` : `Tour Guides in ${place.en}, Oman`;
+    const intro = ar
+      ? `اكتشف ${esc(place.ar)} (${esc(place.en)}) مع مرشد محلي مرخّص. ${esc(place.blurbAr)} تصفّح مرشدي Guideon الموثّقين أدناه واحجز بثقة.`
+      : `Discover ${esc(place.en)} (${esc(place.ar)}) with a licensed local guide. ${esc(cap(place.blurb))} Browse verified Guideon guides below and book securely.`;
+
+    const searchHref = `/search.html?destination=${encodeURIComponent(place.en)}`;
+    const cardsHtml = n
+      ? `<div class="row g-3">${matches.map(g => guideCard(g, lang)).join('')}</div>`
       : `<div class="text-center py-5">
-           <p class="text-muted">We're onboarding guides for ${esc(place.en)} right now.</p>
-           <a href="/search.html?destination=${encodeURIComponent(place.en)}" class="btn btn-teal">Browse all Oman guides</a>
+           <p class="text-muted">${esc(t.onboarding(ar ? place.ar : place.en))}</p>
+           <a href="${searchHref}" class="btn btn-teal">${t.browseAll}</a>
          </div>`;
 
+    const countLine = ar
+      ? `${n} مرشدًا موثّقًا يغطّون ${esc(place.ar)} ومحافظة ${esc(place.govAr)}.`
+      : `${n} verified guide${n === 1 ? '' : 's'} serving ${esc(place.en)} and the wider ${esc(place.gov)} governorate.`;
+
     const bodyHtml = `
-      <div class="crumbs"><a href="/">Home</a> › <a href="/regions.html">Destinations</a> › ${esc(place.en)}</div>
-      <p class="text-muted">${matches.length} verified guide${matches.length === 1 ? '' : 's'} serving ${esc(place.en)} and the wider ${esc(place.gov)} governorate.</p>
-      <div class="my-3"><a href="/search.html?destination=${encodeURIComponent(place.en)}" class="btn btn-teal">🔍 Search & filter ${esc(place.en)} guides</a></div>
+      <div class="crumbs"><a href="${ar ? '/?lang=ar' : '/'}">${t.home}</a> › <a href="/regions.html">${t.destinations}</a> › ${esc(ar ? place.ar : place.en)}</div>
+      <p class="text-muted">${countLine}</p>
+      <div class="my-3"><a href="${searchHref}" class="btn btn-teal">${esc(t.searchFilter(ar ? place.ar : place.en))}</a></div>
       ${cardsHtml}
-      ${relatedLinks(place.slug, 'place')}`;
+      ${relatedLinks(place.slug, lang)}`;
 
     const jsonld = {
       '@context': 'https://schema.org',
       '@graph': [
         { '@type': 'BreadcrumbList', itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: APP_URL + '/' },
-          { '@type': 'ListItem', position: 2, name: 'Destinations', item: APP_URL + '/regions.html' },
-          { '@type': 'ListItem', position: 3, name: place.en, item: canonical },
+          { '@type': 'ListItem', position: 1, name: t.home, item: APP_URL + '/' },
+          { '@type': 'ListItem', position: 2, name: t.destinations, item: APP_URL + '/regions.html' },
+          { '@type': 'ListItem', position: 3, name: ar ? place.ar : place.en, item: canonical },
         ]},
-        { '@type': 'ItemList', name: title, numberOfItems: matches.length,
+        { '@type': 'ItemList', name: title, numberOfItems: n,
           itemListElement: matches.slice(0, 20).map((g, i) => ({
             '@type': 'ListItem', position: i + 1,
             url: `${APP_URL}/guide-profile.html?id=${g.id}`,
@@ -187,52 +248,67 @@ router.get('/tour-guides/:place', async (req, res, next) => {
     };
 
     res.set('Cache-Control', 'public, max-age=600'); // 10 min edge cache
-    res.type('html').send(shell({ title, description, canonical, h1, intro, bodyHtml, jsonld }));
+    res.type('html').send(shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex: n === 0 }));
   } catch (e) {
     console.error('[seoLanding:place]', e.message);
     next();
   }
-});
+}
 
-// ── /tours/:category ──
-router.get('/tours/:category', async (req, res, next) => {
+// ── Category pages ──
+async function renderCategory(req, res, next, lang) {
   const cat = CAT_BY_SLUG[String(req.params.category).toLowerCase()];
   if (!cat) return next();
+  const ar = lang === 'ar', t = T[lang];
 
   try {
     const all = await verifiedGuides();
     const matches = all.filter(g => guideMatchesCategory(g, cat))
       .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+    const n = matches.length;
 
-    const canonical = `${APP_URL}/tours/${cat.slug}`;
-    const title = `${cat.en} Tours in Oman — Book Verified Guides | Guideon`;
-    const description = `Book ${cat.en.toLowerCase()} tours across Oman with licensed local guides: ${cat.blurb} Compare ${matches.length || 'top'} verified guides on Guideon.`;
-    const h1 = `${cat.en} Tours in Oman`;
-    const intro = `Looking for ${esc(cat.en.toLowerCase())} experiences (${esc(cat.ar)}) in Oman? ${esc(cat.blurb.charAt(0).toUpperCase() + cat.blurb.slice(1))} Book a verified local guide below.`;
+    const canonical = `${APP_URL}${ar ? '/ar' : ''}/tours/${cat.slug}`;
+    const altUrl    = `${APP_URL}${ar ? '' : '/ar'}/tours/${cat.slug}`;
 
-    const cardsHtml = matches.length
-      ? `<div class="row g-3">${matches.map(guideCard).join('')}</div>`
+    const title = ar
+      ? `رحلات ${cat.ar} في عُمان — احجز مع مرشدين موثّقين | Guideon`
+      : `${cat.en} Tours in Oman — Book Verified Guides | Guideon`;
+    const description = ar
+      ? `احجز رحلات ${cat.ar} في جميع أنحاء عُمان مع مرشدين محليين مرخّصين: ${cat.blurbAr} قارن ${n || 'أفضل'} مرشدًا موثّقًا على Guideon.`
+      : `Book ${cat.en.toLowerCase()} tours across Oman with licensed local guides: ${cat.blurb} Compare ${n || 'top'} verified guides on Guideon.`;
+    const h1 = ar ? `رحلات ${cat.ar} في عُمان` : `${cat.en} Tours in Oman`;
+    const intro = ar
+      ? `تبحث عن تجارب ${esc(cat.ar)} (${esc(cat.en)}) في عُمان؟ ${esc(cat.blurbAr)} احجز مرشدًا محليًا موثّقًا أدناه.`
+      : `Looking for ${esc(cat.en.toLowerCase())} experiences (${esc(cat.ar)}) in Oman? ${esc(cap(cat.blurb))} Book a verified local guide below.`;
+
+    const searchHref = `/search.html?specialisation=${encodeURIComponent(cat.en)}`;
+    const cardsHtml = n
+      ? `<div class="row g-3">${matches.map(g => guideCard(g, lang)).join('')}</div>`
       : `<div class="text-center py-5">
-           <p class="text-muted">We're onboarding ${esc(cat.en.toLowerCase())} guides right now.</p>
-           <a href="/search.html?specialisation=${encodeURIComponent(cat.en)}" class="btn btn-teal">Browse all Oman guides</a>
+           <p class="text-muted">${esc(t.onboarding(ar ? `رحلات ${cat.ar}` : cat.en.toLowerCase()))}</p>
+           <a href="${searchHref}" class="btn btn-teal">${t.browseAll}</a>
          </div>`;
 
+    const countLine = ar
+      ? `${n} مرشدًا موثّقًا يقدّمون تجارب ${esc(cat.ar)} في عُمان.`
+      : `${n} verified guide${n === 1 ? '' : 's'} offering ${esc(cat.en.toLowerCase())} experiences across Oman.`;
+
     const bodyHtml = `
-      <div class="crumbs"><a href="/">Home</a> › <a href="/search.html">Tours</a> › ${esc(cat.en)}</div>
-      <p class="text-muted">${matches.length} verified guide${matches.length === 1 ? '' : 's'} offering ${esc(cat.en.toLowerCase())} experiences across Oman.</p>
-      <div class="my-3"><a href="/search.html?specialisation=${encodeURIComponent(cat.en)}" class="btn btn-teal">🔍 Search & filter ${esc(cat.en.toLowerCase())} guides</a></div>
+      <div class="crumbs"><a href="${ar ? '/?lang=ar' : '/'}">${t.home}</a> › <a href="/search.html">${t.tours}</a> › ${esc(ar ? cat.ar : cat.en)}</div>
+      <p class="text-muted">${countLine}</p>
+      <div class="my-3"><a href="${searchHref}" class="btn btn-teal">${esc(t.searchFilter(ar ? cat.ar : cat.en.toLowerCase()))}</a></div>
       ${cardsHtml}
-      ${relatedLinks(cat.slug, 'category')}`;
+      ${relatedLinks(cat.slug, lang)}`;
 
     const jsonld = {
       '@context': 'https://schema.org',
       '@graph': [
         { '@type': 'BreadcrumbList', itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: APP_URL + '/' },
-          { '@type': 'ListItem', position: 2, name: 'Tours', item: APP_URL + '/search.html' },
-          { '@type': 'ListItem', position: 3, name: cat.en, item: canonical },
+          { '@type': 'ListItem', position: 1, name: t.home, item: APP_URL + '/' },
+          { '@type': 'ListItem', position: 2, name: t.tours, item: APP_URL + '/search.html' },
+          { '@type': 'ListItem', position: 3, name: ar ? cat.ar : cat.en, item: canonical },
         ]},
-        { '@type': 'ItemList', name: title, numberOfItems: matches.length,
+        { '@type': 'ItemList', name: title, numberOfItems: n,
           itemListElement: matches.slice(0, 20).map((g, i) => ({
             '@type': 'ListItem', position: i + 1,
             url: `${APP_URL}/guide-profile.html?id=${g.id}`,
@@ -242,11 +318,16 @@ router.get('/tours/:category', async (req, res, next) => {
     };
 
     res.set('Cache-Control', 'public, max-age=600');
-    res.type('html').send(shell({ title, description, canonical, h1, intro, bodyHtml, jsonld }));
+    res.type('html').send(shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex: n === 0 }));
   } catch (e) {
     console.error('[seoLanding:category]', e.message);
     next();
   }
-});
+}
+
+router.get('/tour-guides/:place',    (req, res, next) => renderPlace(req, res, next, 'en'));
+router.get('/ar/tour-guides/:place', (req, res, next) => renderPlace(req, res, next, 'ar'));
+router.get('/tours/:category',       (req, res, next) => renderCategory(req, res, next, 'en'));
+router.get('/ar/tours/:category',    (req, res, next) => renderCategory(req, res, next, 'ar'));
 
 module.exports = router;
