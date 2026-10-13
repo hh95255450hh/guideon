@@ -90,7 +90,7 @@
   .empty-note{color:var(--muted);font-size:.95rem;padding:18px 0}
 
   /* ── Lightbox ─────────────────────────────────────────────────────── */
-  .lb{position:fixed;inset:0;background:rgba(8,14,30,.94);z-index:3000;display:none;align-items:center;justify-content:center;padding:24px}
+  .lb{position:fixed;inset:0;background:rgba(8,14,30,.94);z-index:5000;display:none;align-items:center;justify-content:center;padding:24px}
   .lb.open{display:flex}
   .lb img{max-width:min(1100px,94vw);max-height:82vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
   .lb .cap{position:absolute;bottom:26px;inset-inline:0;text-align:center;color:#fff;font-size:.95rem;padding:0 24px}
@@ -255,8 +255,9 @@
     lbImg.src = item.image; lbImg.alt = item.name;
     lbCap.innerHTML = `<b>${gdEsc(item.name)}</b>${item.credit ? `<small>📷 ${gdEsc(item.credit)}${item.licence ? ' · ' + gdEsc(item.licence) : ''}</small>` : ''}`;
     lb.classList.add('open');
+    document.body.style.overflow = 'hidden';   // the page must not scroll behind the photo
   };
-  const close = () => { lb.classList.remove('open'); lbImg.src = ''; };
+  const close = () => { lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; };
   document.getElementById('lbClose').onclick = close;
   document.getElementById('lbPrev').onclick = () => show(at - 1);
   document.getElementById('lbNext').onclick = () => show(at + 1);
