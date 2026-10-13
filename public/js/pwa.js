@@ -83,9 +83,11 @@
   // Auto-prompt only if the user is logged in
   window.addEventListener('load', () => {
     setTimeout(() => {
-      fetch('/api/auth/me', { credentials: 'include' })
-        .then(r => r.ok && enablePush())
-        .catch(() => {});
+      // Reuse the page's shared session lookup instead of asking /auth/me again.
+      const who = window.gdSession
+        ? window.gdSession.get()
+        : fetch('/api/auth/me', { credentials: 'include' }).then(r => r.ok ? r.json() : null).then(d => d && d.user);
+      who.then(user => { if (user) enablePush(); }).catch(() => {});
     }, 3000);
   });
 

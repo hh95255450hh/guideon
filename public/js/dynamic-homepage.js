@@ -50,6 +50,7 @@
       indicators.innerHTML = slides.map((_, i) =>
         `<button type="button" data-bs-target="#omanCarousel" data-bs-slide-to="${i}" ${i === 0 ? 'class="active"' : ''}></button>`
       ).join('');
+      lazyCarouselVideos(document.getElementById('omanCarousel'));
     }
 
     // ─── ACTIVITIES ───────────────────────
@@ -90,6 +91,34 @@
     return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  // Load a carousel video only when its slide is shown, and stop it when the
+  // slide leaves. On a data-saver or 2G/3G connection, or when the visitor asks
+  // for reduced motion, videos are never fetched: the slide keeps its poster.
+  function lazyCarouselVideos(carousel) {
+    if (!carousel) return;
+    const conn = navigator.connection || {};
+    const frugal = conn.saveData || /(^|-)(2g|3g)$/.test(conn.effectiveType || '') ||
+                   (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    const start = (item) => {
+      const v = item && item.querySelector('video[data-src]');
+      if (!v || frugal) return;
+      if (!v.getAttribute('src')) v.setAttribute('src', v.dataset.src);
+      const p = v.play();
+      if (p && p.catch) p.catch(() => {});   // autoplay can be refused; the poster stays
+    };
+    const stop = (item) => {
+      const v = item && item.querySelector('video');
+      if (v && !v.paused) v.pause();
+    };
+
+    start(carousel.querySelector('.carousel-item.active'));
+    carousel.addEventListener('slide.bs.carousel', (e) => {
+      stop(carousel.querySelector('.carousel-item.active'));
+      start(e.relatedTarget);
+    });
+  }
+
   // Extract a YouTube video id from common URL shapes; returns '' if not YouTube.
   function youtubeId(url) {
     const m = String(url||'').match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
@@ -106,8 +135,12 @@
           src="https://www.youtube.com/embed/${yt}?autoplay=1&mute=1&loop=1&playlist=${yt}&controls=0&showinfo=0&modestbranding=1&rel=0&playsinline=1"
           allow="autoplay; encrypted-media" allowfullscreen loading="lazy"></iframe>`;
       }
-      return `<video class="d-block w-100" style="${mediaStyle}" autoplay muted loop playsinline preload="metadata"
-        ${s.image ? `poster="${esc(s.image)}"` : ''} src="${esc(s.video)}"></video>`;
+      // No src and no autoplay here. Every slide used to carry both, so the
+      // browser started downloading all of the carousel's videos the moment the
+      // page opened — hidden slides included. lazyCarouselVideos() gives a video
+      // its source only when its slide is about to be shown.
+      return `<video class="d-block w-100" style="${mediaStyle}" muted loop playsinline preload="none"
+        ${s.image ? `poster="${esc(s.image)}"` : ''} data-src="${esc(s.video)}"></video>`;
     }
     if (s.image) {
       return `<img loading="lazy" decoding="async" src="${esc(s.image)}" alt="${esc(T(s.title_en, s.title_ar))}" class="d-block w-100" style="${mediaStyle}">`;

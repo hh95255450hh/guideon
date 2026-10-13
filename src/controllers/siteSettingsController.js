@@ -1,12 +1,26 @@
 const SupabaseDB = require('../models/SupabaseDB');
 const settings = new SupabaseDB('site_settings', 'key');
 
-// GET /api/site-settings — public, returns all settings
+// Only these keys are public. The table also holds internal configuration —
+// commission rates and the VAT number today, and whatever an admin saves there
+// tomorrow — so the public read is an allowlist, never "every row". It used to
+// return the whole table to anyone, including 18 KB of region content the home
+// page never reads.
+const PUBLIC_KEYS = new Set(['hero', 'carousel', 'activities']);
+exports.PUBLIC_KEYS = PUBLIC_KEYS;
+
+const isStaff = req => req.session && (req.session.userType === 'admin' || req.session.userType === 'staff');
+
+// GET /api/site-settings — the public homepage settings (admins get them all)
 exports.getAll = async (req, res) => {
   try {
     const all = await settings.readAll();
+    const staff = isStaff(req);
     const map = {};
-    for (const r of all) map[r.key] = r.value;
+    for (const r of all) if (staff || PUBLIC_KEYS.has(r.key)) map[r.key] = r.value;
+    // Homepage copy changes rarely; a minute of shared caching takes this read
+    // off the critical path of every page view. Admin responses stay private.
+    res.set('Cache-Control', staff ? 'private, no-store' : 'public, max-age=60');
     res.json({ success: true, settings: map });
   } catch (err) {
     console.error('[site-settings:getAll]', err.message);
@@ -14,9 +28,12 @@ exports.getAll = async (req, res) => {
   }
 };
 
-// GET /api/site-settings/:key — public, returns one setting
+// GET /api/site-settings/:key — public keys for anyone, the rest for admins
 exports.getOne = async (req, res) => {
   try {
+    if (!PUBLIC_KEYS.has(req.params.key) && !isStaff(req)) {
+      return res.status(403).json({ success: false, message: 'Admin only.' });
+    }
     const row = await settings.findById(req.params.key);
     if (!row) return res.json({ success: true, value: null });
     res.json({ success: true, value: row.value });
