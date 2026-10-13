@@ -133,6 +133,11 @@
     z-index: 1040; opacity: 0; pointer-events: none; transition: opacity .25s;
   }
   .gd-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+  /* The closed drawer is parked one screen-width past the inline edge. In RTL
+     that lands outside the viewport on the right, which gave every Arabic page
+     a phantom 320px horizontal scroll. `clip` removes it without breaking the
+     sticky positioning that `overflow: hidden` would. */
+  html { overflow-x: clip; }
   .gd-drawer {
     position: fixed; top: 0; bottom: 0;
     inset-inline-start: 0;
