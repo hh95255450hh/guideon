@@ -17,7 +17,12 @@
         "Al Jalali & Al Mirani Forts",
         "Bait Al Zubair Museum",
         "Qurum Beach",
-        "National Museum"
+        "National Museum",
+        "Mutrah Souq",
+        "Mutrah Corniche",
+        "Al Jalali Fort",
+        "Al Mirani Fort",
+        "National Museum of Oman"
       ],
       "highlights_ar": [
         "جامع السلطان قابوس الأكبر",
@@ -26,11 +31,16 @@
         "قلعتا الجلالي والميراني",
         "متحف بيت الزبير",
         "شاطئ القرم",
-        "المتحف الوطني"
+        "المتحف الوطني",
+        "سوق مطرح",
+        "كورنيش مطرح",
+        "قلعة الجلالي",
+        "قلعة الميراني",
+        "قصر العلم العامر"
       ],
       "best_time_en": "October to April (avoid midday in summer)",
       "best_time_ar": "من أكتوبر إلى أبريل (تجنّب وقت الظهيرة صيفاً)",
-      "sites": 48,
+      "sites": 21,
       "lat": 23.588,
       "lng": 58.3829,
       "landmarks": [
@@ -96,6 +106,90 @@
           "lat": 23.6086,
           "lng": 58.4781,
           "type": "beach"
+        },
+        {
+          "name_ar": "قصر العلم العامر",
+          "name_en": "Al Alam Palace",
+          "lat": 23.6137,
+          "lng": 58.593,
+          "type": "culture"
+        },
+        {
+          "name_ar": "بيت مزنة",
+          "name_en": "Bait Muzna Gallery",
+          "lat": 23.6122,
+          "lng": 58.59,
+          "type": "culture"
+        },
+        {
+          "name_ar": "المتحف العُماني الفرنسي",
+          "name_en": "Omani-French Museum",
+          "lat": 23.6128,
+          "lng": 58.5888,
+          "type": "culture"
+        },
+        {
+          "name_ar": "متحف بوابة مسقط",
+          "name_en": "Muscat Gate Museum",
+          "lat": 23.6155,
+          "lng": 58.581,
+          "type": "culture"
+        },
+        {
+          "name_ar": "متحف قوات السلطان المسلحة",
+          "name_en": "Sultan's Armed Forces Museum",
+          "lat": 23.5965,
+          "lng": 58.541,
+          "type": "culture"
+        },
+        {
+          "name_ar": "شاطئ بندر الجصة",
+          "name_en": "Bandar Al Jissah Beach",
+          "lat": 23.556,
+          "lng": 58.654,
+          "type": "beach"
+        },
+        {
+          "name_ar": "شاطئ السيفة",
+          "name_en": "As Sifah Beach",
+          "lat": 23.448,
+          "lng": 58.784,
+          "type": "beach"
+        },
+        {
+          "name_ar": "حديقة ريام",
+          "name_en": "Riyam Park",
+          "lat": 23.621,
+          "lng": 58.576,
+          "type": "nature"
+        },
+        {
+          "name_ar": "مرسى بندر الروضة",
+          "name_en": "Marina Bandar Al Rowdha",
+          "lat": 23.58,
+          "lng": 58.609,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي الميح",
+          "name_en": "Wadi Al Mayh",
+          "lat": 23.49,
+          "lng": 58.67,
+          "type": "nature"
+        },
+        {
+          "name_ar": "قصر البستان",
+          "name_en": "Al Bustan Palace",
+          "lat": 23.572,
+          "lng": 58.616,
+          "type": "culture"
+        },
+        {
+          "name_ar": "شاطئ ينكت",
+          "name_en": "Yiti Beach",
+          "lat": 23.516,
+          "lng": 58.709,
+          "type": "beach"
         }
       ]
     },
@@ -115,7 +209,12 @@
         "Telegraph Island",
         "Jebel Harim",
         "Dolphin Watching",
-        "Snorkeling at Banks"
+        "Snorkeling at Banks",
+        "Khasab",
+        "Khor Sham Fjord",
+        "Khor Najd",
+        "Khor Sham",
+        "Khor Habalayn"
       ],
       "highlights_ar": [
         "رحلة خور الشم بالسفينة الخشبية",
@@ -123,11 +222,17 @@
         "جزيرة التلغراف",
         "جبل حريم",
         "مشاهدة الدلافين",
-        "الغوص في البنوك"
+        "الغوص في البنوك",
+        "خصب",
+        "خور الشم",
+        "خور النجد",
+        "حصن خصب",
+        "خور شم",
+        "خور نجد"
       ],
       "best_time_en": "November to March",
       "best_time_ar": "من نوفمبر إلى مارس",
-      "sites": 18,
+      "sites": 14,
       "lat": 26.1979,
       "lng": 56.2487,
       "landmarks": [
@@ -172,6 +277,62 @@
           "lat": 26.205,
           "lng": 56.3083,
           "type": "nature"
+        },
+        {
+          "name_ar": "حصن خصب",
+          "name_en": "Khasab Castle",
+          "lat": 26.18,
+          "lng": 56.247,
+          "type": "fort"
+        },
+        {
+          "name_ar": "خور شم",
+          "name_en": "Khor Sham",
+          "lat": 26.23,
+          "lng": 56.32,
+          "type": "nature"
+        },
+        {
+          "name_ar": "خور نجد",
+          "name_en": "Khor Najd",
+          "lat": 26.12,
+          "lng": 56.33,
+          "type": "nature"
+        },
+        {
+          "name_ar": "خور الحبلين",
+          "name_en": "Khor Habalayn",
+          "lat": 26.05,
+          "lng": 56.22,
+          "type": "nature"
+        },
+        {
+          "name_ar": "جزيرة المقلب",
+          "name_en": "Al Maqlab Island",
+          "lat": 26.22,
+          "lng": 56.29,
+          "type": "nature"
+        },
+        {
+          "name_ar": "جزيرة سلامة وبناتها",
+          "name_en": "Salamah wa Banatuha Islands",
+          "lat": 26.37,
+          "lng": 56.52,
+          "type": "nature"
+        },
+        {
+          "name_ar": "قرية كمزار",
+          "name_en": "Kumzar Village",
+          "lat": 26.345,
+          "lng": 56.433,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "عيون مدحاء",
+          "name_en": "Madha Springs",
+          "lat": 25.287,
+          "lng": 56.305,
+          "type": "nature"
         }
       ]
     },
@@ -191,7 +352,12 @@
         "Al Baleed Archaeological Park",
         "Frankincense Land Museum",
         "Empty Quarter desert",
-        "Tomb of Job (Nabi Ayoub)"
+        "Tomb of Job (Nabi Ayoub)",
+        "Salalah",
+        "Mughsail Beach",
+        "Jebel Samhan",
+        "Khor Rori (Sumhuram)",
+        "Khor Salalah"
       ],
       "highlights_ar": [
         "وادي دربات",
@@ -199,11 +365,17 @@
         "حديقة البليد الأثرية",
         "متحف أرض اللبان",
         "صحراء الربع الخالي",
-        "ضريح النبي أيوب"
+        "ضريح النبي أيوب",
+        "صلالة",
+        "شاطئ المغسيل",
+        "موقع البليد الأثري",
+        "جبل سمحان",
+        "خور روري",
+        "مدينة البليد الأثرية"
       ],
       "best_time_en": "Khareef season: late June – early September",
       "best_time_ar": "موسم الخريف: أواخر يونيو – أوائل سبتمبر",
-      "sites": 32,
+      "sites": 17,
       "lat": 17.0151,
       "lng": 54.0924,
       "landmarks": [
@@ -255,6 +427,76 @@
           "lat": 17.11,
           "lng": 54.68,
           "type": "mountain"
+        },
+        {
+          "name_ar": "خور روري",
+          "name_en": "Khor Rori (Sumhuram)",
+          "lat": 17.0405,
+          "lng": 54.436,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "مدينة البليد الأثرية",
+          "name_en": "Al Baleed Archaeological Park",
+          "lat": 17.003,
+          "lng": 54.15,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "خور صلالة",
+          "name_en": "Khor Salalah",
+          "lat": 17.008,
+          "lng": 54.118,
+          "type": "nature"
+        },
+        {
+          "name_ar": "كهف المرنيف",
+          "name_en": "Al Marneef Cave",
+          "lat": 17.229,
+          "lng": 54.018,
+          "type": "nature"
+        },
+        {
+          "name_ar": "نافورة المغسيل",
+          "name_en": "Al Mughsail Blowholes",
+          "lat": 16.873,
+          "lng": 53.777,
+          "type": "nature"
+        },
+        {
+          "name_ar": "شاطئ الحافة",
+          "name_en": "Al Haffa Beach",
+          "lat": 17.013,
+          "lng": 54.134,
+          "type": "beach"
+        },
+        {
+          "name_ar": "سوق الحافة",
+          "name_en": "Al Haffa Souq",
+          "lat": 17.012,
+          "lng": 54.131,
+          "type": "culture"
+        },
+        {
+          "name_ar": "عين صحلنوت",
+          "name_en": "Ayn Sahalnoot",
+          "lat": 17.079,
+          "lng": 54.053,
+          "type": "nature"
+        },
+        {
+          "name_ar": "عين سدح",
+          "name_en": "Ayn Sadah",
+          "lat": 17.062,
+          "lng": 54.503,
+          "type": "nature"
+        },
+        {
+          "name_ar": "صحراء الربع الخالي",
+          "name_en": "Rub Al Khali (Empty Quarter)",
+          "lat": 18.5,
+          "lng": 53.5,
+          "type": "nature"
         }
       ]
     },
@@ -274,7 +516,13 @@
         "Bahla Fort (UNESCO)",
         "Jabreen Castle",
         "Al Hamra & Misfat Al Abriyeen",
-        "Wadi Ghul (Grand Canyon of Oman)"
+        "Wadi Ghul (Grand Canyon of Oman)",
+        "Nizwa Fort",
+        "Nizwa Souq",
+        "Jebel Akhdar (Sayq)",
+        "Misfat Al Abriyeen",
+        "Al Hamra",
+        "Wadi Ghul"
       ],
       "highlights_ar": [
         "قلعة وسوق نزوى",
@@ -282,11 +530,17 @@
         "قلعة بهلا (يونسكو)",
         "قصر جبرين",
         "الحمراء ومسفاة العبريين",
-        "وادي غول (الأخدود العظيم)"
+        "وادي غول (الأخدود العظيم)",
+        "قلعة نزوى",
+        "سوق نزوى",
+        "مسفاة العبريين",
+        "الحمراء",
+        "وادي غول",
+        "جبل شمس"
       ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
-      "sites": 38,
+      "sites": 21,
       "lat": 22.9333,
       "lng": 57.5333,
       "landmarks": [
@@ -352,6 +606,90 @@
           "lat": 23.2333,
           "lng": 57.2667,
           "type": "mountain"
+        },
+        {
+          "name_ar": "قلعة بهلاء",
+          "name_en": "Bahla Fort",
+          "lat": 22.963,
+          "lng": 57.301,
+          "type": "fort"
+        },
+        {
+          "name_ar": "سوق بهلاء",
+          "name_en": "Bahla Souq",
+          "lat": 22.964,
+          "lng": 57.302,
+          "type": "culture"
+        },
+        {
+          "name_ar": "حصن جبرين",
+          "name_en": "Jabrin Castle",
+          "lat": 22.924,
+          "lng": 57.24,
+          "type": "fort"
+        },
+        {
+          "name_ar": "بيت الرديدة",
+          "name_en": "Bait Al Redaidah",
+          "lat": 22.936,
+          "lng": 57.646,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "فلج الخطمين",
+          "name_en": "Falaj Al Khatmeen",
+          "lat": 22.937,
+          "lng": 57.647,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "بركة الموز",
+          "name_en": "Birkat Al Mouz",
+          "lat": 22.94,
+          "lng": 57.66,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "حارة العقر",
+          "name_en": "Harat Al Aqr",
+          "lat": 22.929,
+          "lng": 57.523,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "وادي تنوف",
+          "name_en": "Wadi Tanuf",
+          "lat": 23.003,
+          "lng": 57.448,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي المعيدن",
+          "name_en": "Wadi Al Muaydin",
+          "lat": 22.968,
+          "lng": 57.67,
+          "type": "nature"
+        },
+        {
+          "name_ar": "حصن سمائل",
+          "name_en": "Samail Fort",
+          "lat": 23.303,
+          "lng": 58.007,
+          "type": "fort"
+        },
+        {
+          "name_ar": "قلعة الفيقين",
+          "name_en": "Al Fiqain Castle",
+          "lat": 22.792,
+          "lng": 57.59,
+          "type": "fort"
+        },
+        {
+          "name_ar": "كهف الهوتة",
+          "name_en": "Al Hoota Cave",
+          "lat": 23.086,
+          "lng": 57.353,
+          "type": "nature"
         }
       ]
     },
@@ -370,18 +708,31 @@
         "Wadi Bani Khalid",
         "Ibra Wednesday Market",
         "Al Kamil Heritage",
-        "Sinaw Souq"
+        "Sinaw Souq",
+        "Wahiba Sands",
+        "Ibra",
+        "Al Kamil & Al Wafi",
+        "Sharqiyah Sands",
+        "Al Mudayrib / Al Munisifah",
+        "Bait Al Yahmadi"
       ],
       "highlights_ar": [
         "مخيمات رمال الشرقية",
         "وادي بني خالد",
         "سوق إبراء (الأربعاء)",
         "تراث الكامل",
-        "سوق سناو"
+        "سوق سناو",
+        "رمال الشرقية (وهيبة)",
+        "إبراء",
+        "سوق إبراء",
+        "سناو",
+        "الكامل والوافي",
+        "رمال الشرقية",
+        "قرية المنزفة"
       ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
-      "sites": 22,
+      "sites": 14,
       "lat": 22.6906,
       "lng": 58.5326,
       "landmarks": [
@@ -426,6 +777,62 @@
           "lat": 22.2261,
           "lng": 59.2086,
           "type": "heritage"
+        },
+        {
+          "name_ar": "رمال الشرقية",
+          "name_en": "Sharqiyah Sands",
+          "lat": 22.15,
+          "lng": 58.7,
+          "type": "nature"
+        },
+        {
+          "name_ar": "قرية المنزفة",
+          "name_en": "Al Mudayrib / Al Munisifah",
+          "lat": 22.592,
+          "lng": 58.648,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "بيت اليحمدي",
+          "name_en": "Bait Al Yahmadi",
+          "lat": 22.69,
+          "lng": 58.533,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "سوق سناو",
+          "name_en": "Sinaw Souq",
+          "lat": 22.51,
+          "lng": 58.04,
+          "type": "culture"
+        },
+        {
+          "name_ar": "قرية القناطر",
+          "name_en": "Al Qanatir Village",
+          "lat": 22.68,
+          "lng": 58.54,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "حصن المضيبي",
+          "name_en": "Al Mudhaibi Fort",
+          "lat": 22.57,
+          "lng": 58.12,
+          "type": "fort"
+        },
+        {
+          "name_ar": "مسجد العقبة",
+          "name_en": "Al Aqabah Mosque",
+          "lat": 22.688,
+          "lng": 58.537,
+          "type": "religious"
+        },
+        {
+          "name_ar": "كهف مقل",
+          "name_en": "Muqal Cave",
+          "lat": 22.565,
+          "lng": 59.04,
+          "type": "nature"
         }
       ]
     },
@@ -445,7 +852,12 @@
         "Bimmah Sinkhole",
         "Wadi Shab",
         "Wadi Tiwi",
-        "Al Ayjah Lighthouse"
+        "Al Ayjah Lighthouse",
+        "Sur",
+        "Sur Dhow Yards",
+        "Bilad Sur Castle",
+        "Sunaysilah Fort",
+        "Al Ayjah Fort"
       ],
       "highlights_ar": [
         "محمية رأس الجنز للسلاحف",
@@ -453,11 +865,17 @@
         "هوّة بمّاه",
         "وادي شاب",
         "وادي طيوي",
-        "منارة العيجة"
+        "منارة العيجة",
+        "صور",
+        "محمية رأس الجنز",
+        "أحواض بناء السفن",
+        "حصن بلاد صور",
+        "حصن السنيسلة",
+        "حصن العيجة"
       ],
       "best_time_en": "October to April; turtle nesting peaks July–October",
       "best_time_ar": "من أكتوبر إلى أبريل؛ ذروة تعشيش السلاحف يوليو–أكتوبر",
-      "sites": 26,
+      "sites": 18,
       "lat": 22.5667,
       "lng": 59.5289,
       "landmarks": [
@@ -509,6 +927,83 @@
           "lat": 22.5731,
           "lng": 59.535,
           "type": "culture"
+        },
+        {
+          "name_ar": "حصن بلاد صور",
+          "name_en": "Bilad Sur Castle",
+          "lat": 22.568,
+          "lng": 59.526,
+          "type": "fort"
+        },
+        {
+          "name_ar": "حصن السنيسلة",
+          "name_en": "Sunaysilah Fort",
+          "lat": 22.57,
+          "lng": 59.529,
+          "type": "fort"
+        },
+        {
+          "name_ar": "حصن العيجة",
+          "name_en": "Al Ayjah Fort",
+          "lat": 22.576,
+          "lng": 59.542,
+          "type": "fort"
+        },
+        {
+          "name_ar": "متحف صور البحري",
+          "name_en": "Sur Maritime Museum",
+          "lat": 22.567,
+          "lng": 59.527,
+          "type": "culture"
+        },
+        {
+          "name_ar": "محمية رأس الجنز للسلاحف",
+          "name_en": "Ras Al Jinz Turtle Reserve",
+          "lat": 22.435,
+          "lng": 59.833,
+          "type": "nature"
+        },
+        {
+          "name_ar": "حصن رأس الحد",
+          "name_en": "Ras Al Hadd Fort",
+          "lat": 22.525,
+          "lng": 59.786,
+          "type": "fort"
+        },
+        {
+          "name_ar": "قرية طيوي",
+          "name_en": "Tiwi Village",
+          "lat": 22.807,
+          "lng": 59.263,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "حوية نجم",
+          "name_en": "Bimmah Sinkhole",
+          "lat": 22.943,
+          "lng": 59.084,
+          "type": "nature"
+        },
+        {
+          "name_ar": "قرية الجيلة",
+          "name_en": "Al Jaylah Village",
+          "lat": 22.89,
+          "lng": 59.13,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "جزيرة مصيرة",
+          "name_en": "Masirah Island",
+          "lat": 20.4,
+          "lng": 58.8,
+          "type": "nature"
+        },
+        {
+          "name_ar": "خور البطح",
+          "name_en": "Khor Al Batah",
+          "lat": 22.572,
+          "lng": 59.533,
+          "type": "nature"
         }
       ]
     },
@@ -526,17 +1021,33 @@
         "Sohar Fort",
         "Saham beach",
         "Liwa mangroves",
-        "Shinas to Khor Fakkan road"
+        "Shinas to Khor Fakkan road",
+        "Sohar City",
+        "Saham",
+        "Shinas",
+        "Liwa",
+        "Sohar Souq",
+        "Sohar Fish Market",
+        "Wadi Al Jizzi",
+        "Wadi Hibi"
       ],
       "highlights_ar": [
         "قلعة صحار",
         "شاطئ صحم",
         "غابات قرم لِوى",
-        "طريق شناص – خورفكان"
+        "طريق شناص – خورفكان",
+        "مدينة صحار",
+        "صحم",
+        "شناص",
+        "لِوى",
+        "سوق صحار",
+        "سوق السمك",
+        "وادي الجزي",
+        "وادي حيبي"
       ],
       "best_time_en": "November to March",
       "best_time_ar": "من نوفمبر إلى مارس",
-      "sites": 14,
+      "sites": 12,
       "lat": 24.3431,
       "lng": 56.729,
       "landmarks": [
@@ -574,6 +1085,55 @@
           "lat": 24.5333,
           "lng": 56.5667,
           "type": "nature"
+        },
+        {
+          "name_ar": "سوق صحار",
+          "name_en": "Sohar Souq",
+          "lat": 24.347,
+          "lng": 56.709,
+          "type": "culture"
+        },
+        {
+          "name_ar": "سوق السمك",
+          "name_en": "Sohar Fish Market",
+          "lat": 24.366,
+          "lng": 56.752,
+          "type": "culture"
+        },
+        {
+          "name_ar": "وادي الجزي",
+          "name_en": "Wadi Al Jizzi",
+          "lat": 24.3,
+          "lng": 56.45,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي حيبي",
+          "name_en": "Wadi Hibi",
+          "lat": 24.2,
+          "lng": 56.48,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي الحلتي",
+          "name_en": "Wadi Al Hilti",
+          "lat": 24.25,
+          "lng": 56.55,
+          "type": "nature"
+        },
+        {
+          "name_ar": "حصن الحزم",
+          "name_en": "Al Hazm Castle",
+          "lat": 23.542,
+          "lng": 57.676,
+          "type": "fort"
+        },
+        {
+          "name_ar": "قلعة شناص",
+          "name_en": "Shinas Fort",
+          "lat": 24.743,
+          "lng": 56.467,
+          "type": "fort"
         }
       ]
     },
@@ -591,17 +1151,33 @@
         "Rustaq Fort & hot springs",
         "Nakhal Fort",
         "Wadi Bani Awf & Snake Canyon",
-        "Al Hoota Cave (near border)"
+        "Al Hoota Cave (near border)",
+        "Rustaq Fort",
+        "Rustaq Hot Springs",
+        "Ain Al Thawwarah",
+        "Wadi Bani Awf",
+        "Snake Canyon",
+        "Ain A'Thawwarah",
+        "Wekan Village",
+        "Wadi Al Maawil"
       ],
       "highlights_ar": [
         "قلعة الرستاق والحمامات",
         "قلعة نخل",
         "وادي بني عوف ووادي الثعبان",
-        "كهف الهوتا"
+        "كهف الهوتا",
+        "قلعة الرستاق",
+        "حمامات الرستاق",
+        "حمامات الثوارة",
+        "وادي بني عوف",
+        "وادي الثعبان",
+        "عين الثوارة",
+        "قرية وكان",
+        "وادي المعاول"
       ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
-      "sites": 18,
+      "sites": 15,
       "lat": 23.3914,
       "lng": 57.425,
       "landmarks": [
@@ -646,6 +1222,69 @@
           "lat": 23.2542,
           "lng": 57.4528,
           "type": "nature"
+        },
+        {
+          "name_ar": "عين الثوارة",
+          "name_en": "Ain A'Thawwarah",
+          "lat": 23.388,
+          "lng": 57.842,
+          "type": "nature"
+        },
+        {
+          "name_ar": "قرية وكان",
+          "name_en": "Wekan Village",
+          "lat": 23.27,
+          "lng": 57.66,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "وادي المعاول",
+          "name_en": "Wadi Al Maawil",
+          "lat": 23.48,
+          "lng": 57.89,
+          "type": "nature"
+        },
+        {
+          "name_ar": "حصن بركاء",
+          "name_en": "Barka Fort",
+          "lat": 23.677,
+          "lng": 57.889,
+          "type": "fort"
+        },
+        {
+          "name_ar": "بيت النعمان",
+          "name_en": "Bait Al Naman Castle",
+          "lat": 23.656,
+          "lng": 57.943,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "سوق بركاء",
+          "name_en": "Barka Souq",
+          "lat": 23.679,
+          "lng": 57.888,
+          "type": "culture"
+        },
+        {
+          "name_ar": "شاطئ السوادي",
+          "name_en": "As Sawadi Beach",
+          "lat": 23.776,
+          "lng": 57.784,
+          "type": "beach"
+        },
+        {
+          "name_ar": "محمية جزر الديمانيات",
+          "name_en": "Daymaniyat Islands Reserve",
+          "lat": 23.86,
+          "lng": 58.1,
+          "type": "nature"
+        },
+        {
+          "name_ar": "عين الكسفة",
+          "name_en": "Ain Al Kasfah",
+          "lat": 23.384,
+          "lng": 57.442,
+          "type": "nature"
         }
       ]
     },
@@ -663,17 +1302,33 @@
         "Bat Tombs (UNESCO)",
         "Ibri Old Town",
         "Yanqul mountains",
-        "Al Aynayn ruins"
+        "Al Aynayn ruins",
+        "Bat Beehive Tombs (UNESCO)",
+        "Ibri",
+        "Ibri Old Quarter",
+        "Yanqul",
+        "Ibri Fort",
+        "Bat Archaeological Tombs",
+        "As Sulaif Village",
+        "Al Mamour Fort"
       ],
       "highlights_ar": [
         "مقابر بات (يونسكو)",
         "حارة إبري القديمة",
         "جبال ينقل",
-        "آثار العينين"
+        "آثار العينين",
+        "إبري",
+        "ينقل",
+        "حصن عبري",
+        "مدافن بات الأثرية",
+        "قرية السليف",
+        "حصن المعمور",
+        "وادي مقنيات",
+        "وادي ضم"
       ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
-      "sites": 12,
+      "sites": 13,
       "lat": 23.2257,
       "lng": 56.5117,
       "landmarks": [
@@ -704,6 +1359,69 @@
           "lat": 23.5856,
           "lng": 56.5447,
           "type": "city"
+        },
+        {
+          "name_ar": "حصن عبري",
+          "name_en": "Ibri Fort",
+          "lat": 23.225,
+          "lng": 56.516,
+          "type": "fort"
+        },
+        {
+          "name_ar": "مدافن بات الأثرية",
+          "name_en": "Bat Archaeological Tombs",
+          "lat": 23.277,
+          "lng": 56.742,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "قرية السليف",
+          "name_en": "As Sulaif Village",
+          "lat": 23.213,
+          "lng": 56.504,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "حصن المعمور",
+          "name_en": "Al Mamour Fort",
+          "lat": 23.22,
+          "lng": 56.51,
+          "type": "fort"
+        },
+        {
+          "name_ar": "وادي مقنيات",
+          "name_en": "Wadi Maqniyat",
+          "lat": 23.32,
+          "lng": 56.67,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي ضم",
+          "name_en": "Wadi Dhamm",
+          "lat": 23.3,
+          "lng": 56.6,
+          "type": "nature"
+        },
+        {
+          "name_ar": "وادي العين",
+          "name_en": "Wadi Al Ain",
+          "lat": 23.25,
+          "lng": 56.8,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "قرية الدريز",
+          "name_en": "Ad Dariz Village",
+          "lat": 23.2,
+          "lng": 56.45,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "حصن ينقل",
+          "name_en": "Yanqul Fort",
+          "lat": 23.586,
+          "lng": 56.544,
+          "type": "fort"
         }
       ]
     },
@@ -720,16 +1438,31 @@
       "highlights_en": [
         "Al Khandaq Fort",
         "Al Hilla Fort",
-        "Date farms"
+        "Date farms",
+        "Al Buraimi",
+        "Mahda",
+        "Al Hillah Fort",
+        "Hamasah Quarter",
+        "Falaj Al Jimi",
+        "Al Buraimi Souq",
+        "Wadi Al Jizzi"
       ],
       "highlights_ar": [
         "قلعة الخندق",
         "قلعة الحلّة",
-        "مزارع التمور"
+        "مزارع التمور",
+        "مدينة البريمي",
+        "محضة",
+        "حصن الخندق",
+        "حصن الحلة",
+        "حارة حماسة",
+        "فلج الجيمي",
+        "سوق البريمي",
+        "وادي الجزي"
       ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
-      "sites": 8,
+      "sites": 12,
       "lat": 24.25,
       "lng": 55.7833,
       "landmarks": [
@@ -760,6 +1493,62 @@
           "lat": 24.4561,
           "lng": 55.9783,
           "type": "city"
+        },
+        {
+          "name_ar": "حصن الخندق",
+          "name_en": "Al Khandaq Fort",
+          "lat": 24.245,
+          "lng": 55.787,
+          "type": "fort"
+        },
+        {
+          "name_ar": "حصن الحلة",
+          "name_en": "Al Hillah Fort",
+          "lat": 24.238,
+          "lng": 55.781,
+          "type": "fort"
+        },
+        {
+          "name_ar": "حارة حماسة",
+          "name_en": "Hamasah Quarter",
+          "lat": 24.23,
+          "lng": 55.77,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "فلج الجيمي",
+          "name_en": "Falaj Al Jimi",
+          "lat": 24.242,
+          "lng": 55.775,
+          "type": "heritage"
+        },
+        {
+          "name_ar": "سوق البريمي",
+          "name_en": "Al Buraimi Souq",
+          "lat": 24.25,
+          "lng": 55.793,
+          "type": "culture"
+        },
+        {
+          "name_ar": "وادي الجزي",
+          "name_en": "Wadi Al Jizzi",
+          "lat": 24.3,
+          "lng": 56,
+          "type": "nature"
+        },
+        {
+          "name_ar": "جبل قطار",
+          "name_en": "Jabal Qatar",
+          "lat": 24.18,
+          "lng": 55.83,
+          "type": "nature"
+        },
+        {
+          "name_ar": "قرية مضبة",
+          "name_en": "Mahdah Village",
+          "lat": 24.4,
+          "lng": 55.98,
+          "type": "heritage"
         }
       ]
     },
@@ -777,13 +1566,23 @@
         "Arabian Oryx Sanctuary",
         "Duqm Rock Garden",
         "Masirah Island",
-        "Ras Madrakah"
+        "Ras Madrakah",
+        "Duqm",
+        "Duqm Beach",
+        "Port of Duqm",
+        "Khor Ghawi"
       ],
       "highlights_ar": [
         "محمية المها العربي",
         "حديقة صخور الدقم",
         "جزيرة مصيرة",
-        "رأس مدركة"
+        "رأس مدركة",
+        "الدقم",
+        "محمية المها العربية",
+        "حديقة الصخور",
+        "شاطئ الدقم",
+        "ميناء الدقم",
+        "خور غاوي"
       ],
       "best_time_en": "November to March",
       "best_time_ar": "من نوفمبر إلى مارس",
@@ -825,6 +1624,41 @@
           "lat": 19.0167,
           "lng": 57.85,
           "type": "beach"
+        },
+        {
+          "name_ar": "محمية المها العربية",
+          "name_en": "Arabian Oryx Sanctuary",
+          "lat": 19.8,
+          "lng": 57,
+          "type": "nature"
+        },
+        {
+          "name_ar": "حديقة الصخور",
+          "name_en": "Duqm Rock Garden",
+          "lat": 19.66,
+          "lng": 57.69,
+          "type": "nature"
+        },
+        {
+          "name_ar": "شاطئ الدقم",
+          "name_en": "Duqm Beach",
+          "lat": 19.64,
+          "lng": 57.705,
+          "type": "beach"
+        },
+        {
+          "name_ar": "ميناء الدقم",
+          "name_en": "Port of Duqm",
+          "lat": 19.67,
+          "lng": 57.71,
+          "type": "city"
+        },
+        {
+          "name_ar": "خور غاوي",
+          "name_en": "Khor Ghawi",
+          "lat": 19.95,
+          "lng": 57.8,
+          "type": "nature"
         }
       ]
     }
