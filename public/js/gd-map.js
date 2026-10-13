@@ -371,17 +371,7 @@
     fitToContent(L, map, [meetMarker, routeLine]);
 
     setTimeout(() => map.invalidateSize(), 200);
-    return {
-      // Centre on one landmark and open its popup — used when a visitor picks
-      // a card from the list beneath the map.
-      focus(index) {
-        const marker = placed[index];
-        if (!marker) return;
-        map.setView(marker.getLatLng(), Math.max(map.getZoom(), 11), { animate: true });
-        marker.openPopup();
-      },
-      destroy() { map.remove(); host.innerHTML = ''; },
-    };
+    return { destroy() { map.remove(); host.innerHTML = ''; } };
   }
 
   // Tiny stylesheet for the waypoint number tooltip — added once.
@@ -456,7 +446,17 @@
 
     if (bounds.isValid()) map.fitBounds(bounds.pad(0.18), { maxZoom: 12 });
     setTimeout(() => map.invalidateSize(), 200);
-    return { destroy() { map.remove(); host.innerHTML = ''; } };
+    return {
+      // Centre on one landmark and open its popup — used when a visitor picks
+      // that place from the list of cards above the map.
+      focus(index) {
+        const marker = placed[index];
+        if (!marker) return;
+        map.setView(marker.getLatLng(), Math.max(map.getZoom(), 11), { animate: true });
+        marker.openPopup();
+      },
+      destroy() { map.remove(); host.innerHTML = ''; },
+    };
   }
 
   window.gdMap = { editor, viewer, landmarks, loadLeaflet };
