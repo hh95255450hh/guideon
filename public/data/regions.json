@@ -228,7 +228,11 @@
           "name_en": "Marina Bandar Al Rowdha",
           "lat": 23.58,
           "lng": 58.609,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/muscat-marina-bandar-al-rowdha.webp",
+          "credit": "Karananand2",
+          "licence": "CC0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3AMarina%20Bandar%20al%20Rowdha%2C%20Sidab.jpg"
         },
         {
           "name_ar": "وادي الميح",
@@ -410,7 +414,11 @@
           "name_en": "Madha Springs",
           "lat": 25.287,
           "lng": 56.305,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/musandam-madha-springs.webp",
+          "credit": "RoPa at English Wikipedia",
+          "licence": "CC BY-SA 3.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3AMadha1.jpg"
         }
       ]
     },
@@ -517,7 +525,11 @@
           "name_en": "Tomb of Job (Nabi Ayoub)",
           "lat": 17.1561,
           "lng": 54.0028,
-          "type": "religious"
+          "type": "religious",
+          "image": "/img/landmarks/dhofar-tomb-of-job-nabi-ayoub.webp",
+          "credit": "Anood Al Jabri",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%A7%D9%84%D8%B7%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D9%85%D8%A4%D8%AF%D9%8A%20%D8%A5%D9%84%D9%89%20%D8%B9%D9%8A%D9%86%20%D8%A7%D9%84%D9%86%D8%A8%D9%8A%20%D8%A3%D9%8A%D9%88%D8%A8.jpg"
         },
         {
           "name_ar": "جبل سمحان",
@@ -549,7 +561,11 @@
           "name_en": "Al Marneef Cave",
           "lat": 17.229,
           "lng": 54.018,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dhofar-al-marneef-cave.webp",
+          "credit": "ismo",
+          "licence": "CC BY-SA 3.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3AAl%20Mughsayl%20-%20Al%20Marnif%20Cave%20-%20panoramio.jpg"
         },
         {
           "name_ar": "نافورة المغسيل",
@@ -603,7 +619,11 @@
           "name_en": "Rub Al Khali (Empty Quarter)",
           "lat": 18.5,
           "lng": 53.5,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dhofar-rub-al-khali-empty-quarter.webp",
+          "credit": "The Enhanced Thematic Mapper on NASA’s Landsat 7, Robert Simmon, caption by Michon Scott.",
+          "licence": "Public domain",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3ARub%E2%80%99%20al%20Khali-Empty%20Quarter-2001.jpg"
         }
       ]
     },
@@ -824,7 +844,11 @@
           "name_en": "Wadi Al Muaydin",
           "lat": 22.968,
           "lng": 57.67,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dakhiliyah-wadi-al-muaydin.webp",
+          "credit": "Martin Prasche from Frankfurt, Deutschland",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3AWadi%20Muaydin%20(29542217403).jpg"
         },
         {
           "name_ar": "حصن سمائل",
@@ -1171,7 +1195,11 @@
           "name_en": "Tiwi Village",
           "lat": 22.807,
           "lng": 59.263,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/sharqiyah-south-tiwi-village.webp",
+          "credit": "albinfo",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/w/index.php?curid=68870698"
         },
         {
           "name_ar": "حوية نجم (هوة بمّاه)",
@@ -1189,7 +1217,11 @@
           "name_en": "Al Jaylah Village",
           "lat": 22.89,
           "lng": 59.13,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/sharqiyah-south-al-jaylah-village.webp",
+          "credit": "Esra1993",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/w/index.php?curid=169637782"
         },
         {
           "name_ar": "جزيرة مصيرة",
@@ -1336,7 +1368,11 @@
           "name_en": "Wadi Hibi",
           "lat": 24.2,
           "lng": 56.48,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/batinah-north-wadi-hibi.webp",
+          "credit": "https://picasaweb.google.com/107711843414993088264",
+          "licence": "CC BY-SA 3.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3AHibi%20Eden.jpg"
         },
         {
           "name_ar": "وادي الحلتي",
@@ -1689,21 +1725,33 @@
           "name_en": "Wadi Dhamm",
           "lat": 23.3,
           "lng": 56.6,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dhahirah-wadi-dhamm.webp",
+          "credit": "Heritage Commission",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/w/index.php?curid=94780719"
         },
         {
           "name_ar": "وادي العين",
           "name_en": "Wadi Al Ain",
           "lat": 23.25,
           "lng": 56.8,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/dhahirah-wadi-al-ain.webp",
+          "credit": "Blind Sniper535",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/101258676@N07/9667498815"
         },
         {
           "name_ar": "قرية الدريز",
           "name_en": "Ad Dariz Village",
           "lat": 23.2,
           "lng": 56.45,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/dhahirah-ad-dariz-village.webp",
+          "credit": "Bernhard Dunst",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3ADunst%20Oman%20scan0520%20-%20bei%20Ad%20Dariz.jpg"
         },
         {
           "name_ar": "حصن ينقل",
