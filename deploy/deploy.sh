@@ -10,6 +10,7 @@
 # nobody was told. Deploys looked green but served stale code.
 #
 # This version:
+#   0. Runs the full test suite first; a failure blocks the deploy (old code stays live).
 #   1. Retries the image build up to 3x (rides out transient npm/network fails).
 #   2. Recreates the container from the fresh image and verifies the site is
 #      actually serving HTTP 200 afterwards.
@@ -85,6 +86,34 @@ if ! git pull origin main; then
 fi
 AFTER=$(git rev-parse --short HEAD 2>/dev/null || echo '?')
 echo "commit $BEFORE -> $AFTER"
+
+# ── 0. Test gate: nothing ships unless the whole suite passes ──
+# The GitHub CI runs in parallel with this webhook, so a red CI never stopped a
+# deploy — a syntax error in gd-navbar.js shipped and blanked the navigation
+# bar on every page while CI was still running. The suite now runs HERE, in a
+# throwaway container from the same Node image the app is built on, before
+# anything is built. On failure the old container keeps serving and the admins
+# get an email. Named volumes cache node_modules and the npm cache, so a normal
+# run costs well under a minute.
+echo ">> test gate: running the suite for $AFTER"
+TEST_LOG=/tmp/guideon-test-gate.log
+if ! docker run --rm \
+      -v "$REPO":/src -v guideon-test-modules:/src/node_modules -v guideon-npm-cache:/root/.npm \
+      -w /src -e NODE_ENV=test \
+      -e SUPABASE_URL=https://placeholder.supabase.co -e SUPABASE_ANON_KEY=placeholder \
+      node:22.20-slim sh -c 'npm ci --no-audit --no-fund --ignore-scripts >/dev/null 2>&1 && npm test' \
+      > "$TEST_LOG" 2>&1; then
+  FAILS=$(grep -E '^✖|not ok' "$TEST_LOG" | head -8)
+  alert "🔴 Guideon deploy BLOCKED (tests failed)" \
+        "Commit $AFTER was NOT deployed: the test suite failed. The previous version ($BEFORE) is still live.
+
+Failing tests:
+$FAILS
+
+Full log on the VPS: $TEST_LOG"
+  echo "$TAG TESTS FAILED — deploy blocked, $BEFORE still live"; tail -30 "$TEST_LOG"; exit 1
+fi
+echo ">> test gate passed: $(grep -E '^ℹ pass' "$TEST_LOG" | head -1)"
 
 cd "$REPO/deploy" || { echo "FATAL: deploy dir missing"; exit 1; }
 
