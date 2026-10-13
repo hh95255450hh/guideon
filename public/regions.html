@@ -66,6 +66,8 @@
   .r-tile .when{position:absolute;top:14px;inset-inline-start:14px;background:rgba(201,162,39,.95);color:#2a2100;
           font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;display:none}
   .r-tile.in-season .when{display:block}
+  /* A touch screen has no hover, so the site names show by default there. */
+  @media(hover:none){ .r-tile .peek{max-height:70px;opacity:1} }
   @media(max-width:900px){ .r-grid{grid-template-columns:repeat(2,1fr)} .r-tile,.r-tile.wide,.r-tile.tall{grid-column:span 1;aspect-ratio:4/3} }
   @media(max-width:560px){ .r-grid{grid-template-columns:1fr} }
   .none{display:none;text-align:center;color:var(--muted);padding:40px 0}
