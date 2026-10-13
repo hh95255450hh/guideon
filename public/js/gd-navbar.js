@@ -135,8 +135,9 @@
   .gd-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
   /* The closed drawer is parked one screen-width past the inline edge. In RTL
      that lands outside the viewport on the right, which gave every Arabic page
-     a phantom 320px horizontal scroll. `clip` removes it without breaking the
-     sticky positioning that `overflow: hidden` would. */
+     a phantom 320px horizontal scroll. "clip" removes it without breaking the
+     sticky positioning that "overflow: hidden" would.
+     (No backticks in here: this CSS lives inside a JS template literal.) */
   html { overflow-x: clip; }
   .gd-drawer {
     position: fixed; top: 0; bottom: 0;
