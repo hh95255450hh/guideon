@@ -25,6 +25,25 @@ const CONTACT_FIELDS = [
   'website', 'personalWebsite', 'bookingUrl', 'externalUrl',
 ];
 
+// The fields a tourist or anonymous visitor may see on a guide, company or team.
+// Every other users column — contact details, tokens, location, commercial and
+// account-security settings — is private to the owner and the admins.
+const PUBLIC_PROFILE_FIELDS = [
+  'id', 'userType', 'fullName', 'photo', 'bio', 'nationality', 'preferredLanguage',
+  'languages', 'specialisations', 'destinations',
+  'pricePerDay', 'rating', 'totalReviews', 'totalBookings',
+  'isVerified', 'isMinistryLicensed', 'licenceNumber',
+  'galleryPhotos', 'guideAssets', 'videoUrl', 'videoFileUrl',
+  'availability', 'availabilitySlots', 'maxConcurrentTours',
+  // instant-guide: whether they are taking requests now and their rate — never where they are
+  'instantAvailable', 'instantHourlyRate',
+  'companyName', 'companyDescription', 'companyDestinations', 'companyServices', 'companyRegNo', 'foundedYear',
+  'teamName', 'teamDescription', 'teamCategory', 'teamGovernorate', 'teamSocials', 'membersCount',
+  'packages', 'createdAt', 'updatedAt',
+  // computed by controllers before sanitising
+  'availableCount',
+];
+
 /**
  * @param {object} profile - the raw user record
  * @param {object|null} viewer - the requesting user (req.user or null)
@@ -42,7 +61,14 @@ function sanitizeContact(profile, viewer) {
       viewer.userType === 'admin' || viewer.userType === 'staff')) {
     return base;
   }
-  const copy = base;
+  // Everyone else gets ONLY the fields a public profile is meant to show.
+  // This used to be a deny-list, and deny-lists leak whatever they forget: the
+  // guide's live GPS position (instantLat/instantLng), their push token, their
+  // Google id and referral code, commission rate, 2FA status and admin
+  // permissions all went out in every public guide search. A new column now
+  // stays private until someone deliberately adds it here.
+  const copy = {};
+  for (const f of PUBLIC_PROFILE_FIELDS) if (f in base) copy[f] = base[f];
   for (const f of CONTACT_FIELDS) {
     if (f in copy) delete copy[f];
   }
@@ -93,4 +119,4 @@ function sanitizeMessageBody(text) {
   return { clean, flagged };
 }
 
-module.exports = { sanitizeContact, sanitizeMessageBody, maskContactStrings, CONTACT_FIELDS };
+module.exports = { sanitizeContact, sanitizeMessageBody, maskContactStrings, CONTACT_FIELDS, PUBLIC_PROFILE_FIELDS };

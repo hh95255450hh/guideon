@@ -7,7 +7,11 @@
 const SENSITIVE_USER_FIELDS = [
   'password', 'twoFactorSecret', 'twoFactorBackupCodes',
   'emailVerifyToken', 'emailVerifyExpires',
-  'resetPasswordToken', 'resetPasswordExpires', 'fcm_token',
+  'resetPasswordToken', 'resetPasswordExpires',
+  // The push token column is fcmToken; this list only ever named the legacy
+  // snake_case fcm_token, so the live token went out in every guide search.
+  'fcm_token', 'fcmToken',
+  'googleId',
 ];
 
 function publicUser(user) {
