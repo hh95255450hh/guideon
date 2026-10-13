@@ -114,13 +114,14 @@ exports.recentActivity = async (req, res) => {
   }
 };
 
-// GET /api/admin/email-test?to=you@example.com — sends a branded test email
+// POST /api/admin/email-test {to} — sends a branded test email
 // to the given address (or the admin alert recipient) and returns the result.
 exports.emailTest = async (req, res) => {
   try {
     const cfg = email.emailConfig();
-    const to = (req.query.to && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(req.query.to))
-      ? req.query.to.trim()
+    const toIn = String((req.body && req.body.to) || req.query.to || '');
+    const to = (toIn && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(toIn))
+      ? toIn.trim()
       : (cfg.alertRecipients[0] || 'admin@guideon.om');
     const html = email.notificationEmail({
       icon: '✅', title: 'Guideon test email', titleAr: 'رسالة تجريبية من Guideon',
@@ -136,8 +137,8 @@ exports.emailTest = async (req, res) => {
 };
 
 // ─── One-time bulk image compression of existing Storage files ─────────
-// GET /api/admin/compress-storage?dry=1   — preview only
-// GET /api/admin/compress-storage         — actually compress and overwrite
+// POST /api/admin/compress-storage {dry:1} — preview only
+// POST /api/admin/compress-storage         — actually compress and overwrite
 //
 // Runs the same sharp→WebP pipeline storageService uses for new uploads
 // across every existing image in the bucket. Filenames stay the same so
@@ -147,7 +148,8 @@ exports.compressStorage = async (req, res) => {
   if (_compressJob && _compressJob.running) {
     return res.json({ success: true, alreadyRunning: true, job: publicJob(_compressJob) });
   }
-  const dry = req.query.dry === '1' || req.query.dry === 'true';
+  const dryIn = String((req.body && req.body.dry) ?? req.query.dry ?? '');
+  const dry = dryIn === '1' || dryIn === 'true';
   _compressJob = { running: true, dry, started: new Date().toISOString(), done: false, tally: blankTally() };
 
   // Respond immediately so the request doesn't time out; work continues in bg.
@@ -276,8 +278,12 @@ async function runCompression(job) {
 exports.whatsappTest = async (req, res) => {
   try {
     const whatsapp = require('../services/whatsappService');
-    const to = req.query.to || '96895255450';
-    const mode = req.query.mode || 'template'; // template | text
+    // No default recipient: a missing number used to message the owner's personal phone.
+    const to = String((req.body && req.body.to) || req.query.to || '').replace(/[^0-9]/g, '');
+    if (to.length < 8) {
+      return res.status(400).json({ success: false, message: 'Give the recipient number in international format, e.g. 9689xxxxxxx.' });
+    }
+    const mode = (req.body && req.body.mode) || req.query.mode || 'template'; // template | text
 
     let result;
     if (mode === 'text') {
@@ -372,7 +378,7 @@ exports.createUserPackage = async (req, res) => {
 exports.reminderTest = async (req, res) => {
   try {
     const scheduler = require('../services/reminderScheduler');
-    const { bookingId } = req.query;
+    const bookingId = (req.body && req.body.bookingId) || req.query.bookingId;
     if (bookingId) {
       const bk = await bookings.findById(bookingId);
       if (!bk) return res.status(404).json({ success: false, message: 'Booking not found.' });

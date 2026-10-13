@@ -12,11 +12,16 @@ router.get('/me/permissions', admin.myPermissions);
 // View-only — open to all staff
 router.get('/stats', admin.stats);
 router.get('/activity', admin.recentActivity);
-router.get('/email-test', admin.emailTest);
-router.get('/whatsapp-test', admin.whatsappTest);
-router.get('/reminder-test', admin.reminderTest);
-router.get('/compress-storage',        admin.compressStorage);
-router.get('/compress-storage/status', admin.compressStorageStatus);
+// Operational actions. These were GET routes open to any staff member — and the
+// CSRF guard exempts GET, so an <img src="…/whatsapp-test?to=…"> on any site an
+// admin visited could send WhatsApp messages from the business number or start
+// the storage job that rewrites every stored file. They are POST now (so the
+// CSRF guard applies) and limited to the super admin.
+router.post('/email-test',              requireSuperAdmin, admin.emailTest);
+router.post('/whatsapp-test',           requireSuperAdmin, admin.whatsappTest);
+router.post('/reminder-test',           requireSuperAdmin, admin.reminderTest);
+router.post('/compress-storage',        requireSuperAdmin, admin.compressStorage);
+router.get('/compress-storage/status',  requireSuperAdmin, admin.compressStorageStatus);
 router.get('/stats/extended',     requirePermission('view_analytics'), admin.extendedStats);
 router.get('/revenue',            requirePermission('view_analytics'), admin.revenue);
 
