@@ -49,7 +49,11 @@
           "name_en": "Sultan Qaboos Grand Mosque",
           "lat": 23.584,
           "lng": 58.3889,
-          "type": "religious"
+          "type": "religious",
+          "image": "/img/landmarks/muscat-sultan-qaboos-grand-mosque.webp",
+          "credit": "prasad.om",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/43810986@N03/9840466395"
         },
         {
           "name_ar": "سوق مطرح",
@@ -67,7 +71,11 @@
           "name_en": "Mutrah Corniche",
           "lat": 23.6195,
           "lng": 58.58,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/muscat-mutrah-corniche.webp",
+          "credit": "hillsieboy",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/81681077@N00/184839065"
         },
         {
           "name_ar": "دار الأوبرا السلطانية",
@@ -118,7 +126,11 @@
           "name_en": "National Museum of Oman",
           "lat": 23.6147,
           "lng": 58.5915,
-          "type": "museum"
+          "type": "museum",
+          "image": "/img/landmarks/muscat-national-museum-of-oman.webp",
+          "credit": "Francisco Anzola",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/10345599@N03/30900403425"
         },
         {
           "name_ar": "شاطئ القرم",
@@ -337,21 +349,33 @@
           "name_en": "Khasab Castle",
           "lat": 26.1781,
           "lng": 56.2475,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/musandam-khasab-castle.webp",
+          "credit": "StellarD",
+          "licence": "CC BY-SA 3.0",
+          "photo_source": "https://commons.wikimedia.org/w/index.php?curid=31299005"
         },
         {
           "name_ar": "خور النجد",
           "name_en": "Khor Najd",
           "lat": 26.205,
           "lng": 56.3083,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/musandam-khor-najd.webp",
+          "credit": "Indyblue",
+          "licence": "CC BY-SA 2.0",
+          "photo_source": "https://www.flickr.com/photos/74807516@N00/23756818693"
         },
         {
           "name_ar": "خور شم",
           "name_en": "Khor Sham",
           "lat": 26.23,
           "lng": 56.32,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/musandam-khor-sham.webp",
+          "credit": "amanderson2",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/49399018@N00/2420296153"
         },
         {
           "name_ar": "خور الحبلين",
@@ -449,7 +473,11 @@
           "name_en": "Wadi Darbat",
           "lat": 17.1067,
           "lng": 54.45,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dhofar-wadi-darbat.webp",
+          "credit": "Oman Tourism",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/48360165@N02/4833225619"
         },
         {
           "name_ar": "شاطئ المغسيل",
@@ -496,7 +524,11 @@
           "name_en": "Jebel Samhan",
           "lat": 17.11,
           "lng": 54.68,
-          "type": "mountain"
+          "type": "mountain",
+          "image": "/img/landmarks/dhofar-jebel-samhan.webp",
+          "credit": "Francesco Bini",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/w/index.php?curid=165145548"
         },
         {
           "name_ar": "خور روري",
@@ -668,7 +700,11 @@
           "name_en": "Jabreen Castle",
           "lat": 22.9342,
           "lng": 57.2547,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/dakhiliyah-jabreen-castle.webp",
+          "credit": "dconvertini",
+          "licence": "CC BY-SA 2.0",
+          "photo_source": "https://www.flickr.com/photos/42477684@N08/54586015892"
         },
         {
           "name_ar": "مسفاة العبريين",
@@ -744,7 +780,11 @@
           "name_en": "Falaj Al Khatmeen",
           "lat": 22.937,
           "lng": 57.647,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/dakhiliyah-falaj-al-khatmeen.webp",
+          "credit": "اليقين الحاتمي",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D9%81%D9%84%D8%AC%20%D8%A7%D9%84%D8%AE%D8%B7%D9%85%D9%8A%D9%86%20.jpg"
         },
         {
           "name_ar": "بركة الموز",
@@ -762,7 +802,11 @@
           "name_en": "Harat Al Aqr",
           "lat": 22.929,
           "lng": 57.523,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/dakhiliyah-harat-al-aqr.webp",
+          "credit": "كتب ـ عامر بن عبدالله الأنصاري تصوير : فيصل البلوشي https://www.omandaily.om/ولايات/حـارة-العقـر-بولاية-نزوى-أعيد-تجديده",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%AD%D8%A7%D8%B1%D8%A9%20%D8%A7%D9%84%D8%B9%D9%82%D8%B1%20%D8%A8%D9%86%D8%B2%D9%88%D9%89.jpg"
         },
         {
           "name_ar": "وادي تنوف",
@@ -798,7 +842,11 @@
           "name_en": "Al Fiqain Castle",
           "lat": 22.792,
           "lng": 57.59,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/dakhiliyah-al-fiqain-castle.webp",
+          "credit": "حمد أبو وائل",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%AD%D8%B5%D9%86%20%D8%A7%D9%84%D9%81%D9%8A%D9%82%D9%8A%D9%86.jpg"
         },
         {
           "name_ar": "كهف الهوتة",
@@ -1065,14 +1113,22 @@
           "name_en": "Bilad Sur Castle",
           "lat": 22.568,
           "lng": 59.526,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/sharqiyah-south-bilad-sur-castle.webp",
+          "credit": "Unknown authorUnknown author",
+          "licence": "Public domain",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%AD%D8%B5%D9%86%20%D8%A8%D9%84%D8%A7%D8%AF%20%D8%B5%D9%88%D8%B1.jpg"
         },
         {
           "name_ar": "حصن السنيسلة",
           "name_en": "Sunaysilah Fort",
           "lat": 22.57,
           "lng": 59.529,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/sharqiyah-south-sunaysilah-fort.webp",
+          "credit": "Prof. Mortel",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/43714545@N06/51840490608"
         },
         {
           "name_ar": "حصن العيجة",
@@ -1255,7 +1311,11 @@
           "name_en": "Sohar Souq",
           "lat": 24.347,
           "lng": 56.709,
-          "type": "culture"
+          "type": "culture",
+          "image": "/img/landmarks/batinah-north-sohar-souq.webp",
+          "credit": "Marwan Humaid Ali Al moqbali",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%B3%D9%88%D9%82%20%D8%B5%D8%AD%D8%A7%D8%B1.jpg"
         },
         {
           "name_ar": "سوق السمك",
@@ -1290,7 +1350,11 @@
           "name_en": "Al Hazm Castle",
           "lat": 23.542,
           "lng": 57.676,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/batinah-north-al-hazm-castle.webp",
+          "credit": "Prof. Mortel",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/43714545@N06/51839149732"
         },
         {
           "name_ar": "قلعة شناص",
@@ -1365,7 +1429,11 @@
           "name_en": "Rustaq Hot Springs",
           "lat": 23.395,
           "lng": 57.425,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/batinah-south-rustaq-hot-springs.webp",
+          "credit": "Lars Plougmann",
+          "licence": "CC BY-SA 2.0",
+          "photo_source": "https://www.flickr.com/photos/75062596@N00/351837649"
         },
         {
           "name_ar": "قلعة نخل",
@@ -1412,7 +1480,11 @@
           "name_en": "Ain A'Thawwarah",
           "lat": 23.388,
           "lng": 57.842,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/batinah-south-ain-a-thawwarah.webp",
+          "credit": "Hajaroufi",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%A7%D9%84%D8%AB%D9%88%D8%A7%D8%B1%D8%A9.jpg"
         },
         {
           "name_ar": "قرية وكان",
@@ -1426,7 +1498,11 @@
           "name_en": "Wadi Al Maawil",
           "lat": 23.48,
           "lng": 57.89,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/batinah-south-wadi-al-maawil.webp",
+          "credit": "riyadh.albalushi",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/130649623@N05/21105111358"
         },
         {
           "name_ar": "حصن بركاء",
@@ -1451,14 +1527,22 @@
           "name_en": "Barka Souq",
           "lat": 23.679,
           "lng": 57.888,
-          "type": "culture"
+          "type": "culture",
+          "image": "/img/landmarks/batinah-south-barka-souq.webp",
+          "credit": "Hajaroufi",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%A8%D8%B1%D9%83%D8%A7%D8%A1.jpg"
         },
         {
           "name_ar": "شاطئ السوادي",
           "name_en": "As Sawadi Beach",
           "lat": 23.776,
           "lng": 57.784,
-          "type": "beach"
+          "type": "beach",
+          "image": "/img/landmarks/batinah-south-as-sawadi-beach.webp",
+          "credit": "`3lawi ♡ AD",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/31990113@N02/3748191743"
         },
         {
           "name_ar": "محمية جزر الديمانيات",
@@ -1476,7 +1560,11 @@
           "name_en": "Ain Al Kasfah",
           "lat": 23.384,
           "lng": 57.442,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/batinah-south-ain-al-kasfah.webp",
+          "credit": "Mosoah",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D8%B9%D9%8A%D9%86%20%D8%A7%D9%84%D9%83%D8%B3%D9%81%D8%A9.jpg"
         }
       ]
     },
@@ -1529,7 +1617,11 @@
           "name_en": "Bat Beehive Tombs (UNESCO)",
           "lat": 23.2667,
           "lng": 56.75,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/dhahirah-bat-beehive-tombs-unesco.webp",
+          "credit": "Esra1993",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/w/index.php?curid=169637780"
         },
         {
           "name_ar": "إبري",
@@ -1586,7 +1678,11 @@
           "name_en": "Wadi Maqniyat",
           "lat": 23.32,
           "lng": 56.67,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dhahirah-wadi-maqniyat.webp",
+          "credit": "Khadija kalbani",
+          "licence": "CC BY-SA 4.0",
+          "photo_source": "https://commons.wikimedia.org/wiki/File%3A%D9%88%D8%A7%D8%AF%D9%8A%20%D9%85%D9%82%D9%86%D9%8A%D8%A7%D8%AA.JPG"
         },
         {
           "name_ar": "وادي ضم",
@@ -1836,7 +1932,11 @@
           "name_en": "Port of Duqm",
           "lat": 19.67,
           "lng": 57.71,
-          "type": "city"
+          "type": "city",
+          "image": "/img/landmarks/wusta-port-of-duqm.webp",
+          "credit": "imo.un",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://www.flickr.com/photos/62937028@N02/54021118648"
         },
         {
           "name_ar": "خور غاوي",
