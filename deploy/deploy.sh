@@ -113,7 +113,8 @@ $FAILS
 Full log on the VPS: $TEST_LOG"
   echo "$TAG TESTS FAILED — deploy blocked, $BEFORE still live"; tail -30 "$TEST_LOG"; exit 1
 fi
-echo ">> test gate passed: $(grep -E '^ℹ pass' "$TEST_LOG" | head -1)"
+# Node prints "ℹ pass N" on a terminal and TAP "# pass N" when piped — match both.
+echo ">> test gate passed: $(grep -E '^(ℹ|#) (tests|pass) ' "$TEST_LOG" | paste -sd' ')"
 
 cd "$REPO/deploy" || { echo "FATAL: deploy dir missing"; exit 1; }
 
