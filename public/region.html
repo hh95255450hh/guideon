@@ -16,6 +16,7 @@
   .r-hero .container{position:relative;z-index:2;padding-bottom:50px}
   .r-hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;margin:0;text-shadow:0 2px 12px rgba(0,0,0,.4)}
   .r-hero .tag{font-size:1.2rem;opacity:.95;margin-top:8px;font-weight:500}
+  .r-hero .hero-credit{position:absolute;bottom:8px;inset-inline-end:14px;z-index:3;font-size:11px;opacity:.75;text-shadow:0 1px 3px rgba(0,0,0,.6)}
   .r-quick{background:#0f7b6c;color:#fff;padding:14px 0;font-size:.95rem}
   .r-quick .item{display:inline-flex;gap:8px;align-items:center;margin-inline-end:24px}
   .r-quick svg{width:18px;height:18px;flex-shrink:0}
@@ -134,6 +135,13 @@
     const probe = new Image();
     probe.onload = () => { heroEl.style.backgroundImage = `url('${r.hero}')`; };
     probe.src = r.hero;
+    // Where the photo comes from someone else's publication, say so on the page.
+    if (r.hero_credit) {
+      const c = document.createElement('span');
+      c.className = 'hero-credit';
+      c.textContent = '📷 ' + r.hero_credit;
+      heroEl.appendChild(c);
+    }
   }
   document.getElementById('rName').textContent = isAr?r.name_ar:r.name_en;
   document.getElementById('rTag').textContent = isAr?r.tagline_ar:r.tagline_en;

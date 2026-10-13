@@ -1611,7 +1611,7 @@
       "name_ar": "الظاهرة",
       "tagline_en": "Bronze Age tombs and quiet oases",
       "tagline_ar": "مقابر العصر البرونزي وواحات هادئة",
-      "hero": "",
+      "hero": "/img/regions/dhahirah.webp",
       "intro_en": "Off the main tourist trail, Ad Dhahirah rewards the curious. The beehive tombs of Bat are a UNESCO World Heritage Site, and Ibri's old quarter is a maze of mud-brick alleys.",
       "intro_ar": "بعيداً عن المسارات السياحية المعتادة، تُكافئ الظاهرة الفضوليين. مقابر بات الخلوية مدرجة في يونسكو، وحارة إبري القديمة متاهة من أزقّة الطين.",
       "highlights_en": [
@@ -1760,7 +1760,8 @@
           "lng": 56.544,
           "type": "fort"
         }
-      ]
+      ],
+      "hero_credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة"
     },
     {
       "id": "buraimi",
