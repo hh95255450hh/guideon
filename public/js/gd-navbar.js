@@ -395,7 +395,7 @@
         <button class="gd-nav-icon-btn gd-nav-burger" id="gdNavBurger" aria-label="${tr('Open menu','فتح القائمة')}">${svg('menu')}</button>
 
         <a class="gd-nav-brand" href="/">
-          <img src="/logo.png" alt="Guideon">
+          <img src="/logo-nav.png" alt="Guideon" width="182" height="72">
           <span>Guideon</span>
         </a>
 
