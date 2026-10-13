@@ -66,7 +66,9 @@ test('regions: Arabic names carry no PDF ligature corruption', () => {
 // reuse is allowed only with attribution, so a photo without a credit and a
 // licence on record is a licence breach waiting to ship.
 test('regions: every landmark photo carries its credit, licence and source', () => {
-  const OK_LICENCE = /^(cc0|cc[- ]by|public domain|pd|attribution)/i;
+  // Free licences, plus the Ministry of Heritage & Tourism's written permission
+  // to use the photographs from its illustrated guide.
+  const OK_LICENCE = /^(cc0|cc[- ]by|public domain|pd|attribution|بإذن وزارة التراث والسياحة$)/i;
   for (const r of regions) {
     for (const l of r.landmarks) {
       if (!l.image) continue;

@@ -304,7 +304,7 @@
       ],
       "best_time_en": "November to March",
       "best_time_ar": "من نوفمبر إلى مارس",
-      "sites": 12,
+      "sites": 11,
       "lat": 26.1979,
       "lng": 56.2487,
       "landmarks": [
@@ -318,13 +318,6 @@
           "credit": "StellarD",
           "licence": "CC BY-SA 3.0",
           "photo_source": "https://commons.wikimedia.org/wiki/File%3ADate%20Plantation%20Khasab%20Oman.jpg"
-        },
-        {
-          "name_ar": "خور الشم",
-          "name_en": "Khor Sham Fjord",
-          "lat": 26.2333,
-          "lng": 56.3,
-          "type": "nature"
         },
         {
           "name_ar": "جزيرة التلغراف",
@@ -554,7 +547,11 @@
           "name_en": "Khor Salalah",
           "lat": 17.008,
           "lng": 54.118,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dhofar-khor-salalah.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "كهف المرنيف",
@@ -612,7 +609,11 @@
           "name_en": "Ayn Sadah",
           "lat": 17.062,
           "lng": 54.503,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/dhofar-ayn-sadah.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "صحراء الربع الخالي",
@@ -1023,14 +1024,22 @@
           "name_en": "Al Aqabah Mosque",
           "lat": 22.688,
           "lng": 58.537,
-          "type": "religious"
+          "type": "religious",
+          "image": "/img/landmarks/sharqiyah-north-al-aqabah-mosque.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "كهف مقل",
           "name_en": "Muqal Cave",
           "lat": 22.565,
           "lng": 59.04,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/sharqiyah-north-muqal-cave.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         }
       ]
     },
@@ -1159,7 +1168,11 @@
           "name_en": "Al Ayjah Fort",
           "lat": 22.576,
           "lng": 59.542,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/sharqiyah-south-al-ayjah-fort.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "متحف صور البحري",
@@ -1239,7 +1252,11 @@
           "name_en": "Khor Al Batah",
           "lat": 22.572,
           "lng": 59.533,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/sharqiyah-south-khor-al-batah.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         }
       ]
     },
@@ -1292,7 +1309,11 @@
           "name_en": "Sohar Fort",
           "lat": 24.3622,
           "lng": 56.7036,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/batinah-north-sohar-fort.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "مدينة صحار",
@@ -1354,7 +1375,11 @@
           "name_en": "Sohar Fish Market",
           "lat": 24.366,
           "lng": 56.752,
-          "type": "culture"
+          "type": "culture",
+          "image": "/img/landmarks/batinah-north-sohar-fish-market.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "وادي الجزي",
@@ -1445,7 +1470,7 @@
       ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
-      "sites": 15,
+      "sites": 14,
       "lat": 23.3914,
       "lng": 57.425,
       "landmarks": [
@@ -1481,13 +1506,6 @@
           "credit": "Andries Oudshoorn",
           "licence": "CC BY-SA 2.0",
           "photo_source": "https://commons.wikimedia.org/wiki/File%3ANakhal_Fort_(2).jpg"
-        },
-        {
-          "name_ar": "حمامات الثوارة",
-          "name_en": "Ain Al Thawwarah",
-          "lat": 23.4044,
-          "lng": 57.8147,
-          "type": "nature"
         },
         {
           "name_ar": "وادي بني عوف",
@@ -1527,7 +1545,11 @@
           "name_en": "Wekan Village",
           "lat": 23.27,
           "lng": 57.66,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/batinah-south-wekan-village.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "وادي المعاول",
@@ -1556,7 +1578,11 @@
           "name_en": "Bait Al Naman Castle",
           "lat": 23.656,
           "lng": 57.943,
-          "type": "heritage"
+          "type": "heritage",
+          "image": "/img/landmarks/batinah-south-bait-al-naman-castle.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "سوق بركاء",
@@ -1693,7 +1719,11 @@
           "name_en": "Ibri Fort",
           "lat": 23.225,
           "lng": 56.516,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/dhahirah-ibri-fort.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "قرية السليف",
@@ -1800,7 +1830,7 @@
       ],
       "best_time_en": "October to April",
       "best_time_ar": "من أكتوبر إلى أبريل",
-      "sites": 10,
+      "sites": 9,
       "lat": 24.25,
       "lng": 55.7833,
       "landmarks": [
@@ -1809,7 +1839,11 @@
           "name_en": "Al Khandaq Fort",
           "lat": 24.2592,
           "lng": 55.7839,
-          "type": "fort"
+          "type": "fort",
+          "image": "/img/landmarks/buraimi-al-khandaq-fort.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "قلعة الحلّة",
@@ -1859,28 +1893,33 @@
           "name_en": "Al Buraimi Souq",
           "lat": 24.25,
           "lng": 55.793,
-          "type": "culture"
+          "type": "culture",
+          "image": "/img/landmarks/buraimi-al-buraimi-souq.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "وادي الجزي",
           "name_en": "Wadi Al Jizzi",
           "lat": 24.3,
           "lng": 56,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/buraimi-wadi-al-jizzi.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "جبل قطار",
           "name_en": "Jabal Qatar",
           "lat": 24.18,
           "lng": 55.83,
-          "type": "nature"
-        },
-        {
-          "name_ar": "قرية مضبة",
-          "name_en": "Mahdah Village",
-          "lat": 24.4,
-          "lng": 55.98,
-          "type": "heritage"
+          "type": "nature",
+          "image": "/img/landmarks/buraimi-jabal-qatar.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         }
       ]
     },
@@ -1927,7 +1966,11 @@
           "name_en": "Duqm",
           "lat": 19.6586,
           "lng": 57.7058,
-          "type": "city"
+          "type": "city",
+          "image": "/img/landmarks/wusta-duqm.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "جزيرة مصيرة",
@@ -1978,7 +2021,11 @@
           "name_en": "Duqm Beach",
           "lat": 19.64,
           "lng": 57.705,
-          "type": "beach"
+          "type": "beach",
+          "image": "/img/landmarks/wusta-duqm-beach.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         },
         {
           "name_ar": "ميناء الدقم",
@@ -1996,7 +2043,11 @@
           "name_en": "Khor Ghawi",
           "lat": 19.95,
           "lng": 57.8,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/wusta-khor-ghawi.webp",
+          "credit": "دليل عُمان السياحي المصوّر — وزارة التراث والسياحة",
+          "licence": "بإذن وزارة التراث والسياحة",
+          "photo_source": "https://www.mht.gov.om/"
         }
       ]
     }
