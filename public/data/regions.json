@@ -1955,7 +1955,11 @@
           "name_en": "Arabian Oryx Sanctuary",
           "lat": 19.7,
           "lng": 57,
-          "type": "nature"
+          "type": "nature",
+          "image": "/img/landmarks/wusta-arabian-oryx-sanctuary.webp",
+          "credit": "Flickr / 42996397@N05",
+          "licence": "CC BY 2.0",
+          "photo_source": "https://commons.wikimedia.org/w/index.php?curid=51669211"
         },
         {
           "name_ar": "حديقة الصخور",
