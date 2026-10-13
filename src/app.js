@@ -213,6 +213,8 @@ app.use('/api/app', apiLimiter, require('./routes/appMeta'));
 app.use('/api/', apiLimiter);
 app.use('/api/', csrfProtect);
 app.use('/api/', loadUser);
+// Plain-text fields can never be stored with markup in them (see the module).
+app.use('/api/', require('./middleware/plainText').plainTextBody);
 app.use('/api/chat', chatLimiter);
 
 app.use('/api/auth',     authRoutes);

@@ -578,7 +578,7 @@ function recalcPrice() {
     const total = subtotal * (1 - discount / 100);
     let html = `<div class="price-line"><span>${adults} بالغ</span><span>${money(adultCost)}</span></div>`;
     if (children > 0) html += `<div class="price-line"><span>${children} طفل × ${money(PACKAGE.child_price)}</span><span>${money(childCost)}</span></div>`;
-    addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${a.name}</span><span>${money(a.price)}</span></div>`; });
+    addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${gdEsc(a.name)}</span><span>${money(a.price)}</span></div>`; });
     if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 خصم (${discount}%)</span><span>−${money(subtotal*discount/100)}</span></div>`;
     html += `<div class="price-line price-total"><span>الإجمالي (${adults + children} أشخاص)</span><span style="color:var(--teal)">${money(total)}</span></div>`;
     bd.innerHTML = html;
@@ -620,11 +620,11 @@ function recalcPrice() {
   const baseLbl  = (window.I18N && I18N.t('base_for_2'))   || 'base (2 people)';
   const extraLbl = (window.I18N && I18N.t('extra_persons'))|| 'extra persons';
 
-  let html = `<div class="price-line"><span>${v.name} — ${baseLbl}</span><span>${money(base)}</span></div>`;
+  let html = `<div class="price-line"><span>${gdEsc(v.name)} — ${baseLbl}</span><span>${money(base)}</span></div>`;
   if (extras > 0) {
     html += `<div class="price-line"><span>+ ${extras} ${extraLbl} × ${money(perExtra)}</span><span>${money(perExtra*extras)}</span></div>`;
   }
-  addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${a.name}</span><span>${money(a.price)}</span></div>`; });
+  addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${gdEsc(a.name)}</span><span>${money(a.price)}</span></div>`; });
   if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 Discount (${discount}%)</span><span>−${money(discountAmount)}</span></div>`;
   html += `<div class="price-line price-total"><span>Total (${people} ${(window.I18N && I18N.t('people')) || 'people'})</span><span style="color:var(--teal)">${money(total)}</span></div>`;
   document.getElementById('priceBreakdown').innerHTML = html;

@@ -954,10 +954,10 @@ async function loadAnalytics() {
     const r = await fetch('/api/admin/stats/extended', { credentials: 'include' });
     const { data } = await r.json();
     document.getElementById('topGuidesList').innerHTML = data.topGuides.length
-      ? data.topGuides.map((g, i) => `<div class="d-flex justify-content-between py-1 border-bottom"><span>${i+1}. ${g.name}</span><strong>${g.bookings}</strong></div>`).join('')
+      ? data.topGuides.map((g, i) => `<div class="d-flex justify-content-between py-1 border-bottom"><span>${i+1}. ${gdEsc(g.name)}</span><strong>${g.bookings}</strong></div>`).join('')
       : '<div class="text-muted">No bookings yet.</div>';
     document.getElementById('topDestsList').innerHTML = data.topDestinations.length
-      ? data.topDestinations.map((d, i) => `<div class="d-flex justify-content-between py-1 border-bottom"><span>${i+1}. ${d.destination}</span><strong>${d.count}</strong></div>`).join('')
+      ? data.topDestinations.map((d, i) => `<div class="d-flex justify-content-between py-1 border-bottom"><span>${i+1}. ${gdEsc(d.destination)}</span><strong>${d.count}</strong></div>`).join('')
       : '<div class="text-muted">No data yet.</div>';
     document.getElementById('anAvgRating').textContent    = data.avgRating || '—';
     document.getElementById('anTotalReviews').textContent = data.totalReviews;
@@ -1262,12 +1262,12 @@ async function loadPending() {
             <div class="avatar company-avatar">🏢</div>
             <div style="flex:1;min-width:0">
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                <span class="fw-800">${c.companyName || c.fullName}</span>
+                <span class="fw-800">${gdEsc(c.companyName || c.fullName)}</span>
                 <span class="mot-badge mot-company">🏢 ${I18N.t('tab_company')}</span>
               </div>
-              <div class="small text-muted mb-2">${I18N.t('contact_person')}: ${c.fullName} · ${c.email}${c.phone ? ' · ' + c.phone : ''}</div>
+              <div class="small text-muted mb-2">${I18N.t('contact_person')}: ${gdEsc(c.fullName)} · ${gdEsc(c.email)}${c.phone ? ' · ' + gdEsc(c.phone) : ''}</div>
               <div class="row g-2 small">
-                ${c.companyRegNo ? `<div class="col-auto"><strong>${I18N.t('reg_no_col')}:</strong> <code>${c.companyRegNo}</code></div>` : ''}
+                ${c.companyRegNo ? `<div class="col-auto"><strong>${I18N.t('reg_no_col')}:</strong> <code>${gdEsc(c.companyRegNo)}</code></div>` : ''}
                 ${c.companyWebsite ? `<div class="col-auto"><strong>Website:</strong> <a href="${c.companyWebsite}" target="_blank" rel="noopener">${c.companyWebsite}</a></div>` : ''}
                 ${c.companyServices?.length ? `<div class="col-12"><strong>${I18N.t('col_services')}:</strong> ${c.companyServices.join(', ')}</div>` : ''}
                 ${c.companyDestinations?.length ? `<div class="col-12"><strong>${I18N.t('gp_dests')}:</strong> ${c.companyDestinations.join(', ')}</div>` : ''}
