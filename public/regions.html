@@ -11,39 +11,113 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <style>
-  body{font-family:'Inter','Tajawal',sans-serif;background:#fafafa;color:#0f1c3e}
-  .page-hero{background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:80px 0 60px;text-align:center}
-  .page-hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;margin-bottom:12px}
-  .page-hero p{opacity:.92;max-width:680px;margin:0 auto;font-size:1.1rem}
-  .region-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;padding:60px 0}
-  .region-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:transform .25s,box-shadow .25s;text-decoration:none;color:inherit;display:block}
-  .region-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
-  .region-card .img{height:200px;position:relative;background:repeating-linear-gradient(135deg,#0f1c3e,#0f1c3e 14px,#13234a 14px,#13234a 28px)}
-  .region-card .img img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .region-card .img .ph-mark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.4rem;opacity:.35;z-index:1}
-  .region-card .img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.55));z-index:1}
-  .region-card .sites-badge{position:absolute;top:12px;inset-inline-end:12px;background:rgba(255,255,255,.95);color:#0f1c3e;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;z-index:1}
-  .region-card .body{padding:18px}
-  .region-card h3{font-size:1.25rem;font-weight:800;margin:0 0 6px;color:#0f1c3e}
-  .region-card .tag{color:#0f7b6c;font-size:.92rem;font-weight:600;margin:0}
-  .region-card .meta{margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0;font-size:.85rem;color:#6b7280;display:flex;justify-content:space-between;align-items:center}
-  .region-card .meta strong{color:#0f1c3e}
+  :root{ --ink:#0f1c3e; --teal:#0f7b6c; --sand:#c9a227; --line:#e8ecf1; --muted:#6b7280 }
+  body{font-family:'Inter','Tajawal',sans-serif;background:#fff;color:var(--ink)}
   html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
+
+  /* ── Hero: the country itself, not a gradient ─────────────────────── */
+  .p-hero{position:relative;min-height:62vh;display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:#0f1c3e}
+  .p-hero .frame{position:absolute;inset:0}
+  .p-hero .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.4s ease}
+  .p-hero .frame img.on{opacity:1}
+  .p-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,28,62,.35),rgba(10,18,40,.9))}
+  .p-hero .container{position:relative;z-index:2;padding:60px 0 44px}
+  .p-hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;margin:0 0 12px;line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.4)}
+  .p-hero p{opacity:.95;max-width:640px;font-size:clamp(1rem,2vw,1.15rem);margin:0}
+  .p-stats{display:flex;flex-wrap:wrap;gap:28px;margin-top:26px}
+  .p-stats b{display:block;font-size:clamp(1.5rem,3.4vw,2.2rem);font-weight:800;line-height:1}
+  .p-stats span{font-size:.85rem;opacity:.85;letter-spacing:.04em}
+
+  /* ── Control bar: pick a region by what you want to see ───────────── */
+  .controls{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.93);backdrop-filter:blur(10px);
+            border-bottom:1px solid var(--line);padding:14px 0}
+  .controls .row2{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .controls input{flex:1 1 220px;min-width:180px;border:1px solid var(--line);border-radius:999px;padding:10px 18px;font-size:.95rem;outline:none}
+  .controls input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,123,108,.12)}
+  .taste{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .taste::-webkit-scrollbar{display:none}
+  .taste button{white-space:nowrap;background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:600;font-size:.88rem;
+                padding:8px 15px;border-radius:999px;cursor:pointer;transition:.18s}
+  .taste button:hover{border-color:var(--teal);color:var(--teal)}
+  .taste button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .taste button .n{opacity:.6;font-size:.78rem;margin-inline-start:4px}
+
+  /* ── Editorial mosaic of the governorates ─────────────────────────── */
+  .r-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;padding:34px 0 10px;grid-auto-flow:dense}
+  .r-tile{position:relative;grid-column:span 2;aspect-ratio:4/3;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;
+          background:#0f1c3e;display:block;transition:transform .3s,box-shadow .3s}
+  .r-tile.wide{grid-column:span 3;aspect-ratio:16/9}
+  .r-tile.tall{grid-column:span 3;aspect-ratio:16/10}
+  .r-tile:hover{transform:translateY(-5px);box-shadow:0 20px 44px rgba(15,28,62,.22)}
+  .r-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s ease}
+  .r-tile:hover img{transform:scale(1.07)}
+  .r-tile .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,18,40,.05) 35%,rgba(10,18,40,.86))}
+  .r-tile .pin{position:absolute;top:14px;inset-inline-end:14px;background:rgba(255,255,255,.95);color:var(--ink);
+          font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:999px;display:flex;gap:6px;align-items:center}
+  .r-tile .txt{position:absolute;inset-inline:0;bottom:0;padding:20px}
+  .r-tile h3{font-size:clamp(1.15rem,2.2vw,1.6rem);font-weight:800;margin:0;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+  .r-tile .sub{font-size:.9rem;opacity:.92;margin:4px 0 0}
+  /* Revealed on hover (and always on touch): what the place is actually known for. */
+  .r-tile .peek{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:0;opacity:0;overflow:hidden;
+          transition:max-height .35s ease,opacity .25s ease}
+  .r-tile:hover .peek,.r-tile:focus-visible .peek{max-height:70px;opacity:1}
+  .r-tile .peek span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(4px);
+          font-size:.76rem;font-weight:600;padding:4px 9px;border-radius:999px}
+  .r-tile .when{position:absolute;top:14px;inset-inline-start:14px;background:rgba(201,162,39,.95);color:#2a2100;
+          font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;display:none}
+  .r-tile.in-season .when{display:block}
+  @media(max-width:900px){ .r-grid{grid-template-columns:repeat(2,1fr)} .r-tile,.r-tile.wide,.r-tile.tall{grid-column:span 1;aspect-ratio:4/3} }
+  @media(max-width:560px){ .r-grid{grid-template-columns:1fr} }
+  .none{display:none;text-align:center;color:var(--muted);padding:40px 0}
+
+  /* ── Map of Oman ──────────────────────────────────────────────────── */
+  .map-sec{padding:50px 0 70px;border-top:1px solid var(--line);margin-top:34px}
+  .sec-head h2{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:800;margin:0}
+  .sec-head h2::after{content:"";display:block;width:46px;height:3px;background:var(--sand);border-radius:3px;margin-top:10px}
+  .sec-head p{color:var(--muted);margin:10px 0 20px}
+  #omanMap{height:520px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#eef2f7}
+  .gov-pin{background:none;border:0}
+  .gov-pin .dot{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.96);border:1px solid #dfe6ee;
+          border-radius:999px;padding:5px 11px;box-shadow:0 4px 14px rgba(15,28,62,.18);font-weight:800;font-size:12.5px;
+          color:#0f1c3e;white-space:nowrap;transition:.18s}
+  .gov-pin .dot b{background:var(--teal);color:#fff;border-radius:999px;padding:1px 7px;font-size:11px}
+  .gov-pin:hover .dot{transform:translateY(-2px);border-color:var(--teal)}
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<script src="/js/gd-map.js?v=5" defer></script>
 </head>
 <body>
 <div id="navMount"></div>
 
-<section class="page-hero">
+<section class="p-hero">
+  <div class="frame" id="heroFrames"></div>
   <div class="container">
     <h1 id="pHeroTitle">Explore Oman by Region</h1>
     <p id="pHeroSub">From the fjords of Musandam to the misty mountains of Dhofar — discover all 11 governorates with curated highlights and local experts.</p>
+    <div class="p-stats" id="pStats"></div>
   </div>
 </section>
 
+<div class="controls">
+  <div class="container">
+    <div class="row2">
+      <input id="qBox" type="search" autocomplete="off" placeholder="Search a region or a place…">
+      <div class="taste" id="tasteBar"></div>
+    </div>
+  </div>
+</div>
+
 <main class="container">
-  <div class="region-grid" id="regionGrid"></div>
+  <div class="r-grid" id="regionGrid"></div>
+  <p class="none" id="noHit"></p>
+
+  <section class="map-sec">
+    <div class="sec-head">
+      <h2 id="hMap">Oman on the map</h2>
+      <p id="pMap">Pick a governorate to see its sites and its guides.</p>
+    </div>
+    <div id="omanMap"></div>
+  </section>
 </main>
 
 <div id="footerMount"></div>
@@ -53,29 +127,187 @@
 (async () => {
   const lang = (localStorage.getItem('gd_lang') || (document.documentElement.lang || 'en')).toLowerCase();
   const isAr = lang.startsWith('ar');
-  if (isAr) { document.documentElement.lang = 'ar'; document.documentElement.dir = 'rtl';
-    document.title = 'استكشف عُمان حسب المنطقة — Guideon';
-    document.getElementById('pHeroTitle').textContent = 'استكشف عُمان حسب المنطقة';
-    document.getElementById('pHeroSub').textContent = 'من أخوار مسندم إلى جبال ظفار الضبابية — اكتشف محافظات السلطنة الـ11 بمعالم مختارة ومرشدين محلّيين.';
+  if (isAr) { document.documentElement.lang = 'ar'; document.documentElement.dir = 'rtl'; }
+  const T = (ar, en) => isAr ? ar : en;
+
+  if (isAr) {
+    document.title = 'استكشف عُمان حسب المحافظة — Guideon';
+    document.getElementById('pHeroTitle').textContent = 'استكشف عُمان حسب المحافظة';
+    document.getElementById('pHeroSub').textContent = 'من أخوار مسندم إلى جبال ظفار الضبابية — إحدى عشرة محافظة، لكلٍّ وجهها وموسمها.';
+    document.getElementById('qBox').placeholder = 'ابحث عن محافظة أو موقع…';
+    document.getElementById('hMap').textContent = 'عُمان على الخريطة';
+    document.getElementById('pMap').textContent = 'اختر محافظة لترى مواقعها ومرشديها.';
   }
-  const FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
-  const data = await fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json())).catch(()=>fetch('/data/regions.json').then(r=>r.json()));
+
+  const data = await fetch('/api/content/regions')
+    .then(r => r.ok ? r.json() : null)
+    .then(j => (j && j.success && j.data) ? j.data : fetch('/data/regions.json').then(r => r.json()))
+    .catch(() => fetch('/data/regions.json').then(r => r.json()));
+  const regions = (data.regions || []).map(r => ({ ...r, landmarks: Array.isArray(r.landmarks) ? r.landmarks : [] }));
+
+  // ── What each governorate offers, derived from its own landmarks ────
+  const TASTE = {
+    fort:      { ar:'قلاع وحصون', en:'Forts',     glyph:'🏰' },
+    nature:    { ar:'طبيعة',       en:'Nature',    glyph:'🌿' },
+    beach:     { ar:'شواطئ',       en:'Beaches',   glyph:'🏖️' },
+    mountain:  { ar:'جبال',        en:'Mountains', glyph:'⛰️' },
+    desert:    { ar:'صحراء',       en:'Desert',    glyph:'🏜️' },
+    heritage:  { ar:'تراث',        en:'Heritage',  glyph:'🗿' },
+    museum:    { ar:'متاحف',       en:'Museums',   glyph:'🏛️' },
+    religious: { ar:'مساجد',       en:'Religious', glyph:'🕌' },
+    culture:   { ar:'ثقافة',       en:'Culture',   glyph:'🎭' },
+    city:      { ar:'مدن',         en:'Cities',    glyph:'🏙️' },
+  };
+
+  // "October to April", "Khareef season: late June – early September"…
+  const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+  const AR_MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  function seasonMonths(text) {
+    const found = [];
+    String(text || '').toLowerCase().replace(/[a-z]+/g, w => { const i = MONTHS.indexOf(w); if (i >= 0) found.push(i); return w; });
+    if (!found.length) return null;                       // unparsed → never filtered out
+    if (found.length === 1) return [found[0]];
+    const [a, b] = [found[0], found[found.length - 1]];
+    const out = []; for (let m = a; ; m = (m + 1) % 12) { out.push(m); if (m === b) break; }
+    return out;
+  }
+
+  const stats = { regions: regions.length, sites: 0, photos: 0 };
+  for (const r of regions) {
+    r._types = [...new Set(r.landmarks.map(l => l.type).filter(Boolean))];
+    r._photos = r.landmarks.filter(l => l.image);
+    r._season = seasonMonths(r.best_time_en);
+    r._count = r.landmarks.length || r.sites || 0;
+    stats.sites += r._count;
+    stats.photos += r._photos.length;
+  }
+
+  document.getElementById('pStats').innerHTML = [
+    [stats.regions, T('محافظة', 'governorates')],
+    [stats.sites,   T('موقع سياحي', 'sites of interest')],
+    [stats.photos,  T('صورة', 'photographs')],
+  ].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join('');
+
+  // Hero: a slow cross-fade through the best photos we hold, so the page
+  // opens on Oman rather than on a gradient.
+  const heroShots = regions.flatMap(r => r._photos.slice(0, 2).map(l => l.image)).slice(0, 6);
+  if (heroShots.length) {
+    const frame = document.getElementById('heroFrames');
+    frame.innerHTML = heroShots.map((src, i) => `<img src="${gdSafeUrl(src)}" alt="" class="${i ? '' : 'on'}" ${i ? 'loading="lazy"' : ''}>`).join('');
+    const imgs = [...frame.children];
+    let at = 0;
+    if (imgs.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setInterval(() => { imgs[at].classList.remove('on'); at = (at + 1) % imgs.length; imgs[at].classList.add('on'); }, 5200);
+    }
+  }
+
+  // ── Taste chips: only the types that actually exist, with region counts ──
+  const tasteCounts = {};
+  regions.forEach(r => r._types.forEach(t => { tasteCounts[t] = (tasteCounts[t] || 0) + 1; }));
+  const tastes = Object.keys(tasteCounts).filter(t => TASTE[t]).sort((a, b) => tasteCounts[b] - tasteCounts[a]);
+  const thisMonth = new Date().getMonth();
+  document.getElementById('tasteBar').innerHTML =
+    `<button data-t="all" aria-pressed="true">${T('كل المحافظات','All regions')}</button>` +
+    `<button data-t="season" aria-pressed="false">☀️ ${T('مناسبة الآن','Good right now')} <span class="n">${isAr?AR_MONTHS[thisMonth]:MONTHS[thisMonth].replace(/^./,c=>c.toUpperCase())}</span></button>` +
+    tastes.map(t => `<button data-t="${t}" aria-pressed="false">${TASTE[t].glyph} ${isAr?TASTE[t].ar:TASTE[t].en} <span class="n">${tasteCounts[t]}</span></button>`).join('');
+
+  // ── Tiles ───────────────────────────────────────────────────────────
   const grid = document.getElementById('regionGrid');
-  grid.innerHTML = data.regions.map(r => `
-    <a class="region-card" href="/region.html?id=${r.id}">
-      <div class="img">
-        ${r.hero ? `<img class="bg" src="${r.hero}" alt="${isAr?r.name_ar:r.name_en}" loading="lazy" decoding="async">` : `<span class="ph-mark">📍</span>`}
-        <span class="sites-badge">${r.sites} ${isAr?'موقع':'sites'}</span>
+  const noHit = document.getElementById('noHit');
+  noHit.textContent = T('لا محافظة تطابق هذا الاختيار.', 'No region matches that choice.');
+
+  // Largest first: the richest governorates earn the wide tiles.
+  const ordered = [...regions].sort((a, b) => b._photos.length - a._photos.length || b._count - a._count);
+  const SHAPE = ['wide', 'tall', '', '', '', '', 'wide', '', '', '', ''];
+
+  grid.innerHTML = ordered.map((r, i) => {
+    const name = gdEsc(isAr ? r.name_ar : r.name_en);
+    const tagline = gdEsc(isAr ? (r.tagline_ar || '') : (r.tagline_en || ''));
+    const cover = r._photos[0]?.image || r.hero || '';
+    const peek = r.landmarks.filter(l => l.image).slice(0, 3)
+      .map(l => `<span>${gdEsc(isAr ? (l.name_ar || l.name_en) : (l.name_en || l.name_ar))}</span>`).join('');
+    const inSeason = r._season ? r._season.includes(thisMonth) : false;
+    return `<a class="r-tile ${SHAPE[i] || ''} ${inSeason ? 'in-season' : ''}" href="/region.html?id=${encodeURIComponent(r.id)}"
+       data-types="${gdEsc(r._types.join(' '))}" data-season="${inSeason ? '1' : '0'}"
+       data-hay="${gdEsc([r.name_ar, r.name_en, ...r.landmarks.map(l => l.name_ar), ...r.landmarks.map(l => l.name_en)].join(' ').toLowerCase())}">
+      ${cover ? `<img src="${gdSafeUrl(cover)}" alt="${name}" loading="lazy" decoding="async">` : ''}
+      <div class="veil"></div>
+      <div class="when">☀️ ${T('موسمها الآن','In season')}</div>
+      <div class="pin">📍 ${r._count} ${T('موقع','sites')}</div>
+      <div class="txt">
+        <h3>${name}</h3>
+        <p class="sub">${tagline}</p>
+        <div class="peek">${peek}</div>
       </div>
-      <div class="body">
-        <h3>${isAr?r.name_ar:r.name_en}</h3>
-        <p class="tag">${isAr?r.tagline_ar:r.tagline_en}</p>
-        <div class="meta">
-          <span>${isAr?'أفضل وقت':'Best time'}: <strong>${isAr?r.best_time_ar:r.best_time_en}</strong></span>
-          <span>→</span>
-        </div>
-      </div>
-    </a>`).join('');
+    </a>`;
+  }).join('');
+
+  // ── Filtering: taste chips + free text, applied together ────────────
+  let taste = 'all';
+  const apply = () => {
+    const q = document.getElementById('qBox').value.trim().toLowerCase();
+    let shown = 0;
+    [...grid.children].forEach(tile => {
+      const okTaste = taste === 'all'
+        || (taste === 'season' ? tile.dataset.season === '1' : tile.dataset.types.split(' ').includes(taste));
+      const okText = !q || tile.dataset.hay.includes(q);
+      const on = okTaste && okText;
+      tile.style.display = on ? '' : 'none';
+      if (on) shown++;
+    });
+    noHit.style.display = shown ? 'none' : 'block';
+  };
+  document.getElementById('tasteBar').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    [...e.currentTarget.children].forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    taste = b.dataset.t; apply();
+  });
+  document.getElementById('qBox').addEventListener('input', apply);
+
+  // ── Map of Oman: one pin per governorate, placed on its own sites ────
+  const pinned = regions.map(r => {
+    const pts = r.landmarks.filter(l => Number.isFinite(l.lat) && Number.isFinite(l.lng));
+    if (!pts.length) return null;
+    return {
+      r,
+      lat: pts.reduce((a, l) => a + l.lat, 0) / pts.length,
+      lng: pts.reduce((a, l) => a + l.lng, 0) / pts.length,
+    };
+  }).filter(Boolean);
+
+  const drawMap = (tries = 0) => {
+    if (!(window.gdMap && window.gdMap.loadLeaflet)) {
+      if (tries < 50) return setTimeout(() => drawMap(tries + 1), 100);
+      document.getElementById('omanMap').innerHTML =
+        `<div class="text-center text-muted py-5">${T('تعذّر تحميل الخريطة.','Map could not load.')}</div>`;
+      return;
+    }
+    window.gdMap.loadLeaflet().then(L => {
+      const map = L.map('omanMap', { scrollWheelZoom: false }).setView([21.0, 57.0], 6);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19,
+      }).addTo(map);
+      const bounds = L.latLngBounds([]);
+      pinned.forEach(({ r, lat, lng }) => {
+        const label = gdEsc(isAr ? r.name_ar : r.name_en);
+        const icon = L.divIcon({
+          className: 'gov-pin',
+          html: `<span class="dot">${label} <b>${r._count}</b></span>`,
+          iconSize: [0, 0], iconAnchor: [0, 0],
+        });
+        L.marker([lat, lng], { icon })
+          .addTo(map)
+          .on('click', () => { location.href = `/region.html?id=${encodeURIComponent(r.id)}`; });
+        bounds.extend([lat, lng]);
+      });
+      if (bounds.isValid()) map.fitBounds(bounds.pad(0.22));
+      setTimeout(() => map.invalidateSize(), 200);
+    }).catch(() => {
+      document.getElementById('omanMap').innerHTML =
+        `<div class="text-center text-muted py-5">${T('تعذّر تحميل الخريطة.','Map could not load.')}</div>`;
+    });
+  };
+  drawMap();
 })();
 </script>
 </body>
