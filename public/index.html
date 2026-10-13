@@ -420,53 +420,111 @@
 </section>
 
 <!-- EXPLORE BY REGION -->
-<section class="py-5" style="background:#fff">
+<section class="py-5 home-regions">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-end mb-3">
+    <div class="hr-head">
       <div>
         <h2 class="section-title mb-1" id="regionsHeading">Explore Oman by Region</h2>
-        <p class="text-muted mb-0" id="regionsSub"><bdi>11</bdi> governorates, each with its own character</p>
+        <p class="text-muted mb-0" id="regionsSub" dir="auto">11 governorates, each with its own character</p>
       </div>
-      <a href="/regions.html" class="btn-outline-teal btn btn-sm">View All →</a>
+      <a href="/regions.html" class="hr-all" id="regionsAll">View all regions →</a>
     </div>
-    <div id="homeRegionGrid" class="row g-3"></div>
+    <div id="homeRegionGrid" class="hr-grid"></div>
   </div>
 </section>
 <style>
-  .home-region-card{position:relative;display:block;border-radius:14px;overflow:hidden;height:200px;text-decoration:none;color:#fff;transition:transform .25s,box-shadow .25s;background:linear-gradient(135deg,#0f1c3e,#0f7b6c)}
-  .home-region-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(15,28,62,.18);color:#fff}
-  .home-region-card img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
-  .home-region-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.75));z-index:1}
-  .home-region-card .lbl{position:absolute;bottom:14px;inset-inline-start:16px;z-index:2;font-weight:800;font-size:1.15rem;text-shadow:0 2px 8px rgba(0,0,0,.4)}
-  .home-region-card .badge-sites{position:absolute;top:12px;inset-inline-end:12px;background:rgba(255,255,255,.95);color:#0f1c3e;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;z-index:2}
-  .home-region-card.no-img{background:repeating-linear-gradient(135deg,#0f1c3e,#0f1c3e 14px,#13234a 14px,#13234a 28px)}
-  .home-region-card .ph-mark{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);z-index:1;font-size:2.4rem;opacity:.35}
+  .home-regions{background:#fff}
+  .hr-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  .hr-all{display:inline-flex;align-items:center;gap:8px;border:1px solid #d9e3e1;color:#0f7b6c;font-weight:700;
+          font-size:.92rem;padding:9px 18px;border-radius:999px;text-decoration:none;transition:.2s;white-space:nowrap}
+  .hr-all:hover{background:#0f7b6c;border-color:#0f7b6c;color:#fff;transform:translateY(-2px)}
+  /* Same editorial mosaic as /regions.html, trimmed to six tiles. */
+  .hr-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;grid-auto-flow:dense}
+  .hr-tile{position:relative;grid-column:span 2;aspect-ratio:4/3;border-radius:18px;overflow:hidden;display:block;
+           text-decoration:none;color:#fff;background:#0f1c3e;transition:transform .3s,box-shadow .3s}
+  .hr-tile.wide{grid-column:span 4;aspect-ratio:16/9}
+  .hr-tile:hover{transform:translateY(-5px);box-shadow:0 18px 40px rgba(15,28,62,.2);color:#fff}
+  .hr-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s ease}
+  .hr-tile:hover img{transform:scale(1.07)}
+  .hr-tile .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,18,40,.04) 35%,rgba(10,18,40,.85))}
+  .hr-tile .pin{position:absolute;top:13px;inset-inline-end:13px;background:rgba(255,255,255,.95);color:#0f1c3e;
+          font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:999px;z-index:2}
+  .hr-tile .when{position:absolute;top:13px;inset-inline-start:13px;background:rgba(201,162,39,.95);color:#2a2100;
+          font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;z-index:2;display:none}
+  .hr-tile.in-season .when{display:block}
+  .hr-tile .txt{position:absolute;inset-inline:0;bottom:0;padding:18px;z-index:2}
+  .hr-tile h3{font-size:clamp(1.1rem,1.9vw,1.5rem);font-weight:800;margin:0;text-shadow:0 2px 10px rgba(0,0,0,.45)}
+  .hr-tile .sub{font-size:.86rem;opacity:.93;margin:3px 0 0}
+  .hr-tile .peek{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;max-height:0;opacity:0;overflow:hidden;
+          transition:max-height .35s ease,opacity .25s ease}
+  .hr-tile:hover .peek{max-height:60px;opacity:1}
+  .hr-tile .peek span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);
+          font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px}
+  .hr-tile.no-img{background:repeating-linear-gradient(135deg,#0f1c3e,#0f1c3e 14px,#13234a 14px,#13234a 28px)}
+  .hr-tile .ph-mark{position:absolute;top:46%;inset-inline-start:50%;transform:translate(-50%,-50%);z-index:1;font-size:2.4rem;opacity:.4}
+  @media(hover:none){ .hr-tile .peek{max-height:60px;opacity:1} }
+  @media(max-width:900px){ .hr-grid{grid-template-columns:repeat(2,1fr)} .hr-tile,.hr-tile.wide{grid-column:span 1;aspect-ratio:4/3} }
+  @media(max-width:560px){ .hr-grid{grid-template-columns:1fr} }
 </style>
 <script>
-// Guaranteed-working fallback (Muscat mosque). If any region image 404s,
-// onerror swaps to this so a real photo always renders — never a gray box.
-window.GD_REGION_FALLBACK = 'https://commons.wikimedia.org/wiki/Special:FilePath/Sultan%20Qaboos%20Grand%20Mosque%20(1).jpg?width=1600';
 (async () => {
   try {
-    const d = await fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json())).catch(()=>fetch('/data/regions.json').then(r=>r.json()));
+    const d = await fetch('/api/content/regions')
+      .then(r=>r.ok?r.json():null)
+      .then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json()))
+      .catch(()=>fetch('/data/regions.json').then(r=>r.json()));
     const isAr = (document.documentElement.lang||'').toLowerCase().startsWith('ar');
-    // Localize the section heading/subtitle correctly (avoids the RTL
-    // number-reordering glitch where "11" jumped to the end).
+    const T = (ar,en) => isAr ? ar : en;
     if (isAr) {
-      const h = document.getElementById('regionsHeading');
-      const s = document.getElementById('regionsSub');
-      if (h) h.textContent = 'استكشف عُمان حسب المنطقة';
-      if (s) s.textContent = '11 محافظة، لكلٍّ طابعها الخاص';
+      document.getElementById('regionsHeading').textContent = 'استكشف عُمان حسب المحافظة';
+      document.getElementById('regionsSub').textContent = '11 محافظة، لكلٍّ طابعها الخاص';
+      document.getElementById('regionsAll').textContent = 'كل المحافظات →';
     }
-    const pick = d.regions.slice(0,6);
-    document.getElementById('homeRegionGrid').innerHTML = pick.map(r => `
-      <div class="col-md-4 col-sm-6">
-        <a class="home-region-card${r.hero?'':' no-img'}" href="/region.html?id=${r.id}">
-          ${r.hero ? `<img class="bg" src="${r.hero}" alt="${isAr?r.name_ar:r.name_en}" loading="lazy" decoding="async">` : `<span class="ph-mark" aria-hidden="true">📍</span>`}
-          <span class="badge-sites">${r.sites} ${isAr?'موقع':'sites'}</span>
-          <span class="lbl">${isAr?r.name_ar:r.name_en}</span>
-        </a>
-      </div>`).join('');
+
+    // Which governorates are in their season today — the same reading of
+    // best_time_en that /regions.html uses.
+    const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+    const seasonMonths = text => {
+      const found = [];
+      String(text||'').toLowerCase().replace(/[a-z]+/g, w => { const i = MONTHS.indexOf(w); if (i>=0) found.push(i); return w; });
+      if (!found.length) return null;
+      if (found.length === 1) return [found[0]];
+      const [a,b] = [found[0], found[found.length-1]];
+      const out = []; for (let m=a;;m=(m+1)%12) { out.push(m); if (m===b) break; }
+      return out;
+    };
+    const thisMonth = new Date().getMonth();
+
+    const regions = (d.regions||[]).map(r => {
+      const landmarks = Array.isArray(r.landmarks) ? r.landmarks : [];
+      const photos = landmarks.filter(l => l.image);
+      const season = seasonMonths(r.best_time_en);
+      return { r, landmarks, photos, count: landmarks.length || r.sites || 0,
+               inSeason: season ? season.includes(thisMonth) : false };
+    });
+    // Lead with the governorates we can actually show.
+    regions.sort((a,b) => b.photos.length - a.photos.length || b.count - a.count);
+
+    document.getElementById('homeRegionGrid').innerHTML = regions.slice(0,6).map((x,i) => {
+      const r = x.r;
+      const name = gdEsc(isAr ? r.name_ar : r.name_en);
+      const tagline = gdEsc(isAr ? (r.tagline_ar||'') : (r.tagline_en||''));
+      const cover = x.photos[0]?.image || r.hero || '';
+      const peek = x.photos.slice(0,3)
+        .map(l => `<span>${gdEsc(isAr ? (l.name_ar||l.name_en) : (l.name_en||l.name_ar))}</span>`).join('');
+      return `<a class="hr-tile ${i===0?'wide':''} ${x.inSeason?'in-season':''} ${cover?'':'no-img'}" href="/region.html?id=${encodeURIComponent(r.id)}">
+        ${cover ? `<img src="${gdSafeUrl(cover)}" alt="${name}" loading="lazy" decoding="async">`
+                : `<span class="ph-mark" aria-hidden="true">📍</span>`}
+        <div class="veil"></div>
+        <div class="when">☀️ ${T('موسمها الآن','In season')}</div>
+        <div class="pin"><bdi>📍 ${x.count} ${T('موقع','sites')}</bdi></div>
+        <div class="txt">
+          <h3>${name}</h3>
+          <p class="sub">${tagline}</p>
+          <div class="peek">${peek}</div>
+        </div>
+      </a>`;
+    }).join('');
   } catch (e) { console.warn('regions widget', e); }
 })();
 </script>
