@@ -371,7 +371,17 @@
     fitToContent(L, map, [meetMarker, routeLine]);
 
     setTimeout(() => map.invalidateSize(), 200);
-    return { destroy() { map.remove(); host.innerHTML = ''; } };
+    return {
+      // Centre on one landmark and open its popup — used when a visitor picks
+      // a card from the list beneath the map.
+      focus(index) {
+        const marker = placed[index];
+        if (!marker) return;
+        map.setView(marker.getLatLng(), Math.max(map.getZoom(), 11), { animate: true });
+        marker.openPopup();
+      },
+      destroy() { map.remove(); host.innerHTML = ''; },
+    };
   }
 
   // Tiny stylesheet for the waypoint number tooltip — added once.
@@ -412,7 +422,8 @@
 
     const bounds = L.latLngBounds([]);
     const typesShown = new Set();
-    (items || []).forEach((p) => {
+    const placed = [];   // marker per item index, so a card can open its popup
+    (items || []).forEach((p, idx) => {
       if (!p || !Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
       const type  = p.type || 'default';
       const color = TYPE_COLORS[type] || TYPE_COLORS.default;
@@ -420,7 +431,7 @@
       const icon  = makeIcon(L, color, glyph);
       const name  = (isAr && p.name_ar) ? p.name_ar : (p.name_en || p.name_ar || '');
       const gmaps = `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-      L.marker([p.lat, p.lng], { icon })
+      placed[idx] = L.marker([p.lat, p.lng], { icon })
         .addTo(map)
         .bindPopup(`<div style="font-weight:700;margin-bottom:4px">${name}</div>
                     <a href="${gmaps}" target="_blank" rel="noopener" style="font-size:.85rem">${isAr?'افتح في خرائط Google':'Open in Google Maps'} ↗</a>`);

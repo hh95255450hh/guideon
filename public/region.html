@@ -10,86 +10,153 @@
 <link rel="icon" href="/logo.png">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <style>
-  body{font-family:'Inter','Tajawal',sans-serif;background:#fff;color:#0f1c3e}
-  .r-hero{position:relative;height:60vh;min-height:380px;background:linear-gradient(135deg,#0f1c3e,#0f7b6c);background-size:cover;background-position:center;color:#fff;display:flex;align-items:flex-end}
-  .r-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1) 0%,rgba(0,0,0,.7) 100%)}
-  .r-hero .container{position:relative;z-index:2;padding-bottom:50px}
-  .r-hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;margin:0;text-shadow:0 2px 12px rgba(0,0,0,.4)}
-  .r-hero .tag{font-size:1.2rem;opacity:.95;margin-top:8px;font-weight:500}
-  .r-hero .hero-credit{position:absolute;bottom:8px;inset-inline-end:14px;z-index:3;font-size:11px;opacity:.75;text-shadow:0 1px 3px rgba(0,0,0,.6)}
-  .r-quick{background:#0f7b6c;color:#fff;padding:14px 0;font-size:.95rem}
-  .r-quick .item{display:inline-flex;gap:8px;align-items:center;margin-inline-end:24px}
-  .r-quick svg{width:18px;height:18px;flex-shrink:0}
-  .r-section{padding:50px 0;border-bottom:1px solid #eef0f4}
-  .r-section h2{font-size:1.6rem;font-weight:800;margin-bottom:20px;color:#0f1c3e}
-  .hl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-  .hl-card{background:linear-gradient(135deg,#fff,#f7f9fb);border:1px solid #eef0f4;border-radius:12px;padding:18px;display:flex;gap:12px;align-items:flex-start;transition:.2s}
-  .hl-card:hover{border-color:#0f7b6c;transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,123,108,.1)}
-  .hl-card .dot{width:10px;height:10px;border-radius:50%;background:#0f7b6c;margin-top:6px;flex-shrink:0}
-  .hl-card span{font-weight:600;color:#0f1c3e}
-  .intro p{font-size:1.05rem;line-height:1.85;color:#374151}
-  /* Photo cards, one per landmark. */
-  .lm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
-  .lm-card{background:#fff;border:1px solid #eef0f4;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
-  .lm-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(15,28,62,.1);border-color:#0f7b6c}
-  .lm-card .shot{position:relative;height:170px;background:linear-gradient(135deg,#0f1c3e,#15325c);display:flex;align-items:center;justify-content:center}
-  .lm-card .shot img{width:100%;height:100%;object-fit:cover;display:block}
-  .lm-card .shot .glyph{font-size:2.6rem;opacity:.5}
-  .lm-card .kind{position:absolute;top:10px;inset-inline-start:10px;background:rgba(255,255,255,.94);color:#0f1c3e;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
-  .lm-card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
-  .lm-card h3{font-size:1.02rem;font-weight:800;margin:0;color:#0f1c3e}
-  .lm-card .alt{font-size:.82rem;color:#6b7280;margin:0}
-  .lm-card .go{margin-top:auto;font-size:.85rem;font-weight:700;color:#0f7b6c;text-decoration:none}
-  .lm-card .go:hover{text-decoration:underline}
-  /* Credit line: CC photos may be reused commercially only with attribution. */
-  .lm-card .credit{font-size:.68rem;color:#9ca3af;margin:0}
-  .lm-card .credit a{color:#9ca3af}
-  .r-cta{background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:50px 0;text-align:center;border-radius:20px;margin:50px 0}
-  .r-cta h3{font-size:1.6rem;font-weight:800;margin-bottom:8px}
-  .r-cta .btn{background:#fff;color:#0f1c3e;padding:12px 28px;border-radius:999px;font-weight:700;text-decoration:none;display:inline-block;margin-top:12px;transition:.2s}
-  .r-cta .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+  :root{ --ink:#0f1c3e; --teal:#0f7b6c; --sand:#c9a227; --line:#e8ecf1; --muted:#6b7280 }
+  body{font-family:'Inter','Tajawal',sans-serif;background:#fff;color:var(--ink)}
   html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
+
+  /* ── Hero ─────────────────────────────────────────────────────────── */
+  .r-hero{position:relative;height:66vh;min-height:420px;background:linear-gradient(135deg,#0f1c3e,#0f7b6c);
+          background-size:cover;background-position:center;color:#fff;display:flex;align-items:flex-end;overflow:hidden}
+  .r-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,28,62,.15) 0%,rgba(15,28,62,.25) 45%,rgba(10,18,40,.88) 100%)}
+  .r-hero .container{position:relative;z-index:2;padding-bottom:44px}
+  .r-hero .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;letter-spacing:.14em;
+          text-transform:uppercase;background:rgba(255,255,255,.14);backdrop-filter:blur(6px);
+          border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:999px;margin-bottom:14px}
+  .r-hero h1{font-size:clamp(2.4rem,6.5vw,4.4rem);font-weight:800;margin:0;line-height:1.08;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+  .r-hero .tag{font-size:clamp(1rem,2.2vw,1.25rem);opacity:.95;margin:10px 0 0;font-weight:500;max-width:620px}
+  .r-hero .facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+  .r-hero .fact{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.13);backdrop-filter:blur(6px);
+          border:1px solid rgba(255,255,255,.22);padding:8px 14px;border-radius:999px;font-size:.9rem;font-weight:600}
+  .r-hero .fact svg{width:16px;height:16px;flex-shrink:0;opacity:.9}
+  .r-hero .hero-credit{position:absolute;bottom:8px;inset-inline-end:14px;z-index:3;font-size:11px;opacity:.7;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+
+  /* ── Sections ─────────────────────────────────────────────────────── */
+  .r-section{padding:56px 0}
+  .r-section + .r-section{border-top:1px solid var(--line)}
+  .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  .sec-head h2{font-size:clamp(1.4rem,3vw,1.9rem);font-weight:800;margin:0;color:var(--ink)}
+  .sec-head h2::after{content:"";display:block;width:46px;height:3px;background:var(--sand);border-radius:3px;margin-top:10px}
+  .sec-head p{margin:0;color:var(--muted);font-size:.95rem}
+  .intro p{font-size:1.08rem;line-height:1.9;color:#374151;max-width:72ch}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .chip{background:#f3f7f6;border:1px solid #dcebe8;color:#0b5f54;font-weight:600;font-size:.86rem;padding:6px 13px;border-radius:999px}
+
+  /* ── Photo mosaic ─────────────────────────────────────────────────── */
+  .mosaic{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:150px;gap:10px}
+  .mosaic figure{position:relative;margin:0;border-radius:14px;overflow:hidden;cursor:zoom-in;background:#0f1c3e}
+  .mosaic figure:first-child{grid-column:span 2;grid-row:span 2}
+  .mosaic img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+  .mosaic figure:hover img{transform:scale(1.06)}
+  .mosaic figcaption{position:absolute;inset-inline:0;bottom:0;padding:22px 12px 9px;color:#fff;font-weight:700;font-size:.9rem;
+          background:linear-gradient(transparent,rgba(10,18,40,.82))}
+  @media(max-width:700px){ .mosaic{grid-template-columns:repeat(2,1fr);grid-auto-rows:120px} }
+
+  /* ── Filter bar ───────────────────────────────────────────────────── */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+  .filters button{background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:600;font-size:.88rem;
+          padding:7px 15px;border-radius:999px;cursor:pointer;transition:.18s;display:inline-flex;align-items:center;gap:7px}
+  .filters button:hover{border-color:var(--teal);color:var(--teal)}
+  .filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .filters button .n{font-size:.78rem;opacity:.65}
+
+  /* ── Landmark cards ───────────────────────────────────────────────── */
+  .lm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:20px}
+  .lm-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;
+          transition:transform .22s,box-shadow .22s,border-color .22s}
+  .lm-card:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(15,28,62,.12);border-color:#cfe3df}
+  .lm-card .shot{position:relative;aspect-ratio:4/3;overflow:hidden;background:#0f1c3e}
+  .lm-card .shot img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease;cursor:zoom-in}
+  .lm-card:hover .shot img{transform:scale(1.05)}
+  /* A site with no photo yet gets a designed tile in its own colour, not a gap. */
+  .lm-card .tile{width:100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative}
+  .lm-card .tile span{font-size:2.9rem;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+  .lm-card .tile::after{content:"";position:absolute;inset:0;
+          background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1px);background-size:14px 14px;opacity:.5}
+  .lm-card .kind{position:absolute;top:10px;inset-inline-start:10px;background:rgba(255,255,255,.95);color:var(--ink);
+          font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  /* Attribution rides on the photo: always visible, never competing with the name. */
+  .lm-card .credit{position:absolute;inset-inline:0;bottom:0;z-index:2;padding:14px 10px 5px;color:rgba(255,255,255,.88);
+          font-size:10.5px;line-height:1.35;background:linear-gradient(transparent,rgba(10,18,40,.8));
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lm-card .credit a{color:inherit;text-decoration:none}
+  .lm-card .credit a:hover{text-decoration:underline}
+  .lm-card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .lm-card h3{font-size:1.05rem;font-weight:800;margin:0;color:var(--ink);line-height:1.35}
+  .lm-card .alt{font-size:.82rem;color:var(--muted);margin:0}
+  .lm-card .acts{margin-top:auto;padding-top:12px;display:flex;gap:14px;align-items:center}
+  .lm-card .acts a,.lm-card .acts button{font-size:.84rem;font-weight:700;color:var(--teal);text-decoration:none;
+          background:none;border:0;padding:0;cursor:pointer}
+  .lm-card .acts a:hover,.lm-card .acts button:hover{text-decoration:underline}
+  .empty-note{color:var(--muted);font-size:.95rem;padding:18px 0}
+
+  /* ── Lightbox ─────────────────────────────────────────────────────── */
+  .lb{position:fixed;inset:0;background:rgba(8,14,30,.94);z-index:3000;display:none;align-items:center;justify-content:center;padding:24px}
+  .lb.open{display:flex}
+  .lb img{max-width:min(1100px,94vw);max-height:82vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .lb .cap{position:absolute;bottom:26px;inset-inline:0;text-align:center;color:#fff;font-size:.95rem;padding:0 24px}
+  .lb .cap small{display:block;opacity:.7;font-size:.8rem;margin-top:4px}
+  .lb .x{position:absolute;top:18px;inset-inline-end:22px;background:rgba(255,255,255,.14);border:0;color:#fff;
+          width:42px;height:42px;border-radius:50%;font-size:1.3rem;cursor:pointer}
+  .lb .nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.14);border:0;color:#fff;
+          width:46px;height:46px;border-radius:50%;font-size:1.4rem;cursor:pointer}
+  .lb .prev{inset-inline-start:18px} .lb .next{inset-inline-end:18px}
+
+  #rLandmarksMap{scroll-margin-top:80px}
+  .r-cta{background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:54px 24px;text-align:center;border-radius:22px;margin:56px 0}
+  .r-cta h3{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:800;margin-bottom:8px}
+  .r-cta .btn{background:#fff;color:var(--ink);padding:13px 30px;border-radius:999px;font-weight:700;text-decoration:none;display:inline-block;margin-top:14px;transition:.2s}
+  .r-cta .btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.25)}
 </style>
 <script src="/js/image-compress.js?v=3"></script>
-<script src="/js/gd-map.js?v=3" defer></script>
+<script src="/js/gd-map.js?v=4" defer></script>
 </head>
 <body>
 <div id="navMount"></div>
 
 <section class="r-hero" id="rHero">
   <div class="container">
+    <span class="eyebrow" id="rEyebrow">Oman</span>
     <h1 id="rName">…</h1>
     <p class="tag" id="rTag"></p>
+    <div class="facts">
+      <span class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/></svg><span id="rSites">…</span></span>
+      <span class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span id="rTime">…</span></span>
+      <span class="fact" id="rPhotoFact" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h4l2-2h6l2 2h4v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="rPhotoCount"></span></span>
+    </div>
   </div>
 </section>
 
-<div class="r-quick">
-  <div class="container">
-    <span class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/></svg><span id="rSites">…</span></span>
-    <span class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span id="rTime">…</span></span>
-  </div>
-</div>
-
 <main class="container">
   <section class="r-section intro">
-    <h2 id="hAbout">About</h2>
+    <div class="sec-head"><h2 id="hAbout">About</h2></div>
     <p id="rIntro"></p>
+    <div class="chips" id="rHighlights"></div>
   </section>
 
-  <section class="r-section">
-    <h2 id="hHighlights">Top Highlights</h2>
-    <div class="hl-grid" id="rHighlights"></div>
-  </section>
-
-  <section class="r-section" id="rMapSection" style="display:none">
-    <h2 id="hMap">Map of Landmarks</h2>
-    <p id="rMapSub" class="text-muted" style="margin-bottom:14px"></p>
-    <div id="rLandmarksMap"></div>
+  <section class="r-section" id="rGallerySection" style="display:none">
+    <div class="sec-head">
+      <h2 id="hGallery">In pictures</h2>
+      <p id="rGallerySub"></p>
+    </div>
+    <div class="mosaic" id="rMosaic"></div>
   </section>
 
   <section class="r-section" id="rCardsSection" style="display:none">
-    <h2 id="hCards">Sites to visit</h2>
+    <div class="sec-head">
+      <h2 id="hCards">Sites to visit</h2>
+      <p id="rCardsSub"></p>
+    </div>
+    <div class="filters" id="rFilters"></div>
     <div class="lm-grid" id="rLandmarkCards"></div>
+    <p class="empty-note" id="rNoMatch" style="display:none"></p>
+  </section>
+
+  <section class="r-section" id="rMapSection" style="display:none">
+    <div class="sec-head">
+      <h2 id="hMap">Map of Landmarks</h2>
+      <p id="rMapSub"></p>
+    </div>
+    <div id="rLandmarksMap"></div>
   </section>
 
   <section class="r-cta">
@@ -99,6 +166,14 @@
   </section>
 </main>
 
+<div class="lb" id="lightbox" role="dialog" aria-modal="true">
+  <button class="x" id="lbClose" aria-label="Close">✕</button>
+  <button class="nav prev" id="lbPrev" aria-label="Previous">‹</button>
+  <img id="lbImg" alt="">
+  <button class="nav next" id="lbNext" aria-label="Next">›</button>
+  <div class="cap" id="lbCap"></div>
+</div>
+
 <div id="footerMount"></div>
 
 <script src="/js/common-widgets.js?v=29"></script>
@@ -107,35 +182,45 @@
   const lang = (localStorage.getItem('gd_lang') || 'en').toLowerCase();
   const isAr = lang.startsWith('ar');
   if (isAr) { document.documentElement.lang='ar'; document.documentElement.dir='rtl'; }
+  const T = (ar, en) => isAr ? ar : en;
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
+
   // Read BOTH the API content (which may be an older admin-saved copy
   // missing new fields like `landmarks`) and the bundled defaults, then
   // merge per-region so new fields surface even after an admin save.
   const [apiData, staticData] = await Promise.all([
     fetch('/api/content/regions').then(r=>r.ok?r.json():null).then(j=>(j&&j.success&&j.data)?j.data:null).catch(()=>null),
-    fetch('/data/regions.json?v=2').then(r=>r.json()).catch(()=>({regions:[]})),
+    fetch('/data/regions.json?v=3').then(r=>r.json()).catch(()=>({regions:[]})),
   ]);
   const apiById = {}; (apiData?.regions || []).forEach(x => apiById[x.id] = x);
   const stcById = {}; (staticData?.regions || []).forEach(x => stcById[x.id] = x);
-  // Merge: static is the base, API overrides whatever the admin edited.
   const allIds = [...new Set([...(staticData?.regions||[]).map(x=>x.id), ...(apiData?.regions||[]).map(x=>x.id)])];
-  const merged = allIds.map(id => ({ ...(stcById[id] || {}), ...(apiById[id] || {}) }));
-  const data = { regions: merged };
-  const r = data.regions.find(x => x.id === id) || data.regions[0];
-  // If the admin-saved version was missing landmarks, fall back to the static one.
-  if ((!r.landmarks || !r.landmarks.length) && stcById[r.id]?.landmarks) {
-    r.landmarks = stcById[r.id].landmarks;
-  }
+  const merged = allIds.map(rid => ({ ...(stcById[rid] || {}), ...(apiById[rid] || {}) }));
+  const r = merged.find(x => x.id === id) || merged[0];
+  if ((!r.landmarks || !r.landmarks.length) && stcById[r.id]?.landmarks) r.landmarks = stcById[r.id].landmarks;
+
+  const TYPE = {
+    fort:      { ar:'قلاع وحصون', en:'Forts',     one:{ar:'قلعة',en:'Fort'},     glyph:'🏰', c1:'#7c4a1e', c2:'#b4793a' },
+    heritage:  { ar:'تراث',       en:'Heritage',  one:{ar:'تراث',en:'Heritage'}, glyph:'🗿', c1:'#6b4f2a', c2:'#9b7b4a' },
+    culture:   { ar:'ثقافة',      en:'Culture',   one:{ar:'ثقافي',en:'Culture'}, glyph:'🎭', c1:'#5b3a63', c2:'#8a5f93' },
+    museum:    { ar:'متاحف',      en:'Museums',   one:{ar:'متحف',en:'Museum'},   glyph:'🏛️', c1:'#2f4858', c2:'#4e7183' },
+    religious: { ar:'مساجد',      en:'Religious', one:{ar:'ديني',en:'Religious'},glyph:'🕌', c1:'#1f5f55', c2:'#36897a' },
+    nature:    { ar:'طبيعة',      en:'Nature',    one:{ar:'طبيعة',en:'Nature'},  glyph:'🌿', c1:'#1d5e3a', c2:'#2f8c57' },
+    mountain:  { ar:'جبال',       en:'Mountains', one:{ar:'جبل',en:'Mountain'},  glyph:'⛰️', c1:'#4a4a52', c2:'#73737f' },
+    beach:     { ar:'شواطئ',      en:'Beaches',   one:{ar:'شاطئ',en:'Beach'},    glyph:'🏖️', c1:'#16607a', c2:'#2a93b0' },
+    desert:    { ar:'صحراء',      en:'Desert',    one:{ar:'صحراء',en:'Desert'},  glyph:'🏜️', c1:'#8a5a1c', c2:'#c08b3e' },
+    city:      { ar:'مدن',        en:'Cities',    one:{ar:'مدينة',en:'City'},    glyph:'🏙️', c1:'#27405e', c2:'#456288' },
+  };
+  const meta = t => TYPE[t] || { ar:'مواقع', en:'Places', one:{ar:'موقع',en:'Place'}, glyph:'📍', c1:'#0f1c3e', c2:'#2a3f6b' };
+
   document.title = (isAr?r.name_ar:r.name_en) + ' — Guideon';
-  // Only set a background if a real image exists; otherwise keep the
-  // branded gradient placeholder (admin can add a photo from the panel).
+
   const heroEl = document.getElementById('rHero');
   if (r.hero) {
     const probe = new Image();
     probe.onload = () => { heroEl.style.backgroundImage = `url('${r.hero}')`; };
     probe.src = r.hero;
-    // Where the photo comes from someone else's publication, say so on the page.
     if (r.hero_credit) {
       const c = document.createElement('span');
       c.className = 'hero-credit';
@@ -143,87 +228,167 @@
       heroEl.appendChild(c);
     }
   }
+
+  const landmarks = Array.isArray(r.landmarks) ? r.landmarks : [];
+  const shot = landmarks.filter(l => l.image);
+
+  document.getElementById('rEyebrow').textContent = T('سلطنة عُمان', 'Sultanate of Oman');
   document.getElementById('rName').textContent = isAr?r.name_ar:r.name_en;
   document.getElementById('rTag').textContent = isAr?r.tagline_ar:r.tagline_en;
-  document.getElementById('rSites').textContent = `${r.sites} ${isAr?'موقع سياحي':'sites of interest'}`;
-  document.getElementById('rTime').textContent = (isAr?'أفضل وقت: ':'Best time: ') + (isAr?r.best_time_ar:r.best_time_en);
+  document.getElementById('rSites').textContent = `${landmarks.length || r.sites} ${T('موقع سياحي','sites of interest')}`;
+  document.getElementById('rTime').textContent = T('أفضل وقت: ','Best time: ') + (isAr?r.best_time_ar:r.best_time_en);
+  if (shot.length) {
+    document.getElementById('rPhotoFact').style.display = '';
+    document.getElementById('rPhotoCount').textContent = `${shot.length} ${T('صورة','photos')}`;
+  }
   document.getElementById('rIntro').textContent = isAr?r.intro_ar:r.intro_en;
-  document.getElementById('hAbout').textContent = isAr?`عن ${r.name_ar}`:`About ${r.name_en}`;
-  document.getElementById('hHighlights').textContent = isAr?'أبرز المعالم':'Top Highlights';
-  const hls = isAr?r.highlights_ar:r.highlights_en;
-  document.getElementById('rHighlights').innerHTML = hls.map(h => `<div class="hl-card"><div class="dot"></div><span>${h}</span></div>`).join('');
+  document.getElementById('hAbout').textContent = T(`عن ${r.name_ar}`, `About ${r.name_en}`);
+  const hls = (isAr?r.highlights_ar:r.highlights_en) || [];
+  document.getElementById('rHighlights').innerHTML = hls.map(h => `<span class="chip">${gdEsc(h)}</span>`).join('');
 
-  // Interactive landmarks map — appears only if the region has coordinates.
-  if (Array.isArray(r.landmarks) && r.landmarks.length) {
+  // ── Lightbox, shared by the mosaic and the cards ────────────────────
+  const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lbImg'), lbCap = document.getElementById('lbCap');
+  let album = [], at = 0;
+  const show = i => {
+    at = (i + album.length) % album.length;
+    const item = album[at];
+    lbImg.src = item.image; lbImg.alt = item.name;
+    lbCap.innerHTML = `<b>${gdEsc(item.name)}</b>${item.credit ? `<small>📷 ${gdEsc(item.credit)}${item.licence ? ' · ' + gdEsc(item.licence) : ''}</small>` : ''}`;
+    lb.classList.add('open');
+  };
+  const close = () => { lb.classList.remove('open'); lbImg.src = ''; };
+  document.getElementById('lbClose').onclick = close;
+  document.getElementById('lbPrev').onclick = () => show(at - 1);
+  document.getElementById('lbNext').onclick = () => show(at + 1);
+  lb.addEventListener('click', e => { if (e.target === lb) close(); });
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowRight') show(at + (isAr ? -1 : 1));
+    if (e.key === 'ArrowLeft') show(at + (isAr ? 1 : -1));
+  });
+
+  if (shot.length) {
+    album = shot.map(l => ({ image: l.image, name: isAr ? (l.name_ar||l.name_en) : (l.name_en||l.name_ar), credit: l.credit, licence: l.licence }));
+
+    // ── Mosaic: the region at a glance, before any list ───────────────
+    if (shot.length >= 3) {
+      document.getElementById('rGallerySection').style.display = '';
+      document.getElementById('hGallery').textContent = T(`${r.name_ar} في صور`, `${r.name_en} in pictures`);
+      document.getElementById('rGallerySub').textContent = T('انقر على أيّ صورة لعرضها كاملة', 'Tap any photo to view it full size');
+      document.getElementById('rMosaic').innerHTML = shot.slice(0, 5).map((l, i) => `
+        <figure data-i="${i}">
+          <img src="${gdSafeUrl(l.image)}" alt="${gdEsc(isAr ? l.name_ar : l.name_en)}" loading="lazy" decoding="async">
+          <figcaption>${gdEsc(isAr ? (l.name_ar||l.name_en) : (l.name_en||l.name_ar))}</figcaption>
+        </figure>`).join('');
+      document.getElementById('rMosaic').addEventListener('click', e => {
+        const fig = e.target.closest('figure'); if (fig) show(+fig.dataset.i);
+      });
+    }
+  }
+
+  // ── Cards: photographed sites first, filterable by type ─────────────
+  if (landmarks.length) {
+    // Index into the map's marker list must survive sorting, so capture it first.
+    const items = landmarks.map((l, i) => ({ ...l, mapIndex: i }));
+    items.sort((a, b) => (b.image ? 1 : 0) - (a.image ? 1 : 0));
+    const albumIndex = new Map(shot.map((l, i) => [l, i]));
+
+    const counts = {};
+    items.forEach(l => { counts[l.type] = (counts[l.type] || 0) + 1; });
+    const types = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+
+    document.getElementById('rCardsSection').style.display = '';
+    document.getElementById('hCards').textContent = T('مواقع تستحق الزيارة', 'Sites to visit');
+    document.getElementById('rCardsSub').textContent =
+      T(`${items.length} موقعاً · ${shot.length} بصورة`, `${items.length} places · ${shot.length} with photos`);
+
+    document.getElementById('rFilters').innerHTML =
+      `<button data-t="all" aria-pressed="true">${T('الكل','All')} <span class="n">${items.length}</span></button>` +
+      types.map(t => `<button data-t="${t}" aria-pressed="false">${meta(t).glyph} ${isAr?meta(t).ar:meta(t).en} <span class="n">${counts[t]}</span></button>`).join('');
+
+    const grid = document.getElementById('rLandmarkCards');
+    const noMatch = document.getElementById('rNoMatch');
+    noMatch.textContent = T('لا مواقع من هذا النوع هنا.', 'No places of this type here.');
+
+    const cardHtml = (l) => {
+      const m = meta(l.type);
+      const name = gdEsc(isAr ? (l.name_ar || l.name_en) : (l.name_en || l.name_ar));
+      const alt  = gdEsc(isAr ? (l.name_en || '') : (l.name_ar || ''));
+      const gmaps = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
+      const ai = l.image ? albumIndex.get(landmarks[l.mapIndex]) : null;
+      const credit = l.image && l.credit
+        ? `<div class="credit">📷 <a href="${gdSafeUrl(l.photo_source || l.image)}" target="_blank" rel="noopener nofollow">${gdEsc(l.credit)}</a>${l.licence ? ' · ' + gdEsc(l.licence) : ''}</div>`
+        : '';
+      const shotHtml = l.image
+        ? `<img src="${gdSafeUrl(l.image)}" alt="${name}" loading="lazy" decoding="async" data-album="${ai}">${credit}`
+        : `<div class="tile" style="background:linear-gradient(135deg,${m.c1},${m.c2})"><span>${m.glyph}</span></div>`;
+      return `<article class="lm-card" data-type="${gdEsc(l.type || '')}">
+        <div class="shot">${shotHtml}<span class="kind">${isAr?m.one.ar:m.one.en}</span></div>
+        <div class="body">
+          <h3>${name}</h3>
+          ${alt ? `<p class="alt">${alt}</p>` : ''}
+          <div class="acts">
+            <button data-map="${l.mapIndex}">${T('على الخريطة','Show on map')}</button>
+            <a href="${gmaps}" target="_blank" rel="noopener">${T('خرائط Google ↗','Google Maps ↗')}</a>
+          </div>
+        </div>
+      </article>`;
+    };
+    grid.innerHTML = items.map(cardHtml).join('');
+
+    document.getElementById('rFilters').addEventListener('click', e => {
+      const btn = e.target.closest('button'); if (!btn) return;
+      [...e.currentTarget.children].forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+      const want = btn.dataset.t;
+      let visible = 0;
+      [...grid.children].forEach(card => {
+        const on = want === 'all' || card.dataset.type === want;
+        card.style.display = on ? '' : 'none';
+        if (on) visible++;
+      });
+      noMatch.style.display = visible ? 'none' : '';
+    });
+
+    grid.addEventListener('click', e => {
+      const img = e.target.closest('img[data-album]');
+      if (img && img.dataset.album !== 'null') { show(+img.dataset.album); return; }
+      const mapBtn = e.target.closest('button[data-map]');
+      if (mapBtn && window.__gdRegionMap) {
+        document.getElementById('rLandmarksMap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        window.__gdRegionMap.focus(+mapBtn.dataset.map);
+      }
+    });
+
+    // ── Map, after the cards: the list sells, the map locates ─────────
     const section = document.getElementById('rMapSection');
     section.style.display = '';
-    document.getElementById('hMap').textContent = isAr ? `📍 خريطة معالم ${r.name_ar}` : `📍 Landmarks of ${r.name_en}`;
-    document.getElementById('rMapSub').textContent = isAr
-      ? `${r.landmarks.length} معلماً سياحياً. انقر على أيّ علامة للتفاصيل.`
-      : `${r.landmarks.length} landmarks. Click any marker for details.`;
-    // gd-map.js is loaded with `defer`, so it may not be ready when this
-    // inline script runs. Poll briefly (up to 5s) until it appears, then
-    // render. This makes the map reliably show for every visitor.
+    document.getElementById('hMap').textContent = T(`خريطة معالم ${r.name_ar}`, `Map of ${r.name_en}`);
+    document.getElementById('rMapSub').textContent =
+      T(`${landmarks.length} معلماً سياحياً · انقر على أيّ علامة للتفاصيل`, `${landmarks.length} landmarks · click any marker for details`);
+    // gd-map.js is deferred, so it may not be ready when this inline script runs.
     const tryDraw = (tries = 0) => {
       if (window.gdMap && typeof window.gdMap.landmarks === 'function') {
-        window.gdMap.landmarks('rLandmarksMap', r.landmarks, { lang: isAr ? 'ar' : 'en' })
+        window.gdMap.landmarks('rLandmarksMap', landmarks, { lang: isAr ? 'ar' : 'en' })
+          .then(api => { window.__gdRegionMap = api; })
           .catch(e => console.warn('landmarks map', e));
       } else if (tries < 50) {
         setTimeout(() => tryDraw(tries + 1), 100);
       } else {
         document.getElementById('rLandmarksMap').innerHTML =
-          '<div class="text-center text-muted py-4">Map could not load. Please refresh the page.</div>';
+          `<div class="text-center text-muted py-4">${T('تعذّر تحميل الخريطة. حدّث الصفحة.','Map could not load. Please refresh the page.')}</div>`;
       }
     };
     tryDraw();
-
-    // A photo card per landmark, under the map. Photos are free-licence files
-    // from Wikimedia Commons, so each one credits its author — that is the
-    // condition the licence places on commercial reuse. A landmark with no
-    // photo keeps a typed gradient tile rather than being dropped.
-    const TYPE_LABEL = {
-      religious:{ar:'ديني',en:'Religious'}, culture:{ar:'ثقافي',en:'Culture'},
-      fort:{ar:'قلعة',en:'Fort'},           museum:{ar:'متحف',en:'Museum'},
-      nature:{ar:'طبيعة',en:'Nature'},      beach:{ar:'شاطئ',en:'Beach'},
-      mountain:{ar:'جبل',en:'Mountain'},    desert:{ar:'صحراء',en:'Desert'},
-      heritage:{ar:'تراث',en:'Heritage'},   city:{ar:'مدينة',en:'City'},
-    };
-    const TYPE_GLYPH = { religious:'🕌', culture:'🎭', fort:'🏰', museum:'🏛️', nature:'🌿',
-      beach:'🏖️', mountain:'⛰️', desert:'🏜️', heritage:'🗿', city:'🏙️' };
-
-    document.getElementById('rCardsSection').style.display = '';
-    document.getElementById('hCards').textContent = isAr ? 'مواقع تستحق الزيارة' : 'Sites to visit';
-    document.getElementById('rLandmarkCards').innerHTML = r.landmarks.map(l => {
-      const name = gdEsc(isAr ? (l.name_ar || l.name_en) : (l.name_en || l.name_ar));
-      const alt  = gdEsc(isAr ? (l.name_en || '') : (l.name_ar || ''));
-      const kind = TYPE_LABEL[l.type] ? (isAr ? TYPE_LABEL[l.type].ar : TYPE_LABEL[l.type].en) : '';
-      const glyph = TYPE_GLYPH[l.type] || '📍';
-      const gmaps = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
-      const shot = l.image
-        ? `<img src="${gdSafeUrl(l.image)}" alt="${name}" loading="lazy" decoding="async"
-                onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'glyph',textContent:'${glyph}'}))">`
-        : `<span class="glyph">${glyph}</span>`;
-      const credit = l.image && l.credit
-        ? `<p class="credit">📷 <a href="${gdSafeUrl(l.photo_source || l.image)}" target="_blank" rel="noopener nofollow">${gdEsc(l.credit)}</a>${l.licence ? ' · ' + gdEsc(l.licence) : ''}</p>`
-        : '';
-      return `<article class="lm-card">
-        <div class="shot">${shot}${kind ? `<span class="kind">${kind}</span>` : ''}</div>
-        <div class="body">
-          <h3>${name}</h3>
-          ${alt ? `<p class="alt">${alt}</p>` : ''}
-          ${credit}
-          <a class="go" href="${gmaps}" target="_blank" rel="noopener">${isAr ? 'افتح في خرائط Google ↗' : 'Open in Google Maps ↗'}</a>
-        </div>
-      </article>`;
-    }).join('');
   }
-  document.getElementById('cTitle').textContent = isAr?`اعثر على مرشد محلّي معتمد في ${r.name_ar}`:`Find a verified local guide in ${r.name_en}`;
-  document.getElementById('cSub').textContent = isAr?'احجز مرشداً مرخّصاً من الوزارة يعرف هذه المنطقة عن ظهر قلب.':'Book a Ministry-licensed expert who knows this region inside out.';
+
+  document.getElementById('cTitle').textContent = T(`اعثر على مرشد محلّي معتمد في ${r.name_ar}`, `Find a verified local guide in ${r.name_en}`);
+  document.getElementById('cSub').textContent = T('احجز مرشداً مرخّصاً من الوزارة يعرف هذه المنطقة عن ظهر قلب.', 'Book a Ministry-licensed expert who knows this region inside out.');
   const btn = document.getElementById('cBtn');
   // search.html + guideController filter by `governorate` (regions.json name_en
   // ARE governorate names); `region` was ignored → unfiltered results.
   btn.href = `/search.html?governorate=${encodeURIComponent(r.name_en)}`;
-  btn.textContent = isAr?'ابحث عن مرشدين →':'Browse guides →';
+  btn.textContent = T('ابحث عن مرشدين →', 'Browse guides →');
 })();
 </script>
 </body>
