@@ -473,7 +473,13 @@
       .then(r=>r.ok?r.json():null)
       .then(j=>(j&&j.success&&j.data)?j.data:fetch('/data/regions.json').then(r=>r.json()))
       .catch(()=>fetch('/data/regions.json').then(r=>r.json()));
-    const isAr = (document.documentElement.lang||'').toLowerCase().startsWith('ar');
+    // The i18n layer sets <html lang/dir> asynchronously, so reading the tag
+    // here raced it: the page could end up RTL with this section still in
+    // English — which is how the homepage read "...its own character 11".
+    // The stored choice is set before any of that and is the real source.
+    const stored = (localStorage.getItem('gd_lang') || '').toLowerCase();
+    const isAr = stored ? stored.startsWith('ar')
+                        : (document.documentElement.lang || '').toLowerCase().startsWith('ar');
     const T = (ar,en) => isAr ? ar : en;
     if (isAr) {
       document.getElementById('regionsHeading').textContent = 'استكشف عُمان حسب المحافظة';
