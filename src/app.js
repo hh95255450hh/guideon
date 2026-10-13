@@ -241,6 +241,7 @@ app.use('/api', require('./routes/extras'));
 
 app.use('/health', require('./routes/health'));
 app.use('/', require('./routes/seo'));
+app.use('/', require('./routes/indexNow'));   // serves /<key>.txt for IndexNow ownership
 
 app.get(['/search', '/guide-profile', '/login', '/register',
          '/tourist-dashboard', '/guide-dashboard', '/company-dashboard', '/admin', '/plan-trip',

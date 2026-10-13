@@ -62,16 +62,26 @@ router.get('/sitemap.xml', async (req, res) => {
     // declared as hreflang alternates of each other. A page with no guides is
     // served noindex (thin content), so it is left OUT of the sitemap entirely
     // rather than sending Google a "index this / don't index this" conflict.
+    // A landing page's content IS its provider list, so its real last-modified
+    // date is the newest provider on it. Without lastmod Google treats these as
+    // static and deprioritises re-crawling them.
+    const newest = rows => rows.reduce((max, r) => {
+      const d = r.updatedAt || r.createdAt;
+      return d && (!max || new Date(d) > new Date(max)) ? d : max;
+    }, null);
+
     const langPairs = [];
     try {
       const { PLACES, CATEGORIES, guideServesPlace, guideMatchesCategory, companyServesPlace } = require('../services/seoLanding');
       PLACES.forEach(p => {
-        if (!verifiedGuides.some(g => guideServesPlace(g, p))) return;
-        langPairs.push({ path: `/tour-guides/${p.slug}`, changefreq: 'weekly', priority: 0.85 });
+        const inPlace = verifiedGuides.filter(g => guideServesPlace(g, p));
+        if (!inPlace.length) return;
+        langPairs.push({ path: `/tour-guides/${p.slug}`, changefreq: 'weekly', priority: 0.85, lastmod: newest(inPlace) });
       });
       CATEGORIES.forEach(c => {
-        if (!verifiedGuides.some(g => guideMatchesCategory(g, c))) return;
-        langPairs.push({ path: `/tours/${c.slug}`, changefreq: 'weekly', priority: 0.8 });
+        const inCat = verifiedGuides.filter(g => guideMatchesCategory(g, c));
+        if (!inCat.length) return;
+        langPairs.push({ path: `/tours/${c.slug}`, changefreq: 'weekly', priority: 0.8, lastmod: newest(inCat) });
       });
       // Place × category long-tail pages. Must mirror MIN_COMBO in
       // routes/seoLanding.js: a combo below the threshold is served noindex, and
@@ -81,22 +91,24 @@ router.get('/sitemap.xml', async (req, res) => {
         const inPlace = verifiedGuides.filter(g => guideServesPlace(g, p));
         if (!inPlace.length) return;
         CATEGORIES.forEach(c => {
-          if (inPlace.filter(g => guideMatchesCategory(g, c)).length < MIN_COMBO) return;
-          langPairs.push({ path: `/tour-guides/${p.slug}/${c.slug}`, changefreq: 'weekly', priority: 0.7 });
+          const both = inPlace.filter(g => guideMatchesCategory(g, c));
+          if (both.length < MIN_COMBO) return;
+          langPairs.push({ path: `/tour-guides/${p.slug}/${c.slug}`, changefreq: 'weekly', priority: 0.7, lastmod: newest(both) });
         });
       });
       if (verifiedCompanies.length) {
-        langPairs.push({ path: '/tour-companies', changefreq: 'weekly', priority: 0.85 });
+        langPairs.push({ path: '/tour-companies', changefreq: 'weekly', priority: 0.85, lastmod: newest(verifiedCompanies) });
         PLACES.forEach(p => {
-          if (!verifiedCompanies.some(c => companyServesPlace(c, p))) return;
-          langPairs.push({ path: `/tour-companies/${p.slug}`, changefreq: 'weekly', priority: 0.75 });
+          const inPlace = verifiedCompanies.filter(c => companyServesPlace(c, p));
+          if (!inPlace.length) return;
+          langPairs.push({ path: `/tour-companies/${p.slug}`, changefreq: 'weekly', priority: 0.75, lastmod: newest(inPlace) });
         });
       }
     } catch (e) { /* optional */ }
 
     // Each pair expands to two <url> entries that both carry the same
     // xhtml:link alternates (Google requires the links on BOTH versions).
-    const pairUrls = langPairs.flatMap(({ path, changefreq, priority }) => {
+    const pairUrls = langPairs.flatMap(({ path, changefreq, priority, lastmod }) => {
       const en = `${APP_URL}${path}`, ar = `${APP_URL}/ar${path}`;
       const alts = [
         `    <xhtml:link rel="alternate" hreflang="en" href="${xmlEsc(en)}"/>`,
@@ -104,8 +116,8 @@ router.get('/sitemap.xml', async (req, res) => {
         `    <xhtml:link rel="alternate" hreflang="x-default" href="${xmlEsc(en)}"/>`,
       ].join('\n');
       return [
-        { loc: en, changefreq, priority, alts },
-        { loc: ar, changefreq, priority, alts },
+        { loc: en, changefreq, priority, alts, lastmod },
+        { loc: ar, changefreq, priority, alts, lastmod },
       ];
     });
 
