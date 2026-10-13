@@ -177,6 +177,86 @@
     </h1>
     <p class="mb-4 mx-auto fw-600" style="max-width:640px;font-size:1.25rem;letter-spacing:.3px;text-shadow:0 2px 12px rgba(0,0,0,.25)" data-i18n="hero_sub">Connect with certified tourist guides across the Sultanate of Oman.</p>
 
+    <!-- AI SEARCH: describe the trip in your own words; Claude fills in the real filters -->
+    <div class="row justify-content-center mb-3" id="aiSearchWrap">
+      <div class="col-lg-10">
+        <form class="ai-search" id="aiSearch" role="search" autocomplete="off" novalidate>
+          <span class="ai-spark" aria-hidden="true">✨</span>
+          <input id="aiSearchInput" type="search" maxlength="400" enterkeyhint="search"
+                 aria-label="Describe your trip in your own words"
+                 placeholder="Describe your trip — e.g. a German-speaking guide in Nizwa for a family">
+          <button type="submit" id="aiSearchBtn"><span class="ai-btn-label">Ask AI</span></button>
+        </form>
+        <div class="ai-hint" id="aiHint" role="status" aria-live="polite"></div>
+        <div class="ai-examples" id="aiExamples"></div>
+      </div>
+    </div>
+    <style>
+      .ai-search{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.97);border-radius:999px;
+                 padding:7px 7px 7px 20px;box-shadow:0 18px 50px rgba(8,16,40,.35),0 0 0 1px rgba(255,255,255,.4);
+                 transition:box-shadow .2s, transform .2s}
+      html[dir="rtl"] .ai-search{padding:7px 20px 7px 7px}
+      .ai-search:focus-within{box-shadow:0 18px 50px rgba(8,16,40,.35),0 0 0 3px rgba(201,162,39,.75);transform:translateY(-1px)}
+      .ai-spark{font-size:1.25rem;line-height:1;filter:drop-shadow(0 1px 3px rgba(201,162,39,.5))}
+      .ai-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:1.05rem;color:#0f1c3e;padding:10px 0}
+      .ai-search input::placeholder{color:#7a8496}
+      .ai-search button{border:0;border-radius:999px;padding:12px 22px;font-weight:800;color:#fff;white-space:nowrap;
+                        background:linear-gradient(135deg,#0f7b6c,#0f1c3e);box-shadow:0 6px 16px rgba(15,123,108,.35);transition:.2s}
+      .ai-search button:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(15,123,108,.45)}
+      .ai-search button[disabled]{opacity:.75;cursor:progress}
+      .ai-hint{min-height:1.6em;margin-top:10px;font-weight:700;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+      .ai-hint.err{color:#ffd8d8}
+      .ai-examples{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:2px}
+      .ai-examples button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);backdrop-filter:blur(6px);
+                          color:#fff;border-radius:999px;padding:6px 13px;font-size:.85rem;font-weight:600;transition:.18s}
+      .ai-examples button:hover{background:rgba(255,255,255,.25)}
+      @media (max-width:576px){ .ai-search button .ai-btn-label{font-size:.9rem} .ai-search{padding-inline-start:14px} }
+    </style>
+    <script>
+    (function () {
+      var stored = '';
+      try { stored = (localStorage.getItem('gd_lang') || '').toLowerCase(); } catch (e) {}
+      var isAr = stored ? stored.indexOf('ar') === 0 : (document.documentElement.lang || '').toLowerCase().indexOf('ar') === 0;
+      var T = function (ar, en) { return isAr ? ar : en; };
+      var form = document.getElementById('aiSearch'), input = document.getElementById('aiSearchInput'),
+          btn = document.getElementById('aiSearchBtn'), hint = document.getElementById('aiHint'),
+          examples = document.getElementById('aiExamples');
+      input.placeholder = T('صف رحلتك بكلماتك — مثلاً: مرشد يتحدث الألمانية في نزوى لعائلة',
+                            'Describe your trip — e.g. a German-speaking guide in Nizwa for a family');
+      input.setAttribute('aria-label', T('صف رحلتك بكلماتك', 'Describe your trip in your own words'));
+      btn.querySelector('.ai-btn-label').textContent = T('ابحث بالذكاء', 'Ask AI');
+      var EX = isAr
+        ? ['مرشد يتحدث الإنجليزية لقلعة نزوى', 'رحلة غوص في مسندم بميزانية 50 ريال', 'تخييم في رمال الشرقية الجمعة القادمة']
+        : ['English-speaking guide for Nizwa Fort', 'Snorkelling in Musandam under 50 OMR', 'Desert camp in Wahiba next Friday'];
+      EX.forEach(function (t) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = t;
+        b.addEventListener('click', function () { input.value = t; form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit')); });
+        examples.appendChild(b);
+      });
+      var say = function (msg, err) { hint.textContent = msg; hint.classList.toggle('err', !!err); };
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var q = input.value.trim();
+        if (q.length < 3) { say(T('اكتب ما تبحث عنه أولاً.', 'Tell us what you are looking for first.'), true); input.focus(); return; }
+        btn.disabled = true; btn.querySelector('.ai-btn-label').textContent = T('جارٍ الفهم…', 'Thinking…');
+        say(T('أفهم طلبك وأحوّله إلى بحث…', 'Turning your request into a search…'));
+        fetch('/api/ai/search', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ q: q, lang: isAr ? 'ar' : 'en' }) })
+          .then(function (r) { return r.json().then(function (j) { return { status: r.status, j: j }; }); })
+          .then(function (x) {
+            if (x.status === 503 && /not enabled/i.test((x.j && x.j.message) || '')) { document.getElementById('aiSearchWrap').style.display = 'none'; return; }
+            if (!x.j || !x.j.success) throw new Error((x.j && x.j.message) || '');
+            say('✓ ' + T('فهمت: ', 'Got it: ') + (x.j.summary || ''));
+            setTimeout(function () { location.href = x.j.url; }, 700);
+          })
+          .catch(function (err) {
+            say(err.message || T('تعذّر البحث الآن، جرّب البحث العادي بالأسفل.', 'Could not search right now — try the filters below.'), true);
+            btn.disabled = false; btn.querySelector('.ai-btn-label').textContent = T('ابحث بالذكاء', 'Ask AI');
+          });
+      });
+    })();
+    </script>
+
     <!-- SEARCH -->
     <div class="row justify-content-center">
       <div class="col-lg-10">

@@ -19,6 +19,7 @@ const aiLimiter = rateLimit({
 router.post('/trip-plan',           aiLimiter, aiGuard, ai.tripPlan);
 router.post('/match',               aiLimiter, aiGuard, ai.match);
 router.post('/improve',             aiLimiter, aiGuard, ai.improve);
+router.post('/search',              aiLimiter, aiGuard, ai.search);
 router.get('/reviews-summary/:guideId', aiLimiter, ai.reviewsSummary);
 
 module.exports = router;

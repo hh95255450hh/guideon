@@ -671,7 +671,13 @@ if (urlParams.get('governorate')) {
   if (window.populateWilayats) populateWilayats(document.getElementById('fDest'), urlParams.get('governorate'));
 }
 if (urlParams.get('destination')) document.getElementById('fDest').value = urlParams.get('destination');
-if (urlParams.get('language'))    document.getElementById('fLang').value = urlParams.get('language');
+if (urlParams.get('language')) {
+  // The dropdown lists the common languages; a link (e.g. from the AI search)
+  // may name another one, so add it rather than silently dropping the filter.
+  const sel = document.getElementById('fLang'), v = urlParams.get('language');
+  if (![...sel.options].some(o => o.value === v)) sel.add(new Option(v, v));
+  sel.value = v;
+}
 if (urlParams.get('date'))        document.getElementById('fDate').value = urlParams.get('date');
 if (urlParams.get('minRating'))   document.getElementById('fRating').value = urlParams.get('minRating');
 if (urlParams.get('sortBy'))      document.getElementById('fSort').value = urlParams.get('sortBy');
