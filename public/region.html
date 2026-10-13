@@ -27,6 +27,22 @@
   .hl-card .dot{width:10px;height:10px;border-radius:50%;background:#0f7b6c;margin-top:6px;flex-shrink:0}
   .hl-card span{font-weight:600;color:#0f1c3e}
   .intro p{font-size:1.05rem;line-height:1.85;color:#374151}
+  /* Photo cards, one per landmark. */
+  .lm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+  .lm-card{background:#fff;border:1px solid #eef0f4;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:.2s}
+  .lm-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(15,28,62,.1);border-color:#0f7b6c}
+  .lm-card .shot{position:relative;height:170px;background:linear-gradient(135deg,#0f1c3e,#15325c);display:flex;align-items:center;justify-content:center}
+  .lm-card .shot img{width:100%;height:100%;object-fit:cover;display:block}
+  .lm-card .shot .glyph{font-size:2.6rem;opacity:.5}
+  .lm-card .kind{position:absolute;top:10px;inset-inline-start:10px;background:rgba(255,255,255,.94);color:#0f1c3e;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .lm-card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .lm-card h3{font-size:1.02rem;font-weight:800;margin:0;color:#0f1c3e}
+  .lm-card .alt{font-size:.82rem;color:#6b7280;margin:0}
+  .lm-card .go{margin-top:auto;font-size:.85rem;font-weight:700;color:#0f7b6c;text-decoration:none}
+  .lm-card .go:hover{text-decoration:underline}
+  /* Credit line: CC photos may be reused commercially only with attribution. */
+  .lm-card .credit{font-size:.68rem;color:#9ca3af;margin:0}
+  .lm-card .credit a{color:#9ca3af}
   .r-cta{background:linear-gradient(135deg,#0f1c3e,#0f7b6c);color:#fff;padding:50px 0;text-align:center;border-radius:20px;margin:50px 0}
   .r-cta h3{font-size:1.6rem;font-weight:800;margin-bottom:8px}
   .r-cta .btn{background:#fff;color:#0f1c3e;padding:12px 28px;border-radius:999px;font-weight:700;text-decoration:none;display:inline-block;margin-top:12px;transition:.2s}
@@ -68,6 +84,11 @@
     <h2 id="hMap">Map of Landmarks</h2>
     <p id="rMapSub" class="text-muted" style="margin-bottom:14px"></p>
     <div id="rLandmarksMap"></div>
+  </section>
+
+  <section class="r-section" id="rCardsSection" style="display:none">
+    <h2 id="hCards">Sites to visit</h2>
+    <div class="lm-grid" id="rLandmarkCards"></div>
   </section>
 
   <section class="r-cta">
@@ -147,6 +168,46 @@
       }
     };
     tryDraw();
+
+    // A photo card per landmark, under the map. Photos are free-licence files
+    // from Wikimedia Commons, so each one credits its author — that is the
+    // condition the licence places on commercial reuse. A landmark with no
+    // photo keeps a typed gradient tile rather than being dropped.
+    const TYPE_LABEL = {
+      religious:{ar:'ديني',en:'Religious'}, culture:{ar:'ثقافي',en:'Culture'},
+      fort:{ar:'قلعة',en:'Fort'},           museum:{ar:'متحف',en:'Museum'},
+      nature:{ar:'طبيعة',en:'Nature'},      beach:{ar:'شاطئ',en:'Beach'},
+      mountain:{ar:'جبل',en:'Mountain'},    desert:{ar:'صحراء',en:'Desert'},
+      heritage:{ar:'تراث',en:'Heritage'},   city:{ar:'مدينة',en:'City'},
+    };
+    const TYPE_GLYPH = { religious:'🕌', culture:'🎭', fort:'🏰', museum:'🏛️', nature:'🌿',
+      beach:'🏖️', mountain:'⛰️', desert:'🏜️', heritage:'🗿', city:'🏙️' };
+
+    document.getElementById('rCardsSection').style.display = '';
+    document.getElementById('hCards').textContent = isAr ? 'مواقع تستحق الزيارة' : 'Sites to visit';
+    document.getElementById('rLandmarkCards').innerHTML = r.landmarks.map(l => {
+      const name = gdEsc(isAr ? (l.name_ar || l.name_en) : (l.name_en || l.name_ar));
+      const alt  = gdEsc(isAr ? (l.name_en || '') : (l.name_ar || ''));
+      const kind = TYPE_LABEL[l.type] ? (isAr ? TYPE_LABEL[l.type].ar : TYPE_LABEL[l.type].en) : '';
+      const glyph = TYPE_GLYPH[l.type] || '📍';
+      const gmaps = `https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
+      const shot = l.image
+        ? `<img src="${gdSafeUrl(l.image)}" alt="${name}" loading="lazy" decoding="async"
+                onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'glyph',textContent:'${glyph}'}))">`
+        : `<span class="glyph">${glyph}</span>`;
+      const credit = l.image && l.credit
+        ? `<p class="credit">📷 <a href="${gdSafeUrl(l.photo_source || l.image)}" target="_blank" rel="noopener nofollow">${gdEsc(l.credit)}</a>${l.licence ? ' · ' + gdEsc(l.licence) : ''}</p>`
+        : '';
+      return `<article class="lm-card">
+        <div class="shot">${shot}${kind ? `<span class="kind">${kind}</span>` : ''}</div>
+        <div class="body">
+          <h3>${name}</h3>
+          ${alt ? `<p class="alt">${alt}</p>` : ''}
+          ${credit}
+          <a class="go" href="${gmaps}" target="_blank" rel="noopener">${isAr ? 'افتح في خرائط Google ↗' : 'Open in Google Maps ↗'}</a>
+        </div>
+      </article>`;
+    }).join('');
   }
   document.getElementById('cTitle').textContent = isAr?`اعثر على مرشد محلّي معتمد في ${r.name_ar}`:`Find a verified local guide in ${r.name_en}`;
   document.getElementById('cSub').textContent = isAr?'احجز مرشداً مرخّصاً من الوزارة يعرف هذه المنطقة عن ظهر قلب.':'Book a Ministry-licensed expert who knows this region inside out.';
