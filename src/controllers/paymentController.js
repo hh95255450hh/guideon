@@ -498,7 +498,28 @@ exports.paymobCallback = async (req, res) => {
     console.log('[Paymob] webhook success=%s hmacOk=%s ref=%s booking=%s amount=%s orderKeys=%j',
       success, hmacOk, moid, refBookingId, obj?.amount_cents, Object.keys(obj?.order || {}));
     if (!hmacOk) {
-      console.warn('[Paymob] HMAC mismatch recv=%s calc=%s', String(hmac || '').slice(0, 14), paymob.computeHmac(obj).slice(0, 14));
+      // No HMAC fragments in the log: even a prefix of the computed value is a
+      // piece of a valid signature for this payload.
+      console.warn('[Paymob] HMAC mismatch for ref=%s', moid);
+      return res.status(200).json({ received: true });
+    }
+
+    // Paymob also calls this URL for refunds, voids and still-pending payments
+    // of a transaction, and those can arrive with success=true. Only a final,
+    // captured payment in Omani rials settles a booking. (All of these fields
+    // are covered by the HMAC verified above, so they can be trusted.)
+    const flag = v => v === true || v === 'true';
+    const notFinal = flag(obj?.pending) || flag(obj?.is_refunded) || flag(obj?.is_refund) ||
+                     flag(obj?.is_voided) || flag(obj?.is_void) || flag(obj?.error_occured);
+    const currency = String(obj?.currency || obj?.order?.currency || 'OMR').toUpperCase();
+    if (success && notFinal) {
+      console.log('[Paymob] ref=%s not settled: pending/refund/void/error transaction', moid);
+      return res.status(200).json({ received: true });
+    }
+    if (success && currency !== 'OMR') {
+      console.warn('[Paymob] ref=%s refused: currency %s', moid, currency);
+      alertPaymentProblem('Payment refused — unexpected currency', refBookingId ? { id: refBookingId } : null,
+        `Paymob transaction ${obj?.id} arrived in ${currency}, not OMR.`);
       return res.status(200).json({ received: true });
     }
 

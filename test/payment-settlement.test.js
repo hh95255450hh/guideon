@@ -119,3 +119,21 @@ test('paymob callback: a final refusal is acknowledged so Paymob does not resend
   assert.strictEqual(r.status, 200);
   assert.strictEqual(db.bookings.get('bk-7').isPaid, false);
 });
+
+test('paymob callback: a refund, void or pending transaction never settles a booking', async () => {
+  for (const flags of [{ is_refunded: true }, { is_voided: true }, { pending: true }, { is_refund: true }, { error_occured: true }]) {
+    reset();
+    db.bookings.set('bk-8', { id: 'bk-8', status: 'awaiting_payment', depositAmount: 25, totalAmount: 25, depositPercent: 100, touristId: 't1' });
+    const r = await callback({ obj: { success: true, id: 8, amount_cents: 25000, currency: 'OMR', order: { merchant_order_id: 'bk-8_x' }, ...flags } });
+    assert.strictEqual(r.status, 200);
+    assert.notStrictEqual(db.bookings.get('bk-8').isPaid, true, `settled on ${JSON.stringify(flags)}`);
+  }
+});
+
+test('paymob callback: a payment in another currency is refused and alerted', async () => {
+  reset();
+  db.bookings.set('bk-9', { id: 'bk-9', status: 'awaiting_payment', depositAmount: 25, totalAmount: 25, depositPercent: 100, touristId: 't1' });
+  await callback({ obj: { success: true, id: 9, amount_cents: 25000, currency: 'EGP', order: { merchant_order_id: 'bk-9_x' } } });
+  assert.notStrictEqual(db.bookings.get('bk-9').isPaid, true);
+  assert.ok(sent.adminEmails.some(s => /currency/i.test(s)));
+});
