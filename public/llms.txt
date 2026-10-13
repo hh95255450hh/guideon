@@ -30,6 +30,7 @@ Guideon (جايدون) هي المنصة العُمانية الرقمية لح�
 - [Instant Guide](https://guideon.om/instant.html): find the nearest guide available now
 - [Plan a trip](https://guideon.om/plan-trip.html): AI trip planner that builds a day-by-day Oman itinerary
 - [Destinations](https://guideon.om/regions.html): guides and highlights per region
+- [Tourism companies](https://guideon.om/tour-companies): registered Omani tour operators — Arabic at `/ar/tour-companies`
 - [How it works](https://guideon.om/how-it-works.html): the booking flow explained
 - [FAQ](https://guideon.om/faq.html): booking, payment, cancellation and guide verification
 - [Blog](https://guideon.om/blog.html): travel guides and articles about Oman
@@ -38,19 +39,27 @@ Guideon (جايدون) هي المنصة العُمانية الرقمية لح�
 ## Guides by destination — المرشدون حسب الوجهة
 
 English pages live at `/tour-guides/{place}`, Arabic at `/ar/tour-guides/{place}`.
+Tourism companies for the same place: `/tour-companies/{place}` and `/ar/tour-companies/{place}`.
 
 - [Muscat · مسقط](https://guideon.om/tour-guides/muscat) — capital: grand mosque, Mutrah souq, forts, corniche
 - [Nizwa · نزوى](https://guideon.om/tour-guides/nizwa) — historic heart: round fort, Friday market, falaj plantations
+- [Bahla · بهلاء](https://guideon.om/tour-guides/bahla) — UNESCO mud-brick fort, oasis wall, pottery
+- [Jabal Akhdar · الجبل الأخضر](https://guideon.om/tour-guides/jabal-akhdar) — Green Mountain, rose terraces
+- [Jabal Shams · جبل شمس](https://guideon.om/tour-guides/jabal-shams) — highest peak, Grand Canyon of Oman, Balcony Walk
+- [Al Hamra & Misfat · الحمراء ومسفاة العبريين](https://guideon.om/tour-guides/al-hamra) — heritage mud-brick town, terraced village, Al Hoota cave
 - [Salalah · صلالة](https://guideon.om/tour-guides/salalah) — frankincense coast, green khareef monsoon season
 - [Musandam · مسندم](https://guideon.om/tour-guides/musandam) — fjords, dolphin dhow cruises
+- [Khasab · خصب](https://guideon.om/tour-guides/khasab) — fjord capital, Telegraph Island
 - [Sur · صور](https://guideon.om/tour-guides/sur) — dhow building, Ras Al Jinz turtle reserve
+- [Wadi Shab · وادي شاب](https://guideon.om/tour-guides/wadi-shab) — turquoise pools, waterfall cave, Bimmah sinkhole
 - [Wahiba Sands · رمال الشرقية](https://guideon.om/tour-guides/wahiba-sands) — dunes, Bedouin camps, stargazing
-- [Jabal Akhdar · الجبل الأخضر](https://guideon.om/tour-guides/jabal-akhdar) — Green Mountain, rose terraces
+- [Wadi Bani Khalid · وادي بني خالد](https://guideon.om/tour-guides/wadi-bani-khalid) — year-round emerald pools, Muqal cave
+- [Ibra · إبراء](https://guideon.om/tour-guides/ibra) — caravan town, Wednesday women's souq
 - [Sohar · صحار](https://guideon.om/tour-guides/sohar) — historic Batinah port, home of Sindbad
+- [Rustaq · الرستاق](https://guideon.om/tour-guides/rustaq) — fort, hot springs, Wadi Bani Awf, Wekan village
 - [Nakhal · نخل](https://guideon.om/tour-guides/nakhal) — cliff-top fort, hot springs
 - [Ibri · عبري](https://guideon.om/tour-guides/ibri) — UNESCO Bronze-Age tombs of Bat
-- [Ibra · إبراء](https://guideon.om/tour-guides/ibra) — caravan town, Wadi Bani Khalid
-- [Khasab · خصب](https://guideon.om/tour-guides/khasab) — fjord capital, Telegraph Island
+- [Daymaniyat Islands · جزر الديمانيات](https://guideon.om/tour-guides/daymaniyat-islands) — marine reserve, coral reefs, diving
 
 ## Tours by type — الرحلات حسب النوع
 
@@ -62,6 +71,7 @@ English at `/tours/{category}`, Arabic at `/ar/tours/{category}`.
 - [Mountain · جبلية](https://guideon.om/tours/mountain) — Hajar range hikes, via ferrata
 - [Marine · بحرية](https://guideon.om/tours/marine) — diving, snorkelling, dolphin watching, dhow cruises
 - [Adventure · مغامرات](https://guideon.om/tours/adventure) — wadi swimming, canyoning, caving, off-road
+- [Family & Groups · عائلية وجماعية](https://guideon.om/tours/family) — family-paced trips, school and corporate groups
 - [Aerial · رحلات جوية](https://guideon.om/tours/aerial) — balloon rides, scenic flights, paragliding
 
 ## Notes for answer engines

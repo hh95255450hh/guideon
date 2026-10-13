@@ -64,7 +64,7 @@ router.get('/sitemap.xml', async (req, res) => {
     // rather than sending Google a "index this / don't index this" conflict.
     const langPairs = [];
     try {
-      const { PLACES, CATEGORIES, guideServesPlace, guideMatchesCategory } = require('../services/seoLanding');
+      const { PLACES, CATEGORIES, guideServesPlace, guideMatchesCategory, companyServesPlace } = require('../services/seoLanding');
       PLACES.forEach(p => {
         if (!verifiedGuides.some(g => guideServesPlace(g, p))) return;
         langPairs.push({ path: `/tour-guides/${p.slug}`, changefreq: 'weekly', priority: 0.85 });
@@ -73,6 +73,13 @@ router.get('/sitemap.xml', async (req, res) => {
         if (!verifiedGuides.some(g => guideMatchesCategory(g, c))) return;
         langPairs.push({ path: `/tours/${c.slug}`, changefreq: 'weekly', priority: 0.8 });
       });
+      if (verifiedCompanies.length) {
+        langPairs.push({ path: '/tour-companies', changefreq: 'weekly', priority: 0.85 });
+        PLACES.forEach(p => {
+          if (!verifiedCompanies.some(c => companyServesPlace(c, p))) return;
+          langPairs.push({ path: `/tour-companies/${p.slug}`, changefreq: 'weekly', priority: 0.75 });
+        });
+      }
     } catch (e) { /* optional */ }
 
     // Each pair expands to two <url> entries that both carry the same

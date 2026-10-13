@@ -2,7 +2,9 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
-const { PLACES, CATEGORIES, guideServesPlace, guideMatchesCategory } = require('../src/services/seoLanding');
+const {
+  PLACES, CATEGORIES, guideServesPlace, guideMatchesCategory, companyServesPlace, norm, asList,
+} = require('../src/services/seoLanding');
 
 const PUBLIC = path.join(__dirname, '..', 'public');
 
@@ -43,7 +45,7 @@ test('seo: landing router registers both EN and AR routes', () => {
 test('seo: place/category matchers still work', () => {
   const nizwa = PLACES.find(p => p.slug === 'nizwa');
   assert.ok(guideServesPlace({ destinations: ['Nizwa', 'Muscat'] }, nizwa));
-  assert.ok(guideServesPlace({ destinations: ['bahla'] }, nizwa), 'alias match should be case-insensitive');
+  assert.ok(guideServesPlace({ destinations: ['NIZWA'] }, nizwa), 'alias match should be case-insensitive');
   assert.ok(!guideServesPlace({ destinations: ['Salalah'] }, nizwa));
   assert.ok(!guideServesPlace({}, nizwa), 'missing destinations must not throw');
 
@@ -51,6 +53,69 @@ test('seo: place/category matchers still work', () => {
   assert.ok(guideMatchesCategory({ specialisations: ['Desert Safari'] }, desert));
   assert.ok(!guideMatchesCategory({ specialisations: ['Diving'] }, desert));
   assert.ok(!guideMatchesCategory({}, desert), 'missing specialisations must not throw');
+});
+
+// The bug this fixes: half the providers write their profile in Arabic, and
+// English-only aliases silently hid them from their own landing page.
+test('seo: Arabic-written profiles match their place', () => {
+  const nizwa = PLACES.find(p => p.slug === 'nizwa');
+  assert.ok(guideServesPlace({ destinations: ['نزوى'] }, nizwa), 'plain Arabic name must match');
+  assert.ok(guideServesPlace({ destinations: ['نزوى -(العقر)'] }, nizwa), 'Arabic with suffix must match');
+  assert.ok(guideServesPlace({ destinations: ['مسقط . نزوى .صور . بدية'] }, nizwa), 'multi-place free text must match');
+
+  const akhdar = PLACES.find(p => p.slug === 'jabal-akhdar');
+  assert.ok(guideServesPlace({ destinations: ['الجبل الاخضر'] }, akhdar), 'hamza-less spelling must match');
+  assert.ok(guideServesPlace({ destinations: ['الجبل الأخضر'] }, akhdar), 'hamza spelling must match');
+  assert.ok(guideServesPlace({ destinations: ['aljabal alakhdar'] }, akhdar), 'transliteration must match');
+});
+
+test('seo: Arabic-written specialisations match their category', () => {
+  const historical = CATEGORIES.find(c => c.slug === 'historical');
+  assert.ok(guideMatchesCategory({ specialisations: ['المواقع التاريخية والأثرية'] }, historical));
+  assert.ok(guideMatchesCategory({ specialisations: ['‏مواقع تاريخية'] }, historical), 'leading RTL mark must not break matching');
+
+  const cultural = CATEGORIES.find(c => c.slug === 'cultural');
+  assert.ok(guideMatchesCategory({ specialisations: ['الجولات الثقافية'] }, cultural));
+  assert.ok(guideMatchesCategory({ specialisations: ['تراث و ثقافه و تاريخ'] }, cultural));
+
+  const desert = CATEGORIES.find(c => c.slug === 'desert');
+  assert.ok(guideMatchesCategory({ specialisations: ['رحلة الصحراء'] }, desert));
+});
+
+test('seo: normaliser folds the spellings people actually type', () => {
+  assert.strictEqual(norm('الجبل الأخضر'), norm('الجبل الاخضر'));
+  assert.strictEqual(norm('نزوي'), norm('نزوى'));
+  assert.strictEqual(norm('قلعة'), norm('قلعه'));
+  assert.strictEqual(norm('  Muscat  '), 'muscat');
+  assert.strictEqual(norm(null), '');
+});
+
+test('seo: asList copes with array, JSON string, free text and junk', () => {
+  assert.deepStrictEqual(asList(['a', 'b']), ['a', 'b']);
+  assert.deepStrictEqual(asList('["نزوى"]'), ['نزوى']);
+  assert.deepStrictEqual(asList('Nizwa and Muscat'), ['Nizwa and Muscat']);
+  assert.deepStrictEqual(asList(null), []);
+  assert.deepStrictEqual(asList(''), []);
+  assert.deepStrictEqual(asList(42), []);
+});
+
+test('seo: companies match by destinations, description or name', () => {
+  const nizwa = PLACES.find(p => p.slug === 'nizwa');
+  assert.ok(companyServesPlace({ companyDestinations: ['نزوى'] }, nizwa), 'Arabic destination');
+  assert.ok(companyServesPlace({ companyDestinations: '["Nizwa"]' }, nizwa), 'JSON-string destination');
+  assert.ok(companyServesPlace({ companyName: 'Old Nizawa Tours', companyDestinations: [] }, nizwa) === false,
+    'a near-miss in the name must not create a false match');
+  assert.ok(companyServesPlace({ companyDescription: 'We run day trips around Nizwa and Bahla.' }, nizwa),
+    'description fallback should work when destinations are empty');
+  assert.ok(!companyServesPlace({}, nizwa), 'empty company must not throw');
+});
+
+test('seo: landing router registers company routes in both languages', () => {
+  const router = require('../src/routes/seoLanding');
+  const paths = router.stack.map(l => l.route && l.route.path).filter(Boolean);
+  for (const p of ['/tour-companies', '/ar/tour-companies', '/tour-companies/:place', '/ar/tour-companies/:place']) {
+    assert.ok(paths.includes(p), `missing route ${p}`);
+  }
 });
 
 test('seo: robots.txt allows AI answer engines but keeps private areas closed', () => {

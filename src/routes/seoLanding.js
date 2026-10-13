@@ -19,24 +19,25 @@ const router = require('express').Router();
 const SupabaseDB = require('../models/SupabaseDB');
 const {
   PLACES, CATEGORIES, PLACE_BY_SLUG, CAT_BY_SLUG,
-  guideServesPlace, guideMatchesCategory,
+  guideServesPlace, guideMatchesCategory, companyServesPlace,
 } = require('../services/seoLanding');
 
 const users = new SupabaseDB('users');
 const APP_URL = (process.env.APP_URL || 'https://guideon.om').replace(/\/$/, '');
 
-// Tiny 5-minute cache of verified guides so a crawler hitting many pages in a
-// burst doesn't hammer the DB.
-let _guidesCache = { at: 0, rows: [] };
-async function verifiedGuides() {
-  if (Date.now() - _guidesCache.at < 5 * 60 * 1000 && _guidesCache.rows.length) {
-    return _guidesCache.rows;
-  }
-  const all = (await users.findAllWhere({ userType: 'guide', isVerified: true }))
-    .filter(g => !g.isSuspended);   // NULL isSuspended = active (eq filter would drop NULLs)
-  _guidesCache = { at: Date.now(), rows: all };
+// Tiny 5-minute cache of verified providers so a crawler hitting many pages in
+// a burst doesn't hammer the DB.
+const _cache = { guide: { at: 0, rows: [] }, company: { at: 0, rows: [] } };
+async function verifiedProviders(userType) {
+  const slot = _cache[userType];
+  if (Date.now() - slot.at < 5 * 60 * 1000 && slot.rows.length) return slot.rows;
+  const all = (await users.findAllWhere({ userType, isVerified: true }))
+    .filter(u => !u.isSuspended);   // NULL isSuspended = active (eq filter would drop NULLs)
+  _cache[userType] = { at: Date.now(), rows: all };
   return all;
 }
+const verifiedGuides    = () => verifiedProviders('guide');
+const verifiedCompanies = () => verifiedProviders('company');
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -57,6 +58,9 @@ const T = {
     onboarding: n => `We're onboarding guides for ${n} right now.`,
     browseAll: 'Browse all Oman guides', searchFilter: n => `🔍 Search & filter ${n} guides`,
     otherLang: 'العربية', from: 'from',
+    companies: 'Tourism Companies', companiesIn: n => `Tourism companies in ${n}`,
+    viewCompany: 'View company', allCompanies: 'All tourism companies in Oman',
+    noCompanies: n => `No registered tourism company covers ${n} yet.`,
   },
   ar: {
     findGuide: 'ابحث عن مرشد', signUp: 'إنشاء حساب', home: 'الرئيسية', destinations: 'الوجهات', tours: 'الرحلات',
@@ -65,6 +69,9 @@ const T = {
     onboarding: n => `نعمل حاليًا على ضمّ مرشدين في ${n}.`,
     browseAll: 'تصفّح كل مرشدي عُمان', searchFilter: n => `🔍 ابحث وفلتر مرشدي ${n}`,
     otherLang: 'English', from: 'من',
+    companies: 'شركات السياحة', companiesIn: n => `شركات السياحة في ${n}`,
+    viewCompany: 'عرض الشركة', allCompanies: 'جميع شركات السياحة في عُمان',
+    noCompanies: n => `لا توجد شركة سياحة مسجَّلة تغطّي ${n} حتى الآن.`,
   },
 };
 
@@ -169,18 +176,44 @@ function guideCard(g, lang) {
   </div>`;
 }
 
+function companyCard(c, lang) {
+  const t = T[lang];
+  const name = c.companyName || c.fullName || 'Tourism Company';
+  const photo = safeImg(c.photo);
+  const initials = String(name).trim().charAt(0).toUpperCase();
+  const desc = String(c.companyDescription || '').trim().slice(0, 120);
+  const rating = Number(c.rating) || 0;
+  return `<div class="col-12 col-sm-6 col-lg-4">
+    <a href="/company-profile.html?id=${esc(c.id)}" style="text-decoration:none;color:inherit">
+      <div class="gcard">
+        <div class="ph"${photo ? ` style="background-image:url('${esc(photo)}')"` : ''}>${photo ? '' : esc(initials)}</div>
+        <div class="bd">
+          <div class="d-flex justify-content-between align-items-start">
+            <h3>${esc(name)}</h3>
+            ${c.isVerified ? `<span class="vbadge">${t.verified}</span>` : ''}
+          </div>
+          <div class="text-muted small mb-2">${rating ? `⭐ ${rating.toFixed(1)}` : t.newGuide}</div>
+          ${desc ? `<p class="text-muted small mb-2">${esc(desc)}</p>` : ''}
+          <span class="btn btn-sm btn-teal mt-auto w-100">${t.viewCompany}</span>
+        </div>
+      </div>
+    </a>
+  </div>`;
+}
+
 // Cross-links to sibling landing pages — stays inside the current language so
 // crawlers follow a clean per-language link graph.
 function relatedLinks(currentSlug, lang) {
   const t = T[lang], pre = lang === 'ar' ? '/ar' : '';
   const name = o => lang === 'ar' ? o.ar : o.en;
-  const places = PLACES.filter(p => p.slug !== currentSlug).slice(0, 8)
+  const places = PLACES.filter(p => p.slug !== currentSlug).slice(0, 10)
     .map(p => `<a href="${pre}/tour-guides/${p.slug}">${esc(t.guidesIn(name(p)))}</a>`).join('');
   const cats = CATEGORIES.filter(c => c.slug !== currentSlug).slice(0, 6)
     .map(c => `<a href="${pre}/tours/${c.slug}">${esc(t.catTours(name(c)))}</a>`).join('');
+  const comp = `<a href="${pre}/tour-companies">${esc(t.allCompanies)}</a>`;
   return `
     <h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">${t.exploreMore}</h2>
-    <div class="seo-links">${places}${cats}</div>`;
+    <div class="seo-links">${places}${cats}${comp}</div>`;
 }
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -325,9 +358,98 @@ async function renderCategory(req, res, next, lang) {
   }
 }
 
-router.get('/tour-guides/:place',    (req, res, next) => renderPlace(req, res, next, 'en'));
-router.get('/ar/tour-guides/:place', (req, res, next) => renderPlace(req, res, next, 'ar'));
-router.get('/tours/:category',       (req, res, next) => renderCategory(req, res, next, 'en'));
-router.get('/ar/tours/:category',    (req, res, next) => renderCategory(req, res, next, 'ar'));
+// ── Tourism company pages ──
+// `place` is optional: without it this is the national index of every
+// registered tourism company, which is also the hub the per-place pages link to.
+async function renderCompanies(req, res, next, lang) {
+  const slug = req.params.place ? String(req.params.place).toLowerCase() : null;
+  const place = slug ? PLACE_BY_SLUG[slug] : null;
+  if (slug && !place) return next();
+  const ar = lang === 'ar', t = T[lang];
+
+  try {
+    const all = await verifiedCompanies();
+    const matches = (place ? all.filter(c => companyServesPlace(c, place)) : all)
+      .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+    const n = matches.length;
+    const where = place ? (ar ? place.ar : place.en) : null;
+
+    const suffix = place ? `/${place.slug}` : '';
+    const canonical = `${APP_URL}${ar ? '/ar' : ''}/tour-companies${suffix}`;
+    const altUrl    = `${APP_URL}${ar ? '' : '/ar'}/tour-companies${suffix}`;
+
+    const title = place
+      ? (ar ? `شركات السياحة في ${place.ar}، عُمان — مسجَّلة وموثّقة | Guideon`
+            : `Tourism Companies in ${place.en}, Oman — Registered & Verified | Guideon`)
+      : (ar ? `شركات السياحة في سلطنة عُمان — مسجَّلة وموثّقة | Guideon`
+            : `Tourism Companies in Oman — Registered & Verified | Guideon`);
+    const description = place
+      ? (ar ? `تصفّح ${n || ''} شركة سياحة مسجَّلة تنظّم رحلات في ${place.ar} بسلطنة عُمان. باقات وجولات بأسعار واضحة وحجز آمن بالريال العُماني.`
+            : `Browse ${n || ''} registered tourism companies running tours in ${place.en}, Oman. Compare packages, prices and reviews, and book securely in OMR.`)
+      : (ar ? `دليل شركات السياحة المسجَّلة في سلطنة عُمان على Guideon — باقات وجولات منظّمة في جميع المحافظات، بحجز آمن بالريال العُماني.`
+            : `Directory of registered tourism companies in Oman on Guideon — organised tours and packages across every governorate, booked securely in OMR.`);
+    const h1 = place ? t.companiesIn(where) : (ar ? 'شركات السياحة في سلطنة عُمان' : 'Tourism Companies in Oman');
+    const intro = place
+      ? (ar ? `شركات سياحة مسجَّلة تنظّم رحلات وبرامج في ${esc(place.ar)}. ${esc(place.blurbAr)}`
+            : `Registered tourism companies running trips and packages in ${esc(place.en)}. ${esc(cap(place.blurb))}`)
+      : (ar ? 'شركات سياحة عُمانية مسجَّلة، موثّقة على المنصة، تنظّم برامج ورحلات في جميع أنحاء السلطنة.'
+            : 'Registered Omani tourism companies, verified on the platform, running organised trips and packages across the Sultanate.');
+
+    const cardsHtml = n
+      ? `<div class="row g-3">${matches.map(c => companyCard(c, lang)).join('')}</div>`
+      : `<div class="text-center py-5">
+           <p class="text-muted">${esc(place ? t.noCompanies(where) : (ar ? 'لا توجد شركات مسجَّلة بعد.' : 'No registered companies yet.'))}</p>
+           <a href="${ar ? '/ar' : ''}/tour-companies" class="btn btn-teal">${t.allCompanies}</a>
+         </div>`;
+
+    // Per-place company pages cross-link to every other place that actually has
+    // a company, so the hub and spokes stay connected without dead links.
+    const siblings = PLACES
+      .filter(p => (!place || p.slug !== place.slug) && all.some(c => companyServesPlace(c, p)))
+      .map(p => `<a href="${ar ? '/ar' : ''}/tour-companies/${p.slug}">${esc(t.companiesIn(ar ? p.ar : p.en))}</a>`)
+      .join('');
+
+    const bodyHtml = `
+      <div class="crumbs"><a href="${ar ? '/?lang=ar' : '/'}">${t.home}</a> › <a href="${ar ? '/ar' : ''}/tour-companies">${t.companies}</a>${place ? ` › ${esc(where)}` : ''}</div>
+      <p class="text-muted">${ar ? `${n} شركة سياحة موثّقة${place ? ` تغطّي ${esc(where)}` : ' في السلطنة'}.` : `${n} verified tourism compan${n === 1 ? 'y' : 'ies'}${place ? ` covering ${esc(where)}` : ' across Oman'}.`}</p>
+      ${cardsHtml}
+      ${siblings ? `<h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">${t.companies}</h2><div class="seo-links">${siblings}</div>` : ''}
+      ${relatedLinks(place ? place.slug : '', lang)}`;
+
+    const crumbItems = [
+      { '@type': 'ListItem', position: 1, name: t.home, item: APP_URL + '/' },
+      { '@type': 'ListItem', position: 2, name: t.companies, item: `${APP_URL}${ar ? '/ar' : ''}/tour-companies` },
+    ];
+    if (place) crumbItems.push({ '@type': 'ListItem', position: 3, name: where, item: canonical });
+
+    const jsonld = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'BreadcrumbList', itemListElement: crumbItems },
+        { '@type': 'ItemList', name: title, numberOfItems: n,
+          itemListElement: matches.slice(0, 20).map((c, i) => ({
+            '@type': 'ListItem', position: i + 1,
+            url: `${APP_URL}/company-profile.html?id=${c.id}`,
+            name: c.companyName || c.fullName,
+          })) },
+      ],
+    };
+
+    res.set('Cache-Control', 'public, max-age=600');
+    res.type('html').send(shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex: n === 0 }));
+  } catch (e) {
+    console.error('[seoLanding:companies]', e.message);
+    next();
+  }
+}
+
+router.get('/tour-guides/:place',       (req, res, next) => renderPlace(req, res, next, 'en'));
+router.get('/ar/tour-guides/:place',    (req, res, next) => renderPlace(req, res, next, 'ar'));
+router.get('/tours/:category',          (req, res, next) => renderCategory(req, res, next, 'en'));
+router.get('/ar/tours/:category',       (req, res, next) => renderCategory(req, res, next, 'ar'));
+router.get('/tour-companies',           (req, res, next) => renderCompanies(req, res, next, 'en'));
+router.get('/ar/tour-companies',        (req, res, next) => renderCompanies(req, res, next, 'ar'));
+router.get('/tour-companies/:place',    (req, res, next) => renderCompanies(req, res, next, 'en'));
+router.get('/ar/tour-companies/:place', (req, res, next) => renderCompanies(req, res, next, 'ar'));
 
 module.exports = router;
