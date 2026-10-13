@@ -35,7 +35,13 @@ function mergeRegions(seed, saved) {
   const ids = [...new Set([...seed.map(r => r.id), ...saved.map(r => r.id)])];
   return ids.map(id => {
     const base = seedById[id] || {};
-    const merged = { ...base, ...(savedById[id] || {}) };
+    const saved = savedById[id] || {};
+    // A saved row carries every field, including the ones the admin never filled
+    // in, as null or "". Those must not bury a value the seed has — that is how
+    // Adh Dhahirah's hero photo stayed invisible after it was added.
+    const edits = Object.fromEntries(Object.entries(saved)
+      .filter(([, v]) => v !== null && v !== undefined && v !== ''));
+    const merged = { ...base, ...edits };
     if (Array.isArray(base.landmarks) && base.landmarks.length) {
       merged.landmarks = base.landmarks;
       merged.sites = base.landmarks.length;

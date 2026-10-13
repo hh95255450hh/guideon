@@ -37,3 +37,13 @@ test('content merge: regions absent from the saved copy keep their seed data', (
   assert.strictEqual(wusta.landmarks.length, 1);
   assert.strictEqual(wusta.sites, 1);
 });
+
+test('content merge: an empty saved field does not bury a seed value', () => {
+  // A saved row carries every field, so a photo the admin never set arrives as
+  // null — which used to hide a hero photo added to the seed afterwards.
+  const seedWithHero = [{ id: 'dhahirah', name_ar: 'الظاهرة', hero: '/img/regions/dhahirah.webp', sites: 1,
+    landmarks: [{ name_ar: 'إبري', name_en: 'Ibri', lat: 23.2, lng: 56.5, type: 'city' }] }];
+  const savedBlank = [{ id: 'dhahirah', name_ar: 'الظاهرة', hero: null, tagline_ar: '' }];
+  const [out] = mergeRegions(seedWithHero, savedBlank);
+  assert.strictEqual(out.hero, '/img/regions/dhahirah.webp');
+});
