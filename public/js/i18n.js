@@ -106,19 +106,38 @@ const I18N = {
     // the stored language). If the user then switches LTR↔RTL we
     // create the other link on the fly here so the page restyles
     // without a reload.
-    function ensureBs(idAttr, href) {
+    //
+    // Only the stylesheet for the current direction is kept. This used to
+    // create BOTH and disable one with media="not all" — but browsers still
+    // download a disabled stylesheet, so every page fetched Bootstrap twice.
+    // Worse, a dozen pages also hardcode bootstrap.min.css without an id; in
+    // Arabic that LTR copy stayed live beside the RTL one and their margins and
+    // alignments fought. Hardcoded links are adopted, the wrong one removed.
+    function findBs(idAttr, file) {
       let el = document.getElementById(idAttr);
       if (!el) {
-        el = document.createElement('link');
-        el.id = idAttr; el.rel = 'stylesheet'; el.href = href;
-        document.head.appendChild(el);
+        el = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+          .find(l => (l.getAttribute('href') || '').split('?')[0] === file);
+        if (el) el.id = idAttr;
       }
       return el;
     }
-    const bsLtr = ensureBs('bs-ltr', '/css/bootstrap.min.css');
-    const bsRtl = ensureBs('bs-rtl', '/css/bootstrap.rtl.min.css');
-    bsLtr.media = isRtl ? 'not all' : '';
-    bsRtl.media = isRtl ? ''        : 'not all';
+    const BS = { ltr: ['bs-ltr', '/css/bootstrap.min.css'], rtl: ['bs-rtl', '/css/bootstrap.rtl.min.css'] };
+    const [wantId, wantFile] = isRtl ? BS.rtl : BS.ltr;
+    const [oldId, oldFile]   = isRtl ? BS.ltr : BS.rtl;
+    const stale = findBs(oldId, oldFile);
+    let active = findBs(wantId, wantFile);
+    if (active) {
+      active.media = '';
+      if (stale) stale.remove();
+    } else {
+      active = document.createElement('link');
+      active.id = wantId; active.rel = 'stylesheet'; active.href = wantFile;
+      // On a live language switch, drop the old sheet only once the new one has
+      // loaded, so the page never flashes unstyled.
+      if (stale) active.addEventListener('load', () => stale.remove(), { once: true });
+      document.head.appendChild(active);
+    }
 
     document.body.style.fontFamily = isRtl
       ? "'Segoe UI', 'Cairo', 'Tajawal', 'Noto Naskh Arabic', system-ui, sans-serif"
