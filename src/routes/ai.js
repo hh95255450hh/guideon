@@ -1,6 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const ai = require('../controllers/aiController');
+const { aiGuard } = require('../middleware/aiGuard');
 
 const router = express.Router();
 
@@ -13,9 +14,11 @@ const aiLimiter = rateLimit({
   message: { success: false, message: 'Too many AI requests — please wait a moment. — طلبات كثيرة، انتظر قليلاً.' },
 });
 
-router.post('/trip-plan',           aiLimiter, ai.tripPlan);
-router.post('/match',               aiLimiter, ai.match);
-router.post('/improve',             aiLimiter, ai.improve);
+// aiGuard caps input size and spends a daily quota per visitor plus a global
+// ceiling. The review summary is served from cache, so only a cache miss spends.
+router.post('/trip-plan',           aiLimiter, aiGuard, ai.tripPlan);
+router.post('/match',               aiLimiter, aiGuard, ai.match);
+router.post('/improve',             aiLimiter, aiGuard, ai.improve);
 router.get('/reviews-summary/:guideId', aiLimiter, ai.reviewsSummary);
 
 module.exports = router;
