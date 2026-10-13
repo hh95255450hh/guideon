@@ -264,14 +264,57 @@ exports.verify = async (req, res) => {
 // The DB has a UNIQUE index on paymentRef (migration 052) so a duplicate
 // ref update is a no-op; we also do an early in-memory check here so we
 // avoid unnecessary DB writes in the happy path.
+// Statuses a payment can no longer settle. A booking reaches one of these when
+// its payment window expired, the tourist cancelled, or the provider declined.
+const DEAD_STATUSES = new Set(['cancelled', 'expired', 'rejected', 'declined', 'refunded']);
+
+// Tell the admins about money that arrived but could not be applied. Without
+// this the only trace was a console.warn nobody reads.
+function alertPaymentProblem(subject, booking, detail) {
+  const rows = [
+    ['Booking', booking?.id], ['Status', booking?.status], ['Amount', booking?.totalAmount && `OMR ${booking.totalAmount}`],
+    ['Destination', booking?.destination], ['Tour date', booking?.tourDate], ['Detail', detail],
+  ].filter(([, v]) => v).map(([k, v]) => `<tr><td style="padding:4px 10px;color:#6b7280">${k}</td><td style="padding:4px 10px"><b>${String(v).replace(/[<>&]/g, '')}</b></td></tr>`).join('');
+  emailService.notifyAdmins(`[Guideon] ⚠️ ${subject}`,
+    `<p>A payment needs attention.</p><table>${rows}</table>`).catch(() => {});
+}
+
+// Settle a payment. Returns what happened so the webhook can answer correctly:
+//   'settled' | 'duplicate' | 'not_found' | 'refused' | 'needs_refund'
 async function finalizePaidBooking(bookingId, session) {
   const fresh = await bookings.findById(bookingId);
-  if (!fresh) return;
+  if (!fresh) {
+    console.warn(`[Payment] paid for unknown booking ${bookingId}`);
+    alertPaymentProblem('Payment for a booking that does not exist', { id: bookingId }, 'Check the gateway dashboard and refund.');
+    return 'not_found';
+  }
+
+  // A late payment for a booking that is already dead must NOT mark it paid.
+  // It used to fall into the balance branch below: isPaid=true, a "Payment
+  // successful" message to the tourist — on a cancelled booking. The tourist was
+  // charged for a tour that will not happen and nobody was told.
+  if (DEAD_STATUSES.has(fresh.status) && !fresh.isPaid) {
+    const ref = session?.raw?.session_id || fresh.paymentSessionId;
+    // Keep the reference on the booking so the payment is traceable for the refund.
+    await updateBookingSafe(bookingId, { paymentRef: ref }).catch(() => {});
+    console.warn(`[Payment] booking ${bookingId} is ${fresh.status}; payment ${ref} needs a refund`);
+    alertPaymentProblem(`Refund needed — payment arrived for a ${fresh.status} booking`, fresh,
+      `Gateway reference ${ref}. The booking was not reactivated. Refund it from the Paymob dashboard.`);
+    if (fresh.touristId) notify({
+      userId: fresh.touristId, type: 'payment_refund_pending',
+      title: 'Your payment will be refunded', titleAr: 'سيتم استرداد دفعتك',
+      body: `We received your payment for the ${fresh.destination} booking after it had closed. It will be refunded in full.`,
+      bodyAr: `وصلت دفعتك لحجز ${fresh.destination} بعد إغلاقه، وسيتم استردادها كاملة.`,
+      link: '/tourist-dashboard.html#bookings', metadata: { bookingId },
+    });
+    return 'needs_refund';
+  }
+
   const isDeposit = fresh.status === 'awaiting_payment';
   // In-memory idempotency guard — prevents double-processing in concurrent calls.
   if (isDeposit ? fresh.depositPaidAt : fresh.isPaid) {
     console.log(`[Payment] Booking ${bookingId} already settled — skipping duplicate webhook.`);
-    return;
+    return 'duplicate';
   }
 
   // What's owed for THIS payment (deposit vs balance vs full).
@@ -285,13 +328,15 @@ async function finalizePaidBooking(bookingId, session) {
     const ref = session.raw?.client_reference_id;
     if (ref && ref !== bookingId) {
       console.warn(`[Payment] refusing: session ref ${ref} != booking ${bookingId}`);
-      return;
+      alertPaymentProblem('Payment refused — reference mismatch', fresh, `Session ref ${ref} does not match the booking.`);
+      return 'refused';
     }
     const expected = thawani.toBaisa(expectedOmr);
     const paid = Number(session.raw?.total_amount);
     if (Number.isFinite(paid) && paid < expected) {
       console.warn(`[Payment] refusing: underpaid ${paid} < ${expected} baisa for ${bookingId}`);
-      return;
+      alertPaymentProblem('Payment refused — underpaid', fresh, `Paid ${paid} baisa, owed ${expected} baisa.`);
+      return 'refused';
     }
   }
 
@@ -313,7 +358,7 @@ async function finalizePaidBooking(bookingId, session) {
       // Unique violation on paymentRef = another webhook already settled this. Safe to ignore.
       if (dbErr?.code === '23505' || String(dbErr?.message).includes('unique')) {
         console.log(`[Payment] Booking ${bookingId} unique-ref conflict — already settled by concurrent webhook.`);
-        return;
+        return 'duplicate';
       }
       throw dbErr;
     }
@@ -342,7 +387,7 @@ async function finalizePaidBooking(bookingId, session) {
       link: instantReq ? '/instant.html' : '/tourist-dashboard.html#bookings', metadata: { bookingId },
     });
     console.log(`[Payment] Booking ${bookingId} deposit paid → submitted to provider.`);
-    return;
+    return 'settled';
   }
 
   // ── Balance / legacy full payment → mark fully paid ──
@@ -351,7 +396,7 @@ async function finalizePaidBooking(bookingId, session) {
   } catch (dbErr) {
     if (dbErr?.code === '23505' || String(dbErr?.message).includes('unique')) {
       console.log(`[Payment] Booking ${bookingId} unique-ref conflict (balance) — already settled.`);
-      return;
+      return 'duplicate';
     }
     throw dbErr;
   }
@@ -386,6 +431,7 @@ async function finalizePaidBooking(bookingId, session) {
     });
   }
   console.log(`[Payment] Booking ${bookingId} marked paid.`);
+  return 'settled';
 }
 // Exposed so an admin/ops script can settle a booking whose webhook was missed.
 exports.finalizePaidBooking = finalizePaidBooking;
@@ -422,8 +468,9 @@ exports.webhook = async (req, res) => {
     }
     res.json({ received: true });
   } catch (err) {
-    console.error('[Payment] webhook:', err.message);
-    res.status(200).json({ received: true }); // never make Thawani retry-storm us
+    // Same reasoning as the Paymob callback: a transient failure must be retried.
+    console.error('[Payment] webhook failed, asking for a retry:', err.message);
+    res.status(503).json({ received: false, retry: true });
   }
 };
 
@@ -461,23 +508,34 @@ exports.paymobCallback = async (req, res) => {
       });
     } else if (success && !refBookingId) {
       console.warn('[Paymob] paid but could not resolve booking ref from obj.order=%j', obj?.order);
+      alertPaymentProblem('Paid transaction with no booking reference', null,
+        `Paymob transaction ${obj?.id}, order ${obj?.order?.id}. Match it by hand in the Paymob dashboard.`);
     }
+    // Answered settlements — including refusals and refund cases, which have
+    // already alerted the admins — are final: 200 so Paymob does not resend.
     res.status(200).json({ received: true });
   } catch (err) {
-    console.error('[Paymob] callback:', err.message);
-    res.status(200).json({ received: true }); // never make Paymob retry-storm us
+    // A thrown error here is transient (database or network), and the money has
+    // already moved. Answering 200 told Paymob the payment was applied when it
+    // was not, so it never retried and the booking stayed unpaid. A 5xx makes
+    // Paymob retry; finalizePaidBooking is idempotent, so a retry is safe.
+    console.error('[Paymob] callback failed, asking Paymob to retry:', err.message);
+    res.status(503).json({ received: false, retry: true });
   }
 };
 
-// POST /api/payments/refund (admin only) — records intent; refund is
-// executed in the Thawani dashboard (Thawani has no public refund API yet).
+// POST /api/payments/refund (admin only) — records intent; the refund itself is
+// executed in the live gateway's dashboard.
 exports.issueRefund = async (req, res) => {
   try {
     const { bookingId } = req.body;
     const booking = await bookings.findById(bookingId);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found.' });
-    if (!booking.isPaid) return res.status(400).json({ success: false, message: 'This booking was not paid.' });
-    res.json({ success: true, message: 'Refund noted. Process it from the Thawani dashboard, then cancel the booking.' });
+    // A late payment on a closed booking is never marked paid but does carry a
+    // paymentRef — that is exactly the case that needs a refund.
+    if (!booking.isPaid && !booking.paymentRef) return res.status(400).json({ success: false, message: 'This booking was not paid.' });
+    const dashboard = PROVIDER === 'paymob' ? 'Paymob' : 'Thawani';
+    res.json({ success: true, message: `Refund noted. Process it from the ${dashboard} dashboard (reference ${booking.paymentRef || '—'}), then cancel the booking.` });
   } catch (err) {
     console.error('[Payment] issueRefund:', err.message);
     res.status(500).json({ success: false, message: 'Server error.' });
