@@ -21,6 +21,30 @@ function staticData(name) {
   } catch { return null; }
 }
 
+// Merge the bundled seed with the admin's DB-saved copy, item by id: the seed is
+// the base so fields added after the last admin save still surface, and the
+// admin's edits (hero photo, prose) win on top.
+//
+// `landmarks` is the exception. It is curated in public/data/regions.json and is
+// not editable from the admin panel, so a DB row only ever holds a stale snapshot
+// of it — letting it override hid every site added since the admin last saved,
+// and with it the `sites` badge count.
+function mergeRegions(seed, saved) {
+  const seedById = Object.fromEntries(seed.map(r => [r.id, r]));
+  const savedById = Object.fromEntries(saved.map(r => [r.id, r]));
+  const ids = [...new Set([...seed.map(r => r.id), ...saved.map(r => r.id)])];
+  return ids.map(id => {
+    const base = seedById[id] || {};
+    const merged = { ...base, ...(savedById[id] || {}) };
+    if (Array.isArray(base.landmarks) && base.landmarks.length) {
+      merged.landmarks = base.landmarks;
+      merged.sites = base.landmarks.length;
+    }
+    return merged;
+  });
+}
+exports.mergeRegions = mergeRegions;
+
 // GET /api/content/:key — public. DB value if an admin has saved one,
 // otherwise the bundled static JSON.
 exports.get = async (req, res) => {
@@ -40,10 +64,7 @@ exports.get = async (req, res) => {
     // surface; the admin's DB-saved values override on top, item by id.
     let data = fallback;
     if (dbData && Array.isArray(fallback?.regions) && Array.isArray(dbData.regions)) {
-      const fbById = Object.fromEntries(fallback.regions.map(r => [r.id, r]));
-      const dbById = Object.fromEntries(dbData.regions.map(r => [r.id, r]));
-      const ids = [...new Set([...fallback.regions.map(r=>r.id), ...dbData.regions.map(r=>r.id)])];
-      data = { regions: ids.map(id => ({ ...(fbById[id]||{}), ...(dbById[id]||{}) })) };
+      data = { regions: mergeRegions(fallback.regions, dbData.regions) };
     } else if (dbData) {
       data = dbData;
     }
