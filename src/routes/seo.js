@@ -73,6 +73,18 @@ router.get('/sitemap.xml', async (req, res) => {
         if (!verifiedGuides.some(g => guideMatchesCategory(g, c))) return;
         langPairs.push({ path: `/tours/${c.slug}`, changefreq: 'weekly', priority: 0.8 });
       });
+      // Place × category long-tail pages. Must mirror MIN_COMBO in
+      // routes/seoLanding.js: a combo below the threshold is served noindex, and
+      // listing a noindex URL would send Google a contradictory signal.
+      const MIN_COMBO = 3;
+      PLACES.forEach(p => {
+        const inPlace = verifiedGuides.filter(g => guideServesPlace(g, p));
+        if (!inPlace.length) return;
+        CATEGORIES.forEach(c => {
+          if (inPlace.filter(g => guideMatchesCategory(g, c)).length < MIN_COMBO) return;
+          langPairs.push({ path: `/tour-guides/${p.slug}/${c.slug}`, changefreq: 'weekly', priority: 0.7 });
+        });
+      });
       if (verifiedCompanies.length) {
         langPairs.push({ path: '/tour-companies', changefreq: 'weekly', priority: 0.85 });
         PLACES.forEach(p => {

@@ -118,6 +118,34 @@ test('seo: landing router registers company routes in both languages', () => {
   }
 });
 
+test('seo: landing router registers place x category combo routes', () => {
+  const router = require('../src/routes/seoLanding');
+  const paths = router.stack.map(l => l.route && l.route.path).filter(Boolean);
+  for (const p of ['/tour-guides/:place/:category', '/ar/tour-guides/:place/:category']) {
+    assert.ok(paths.includes(p), `missing route ${p}`);
+  }
+  // The single-segment place route must stay registered BEFORE the combo route,
+  // otherwise /tour-guides/nizwa could be captured by the two-segment handler.
+  assert.ok(paths.indexOf('/tour-guides/:place') < paths.indexOf('/tour-guides/:place/:category'));
+});
+
+// The sitemap must never advertise a URL the page itself marks noindex.
+test('seo: combo threshold is identical in the route and the sitemap', () => {
+  const routeSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'seoLanding.js'), 'utf8');
+  const mapSrc   = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'seo.js'), 'utf8');
+  const a = routeSrc.match(/MIN_COMBO\s*=\s*(\d+)/);
+  const b = mapSrc.match(/MIN_COMBO\s*=\s*(\d+)/);
+  assert.ok(a && b, 'both files must define MIN_COMBO');
+  assert.strictEqual(a[1], b[1], 'sitemap would list pages the route serves as noindex');
+});
+
+test('seo: Dockerfile pins a patch-level base image', () => {
+  const df = fs.readFileSync(path.join(__dirname, '..', 'Dockerfile'), 'utf8');
+  const m = df.match(/^FROM\s+node:(\S+)/m);
+  assert.ok(m, 'Dockerfile must have a FROM node: line');
+  assert.match(m[1], /^\d+\.\d+/, 'base image must be pinned to a patch tag, not a floating major');
+});
+
 test('seo: robots.txt allows AI answer engines but keeps private areas closed', () => {
   const robots = fs.readFileSync(path.join(PUBLIC, 'robots.txt'), 'utf8');
   for (const bot of ['GPTBot', 'PerplexityBot', 'ClaudeBot', 'OAI-SearchBot', 'Google-Extended']) {

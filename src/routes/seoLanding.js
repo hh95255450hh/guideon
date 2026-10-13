@@ -256,11 +256,19 @@ async function renderPlace(req, res, next, lang) {
       ? `${n} مرشدًا موثّقًا يغطّون ${esc(place.ar)} ومحافظة ${esc(place.govAr)}.`
       : `${n} verified guide${n === 1 ? '' : 's'} serving ${esc(place.en)} and the wider ${esc(place.gov)} governorate.`;
 
+    // Link the combos this place actually supports, so the long-tail pages are
+    // reachable by crawl and not only via the sitemap.
+    const comboLinks = CATEGORIES
+      .filter(c => matches.some(g => guideMatchesCategory(g, c)))
+      .map(c => `<a href="${ar ? '/ar' : ''}/tour-guides/${place.slug}/${c.slug}">${esc(ar ? `رحلات ${c.ar} في ${place.ar}` : `${c.en} tours in ${place.en}`)}</a>`)
+      .join('');
+
     const bodyHtml = `
       <div class="crumbs"><a href="${ar ? '/?lang=ar' : '/'}">${t.home}</a> › <a href="/regions.html">${t.destinations}</a> › ${esc(ar ? place.ar : place.en)}</div>
       <p class="text-muted">${countLine}</p>
       <div class="my-3"><a href="${searchHref}" class="btn btn-teal">${esc(t.searchFilter(ar ? place.ar : place.en))}</a></div>
       ${cardsHtml}
+      ${comboLinks ? `<h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">${esc(ar ? `أنواع الرحلات في ${place.ar}` : `Tour types in ${place.en}`)}</h2><div class="seo-links">${comboLinks}</div>` : ''}
       ${relatedLinks(place.slug, lang)}`;
 
     const jsonld = {
@@ -358,6 +366,91 @@ async function renderCategory(req, res, next, lang) {
   }
 }
 
+// ── Place × category combos ──
+// The long tail lives here: "cultural tours nizwa", "رحلات صحراوية في رمال
+// الشرقية". A combo only gets indexed once MIN_COMBO guides match BOTH facets —
+// below that the page is real but thin, so it is served noindex and kept out of
+// the sitemap rather than diluting the site's quality signal.
+const MIN_COMBO = 3;
+
+async function renderCombo(req, res, next, lang) {
+  const place = PLACE_BY_SLUG[String(req.params.place).toLowerCase()];
+  const cat   = CAT_BY_SLUG[String(req.params.category).toLowerCase()];
+  if (!place || !cat) return next();
+  const ar = lang === 'ar', t = T[lang];
+
+  try {
+    const all = await verifiedGuides();
+    const matches = all.filter(g => guideServesPlace(g, place) && guideMatchesCategory(g, cat))
+      .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+    const n = matches.length;
+    const pName = ar ? place.ar : place.en;
+    const cName = ar ? cat.ar : cat.en;
+
+    const canonical = `${APP_URL}${ar ? '/ar' : ''}/tour-guides/${place.slug}/${cat.slug}`;
+    const altUrl    = `${APP_URL}${ar ? '' : '/ar'}/tour-guides/${place.slug}/${cat.slug}`;
+
+    const title = ar
+      ? `رحلات ${cat.ar} في ${place.ar}، عُمان — مرشدون محليون موثّقون | Guideon`
+      : `${cat.en} Tours in ${place.en}, Oman — Verified Local Guides | Guideon`;
+    const description = ar
+      ? `احجز رحلات ${cat.ar} في ${place.ar} بسلطنة عُمان مع ${n || ''} مرشدًا محليًا مرخّصًا. ${cat.blurbAr} ${place.blurbAr}`
+      : `Book ${cat.en.toLowerCase()} tours in ${place.en}, Oman with ${n || ''} licensed local guides. ${cat.blurb} ${place.en} is ${place.blurb}`;
+    const h1 = ar ? `رحلات ${cat.ar} في ${place.ar}` : `${cat.en} Tours in ${place.en}`;
+    const intro = ar
+      ? `${esc(cat.blurbAr)} في ${esc(place.ar)} — ${esc(place.blurbAr)}`
+      : `${esc(cap(cat.blurb))} In ${esc(place.en)} — ${esc(place.blurb)}`;
+
+    const cardsHtml = n
+      ? `<div class="row g-3">${matches.map(g => guideCard(g, lang)).join('')}</div>`
+      : `<div class="text-center py-5">
+           <p class="text-muted">${esc(t.onboarding(`${cName} · ${pName}`))}</p>
+           <a href="${ar ? '/ar' : ''}/tour-guides/${place.slug}" class="btn btn-teal">${esc(t.guidesIn(pName))}</a>
+         </div>`;
+
+    // Siblings: the other categories that this place actually supports, plus
+    // the same category in other places — both directions of the long tail.
+    const otherCats = CATEGORIES.filter(c => c.slug !== cat.slug)
+      .filter(c => all.some(g => guideServesPlace(g, place) && guideMatchesCategory(g, c)))
+      .map(c => `<a href="${ar ? '/ar' : ''}/tour-guides/${place.slug}/${c.slug}">${esc(ar ? `رحلات ${c.ar} في ${place.ar}` : `${c.en} in ${place.en}`)}</a>`).join('');
+    const otherPlaces = PLACES.filter(p => p.slug !== place.slug)
+      .filter(p => all.some(g => guideServesPlace(g, p) && guideMatchesCategory(g, cat)))
+      .slice(0, 10)
+      .map(p => `<a href="${ar ? '/ar' : ''}/tour-guides/${p.slug}/${cat.slug}">${esc(ar ? `رحلات ${cat.ar} في ${p.ar}` : `${cat.en} in ${p.en}`)}</a>`).join('');
+
+    const bodyHtml = `
+      <div class="crumbs"><a href="${ar ? '/?lang=ar' : '/'}">${t.home}</a> › <a href="${ar ? '/ar' : ''}/tour-guides/${place.slug}">${esc(pName)}</a> › ${esc(cName)}</div>
+      <p class="text-muted">${ar ? `${n} مرشدًا موثّقًا يقدّمون رحلات ${esc(cat.ar)} في ${esc(place.ar)}.` : `${n} verified guide${n === 1 ? '' : 's'} offering ${esc(cat.en.toLowerCase())} tours in ${esc(place.en)}.`}</p>
+      <div class="my-3"><a href="${ar ? '/ar' : ''}/tour-guides/${place.slug}" class="btn btn-teal">${esc(t.guidesIn(pName))}</a></div>
+      ${cardsHtml}
+      ${otherCats ? `<h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">${esc(ar ? `رحلات أخرى في ${place.ar}` : `More in ${place.en}`)}</h2><div class="seo-links">${otherCats}</div>` : ''}
+      ${otherPlaces ? `<h2 class="fw-700 mt-4 mb-2" style="font-size:1.2rem">${esc(ar ? `رحلات ${cat.ar} في وجهات أخرى` : `${cat.en} tours elsewhere`)}</h2><div class="seo-links">${otherPlaces}</div>` : ''}`;
+
+    const jsonld = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'BreadcrumbList', itemListElement: [
+          { '@type': 'ListItem', position: 1, name: t.home, item: APP_URL + '/' },
+          { '@type': 'ListItem', position: 2, name: pName, item: `${APP_URL}${ar ? '/ar' : ''}/tour-guides/${place.slug}` },
+          { '@type': 'ListItem', position: 3, name: cName, item: canonical },
+        ]},
+        { '@type': 'ItemList', name: title, numberOfItems: n,
+          itemListElement: matches.slice(0, 20).map((g, i) => ({
+            '@type': 'ListItem', position: i + 1,
+            url: `${APP_URL}/guide-profile.html?id=${g.id}`,
+            name: g.fullName,
+          })) },
+      ],
+    };
+
+    res.set('Cache-Control', 'public, max-age=600');
+    res.type('html').send(shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex: n < MIN_COMBO }));
+  } catch (e) {
+    console.error('[seoLanding:combo]', e.message);
+    next();
+  }
+}
+
 // ── Tourism company pages ──
 // `place` is optional: without it this is the national index of every
 // registered tourism company, which is also the hub the per-place pages link to.
@@ -445,6 +538,8 @@ async function renderCompanies(req, res, next, lang) {
 
 router.get('/tour-guides/:place',       (req, res, next) => renderPlace(req, res, next, 'en'));
 router.get('/ar/tour-guides/:place',    (req, res, next) => renderPlace(req, res, next, 'ar'));
+router.get('/tour-guides/:place/:category',    (req, res, next) => renderCombo(req, res, next, 'en'));
+router.get('/ar/tour-guides/:place/:category', (req, res, next) => renderCombo(req, res, next, 'ar'));
 router.get('/tours/:category',          (req, res, next) => renderCategory(req, res, next, 'en'));
 router.get('/ar/tours/:category',       (req, res, next) => renderCategory(req, res, next, 'ar'));
 router.get('/tour-companies',           (req, res, next) => renderCompanies(req, res, next, 'en'));

@@ -1,7 +1,11 @@
 # ── Guideon application image ───────────────────────────────────────────────
 # Runs the Node.js/Express app. Designed for an Ubuntu VPS (e.g. Oman Data Park)
 # behind a reverse proxy (Nginx) that terminates TLS.
-FROM node:22-slim
+# Pinned to a patch tag, not the floating `22-slim`. When the floating tag moved
+# upstream it invalidated the apt layer below, forcing a cold ~110 MB Chromium
+# download that ran past the deploy hook's 40-minute timeout and failed the
+# deploy. Bump this tag deliberately when you want a new base image.
+FROM node:22.20-slim
 
 # System deps: sharp libs + Chromium and Arabic/emoji fonts for HTML→PDF
 # invoices (Puppeteer renders bilingual documents the browser way).
