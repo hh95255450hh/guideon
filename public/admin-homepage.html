@@ -87,6 +87,7 @@
     <div class="tab-pill active" data-tab="hero"       onclick="switchTab('hero')"><span data-i18n="hp_tab_hero">📝 Hero Section</span></div>
     <div class="tab-pill"        data-tab="carousel"   onclick="switchTab('carousel')"><span data-i18n="hp_tab_carousel">🎬 Carousel Slides</span></div>
     <div class="tab-pill"        data-tab="activities" onclick="switchTab('activities')"><span data-i18n="hp_tab_activities">🌍 Activities Grid</span></div>
+    <div class="tab-pill"        data-tab="pages"      onclick="switchTab('pages')"><span>🎞️ <span class="ph-t" data-en="Page headers" data-ar="واجهات الصفحات">Page headers</span></span></div>
   </div>
 
   <!-- ═══════════════════════════════ HERO TAB ═══════════════════════════════ -->
@@ -200,6 +201,19 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════ PAGE HEADERS TAB ═══════════════════════════════ -->
+  <div class="tab-pane" id="tab-pages">
+    <div class="panel">
+      <h3 class="panel-title ph-t" data-en="🎞️ Page headers — a video or photo for each page" data-ar="🎞️ واجهات الصفحات — فيديو أو صورة لكل صفحة">🎞️ Page headers</h3>
+      <p class="panel-hint ph-t" data-en="Each page opens on a full-screen header. Upload a video (MP4, 720p, under ~15 MB works best) and a photo for each page separately. The photo shows while the video loads and on slow connections. The big outline word sits behind the title (English letters, up to 14). Leave a page untouched to keep its default." data-ar="كل صفحة تبدأ بواجهة بملء الشاشة. ارفع فيديو (MP4 بدقة 720p وأقل من 15 ميجا تقريباً) وصورة لكل صفحة على حدة. تظهر الصورة أثناء تحميل الفيديو وعلى الاتصالات البطيئة. الكلمة الكبيرة المفرّغة تظهر خلف العنوان (حروف إنجليزية حتى 14). اترك الصفحة كما هي لتبقى على الافتراضي."></p>
+      <div id="pageHeroList"></div>
+      <div class="save-bar">
+        <span class="status" id="pagesStatus"></span>
+        <button class="btn-teal btn fw-700 px-4" onclick="savePageHeroes()">💾 <span class="ph-t" data-en="Save page headers" data-ar="حفظ واجهات الصفحات">Save page headers</span></button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div id="toast-container"></div>
@@ -252,6 +266,9 @@ async function loadSettings() {
 
   ACTIVITIES = (SETTINGS.activities?.items) || [];
   renderActivities();
+
+  PAGE_MEDIA = (SETTINGS.pageHeroes?.pages) || {};
+  renderPageHeroes();
 }
 
 // ─── HERO ───────────────────────────────────────────────────────────────
@@ -422,6 +439,96 @@ async function saveCarousel() {
   }
 }
 
+// ─── PAGE HEADERS ───────────────────────────────────────────────────────
+// Defaults mirror each page's markup (data-cine-*); a saved entry overrides them.
+const PAGE_HEROES = [
+  { k:'about',        en:'About',               ar:'من نحن',          img:'/media/hero/hero-2.jpg', vid:'/media/hero/hero-2.mp4', word:'STORY' },
+  { k:'how-it-works', en:'How it works',        ar:'كيف يعمل',        img:'/media/hero/hero-4.jpg', vid:'/media/hero/hero-4.mp4', word:'JOURNEY' },
+  { k:'contact',      en:'Contact',             ar:'تواصل معنا',      img:'/media/hero/hero-1.jpg', vid:'/media/hero/hero-1.mp4', word:'HELLO' },
+  { k:'regions',      en:'Regions',             ar:'المحافظات',       img:'/media/hero/hero-4.jpg', vid:'/media/hero/hero-4.mp4', word:'REGIONS' },
+  { k:'blog',         en:'Blog',                ar:'المدونة',         img:'/media/hero/hero-2.jpg', vid:'/media/hero/hero-2.mp4', word:'STORIES' },
+  { k:'trails',       en:'Hiking trails',       ar:'مسارات المشي',    img:'/img/landmarks/dakhiliyah-jebel-shams.webp', vid:'', word:'TRAILS' },
+  { k:'teams',        en:'Event teams',         ar:'فرق الفعاليات',   img:'/media/hero/hero-3.jpg', vid:'', word:'EVENTS' },
+  { k:'faq',          en:'FAQ',                 ar:'الأسئلة الشائعة', img:'/img/landmarks/muscat-mutrah-corniche.webp', vid:'', word:'FAQ' },
+  { k:'cancellation', en:'Cancellation policy', ar:'سياسة الإلغاء',   img:'/media/hero/hero-3.jpg', vid:'', word:'POLICY' },
+  { k:'terms',        en:'Terms',               ar:'الشروط',          img:'/img/landmarks/dakhiliyah-nizwa-fort.webp', vid:'', word:'TERMS' },
+  { k:'privacy',      en:'Privacy',             ar:'الخصوصية',        img:'/img/landmarks/musandam-telegraph-island.webp', vid:'', word:'PRIVACY' },
+];
+let PAGE_MEDIA = {};
+const phAr = () => (document.documentElement.lang || '').startsWith('ar');
+const phT = (ar, en) => phAr() ? ar : en;
+
+function renderPageHeroes() {
+  document.querySelectorAll('.ph-t').forEach(el => { el.textContent = phAr() ? el.dataset.ar : el.dataset.en; });
+  document.getElementById('pageHeroList').innerHTML = PAGE_HEROES.map(p => {
+    const m = PAGE_MEDIA[p.k] || {};
+    // A custom photo without a custom video replaces the default video too.
+    const img = m.image || p.img, vid = m.video || (m.image ? '' : p.vid);
+    const custom = !!(m.image || m.video || m.word);
+    const media = vid
+      ? `<video src="${esc(vid)}" poster="${esc(img)}" muted loop playsinline preload="none" onmouseenter="this.play()" onmouseleave="this.pause()" style="width:100%;height:100%;object-fit:cover"></video>`
+      : `<img src="${esc(img)}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+    return `
+    <div class="slide-card" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div style="width:240px;max-width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#0f1c3e;position:relative;flex-shrink:0">
+        ${media}
+        <span style="position:absolute;left:0;right:0;bottom:8px;text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.85);font:200 1.6rem Montserrat,sans-serif;letter-spacing:.1em;pointer-events:none">${esc(m.word || p.word)}</span>
+      </div>
+      <div style="flex:1;min-width:240px">
+        <div class="fw-800 mb-1">${esc(phT(p.ar, p.en))} <a href="/${p.k}.html" target="_blank" rel="noopener" class="small">↗</a>
+          <span class="badge ${custom ? 'bg-success' : 'bg-secondary'} ms-1">${custom ? phT('مخصّص', 'Custom') : phT('افتراضي', 'Default')}</span>
+          <span class="badge ${vid ? 'bg-dark' : 'bg-light text-dark'} ms-1">${vid ? '🎬 ' + phT('فيديو', 'Video') : '🖼 ' + phT('صورة', 'Photo')}</span></div>
+        <label class="small fw-700 mt-2 d-block">${phT('الفيديو', 'Video')}</label>
+        <input type="file" accept="video/mp4,video/webm" class="form-control form-control-sm" onchange="uploadPageMedia('${p.k}','video',this)">
+        <label class="small fw-700 mt-2 d-block">${phT('الصورة', 'Photo')}</label>
+        <input type="file" accept="image/*" class="form-control form-control-sm" onchange="uploadPageMedia('${p.k}','image',this)">
+        <label class="small fw-700 mt-2 d-block">${phT('الكلمة الخلفية', 'Background word')}</label>
+        <input type="text" maxlength="14" class="form-control form-control-sm" style="max-width:220px;text-transform:uppercase" placeholder="${esc(p.word)}" value="${esc(m.word || '')}" oninput="setPageWord('${p.k}',this.value)">
+        <div class="mt-2 d-flex gap-2 flex-wrap">
+          ${m.video ? `<button class="btn btn-sm btn-outline-secondary" onclick="clearPageMedia('${p.k}','video')">${phT('إزالة الفيديو', 'Remove video')}</button>` : ''}
+          ${custom ? `<button class="btn btn-sm btn-outline-danger" onclick="resetPageHero('${p.k}')">${phT('رجوع للافتراضي', 'Reset to default')}</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function setPageWord(k, v) { (PAGE_MEDIA[k] = PAGE_MEDIA[k] || {}).word = v.toUpperCase().replace(/[^A-Z0-9 &-]/g, '').slice(0, 14); }
+function clearPageMedia(k, field) { if (PAGE_MEDIA[k]) { PAGE_MEDIA[k][field] = ''; renderPageHeroes(); } }
+function resetPageHero(k) { delete PAGE_MEDIA[k]; renderPageHeroes(); }
+async function uploadPageMedia(k, field, input) {
+  if (!input.files?.[0]) return;
+  const fd = new FormData();
+  fd.append(field === 'video' ? 'video' : 'photo', input.files[0]);
+  toast('⏳ ' + phT('جارٍ الرفع…', 'Uploading…'));
+  try {
+    const r = await fetch(field === 'video' ? '/api/upload/video-file' : '/api/upload/image', { method:'POST', credentials:'include', body: fd });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    (PAGE_MEDIA[k] = PAGE_MEDIA[k] || {})[field] = d.url;
+    renderPageHeroes();
+    toast('✅ ' + phT('تم الرفع — لا تنسَ الحفظ', 'Uploaded — remember to save'));
+  } catch (e) {
+    toast('❌ ' + e.message);
+  }
+}
+async function savePageHeroes() {
+  try {
+    const r = await fetch('/api/site-settings/pageHeroes', {
+      method:'PUT', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ value: { pages: PAGE_MEDIA } }),
+    });
+    const d = await r.json();
+    if (d.success && d.value) { PAGE_MEDIA = d.value.pages || {}; renderPageHeroes(); }
+    showStatus('pagesStatus', d.success);
+    toast(d.success ? '✅ ' + phT('تم الحفظ — يظهر على الموقع خلال دقيقة', 'Saved — live on the site within a minute') : '❌ ' + d.message);
+  } catch (e) {
+    showStatus('pagesStatus', false);
+    toast('❌ ' + e.message);
+  }
+}
+
+
 // ─── ACTIVITIES ─────────────────────────────────────────────────────────
 function renderActivities() {
   const list = document.getElementById('activitiesList');
@@ -561,7 +668,7 @@ function esc(s) {
 // Re-render lists when language changes so labels translate
 window.addEventListener('langchange', () => { renderSlides(); renderActivities(); });
 const _origToggle = I18N.toggle;
-I18N.toggle = function () { _origToggle.call(I18N); renderSlides(); renderActivities(); };
+I18N.toggle = function () { _origToggle.call(I18N); renderSlides(); renderActivities(); renderPageHeroes(); };
 </script>
 <script src="/js/common-widgets.js?v=32"></script>
 </body>

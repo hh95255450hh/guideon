@@ -6,8 +6,35 @@ const settings = new SupabaseDB('site_settings', 'key');
 // tomorrow — so the public read is an allowlist, never "every row". It used to
 // return the whole table to anyone, including 18 KB of region content the home
 // page never reads.
-const PUBLIC_KEYS = new Set(['hero', 'carousel', 'activities']);
+const PUBLIC_KEYS = new Set(['hero', 'carousel', 'activities', 'pageHeroes']);
 exports.PUBLIC_KEYS = PUBLIC_KEYS;
+
+// Pages whose cinematic header footage an admin can replace, one by one
+// (public/js/gd-cine.js reads pageHeroes.pages[<data-cine-page>]).
+const HERO_PAGES = ['about', 'how-it-works', 'contact', 'blog', 'trails', 'cancellation',
+  'faq', 'regions', 'teams', 'terms', 'privacy'];
+exports.HERO_PAGES = HERO_PAGES;
+
+// Media lands in a CSS url() and a <video src>, so only same-site paths and
+// https links, with no quotes, spaces or parentheses.
+const safeMedia = u => (typeof u === 'string' && /^(\/(?!\/)|https:\/\/)[^\s"'<>()\\]{1,500}$/.test(u.trim())) ? u.trim() : '';
+
+function cleanPageHeroes(value) {
+  const src = (value && value.pages) || {};
+  const pages = {};
+  for (const k of HERO_PAGES) {
+    const p = src[k];
+    if (!p || typeof p !== 'object') continue;
+    const e = {
+      image: safeMedia(p.image),
+      video: safeMedia(p.video),
+      word: String(p.word || '').toUpperCase().replace(/[^A-Z0-9 &-]/g, '').trim().slice(0, 14),
+    };
+    if (e.image || e.video || e.word) pages[k] = e;
+  }
+  return { pages };
+}
+exports.cleanPageHeroes = cleanPageHeroes;
 
 const isStaff = req => req.session && (req.session.userType === 'admin' || req.session.userType === 'staff');
 
@@ -49,10 +76,11 @@ exports.update = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Admin only.' });
     }
     const { key } = req.params;
-    if (!['hero','carousel','activities','theme','footer','navbar','commission'].includes(key)) {
+    if (!['hero','carousel','activities','pageHeroes','theme','footer','navbar','commission'].includes(key)) {
       return res.status(400).json({ success: false, message: 'Unknown setting key.' });
     }
     let value = req.body.value || req.body;
+    if (key === 'pageHeroes') value = cleanPageHeroes(value);
     // Commission rates: validate + normalise to fractions in [0, 0.9].
     if (key === 'commission') {
       const norm = (n, max = 0.9) => {

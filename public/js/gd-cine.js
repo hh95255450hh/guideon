@@ -239,7 +239,22 @@
     if (d.cineSlides) {
       try { api.setSlides(JSON.parse(d.cineSlides)); } catch (e) { /* malformed list: fall through */ }
     }
-    if (!slides.length && (d.cineImage || d.cineVideo)) api.setImage(d.cineImage, d.cineVideo);
+    if (d.cinePage) {
+      // Admin-chosen footage for this page (site settings → pageHeroes). The markup
+      // footage waits briefly for it, so a replaced video is never downloaded too.
+      var fellBack = false;
+      var fallback = setTimeout(function () { fellBack = true; if (!slides.length) api.setImage(d.cineImage, d.cineVideo); }, 1500);
+      fetch('/api/site-settings')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          var p = j && j.settings && j.settings.pageHeroes && j.settings.pageHeroes.pages && j.settings.pageHeroes.pages[d.cinePage];
+          clearTimeout(fallback);
+          if (p && p.word) api.setWord(p.word);
+          if (p && (p.image || p.video)) api.setImage(p.image, p.video);
+          else if (!fellBack) api.setImage(d.cineImage, d.cineVideo);
+        })
+        .catch(function () { clearTimeout(fallback); if (!fellBack) api.setImage(d.cineImage, d.cineVideo); });
+    } else if (!slides.length && (d.cineImage || d.cineVideo)) api.setImage(d.cineImage, d.cineVideo);
     if (d.cineMedia === 'settings') {
       fetch('/api/site-settings')
         .then(function (r) { return r.ok ? r.json() : null; })
