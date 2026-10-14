@@ -323,8 +323,11 @@
   .cine-btn.ghost:hover{background:rgba(255,255,255,.18);color:#fff}
 
   /* Entrance: the copy rises in, one line after another. */
-  .cine-in{opacity:0;transform:translateY(18px);animation:cineUp .9s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(.15s + var(--i) * .12s)}
-  @keyframes cineUp{to{opacity:1;transform:none}}
+  /* Visible by default: only the animation hides the copy (fill-mode backwards
+     applies the "from" frame during the delay). If animations never run on a
+     device, the headline is simply there — it is never stuck at opacity 0. */
+  .cine-in{animation:cineUp .9s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(.15s + var(--i) * .12s)}
+  @keyframes cineUp{from{opacity:0;transform:translateY(18px)}}
 
   /* Bottom bar: where you are, how far through, pause. */
   .cine-bar{position:absolute;inset-inline:0;bottom:84px;z-index:2;display:flex;align-items:center;gap:16px;
@@ -372,7 +375,7 @@
     .cine-word span{letter-spacing:.08em;margin-inline-start:.08em}
   }
   @media (prefers-reduced-motion: reduce){
-    .cine-in{animation:none;opacity:1;transform:none}
+    .cine-in{animation:none}
     .cine-word span,.cine-badge .dot,.cine-scroll .wheel,.cine-layer.kb.is-on{animation:none}
     .cine-media,.cine-content{transform:none}
   }
@@ -470,8 +473,13 @@
       setTimeout(function () { var pv = prev.querySelector('video'); if (pv) pv.pause(); }, 1700);
       prev.classList.remove('is-on');
     }
+    // The very first frame appears at once — fading it in from black would
+    // flash a dark screen on every page load.
+    var first = !prev;
+    if (first) cur.style.transition = 'none';
     // Re-trigger the Ken Burns animation on stills.
     cur.classList.remove('is-on'); void cur.offsetWidth; cur.classList.add('is-on');
+    if (first) requestAnimationFrame(function () { requestAnimationFrame(function () { cur.style.transition = ''; }); });
 
     var s = slides[at];
     var place = T((s.badge_ar || '').trim(), (s.badge_en || '').trim());
