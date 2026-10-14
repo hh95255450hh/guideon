@@ -12,7 +12,6 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <style>
-  .hero{background:linear-gradient(135deg,#0a5c50,#0f7b6c);color:#fff;padding:48px 0 36px;text-align:center}
   .ev-card,.team-card{background:#fff;border:1px solid #e7eaee;border-radius:14px;overflow:hidden;height:100%;transition:.15s}
   .ev-card:hover,.team-card:hover{box-shadow:0 8px 24px rgba(15,28,62,.10);transform:translateY(-2px)}
   .cover{height:140px;background:#e2f0ee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:2.2rem}
@@ -21,6 +20,9 @@
   .chip.active{background:var(--teal);color:#fff;border-color:var(--teal)}
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -33,10 +35,12 @@
   </div>
 </nav>
 
-<div class="hero">
-  <h1 class="fw-800">🎪 فرق الفعاليّات في عُمان</h1>
-  <p class="opacity-90 mb-0">اكتشف الفرق المحليّة وفعاليّاتهم القادمة — ثقافة، رياضة، موسيقى، مغامرات والمزيد</p>
-</div>
+<section class="cine cine--page" data-cine data-cine-word="EVENTS" data-cine-image="/media/hero/hero-3.jpg">
+  <div class="cine-content">
+    <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl">🎪 فرق الفعاليّات في عُمان</span></h1>
+    <p class="cine-sub cine-in" style="--i:1">اكتشف الفرق المحليّة وفعاليّاتهم القادمة — ثقافة، رياضة، موسيقى، مغامرات والمزيد</p>
+  </div>
+</section>
 
 <div class="container py-4">
   <div class="d-flex gap-2 flex-wrap mb-4" id="catChips"></div>

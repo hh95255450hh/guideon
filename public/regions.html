@@ -16,14 +16,6 @@
   html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
 
   /* ── Hero: the country itself, not a gradient ─────────────────────── */
-  .p-hero{position:relative;min-height:62vh;display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:#0f1c3e}
-  .p-hero .frame{position:absolute;inset:0}
-  .p-hero .frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.4s ease}
-  .p-hero .frame img.on{opacity:1}
-  .p-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,28,62,.35),rgba(10,18,40,.9))}
-  .p-hero .container{position:relative;z-index:2;padding:60px 0 44px}
-  .p-hero h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;margin:0 0 12px;line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.4)}
-  .p-hero p{opacity:.95;max-width:640px;font-size:clamp(1rem,2vw,1.15rem);margin:0}
   .p-stats{display:flex;flex-wrap:wrap;gap:28px;margin-top:26px}
   .p-stats b{display:block;font-size:clamp(1.5rem,3.4vw,2.2rem);font-weight:800;line-height:1}
   .p-stats span{font-size:.85rem;opacity:.85;letter-spacing:.04em}
@@ -87,16 +79,18 @@
 </style>
 <script src="/js/image-compress.js?v=3"></script>
 <script src="/js/gd-map.js?v=5" defer></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 <div id="navMount"></div>
 
-<section class="p-hero">
-  <div class="frame" id="heroFrames"></div>
-  <div class="container">
-    <h1 id="pHeroTitle">Explore Oman by Region</h1>
-    <p id="pHeroSub">From the fjords of Musandam to the misty mountains of Dhofar — discover all 11 governorates with curated highlights and local experts.</p>
-    <div class="p-stats" id="pStats"></div>
+<section class="cine cine--page" data-cine data-cine-word="REGIONS" data-cine-video="/media/hero/hero-4.mp4" data-cine-image="/media/hero/hero-4.jpg">
+  <div class="cine-content">
+    <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl" id="pHeroTitle">Explore Oman by Region</span></h1>
+    <p class="cine-sub cine-in" style="--i:1" id="pHeroSub">From the fjords of Musandam to the misty mountains of Dhofar — discover all 11 governorates with curated highlights and local experts.</p>
+    <div class="p-stats cine-in" style="--i:2" id="pStats"></div>
   </div>
 </section>
 
@@ -194,13 +188,7 @@
   // opens on Oman rather than on a gradient.
   const heroShots = regions.flatMap(r => r._photos.slice(0, 2).map(l => l.image)).slice(0, 6);
   if (heroShots.length) {
-    const frame = document.getElementById('heroFrames');
-    frame.innerHTML = heroShots.map((src, i) => `<img src="${gdSafeUrl(src)}" alt="" class="${i ? '' : 'on'}" ${i ? 'loading="lazy"' : ''}>`).join('');
-    const imgs = [...frame.children];
-    let at = 0;
-    if (imgs.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setInterval(() => { imgs[at].classList.remove('on'); at = (at + 1) % imgs.length; imgs[at].classList.add('on'); }, 5200);
-    }
+    onCine(api => api.setSlides([{ image: '/media/hero/hero-4.jpg', video: '/media/hero/hero-4.mp4' }].concat(heroShots.map(src => ({ image: gdSafeUrl(src) })))));
   }
 
   // ── Taste chips: only the types that actually exist, with region counts ──

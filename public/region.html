@@ -15,20 +15,7 @@
   html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
 
   /* ── Hero ─────────────────────────────────────────────────────────── */
-  .r-hero{position:relative;height:66vh;min-height:420px;background:linear-gradient(135deg,#0f1c3e,#0f7b6c);
-          background-size:cover;background-position:center;color:#fff;display:flex;align-items:flex-end;overflow:hidden}
-  .r-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,28,62,.15) 0%,rgba(15,28,62,.25) 45%,rgba(10,18,40,.88) 100%)}
-  .r-hero .container{position:relative;z-index:2;padding-bottom:44px}
-  .r-hero .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;letter-spacing:.14em;
-          text-transform:uppercase;background:rgba(255,255,255,.14);backdrop-filter:blur(6px);
-          border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:999px;margin-bottom:14px}
-  .r-hero h1{font-size:clamp(2.4rem,6.5vw,4.4rem);font-weight:800;margin:0;line-height:1.08;text-shadow:0 2px 18px rgba(0,0,0,.45)}
-  .r-hero .tag{font-size:clamp(1rem,2.2vw,1.25rem);opacity:.95;margin:10px 0 0;font-weight:500;max-width:620px}
-  .r-hero .facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
-  .r-hero .fact{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.13);backdrop-filter:blur(6px);
-          border:1px solid rgba(255,255,255,.22);padding:8px 14px;border-radius:999px;font-size:.9rem;font-weight:600}
-  .r-hero .fact svg{width:16px;height:16px;flex-shrink:0;opacity:.9}
-  .r-hero .hero-credit{position:absolute;bottom:8px;inset-inline-end:14px;z-index:3;font-size:11px;opacity:.7;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+  .cine .hero-credit{position:absolute;bottom:8px;inset-inline-end:14px;z-index:3;font-size:11px;opacity:.7;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 
   /* ── Sections ─────────────────────────────────────────────────────── */
   .r-section{padding:56px 0}
@@ -109,19 +96,22 @@
 </style>
 <script src="/js/image-compress.js?v=3"></script>
 <script src="/js/gd-map.js?v=5" defer></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 <div id="navMount"></div>
 
-<section class="r-hero" id="rHero">
-  <div class="container">
-    <span class="eyebrow" id="rEyebrow">Oman</span>
-    <h1 id="rName">…</h1>
-    <p class="tag" id="rTag"></p>
-    <div class="facts">
-      <span class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/></svg><span id="rSites">…</span></span>
-      <span class="fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span id="rTime">…</span></span>
-      <span class="fact" id="rPhotoFact" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h4l2-2h6l2 2h4v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="rPhotoCount"></span></span>
+<section class="cine cine--page" id="rHero" data-cine data-cine-word="OMAN" data-cine-image="/media/hero/hero-1.jpg">
+  <div class="cine-content">
+    <span class="cine-badge cine-in" style="--i:0"><span class="dot"></span><span id="rEyebrow">Oman</span></span>
+    <h1 class="cine-title cine-in" style="--i:1"><span class="cine-hl" id="rName">…</span></h1>
+    <p class="cine-sub cine-in" style="--i:2" id="rTag"></p>
+    <div class="cine-facts cine-in" style="--i:3">
+      <span class="cine-fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/></svg><span id="rSites">…</span></span>
+      <span class="cine-fact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span id="rTime">…</span></span>
+      <span class="cine-fact" id="rPhotoFact" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h4l2-2h6l2 2h4v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="rPhotoCount"></span></span>
     </div>
   </div>
 </section>
@@ -217,10 +207,9 @@
   document.title = (isAr?r.name_ar:r.name_en) + ' — Guideon';
 
   const heroEl = document.getElementById('rHero');
+  onCine(api => api.setWord(String(r.name_en || '').replace(/^Als+/i, '').toUpperCase()));
   if (r.hero) {
-    const probe = new Image();
-    probe.onload = () => { heroEl.style.backgroundImage = `url('${r.hero}')`; };
-    probe.src = r.hero;
+    onCine(api => api.setImage(r.hero));
     if (r.hero_credit) {
       const c = document.createElement('span');
       c.className = 'hero-credit';
