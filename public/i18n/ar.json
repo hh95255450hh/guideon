@@ -1142,5 +1142,16 @@
   "skip_to_content": "تخطَّ إلى المحتوى الرئيسي",
   "cat_aerial": "مغامرات جوية",
   "edit_profile_title": "تعديل الملف",
-  "save_btn": "حفظ"
+  "save_btn": "حفظ",
+  "no_ready_tours_title": "لا توجد رحلات جاهزة بعد",
+  "no_ready_tours_sub": "يمكنك طلب رحلة مخصّصة بمتطلباتك والحصول على عرض سعر.",
+  "all_lbl": "الكل",
+  "companies_col": "الشركات",
+  "hp_media": "الوسائط (صورة أو فيديو)",
+  "hp_video": "فيديو",
+  "hp_video_url": "أو الصق رابط فيديو (يوتيوب / MP4)",
+  "hp_remove_video": "إزالة الفيديو",
+  "hp_media_hint": "صورة 1920×500 بكسل، أو فيديو قصير بدون صوت (حتى 50 ميجا)",
+  "hp_uploading": "جارٍ رفع الفيديو…",
+  "hp_video_uploaded": "تم رفع الفيديو"
 }

@@ -1142,5 +1142,16 @@
   "skip_to_content": "Skip to main content",
   "cat_aerial": "Aerial Adventures",
   "edit_profile_title": "Edit profile",
-  "save_btn": "Save"
+  "save_btn": "Save",
+  "no_ready_tours_title": "No ready-made tours yet",
+  "no_ready_tours_sub": "You can request a custom trip with your requirements and get a price quote.",
+  "all_lbl": "All",
+  "companies_col": "Companies",
+  "hp_media": "Media (image or video)",
+  "hp_video": "Video",
+  "hp_video_url": "Or paste video URL (YouTube / MP4)",
+  "hp_remove_video": "Remove video",
+  "hp_media_hint": "Image 1920×500px, or a short muted video (≤50 MB)",
+  "hp_uploading": "Uploading video…",
+  "hp_video_uploaded": "Video uploaded"
 }
