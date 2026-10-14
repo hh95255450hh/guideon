@@ -16,7 +16,13 @@
   --radius: 12px;
 }
 
-html, body { overflow-x: hidden; }
+/* No sideways scroll — but without breaking the sticky navbar. overflow-x:hidden
+   on <body> turns it into a scroll container, so the sticky bar scrolled away
+   with the page on all 32 pages that load this file. "clip" stops the overflow
+   without creating a scroll container; html keeps "hidden" first as the
+   fallback for browsers that predate "clip". */
+html { overflow-x: hidden; }
+html, body { overflow-x: clip; }
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
 
 /* ── NAVBAR ── */
