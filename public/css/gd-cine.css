@@ -1,0 +1,160 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   gd-cine.css — the cinematic page header used across Guideon.
+
+   One component for every page: full-bleed Oman footage or photography, a
+   transparent navbar that settles into its solid bar on scroll, a hairline
+   watermark word behind the copy, and a scroll cue. Built and wired by
+   /js/gd-cine.js from a section marked data-cine.
+
+     <section class="cine cine--page" data-cine data-cine-word="STORY"
+              data-cine-video="/media/hero/hero-2.mp4" data-cine-image="/media/hero/hero-2.jpg">
+       <div class="cine-content"> …the page's own badge / h1 / text / buttons… </div>
+     </section>
+
+   Sizes: cine--full (home, whole screen) · cine--page (landing pages)
+          cine--band (pages whose content must stay in view: search, legal)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cine{position:relative;overflow:hidden;color:#fff;background:#0a1430;isolation:isolate;
+      margin-top:calc(-1 * var(--cineNavH, 72px))}
+.cine--full{height:100vh;height:100svh;min-height:600px;max-height:1100px}
+.cine--page{height:74vh;height:74svh;min-height:520px;max-height:820px}
+.cine--band{height:48vh;height:48svh;min-height:400px;max-height:560px}
+
+.cine-media{position:absolute;inset:0;z-index:-2;transform:scale(calc(1 + var(--cp,0) * .08));transform-origin:50% 40%;will-change:transform}
+.cine-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease;background:#0a1430 center/cover no-repeat}
+.cine-layer.is-on{opacity:1}
+.cine-layer video{width:100%;height:100%;object-fit:cover;display:block}
+.cine-layer.kb.is-on{animation:cineKb 14s ease-out both}
+@keyframes cineKb{from{transform:scale(1.1)}to{transform:scale(1)}}
+.cine-shade{position:absolute;inset:0;z-index:-1;pointer-events:none;background:
+    linear-gradient(180deg,rgba(5,11,28,.62) 0%,rgba(5,11,28,.2) 28%,rgba(5,11,28,.26) 58%,rgba(5,11,28,.9) 100%),
+    radial-gradient(120% 80% at 50% 45%,transparent 45%,rgba(5,11,28,.5) 100%)}
+
+/* Hairline watermark word behind the copy. */
+.cine-word{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;
+           opacity:calc(1 - var(--cp,0) * 1.6)}
+.cine-word span{font-family:'Montserrat','Plus Jakarta Sans',system-ui,sans-serif;font-weight:200;line-height:1;white-space:nowrap;
+           font-size:clamp(6rem,22vw,21rem);letter-spacing:.16em;margin-inline-start:.16em;transform:translateY(-4%);
+           color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.22);
+           background:linear-gradient(105deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.28) 50%,rgba(255,255,255,0) 65%) 120% 0/250% 100% no-repeat;
+           -webkit-background-clip:text;background-clip:text;animation:cineSheen 7s ease-in-out infinite}
+.cine--band .cine-word span{font-size:clamp(5rem,16vw,14rem)}
+.cine-word.is-long span{font-size:clamp(4.2rem,13vw,13rem);letter-spacing:.1em;margin-inline-start:.1em}
+@keyframes cineSheen{0%{background-position:120% 0}60%,100%{background-position:-120% 0}}
+
+.cine-content{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+              text-align:center;padding:calc(var(--cineNavH, 72px) + 24px) 16px 120px;
+              transform:translateY(calc(var(--cp,0) * -70px));opacity:calc(1 - var(--cp,0) * 1.25)}
+.cine--full .cine-content{padding-bottom:150px}
+.cine--band .cine-content{padding-bottom:56px}
+.cine-content > *{max-width:860px}
+.cine-badge{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border-radius:999px;font-size:.86rem;font-weight:700;color:#fff;
+            background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(10px)}
+.cine-badge .dot{width:8px;height:8px;border-radius:50%;background:#2fd3a8;box-shadow:0 0 0 0 rgba(47,211,168,.7);animation:cinePulse 2.2s infinite}
+@keyframes cinePulse{70%{box-shadow:0 0 0 10px rgba(47,211,168,0)}100%{box-shadow:0 0 0 0 rgba(47,211,168,0)}}
+.cine-title{margin:20px 0 12px;font-weight:800;line-height:1.12;font-size:clamp(2.1rem,5.4vw,4.4rem);letter-spacing:-.01em;color:#fff;
+            text-shadow:0 6px 40px rgba(0,0,0,.35)}
+.cine--band .cine-title{font-size:clamp(1.9rem,4.4vw,3.4rem);margin-top:14px}
+html[dir="rtl"] .cine-title{line-height:1.35;letter-spacing:0}
+.cine-hl{display:block;margin-top:.12em;padding-bottom:.1em;color:transparent;
+         background:linear-gradient(90deg,#f6d77a,#d4a72c 55%,#f3cf6b);-webkit-background-clip:text;background-clip:text}
+.cine-hl.inline{display:inline}
+.cine-sub{max-width:660px;margin:0 auto 22px;font-size:clamp(1rem,1.6vw,1.18rem);font-weight:500;color:#fff;opacity:.92;text-shadow:0 2px 14px rgba(0,0,0,.35)}
+.cine-crumbs{font-size:.84rem;font-weight:600;opacity:.85;margin-bottom:6px}
+.cine-crumbs a{color:#fff;text-decoration:none;opacity:.85}
+.cine-crumbs a:hover{opacity:1;text-decoration:underline}
+
+.cine-ctas{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.cine-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:999px;font-weight:800;text-decoration:none;border:0;
+          color:#0f1c3e;background:#fff;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:.2s;cursor:pointer}
+.cine-btn:hover{transform:translateY(-2px);color:#0f1c3e}
+.cine-btn.ghost{color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.45);box-shadow:none;backdrop-filter:blur(8px)}
+.cine-btn.ghost:hover{background:rgba(255,255,255,.18);color:#fff}
+.cine-btn.gold{color:#2a2100;background:linear-gradient(135deg,#f3cf6b,#d4a72c)}
+
+/* Glass stat chips under a headline (counts, facts). */
+.cine-facts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px}
+.cine-fact{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;font-size:.88rem;font-weight:700;color:#fff;
+           background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.24);backdrop-filter:blur(8px)}
+
+/* Entrance — visible by default; only the animation's first frame hides it. */
+.cine-in{animation:cineUp .9s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(.15s + var(--i,0) * .12s)}
+@keyframes cineUp{from{opacity:0;transform:translateY(18px)}}
+
+/* Bottom bar: caption, story-style progress, pause. Only when there is footage to control. */
+.cine-bar{position:absolute;inset-inline:0;bottom:84px;z-index:2;display:flex;align-items:center;gap:16px;
+          max-width:1280px;margin-inline:auto;padding-inline:24px;opacity:calc(1 - var(--cp,0) * 2)}
+.cine--page .cine-bar{bottom:76px}
+.cine--band .cine-bar{bottom:18px}
+.cine-caption{font-size:.84rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38%;
+              text-shadow:0 2px 10px rgba(0,0,0,.5);transition:opacity .5s}
+.cine-caption .pin{color:#f3cf6b}
+.cine-progress{flex:1;display:flex;gap:6px}
+.cine-progress button{flex:1;height:3px;padding:0;border:0;border-radius:3px;background:rgba(255,255,255,.28);overflow:hidden;cursor:pointer}
+.cine-progress button i{display:block;height:100%;width:0;background:#fff;border-radius:3px}
+.cine-progress button.done i{width:100%}
+.cine-progress button.on i{animation:cineFill var(--d,8s) linear forwards}
+.cine.paused .cine-progress button.on i{animation-play-state:paused}
+@keyframes cineFill{to{width:100%}}
+.cine-pause{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);
+            color:#fff;display:grid;place-items:center;backdrop-filter:blur(8px);margin-inline-start:auto}
+.cine-pause .i-play{display:none}
+.cine.paused .cine-pause .i-play{display:inline}
+.cine.paused .cine-pause .i-pause{display:none}
+
+.cine-scroll{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;
+             color:#fff;text-decoration:none;font-size:.76rem;font-weight:700;letter-spacing:.08em;opacity:calc(.9 - var(--cp,0) * 2)}
+.cine-scroll:hover{color:#fff}
+.cine-scroll .mouse{width:22px;height:34px;border:2px solid rgba(255,255,255,.75);border-radius:12px;display:flex;justify-content:center;padding-top:6px}
+.cine-scroll .wheel{width:3px;height:7px;border-radius:2px;background:#fff;animation:cineWheel 1.8s ease-in-out infinite}
+@keyframes cineWheel{0%{opacity:0;transform:translateY(-3px)}30%{opacity:1}100%{opacity:0;transform:translateY(9px)}}
+
+/* The navbar floats over the footage, then settles into its solid bar. */
+body.cine-nav .gd-nav{background:transparent;box-shadow:none;backdrop-filter:none;transition:background .35s,box-shadow .35s,backdrop-filter .35s}
+body.cine-nav.nav-solid .gd-nav{background:rgba(15,28,62,.94);backdrop-filter:saturate(180%) blur(10px);box-shadow:0 6px 24px rgba(3,8,24,.25)}
+body.cine-nav:not(.nav-solid) .gd-nav::before{content:"";position:absolute;inset:0 0 -30px;z-index:-1;pointer-events:none;
+               background:linear-gradient(180deg,rgba(5,11,28,.55),transparent)}
+
+/* A card that floats over the header's lower edge (search filters, key facts…). */
+.cine-float{position:relative;z-index:5;margin-top:-46px}
+
+/* AI search pill (home, and anywhere it is reused). */
+.cine-ai{width:min(780px,100%)}
+.cine .ai-search{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.97);border-radius:999px;
+                 padding:7px 7px 7px 22px;box-shadow:0 24px 60px rgba(3,8,24,.45);transition:box-shadow .2s,transform .2s}
+html[dir="rtl"] .cine .ai-search{padding:7px 22px 7px 7px}
+.cine .ai-search:focus-within{box-shadow:0 24px 60px rgba(3,8,24,.45),0 0 0 3px rgba(212,167,44,.85);transform:translateY(-1px)}
+.cine .ai-spark{font-size:1.25rem;line-height:1}
+.cine .ai-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:1.06rem;color:#0f1c3e;padding:11px 0}
+.cine .ai-search input::placeholder{color:#7a8496}
+.cine .ai-search button{border:0;border-radius:999px;padding:13px 24px;font-weight:800;color:#fff;white-space:nowrap;
+                        background:linear-gradient(135deg,#12917f,#0f1c3e);box-shadow:0 8px 20px rgba(15,123,108,.4);transition:.2s}
+.cine .ai-search button:hover{transform:translateY(-1px)}
+.cine .ai-search button[disabled]{opacity:.75;cursor:progress}
+.cine .ai-hint{min-height:1.5em;margin-top:10px;font-weight:700;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+.cine .ai-hint.err{color:#ffd1d1}
+.cine .ai-examples{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.cine .ai-examples button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);backdrop-filter:blur(8px);
+                          color:#fff;border-radius:999px;padding:6px 14px;font-size:.84rem;font-weight:600;transition:.18s}
+.cine .ai-examples button:hover{background:rgba(255,255,255,.22)}
+
+@media (max-width:768px){
+  .cine--full{min-height:640px}
+  .cine--page{height:auto;min-height:560px;max-height:none}
+  .cine--band{height:auto;min-height:360px;max-height:none}
+  .cine-content{padding-bottom:110px}
+  .cine--full .cine-content{padding-bottom:132px}
+  .cine--band .cine-content{padding-bottom:48px}
+  .cine-bar{bottom:72px;padding-inline:16px}
+  .cine--band .cine-bar{bottom:14px}
+  .cine-caption{display:none}
+  .cine .ai-examples button:nth-child(n+3){display:none}
+  .cine .ai-search button{padding:12px 16px}
+  .cine-word span{letter-spacing:.08em;margin-inline-start:.08em}
+}
+@media (prefers-reduced-motion: reduce){
+  .cine-in{animation:none}
+  .cine-word span,.cine-badge .dot,.cine-scroll .wheel,.cine-layer.kb.is-on{animation:none}
+  .cine-media,.cine-content{transform:none}
+}

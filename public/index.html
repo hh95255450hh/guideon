@@ -116,6 +116,8 @@
 
 <!-- Fonts: load only the 4 weights actually used (was 8 = ~2x payload) -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Tajawal:wght@700;800&family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=1">
+<script src="/js/gd-cine.js?v=1" defer></script>
 
 <!-- Swiper CSS is only needed AFTER paint (carousels). Lazy-load it via
      the standard rel=preload→onload trick so it doesn't block FCP/LCP. -->
@@ -167,19 +169,12 @@
   </div>
 </nav>
 
-<!-- HERO — full-screen cinematic Oman.
-     The carousel videos fill the whole first screen (admin-managed through
-     site settings → carousel), the navbar floats transparent over them and
-     turns solid on scroll, and a giant hairline "OMAN" sits behind the copy.
-     Only the slide on screen ever loads its video; data-saver / slow
-     connections and reduced-motion visitors get the still poster instead. -->
-<section class="cine" id="mainContent" aria-label="Guideon">
-  <div class="cine-media" id="cineMedia" aria-hidden="true">
-    <div class="cine-layer is-on" style="background-image:url('/media/hero/hero-1.jpg')"></div>
-  </div>
-  <div class="cine-shade" aria-hidden="true"></div>
-  <div class="cine-word" aria-hidden="true"><span>OMAN</span></div>
-
+<!-- HERO — full-screen cinematic Oman (component: /css/gd-cine.css + /js/gd-cine.js).
+     The carousel slides from site settings fill the whole first screen; the
+     poster below paints instantly while they load. -->
+<section class="cine cine--full" id="mainContent" aria-label="Guideon"
+         data-cine data-cine-word="OMAN" data-cine-media="settings"
+         data-cine-image="/media/hero/hero-1.jpg" data-cine-scroll="#quickSearch">
   <div class="cine-content" id="cineContent">
     <span class="cine-badge cine-in" style="--i:0"><span class="dot"></span><span data-i18n="hero_badge">Ministry-Licensed Guides Available</span></span>
     <h1 class="cine-title cine-in" style="--i:1">
@@ -206,23 +201,10 @@
       <a class="cine-btn ghost" href="/ai-trip-planner.html" id="cinePlan">Plan my trip</a>
     </div>
   </div>
-
-  <div class="cine-bar" aria-label="Slideshow">
-    <div class="cine-caption" id="cineCaption" aria-live="polite"></div>
-    <div class="cine-progress" id="cineProgress"></div>
-    <button type="button" class="cine-pause" id="cinePause" aria-pressed="false" aria-label="Pause the background video">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/><path class="i-play" d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
-    </button>
-  </div>
-
-  <a class="cine-scroll" href="#quickSearch" id="cineScroll">
-    <span class="mouse" aria-hidden="true"><span class="wheel"></span></span>
-    <span class="cine-scroll-txt">Scroll to explore</span>
-  </a>
 </section>
 
 <!-- QUICK SEARCH — the classic filters, floating over the hero's lower edge -->
-<section class="quick-search" id="quickSearch">
+<section class="quick-search cine-float" id="quickSearch">
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-lg-10">
@@ -257,293 +239,15 @@
     </div>
   </div>
 </section>
-
-<style>
-  /* ── Cinematic hero ─────────────────────────────────────────────────── */
-  .cine{position:relative;height:100vh;height:100svh;min-height:600px;max-height:1100px;
-        margin-top:calc(-1 * var(--cineNavH, 72px));overflow:hidden;color:#fff;background:#0a1430;isolation:isolate}
-  .cine-media{position:absolute;inset:0;z-index:-2;transform:scale(calc(1 + var(--cp,0) * .08));transform-origin:50% 40%;will-change:transform}
-  .cine-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease;background:#0a1430 center/cover no-repeat}
-  .cine-layer.is-on{opacity:1}
-  .cine-layer video{width:100%;height:100%;object-fit:cover;display:block}
-  .cine-layer.kb.is-on{animation:cineKb 12s ease-out both}
-  @keyframes cineKb{from{transform:scale(1.1)}to{transform:scale(1)}}
-  .cine-shade{position:absolute;inset:0;z-index:-1;pointer-events:none;background:
-      linear-gradient(180deg,rgba(5,11,28,.62) 0%,rgba(5,11,28,.18) 26%,rgba(5,11,28,.22) 58%,rgba(5,11,28,.9) 100%),
-      radial-gradient(120% 80% at 50% 45%,transparent 45%,rgba(5,11,28,.5) 100%)}
-
-  /* The hairline word — a watermark of the country behind the copy. */
-  .cine-word{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;
-             opacity:calc(1 - var(--cp,0) * 1.6)}
-  .cine-word span{font-family:'Montserrat','Plus Jakarta Sans',system-ui,sans-serif;font-weight:200;line-height:1;
-             font-size:clamp(7rem,24vw,22rem);letter-spacing:.16em;margin-inline-start:.16em;transform:translateY(-4%);
-             color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.22);
-             background:linear-gradient(105deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.28) 50%,rgba(255,255,255,0) 65%) 120% 0/250% 100% no-repeat;
-             -webkit-background-clip:text;background-clip:text;animation:cineSheen 7s ease-in-out infinite}
-  @keyframes cineSheen{0%{background-position:120% 0}60%,100%{background-position:-120% 0}}
-
-  .cine-content{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-                text-align:center;padding:calc(var(--cineNavH, 72px) + 24px) 16px 150px;
-                transform:translateY(calc(var(--cp,0) * -70px));opacity:calc(1 - var(--cp,0) * 1.25)}
-  .cine-badge{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border-radius:999px;font-size:.86rem;font-weight:700;
-              background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(10px)}
-  .cine-badge .dot{width:8px;height:8px;border-radius:50%;background:#2fd3a8;box-shadow:0 0 0 0 rgba(47,211,168,.7);animation:cinePulse 2.2s infinite}
-  @keyframes cinePulse{70%{box-shadow:0 0 0 10px rgba(47,211,168,0)}100%{box-shadow:0 0 0 0 rgba(47,211,168,0)}}
-  .cine-title{margin:20px 0 12px;font-weight:800;line-height:1.12;font-size:clamp(2.2rem,5.6vw,4.6rem);letter-spacing:-.01em;
-              text-shadow:0 6px 40px rgba(0,0,0,.35)}
-  html[dir="rtl"] .cine-title{line-height:1.35;letter-spacing:0}
-  .cine-hl{display:block;margin-top:.12em;padding-bottom:.1em;
-           background:linear-gradient(90deg,#f6d77a,#d4a72c 55%,#f3cf6b);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .cine-sub{max-width:640px;margin:0 auto 26px;font-size:clamp(1rem,1.6vw,1.2rem);font-weight:500;opacity:.92;text-shadow:0 2px 14px rgba(0,0,0,.35)}
-
-  .cine-ai{width:min(780px,100%)}
-  .cine .ai-search{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.97);border-radius:999px;
-                   padding:7px 7px 7px 22px;box-shadow:0 24px 60px rgba(3,8,24,.45);transition:box-shadow .2s,transform .2s}
-  html[dir="rtl"] .cine .ai-search{padding:7px 22px 7px 7px}
-  .cine .ai-search:focus-within{box-shadow:0 24px 60px rgba(3,8,24,.45),0 0 0 3px rgba(212,167,44,.85);transform:translateY(-1px)}
-  .cine .ai-spark{font-size:1.25rem;line-height:1}
-  .cine .ai-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:1.06rem;color:#0f1c3e;padding:11px 0}
-  .cine .ai-search input::placeholder{color:#7a8496}
-  .cine .ai-search button{border:0;border-radius:999px;padding:13px 24px;font-weight:800;color:#fff;white-space:nowrap;
-                          background:linear-gradient(135deg,#12917f,#0f1c3e);box-shadow:0 8px 20px rgba(15,123,108,.4);transition:.2s}
-  .cine .ai-search button:hover{transform:translateY(-1px)}
-  .cine .ai-search button[disabled]{opacity:.75;cursor:progress}
-  .cine .ai-hint{min-height:1.5em;margin-top:10px;font-weight:700;text-shadow:0 2px 10px rgba(0,0,0,.4)}
-  .cine .ai-hint.err{color:#ffd1d1}
-  .cine .ai-examples{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-  .cine .ai-examples button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);backdrop-filter:blur(8px);
-                            color:#fff;border-radius:999px;padding:6px 14px;font-size:.84rem;font-weight:600;transition:.18s}
-  .cine .ai-examples button:hover{background:rgba(255,255,255,.22)}
-
-  .cine-ctas{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:22px}
-  .cine-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:999px;font-weight:800;text-decoration:none;
-            color:#0f1c3e;background:#fff;box-shadow:0 10px 26px rgba(0,0,0,.25);transition:.2s}
-  .cine-btn:hover{transform:translateY(-2px);color:#0f1c3e}
-  .cine-btn.ghost{color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.45);box-shadow:none;backdrop-filter:blur(8px)}
-  .cine-btn.ghost:hover{background:rgba(255,255,255,.18);color:#fff}
-
-  /* Entrance: the copy rises in, one line after another. */
-  /* Visible by default: only the animation hides the copy (fill-mode backwards
-     applies the "from" frame during the delay). If animations never run on a
-     device, the headline is simply there — it is never stuck at opacity 0. */
-  .cine-in{animation:cineUp .9s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(.15s + var(--i) * .12s)}
-  @keyframes cineUp{from{opacity:0;transform:translateY(18px)}}
-
-  /* Bottom bar: where you are, how far through, pause. */
-  .cine-bar{position:absolute;inset-inline:0;bottom:84px;z-index:2;display:flex;align-items:center;gap:16px;
-            max-width:1280px;margin-inline:auto;padding-inline:24px;opacity:calc(1 - var(--cp,0) * 2)}
-  .cine-caption{font-size:.84rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38%;
-                text-shadow:0 2px 10px rgba(0,0,0,.5);transition:opacity .5s}
-  .cine-caption .pin{color:#f3cf6b}
-  .cine-progress{flex:1;display:flex;gap:6px}
-  .cine-progress button{flex:1;height:3px;padding:0;border:0;border-radius:3px;background:rgba(255,255,255,.28);overflow:hidden;cursor:pointer}
-  .cine-progress button i{display:block;height:100%;width:0;background:#fff;border-radius:3px}
-  .cine-progress button.done i{width:100%}
-  .cine-progress button.on i{animation:cineFill var(--d,8s) linear forwards}
-  .cine.paused .cine-progress button.on i{animation-play-state:paused}
-  @keyframes cineFill{to{width:100%}}
-  .cine-pause{flex:none;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);
-              color:#fff;display:grid;place-items:center;backdrop-filter:blur(8px)}
-  .cine-pause .i-play{display:none}
-  .cine.paused .cine-pause .i-play{display:inline}
-  .cine.paused .cine-pause .i-pause{display:none}
-
-  .cine-scroll{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;
-               color:#fff;text-decoration:none;font-size:.76rem;font-weight:700;letter-spacing:.08em;opacity:calc(.9 - var(--cp,0) * 2)}
-  .cine-scroll:hover{color:#fff}
-  .cine-scroll .mouse{width:22px;height:34px;border:2px solid rgba(255,255,255,.75);border-radius:12px;display:flex;justify-content:center;padding-top:6px}
-  .cine-scroll .wheel{width:3px;height:7px;border-radius:2px;background:#fff;animation:cineWheel 1.8s ease-in-out infinite}
-  @keyframes cineWheel{0%{opacity:0;transform:translateY(-3px)}30%{opacity:1}100%{opacity:0;transform:translateY(9px)}}
-
-  /* Navbar floats over the film, then settles into its solid bar. */
-  body.cine-home .gd-nav{background:transparent;box-shadow:none;backdrop-filter:none;transition:background .35s,box-shadow .35s,backdrop-filter .35s}
-  body.cine-home.nav-solid .gd-nav{background:rgba(15,28,62,.94);backdrop-filter:saturate(180%) blur(10px);box-shadow:0 6px 24px rgba(3,8,24,.25)}
-  body.cine-home:not(.nav-solid) .gd-nav::before{content:"";position:absolute;inset:0 0 -30px;z-index:-1;pointer-events:none;
-                 background:linear-gradient(180deg,rgba(5,11,28,.55),transparent)}
-
-  /* Quick search floats over the hero's lower edge. */
-  .quick-search{position:relative;z-index:5;margin-top:-46px;padding-bottom:12px}
-  .quick-search .search-box{box-shadow:0 20px 50px rgba(15,28,62,.18)}
-
-  @media (max-width:768px){
-    .cine{min-height:640px}
-    .cine-content{padding-bottom:132px}
-    .cine-bar{bottom:72px;padding-inline:16px}
-    .cine-caption{display:none}
-    .cine .ai-examples button:nth-child(n+3){display:none}
-    .cine .ai-search button{padding:12px 16px}
-    .cine-word span{letter-spacing:.08em;margin-inline-start:.08em}
-  }
-  @media (prefers-reduced-motion: reduce){
-    .cine-in{animation:none}
-    .cine-word span,.cine-badge .dot,.cine-scroll .wheel,.cine-layer.kb.is-on{animation:none}
-    .cine-media,.cine-content{transform:none}
-  }
-</style>
-
+<style>.quick-search{padding-bottom:12px}.quick-search .search-box{box-shadow:0 20px 50px rgba(15,28,62,.18)}</style>
 <script>
 (function () {
-  var hero = document.getElementById('mainContent');
-  if (!hero) return;
-  var stored = '';
-  try { stored = (localStorage.getItem('gd_lang') || '').toLowerCase(); } catch (e) {}
-  var isAr = stored ? stored.indexOf('ar') === 0 : (document.documentElement.lang || '').toLowerCase().indexOf('ar') === 0;
+  var stored = "";
+  try { stored = (localStorage.getItem("gd_lang") || "").toLowerCase(); } catch (e) {}
+  var isAr = stored ? stored.indexOf("ar") === 0 : (document.documentElement.lang || "").toLowerCase().indexOf("ar") === 0;
   var T = function (ar, en) { return isAr ? ar : en; };
-  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var conn = navigator.connection || {};
-  var frugal = reduce || conn.saveData || /(^|-)(2g|3g)$/.test(conn.effectiveType || '');
-
-  document.getElementById('cineFind').textContent = T('ابحث عن مرشد', 'Find a guide');
-  document.getElementById('cinePlan').textContent = T('✨ خطّط رحلتي', '✨ Plan my trip');
-  hero.querySelector('.cine-scroll-txt').textContent = T('انزل للاستكشاف', 'Scroll to explore');
-
-  // ── Navbar: transparent over the film, solid once you scroll ──────────
-  document.body.classList.add('cine-home');
-  var setNavH = function () {
-    var n = document.querySelector('.gd-nav');
-    if (n) document.documentElement.style.setProperty('--cineNavH', n.offsetHeight + 'px');
-  };
-  setNavH();
-  new MutationObserver(setNavH).observe(document.body, { attributes: true, attributeFilter: ['class'], childList: true });
-  window.addEventListener('resize', setNavH, { passive: true });
-
-  var ticking = false;
-  var onScroll = function () {
-    if (ticking) return; ticking = true;
-    requestAnimationFrame(function () {
-      var h = hero.offsetHeight || 1;
-      var p = Math.min(Math.max(window.scrollY / h, 0), 1);
-      if (!reduce) hero.style.setProperty('--cp', p.toFixed(3));
-      document.body.classList.toggle('nav-solid', window.scrollY > h * 0.55);
-      ticking = false;
-    });
-  };
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-
-  document.getElementById('cineScroll').addEventListener('click', function (e) {
-    e.preventDefault();
-    var t = document.getElementById('quickSearch'), nav = document.querySelector('.gd-nav');
-    var navH = nav ? nav.offsetHeight : 0;
-    window.scrollTo({ top: t.getBoundingClientRect().top + window.scrollY - navH - 12, behavior: reduce ? 'auto' : 'smooth' });
-  });
-
-  // ── The film: slides from site settings, one video loaded at a time ───
-  var media = document.getElementById('cineMedia'), progress = document.getElementById('cineProgress'),
-      caption = document.getElementById('cineCaption'), pauseBtn = document.getElementById('cinePause');
-  var FALLBACK = [
-    { video: '/media/hero/hero-1.mp4', image: '/media/hero/hero-1.jpg' },
-    { video: '/media/hero/hero-2.mp4', image: '/media/hero/hero-2.jpg' },
-    { video: '',                       image: '/media/hero/hero-3.jpg' },
-    { video: '/media/hero/hero-4.mp4', image: '/media/hero/hero-4.jpg' },
-  ];
-  var slides = [], layers = [], at = 0, timer = null, paused = false, visible = true;
-  var esc = function (s) { return String(s || '').replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
-  var isYouTube = function (u) { return /youtube\.com|youtu\.be/.test(u || ''); };
-
-  function layerFor(i) {
-    if (layers[i]) return layers[i];
-    var s = slides[i], el = document.createElement('div');
-    el.className = 'cine-layer';
-    if (s.image) el.style.backgroundImage = "url('" + s.image.replace(/'/g, '%27') + "')";
-    if (s.video && !isYouTube(s.video) && !frugal) {
-      var v = document.createElement('video');
-      v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'none';
-      if (s.image) v.poster = s.image;
-      v.dataset.src = s.video;
-      el.appendChild(v);
-    } else {
-      el.classList.add('kb');                       // a still gets a slow Ken Burns push
-    }
-    media.appendChild(el);
-    return (layers[i] = el);
-  }
-
-  function durationOf(i) { return slides[i].video && !frugal ? 10000 : 7000; }
-
-  function show(i) {
-    var prev = layers[at];
-    at = (i + slides.length) % slides.length;
-    var cur = layerFor(at), v = cur.querySelector('video');
-    if (v) {
-      if (!v.getAttribute('src')) v.setAttribute('src', v.dataset.src);
-      var p = v.play(); if (p && p.catch) p.catch(function () {});
-    }
-    if (prev && prev !== cur) {
-      setTimeout(function () { var pv = prev.querySelector('video'); if (pv) pv.pause(); }, 1700);
-      prev.classList.remove('is-on');
-    }
-    // The very first frame appears at once — fading it in from black would
-    // flash a dark screen on every page load.
-    var first = !prev;
-    if (first) cur.style.transition = 'none';
-    // Re-trigger the Ken Burns animation on stills.
-    cur.classList.remove('is-on'); void cur.offsetWidth; cur.classList.add('is-on');
-    if (first) requestAnimationFrame(function () { requestAnimationFrame(function () { cur.style.transition = ''; }); });
-
-    var s = slides[at];
-    var place = T((s.badge_ar || '').trim(), (s.badge_en || '').trim());
-    var line = T((s.title_ar || '').trim(), (s.title_en || '').trim());
-    caption.style.opacity = 0;
-    setTimeout(function () {
-      caption.innerHTML = place || line ? '<span class="pin">📍</span> ' + esc(place) + (place && line ? ' · ' : '') + esc(line) : '';
-      caption.style.opacity = 1;
-    }, 250);
-
-    Array.prototype.forEach.call(progress.children, function (b, k) {
-      b.classList.toggle('done', k < at); b.classList.remove('on');
-      b.setAttribute('aria-current', k === at ? 'true' : 'false');
-    });
-    var bar = progress.children[at];
-    if (bar) { bar.style.setProperty('--d', durationOf(at) + 'ms'); void bar.offsetWidth; bar.classList.add('on'); }
-    schedule();
-  }
-
-  function schedule() {
-    clearTimeout(timer);
-    if (paused || !visible || slides.length < 2 || reduce) return;
-    timer = setTimeout(function () { show(at + 1); }, durationOf(at));
-  }
-
-  function setPaused(on) {
-    paused = on;
-    hero.classList.toggle('paused', on);
-    pauseBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-    pauseBtn.setAttribute('aria-label', on ? T('تشغيل الفيديو', 'Play the background video') : T('إيقاف الفيديو مؤقتاً', 'Pause the background video'));
-    var v = layers[at] && layers[at].querySelector('video');
-    if (v) { if (on) v.pause(); else { var p = v.play(); if (p && p.catch) p.catch(function () {}); } }
-    if (on) clearTimeout(timer); else show(at);
-  }
-  pauseBtn.addEventListener('click', function () { setPaused(!paused); });
-
-  // Stop the film when it is off-screen or the tab is hidden: no CPU or data spent on nothing.
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(function (es) {
-      visible = es[0].isIntersecting;
-      var v = layers[at] && layers[at].querySelector('video');
-      if (!visible) { clearTimeout(timer); if (v) v.pause(); }
-      else if (!paused) { if (v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } schedule(); }
-    }, { threshold: 0.15 }).observe(hero);
-  }
-  document.addEventListener('visibilitychange', function () { if (document.hidden) clearTimeout(timer); else schedule(); });
-
-  function start(list) {
-    slides = (list && list.length ? list : FALLBACK).filter(function (s) { return s && (s.image || s.video); });
-    if (!slides.length) return;
-    media.innerHTML = ''; layers = [];
-    progress.innerHTML = slides.map(function (_, k) {
-      return '<button type="button" aria-label="' + T('الشريحة ', 'Slide ') + (k + 1) + '"><i></i></button>';
-    }).join('');
-    Array.prototype.forEach.call(progress.children, function (b, k) { b.addEventListener('click', function () { show(k); }); });
-    if (slides.length < 2) progress.style.visibility = 'hidden';
-    at = 0; show(0);
-  }
-
-  fetch('/api/site-settings')
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (j) { start(j && j.settings && j.settings.carousel && j.settings.carousel.slides); })
-    .catch(function () { start(null); });
-
+  document.getElementById("cineFind").textContent = T("ابحث عن مرشد", "Find a guide");
+  document.getElementById("cinePlan").textContent = T("✨ خطّط رحلتي", "✨ Plan my trip");
   // ── AI search inside the hero ──────────────────────────────────────────
   var form = document.getElementById('aiSearch'), input = document.getElementById('aiSearchInput'),
       btn = document.getElementById('aiSearchBtn'), hint = document.getElementById('aiHint'),
@@ -582,7 +286,6 @@
   });
 })();
 </script>
-
 
 <!-- PLAN MY HOLIDAY BANNER (TourHQ feature) -->
 <section class="py-4">
