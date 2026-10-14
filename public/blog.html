@@ -11,9 +11,6 @@
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <style>
   body{font-family:'Inter','Tajawal',sans-serif;background:#fafafa;color:#0f1c3e}
-  .page-hero{background:linear-gradient(135deg,#0f1c3e,#3b1c4a);color:#fff;padding:80px 0 60px;text-align:center}
-  .page-hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800}
-  .page-hero p{opacity:.92;max-width:680px;margin:8px auto 0;font-size:1.1rem}
   .b-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:26px;padding:50px 0}
   .b-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(15,28,62,.06);transition:.25s;text-decoration:none;color:inherit;display:block}
   .b-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(15,28,62,.12)}
@@ -27,14 +24,17 @@
   html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 <div id="navMount"></div>
 
-<section class="page-hero">
-  <div class="container">
-    <h1 id="pTitle">Travel Stories &amp; Guides</h1>
-    <p id="pSub">Practical itineraries, seasonal tips, and stories from our licensed local guides.</p>
+<section class="cine cine--page" data-cine data-cine-word="STORIES" data-cine-video="/media/hero/hero-2.mp4" data-cine-image="/media/hero/hero-2.jpg">
+  <div class="cine-content">
+    <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl" id="pTitle">Travel Stories &amp; Guides</span></h1>
+    <p class="cine-sub cine-in" style="--i:1" id="pSub">Practical itineraries, seasonal tips, and stories from our licensed local guides.</p>
   </div>
 </section>
 

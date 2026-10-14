@@ -29,13 +29,6 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <style>
-  .about-hero {
-    background: linear-gradient(135deg, var(--teal-dark, #0a5c50), var(--teal, #0f7b6c));
-    color: #fff; padding: 64px 20px 56px; text-align: center;
-  }
-  .about-hero img { height: 64px; margin-bottom: 18px; }
-  .about-hero h1 { font-size: 2.3rem; font-weight: 800; margin-bottom: 12px; }
-  .about-hero p { font-size: 1.1rem; opacity: .92; max-width: 680px; margin: 0 auto; line-height: 1.7; }
   .about-wrap { max-width: 920px; margin: 0 auto; padding: 48px 20px 80px; }
   .about-wrap h2 { font-size: 1.5rem; font-weight: 800; color: var(--navy-dark, #0f1c3e); margin: 38px 0 14px; }
   .about-wrap p, .about-wrap li { line-height: 1.8; color: #333; font-size: 1.02rem; }
@@ -66,6 +59,9 @@
   .badge-verified { display:inline-block; background: rgba(16,185,129,.12); color:#059669; font-weight:800; font-size:.78rem; padding:3px 10px; border-radius:20px; }
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 
@@ -76,13 +72,16 @@
   </div>
 </nav>
 
+<section class="cine cine--page" aria-label="About Guideon" data-cine data-cine-word="STORY" data-cine-video="/media/hero/hero-2.mp4" data-cine-image="/media/hero/hero-2.jpg">
+  <div class="cine-content">
+    <span class="cine-badge cine-in" style="--i:0"><span class="dot"></span><span data-cine-en="Oman's tour-guide marketplace" data-cine-ar="منصّة المرشدين السياحيين في عُمان">Oman's tour-guide marketplace</span></span>
+    <h1 class="cine-title cine-in" style="--i:1"><span class="cine-hl" data-cine-en="About Guideon" data-cine-ar="عن Guideon">About Guideon</span></h1>
+    <p class="cine-sub cine-in" style="--i:2" data-cine-en="Oman's trusted marketplace connecting travellers with licensed local tour guides and registered tourism companies across the Sultanate." data-cine-ar="المنصّة العُمانيّة الموثوقة التي تربط المسافرين بمرشدين سياحيين محليين معتمدين وشركات سياحيّة مسجّلة في جميع أنحاء السلطنة.">Oman's trusted marketplace connecting travellers with licensed local tour guides and registered tourism companies across the Sultanate.</p>
+  </div>
+</section>
+
 <!-- ═══════════════════ ENGLISH ═══════════════════ -->
 <div class="lang-section active" id="about-en">
-  <div class="about-hero">
-    <img src="/logo.png" alt="Guideon">
-    <h1>About Guideon</h1>
-    <p>Oman's trusted marketplace connecting travellers with licensed local tour guides and registered tourism companies across the Sultanate.</p>
-  </div>
   <div class="about-wrap">
     <h2>Who we are</h2>
     <p>Guideon is an online platform that makes it simple to discover, compare, and book authentic guided experiences across Oman — from the forts of Nizwa and the fjords of Musandam to the dunes of the Wahiba Sands and the frankincense coast of Dhofar.</p>
@@ -131,11 +130,6 @@
 
 <!-- ═══════════════════ ARABIC ═══════════════════ -->
 <div class="lang-section" id="about-ar" dir="rtl">
-  <div class="about-hero">
-    <img src="/logo.png" alt="Guideon">
-    <h1>عن Guideon</h1>
-    <p>المنصّة العُمانيّة الموثوقة التي تربط المسافرين بمرشدين سياحيين محليين معتمدين وشركات سياحيّة مسجّلة في جميع أنحاء السلطنة.</p>
-  </div>
   <div class="about-wrap">
     <h2>من نحن</h2>
     <p>Guideon منصّة إلكترونيّة تجعل اكتشاف ومقارنة وحجز التجارب السياحيّة الأصيلة في عُمان أمراً سهلاً — من قلاع نزوى وأخوار مسندم إلى رمال الشرقيّة وساحل اللبان في ظفار.</p>

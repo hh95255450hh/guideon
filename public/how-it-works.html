@@ -24,9 +24,6 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <style>
-  .hiw-hero { background: linear-gradient(135deg,#0f1c3e 0%,#1a2c5b 45%,#0f7b6c 100%); color: #fff; padding: 60px 0 40px; text-align: center; }
-  .hiw-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; }
-  .hiw-hero p  { font-size: 1.1rem; opacity: 0.9; max-width: 640px; margin: 12px auto 0; }
 
   .step-card { background:#fff; border-radius:18px; padding:28px; box-shadow:0 4px 16px rgba(0,0,0,.07); height:100%; transition:.25s; border:1px solid #eef0f4; }
   .step-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,.12); }
@@ -50,6 +47,9 @@
   .cta-band .btn-light { font-weight: 700; padding: 10px 26px; }
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 
@@ -60,10 +60,11 @@
   </div>
 </nav>
 
-<section class="hiw-hero">
-  <div class="container">
-    <h1 data-i18n="hiw_title">How Guideon Works</h1>
-    <p data-i18n="hiw_sub">Discover Oman with a certified local guide in 4 simple steps — safer, smarter, and more authentic than going alone.</p>
+<section class="cine cine--page" aria-label="How Guideon Works" data-cine data-cine-word="JOURNEY" data-cine-video="/media/hero/hero-4.mp4" data-cine-image="/media/hero/hero-4.jpg">
+  <div class="cine-content">
+    <span class="cine-badge cine-in" style="--i:0"><span class="dot"></span><span data-cine-en="4 simple steps" data-cine-ar="٤ خطوات بسيطة">4 simple steps</span></span>
+    <h1 class="cine-title cine-in" style="--i:1"><span class="cine-hl" data-i18n="hiw_title">How Guideon Works</span></h1>
+    <p class="cine-sub cine-in" style="--i:2" data-i18n="hiw_sub">Discover Oman with a certified local guide in 4 simple steps — safer, smarter, and more authentic than going alone.</p>
   </div>
 </section>
 

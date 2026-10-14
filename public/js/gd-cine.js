@@ -66,6 +66,24 @@
     };
     api.setWord(d.cineWord || '');
 
+    // Bilingual copy without a translation key: <h1 data-cine-en="About" data-cine-ar="عن">.
+    // Arabic⇄English switches live (no reload), so follow <html lang> as it changes.
+    // The first pass trusts the stored choice: before i18n runs, <html lang> still
+    // holds the page's static "en" even for an Arabic visitor. Later passes come
+    // from the observer, i.e. from i18n actually switching the language.
+    var applyLang = function (fromObserver) {
+      var l = (document.documentElement.lang || '').toLowerCase();
+      if (fromObserver && l) isAr = l.indexOf('ar') === 0;
+      Array.prototype.forEach.call(hero.querySelectorAll('[data-cine-en],[data-cine-ar]'), function (el) {
+        var v = isAr ? (el.dataset.cineAr || el.dataset.cineEn) : (el.dataset.cineEn || el.dataset.cineAr);
+        if (v != null) el.textContent = v;
+      });
+      var cueTxt = hero.querySelector('.cine-scroll-txt');
+      if (cueTxt) cueTxt.textContent = T('انزل للاستكشاف', 'Scroll to explore');
+    };
+    api.applyLang = applyLang;
+    new MutationObserver(function () { applyLang(true); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
     var bar = document.createElement('div'); bar.className = 'cine-bar'; bar.hidden = true;
     bar.innerHTML =
       '<div class="cine-caption" aria-live="polite"></div><div class="cine-progress"></div>' +
@@ -231,6 +249,7 @@
         })
         .catch(function () {});
     }
+    applyLang(false);
     return api;
   }
 

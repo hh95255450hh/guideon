@@ -26,10 +26,6 @@
 <style>
   :root { --teal:#0f7b6c; --navy:#0f1c3e; --gold:#c89b3c; }
   body { background:#f4f7f6; }
-  .contact-hero { background:linear-gradient(135deg,#0f1c3e 0%,#1a2c5b 50%,#0f7b6c 100%); color:#fff; padding:60px 0 50px; }
-  .contact-hero h1 { font-size:2.5rem; font-weight:800; letter-spacing:-1px; margin-bottom:10px; }
-  .contact-hero p  { opacity:.9; font-size:1.1rem; max-width:680px; margin:0 auto; }
-  .stat-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(255,255,255,.12); padding:8px 18px; border-radius:30px; font-size:.85rem; backdrop-filter:blur(8px); margin:4px; }
 
   .section { padding:60px 0; }
   .section-title { font-size:1.7rem; font-weight:800; color:var(--navy); margin-bottom:8px; text-align:center; }
@@ -103,6 +99,9 @@
   .copied-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 
@@ -124,15 +123,14 @@
 </nav>
 
 <!-- HERO -->
-<section class="contact-hero text-center">
-  <div class="container">
-    <div style="font-size:3.2rem;line-height:1">✉️</div>
-    <h1 data-i18n="contact_hero_title">Get in Touch</h1>
-    <p data-i18n="contact_hero_sub">We're here to help — whether you're planning a tour, need support, or want to partner with us. Pick the channel that works best for you.</p>
-    <div class="mt-4">
-      <span class="stat-pill">⚡ <span data-i18n="contact_reply_24">Reply within 24h</span></span>
-      <span class="stat-pill">🌐 <span data-i18n="contact_bilingual">EN · العربية</span></span>
-      <span class="stat-pill">🇴🇲 <span data-i18n="contact_oman_based">Based in Muscat, Oman</span></span>
+<section class="cine cine--page" aria-label="Contact" data-cine data-cine-word="HELLO" data-cine-video="/media/hero/hero-1.mp4" data-cine-image="/media/hero/hero-1.jpg">
+  <div class="cine-content">
+    <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl" data-i18n="contact_hero_title">Get in Touch</span></h1>
+    <p class="cine-sub cine-in" style="--i:1" data-i18n="contact_hero_sub">We're here to help — whether you're planning a tour, need support, or want to partner with us. Pick the channel that works best for you.</p>
+    <div class="cine-facts cine-in" style="--i:2">
+      <span class="cine-fact">⚡ <span data-i18n="contact_reply_24">Reply within 24h</span></span>
+      <span class="cine-fact">🌐 <span data-i18n="contact_bilingual">EN · العربية</span></span>
+      <span class="cine-fact">🇴🇲 <span data-i18n="contact_oman_based">Based in Muscat, Oman</span></span>
     </div>
   </div>
 </section>

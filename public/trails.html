@@ -11,9 +11,6 @@
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <style>
   body{font-family:'Inter','Tajawal',sans-serif;background:#fafafa;color:#0f1c3e}
-  .page-hero{background:linear-gradient(135deg,#0f7b6c,#0f1c3e);color:#fff;padding:80px 0 60px;text-align:center}
-  .page-hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800}
-  .page-hero p{opacity:.92;max-width:680px;margin:8px auto 0;font-size:1.1rem}
   .filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:24px 0 0}
   .filters button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:6px 14px;border-radius:999px;font-size:.88rem;cursor:pointer;transition:.2s}
   .filters button:hover,.filters button.active{background:#fff;color:#0f1c3e}
@@ -37,15 +34,18 @@
   html[dir="rtl"] body{font-family:'Tajawal','Inter',sans-serif}
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
+<link rel="stylesheet" href="/css/gd-cine.css?v=2">
+<script src="/js/gd-cine.js?v=2" defer></script>
 </head>
 <body>
 <div id="navMount"></div>
 
-<section class="page-hero">
-  <div class="container">
-    <h1 id="pTitle">Hiking Trails in Oman</h1>
-    <p id="pSub">From easy family walks to technical canyoneering — Oman's mountain trails offer something for every level.</p>
-    <div class="filters" id="filters">
+<section class="cine cine--page" data-cine data-cine-word="TRAILS" data-cine-image="/img/landmarks/dakhiliyah-jebel-shams.webp">
+  <div class="cine-content">
+    <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl" id="pTitle">Hiking Trails in Oman</span></h1>
+    <p class="cine-sub cine-in" style="--i:1" id="pSub">From easy family walks to technical canyoneering — Oman's mountain trails offer something for every level.</p>
+    <div class="filters cine-in" style="--i:2" id="filters">
       <button class="active" data-f="all">All</button>
       <button data-f="easy">Easy</button>
       <button data-f="moderate">Moderate</button>
