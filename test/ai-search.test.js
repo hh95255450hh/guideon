@@ -9,7 +9,8 @@ const assert = require('node:assert');
 const ai = require('../src/services/ai');
 let calls = 0, next = null;
 ai.enabled = true;
-ai.completeJSON = async () => { calls++; return next; };
+let fail = null;
+ai.completeJSON = async () => { calls++; if (fail) throw fail; return next; };
 
 const ctrl = require('../src/controllers/aiController');
 const loc = require('../src/utils/omanLocations').load();
@@ -56,8 +57,9 @@ test('ai search: a wrong governorate paired with a real wilayat is corrected fro
 test('ai search: the same question on the same day calls the model once', async () => {
   calls = 0; ctrl._searchCache.clear();
   next = { ...BASE, destination: 'Sur' };
-  await call({ q: 'Turtles at Ras al Jinz' });
-  await call({ q: '  turtles at ras al jinz ' });
+  const long = 'we would love a calm evening watching turtles nest, somewhere quiet and not too crowded please';
+  await call({ q: long });
+  await call({ q: '  ' + long.toUpperCase() + ' ' });
   assert.strictEqual(calls, 1);
 });
 
@@ -66,4 +68,37 @@ test('ai search: a too-short query is refused before any model call', async () =
   const r = await call({ q: 'a' });
   assert.strictEqual(r.status, 400);
   assert.strictEqual(calls, 0);
+});
+
+test('local search: a short clear request is answered without the model', async () => {
+  calls = 0; ctrl._searchCache.clear();
+  const r = await call({ q: 'مرشد في نزوى يتكلم إنجليزي', lang: 'ar' });
+  assert.strictEqual(calls, 0);
+  assert.strictEqual(r.body.source, 'local');
+  const url = new URL('https://x' + r.body.url);
+  assert.strictEqual(url.searchParams.get('destination'), 'Nizwa');
+  assert.strictEqual(url.searchParams.get('governorate'), 'Ad Dakhiliyah');
+  assert.strictEqual(url.searchParams.get('language'), 'English');
+});
+
+test('local search: landmarks, prices and dates map to real filters', () => {
+  const L = require('../src/services/localSearch');
+  const a = L.parse('رحلة إلى جبل شمس', loc, '2026-10-15');
+  assert.strictEqual(a.destination, 'Al Hamra');
+  const b = L.parse('desert trip under 50 rials tomorrow', loc, '2026-10-15');
+  assert.strictEqual(b.specialisation, 'Desert');
+  assert.strictEqual(b.maxPrice, 50);
+  assert.strictEqual(b.date, '2026-10-16');
+  assert.strictEqual(L.parse('شركة سياحية في صلالة', loc, '2026-10-15').type, 'company');
+});
+
+test('local search: when the model fails, what was understood locally still answers', async () => {
+  calls = 0; ctrl._searchCache.clear();
+  fail = new Error('credit balance is too low');
+  const r = await call({ q: 'we are a big family and want something special and relaxing near Nizwa with good food and history' });
+  fail = null;
+  assert.strictEqual(calls, 1);
+  assert.strictEqual(r.body.success, true);
+  assert.strictEqual(r.body.source, 'local');
+  assert.strictEqual(new URL('https://x' + r.body.url).searchParams.get('destination'), 'Nizwa');
 });

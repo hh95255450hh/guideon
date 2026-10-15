@@ -21,7 +21,9 @@ const num = (v, d) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) :
 const LIMITS = {
   anonPerDay: () => num(process.env.AI_DAILY_PER_IP, 8),
   userPerDay: () => num(process.env.AI_DAILY_PER_USER, 40),
-  globalPerDay: () => num(process.env.AI_DAILY_GLOBAL, 2000),
+  // Lowered from 2000: searches now resolve locally for free, so model calls
+  // are the trip planner and long questions — 800 a day is a known, small bill.
+  globalPerDay: () => num(process.env.AI_DAILY_GLOBAL, 800),
 };
 
 // Oman is UTC+4 with no daylight saving.
@@ -44,19 +46,21 @@ function tooLarge(req) {
   return Object.values(body).some(v => typeof v === 'string' && v.length > MAX_FIELD_CHARS);
 }
 
-function aiGuard(req, res, next) {
-  if (tooLarge(req)) {
-    return res.status(413).json({ success: false,
-      message: msg(`Please keep your request under ${MAX_FIELD_CHARS} characters.`, `اختصر طلبك إلى أقل من ${MAX_FIELD_CHARS} حرف.`) });
-  }
+function sizeError(req) {
+  return tooLarge(req) ? { status: 413, body: { success: false,
+    message: msg(`Please keep your request under ${MAX_FIELD_CHARS} characters.`, `اختصر طلبك إلى أقل من ${MAX_FIELD_CHARS} حرف.`) } } : null;
+}
 
+// Spends one model call from the visitor's and the platform's daily quota.
+// Returns null when allowed, or the response to send when not.
+function charge(req) {
   const now = Date.now();
   rollover(now);
 
   if (state.global >= LIMITS.globalPerDay()) {
     console.warn(`[ai-guard] global daily ceiling reached (${state.global})`);
-    return res.status(503).json({ success: false,
-      message: msg('The AI assistant is resting for today. Please try again tomorrow.', 'المساعد الذكي متوقف لليوم، حاول غداً.') });
+    return { status: 503, body: { success: false,
+      message: msg('The AI assistant is resting for today. Please try again tomorrow.', 'المساعد الذكي متوقف لليوم، حاول غداً.') } };
   }
 
   const userId = req.session && req.session.userId;
@@ -64,15 +68,30 @@ function aiGuard(req, res, next) {
   const limit = userId ? LIMITS.userPerDay() : LIMITS.anonPerDay();
   const used = state.perKey.get(key) || 0;
   if (used >= limit) {
-    return res.status(429).json({ success: false,
+    return { status: 429, body: { success: false,
       message: userId
         ? msg('You have used today’s AI requests. Please come back tomorrow.', 'استهلكت طلبات الذكاء الاصطناعي لهذا اليوم، عد غداً.')
-        : msg('Sign in to keep planning with AI today.', 'سجّل الدخول لمواصلة التخطيط بالذكاء الاصطناعي اليوم.') });
+        : msg('Sign in to keep planning with AI today.', 'سجّل الدخول لمواصلة التخطيط بالذكاء الاصطناعي اليوم.') } };
   }
 
   state.perKey.set(key, used + 1);
   state.global += 1;
+  return null;
+}
+
+// Every model-backed endpoint: size check, then one unit of quota.
+function aiGuard(req, res, next) {
+  const err = sizeError(req) || charge(req);
+  if (err) return res.status(err.status).json(err.body);
   next();
 }
 
-module.exports = { aiGuard, MAX_BODY_BYTES, MAX_FIELD_CHARS, _state: state, _rollover: rollover, _omanDay: omanDay };
+// Endpoints that answer most requests without the model (search): size check
+// only here; the controller calls charge() just before it calls the model.
+function aiSizeGuard(req, res, next) {
+  const err = sizeError(req);
+  if (err) return res.status(err.status).json(err.body);
+  next();
+}
+
+module.exports = { aiGuard, aiSizeGuard, charge, MAX_BODY_BYTES, MAX_FIELD_CHARS, _state: state, _rollover: rollover, _omanDay: omanDay };

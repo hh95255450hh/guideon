@@ -1,7 +1,7 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const ai = require('../controllers/aiController');
-const { aiGuard } = require('../middleware/aiGuard');
+const { aiGuard, aiSizeGuard } = require('../middleware/aiGuard');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ const aiLimiter = rateLimit({
 router.post('/trip-plan',           aiLimiter, aiGuard, ai.tripPlan);
 router.post('/match',               aiLimiter, aiGuard, ai.match);
 router.post('/improve',             aiLimiter, aiGuard, ai.improve);
-router.post('/search',              aiLimiter, aiGuard, ai.search);
+router.post('/search',              aiLimiter, aiSizeGuard, ai.search);
 router.get('/reviews-summary/:guideId', aiLimiter, ai.reviewsSummary);
 
 module.exports = router;
