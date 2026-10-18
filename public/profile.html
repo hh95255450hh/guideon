@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -31,6 +31,7 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -42,7 +43,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
-        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
         <a href="/" class="btn btn-sm btn-outline-light">← Home</a>
       </div>
     </div>
@@ -55,7 +56,7 @@
   <div class="text-center mb-4">
     <div id="avatarWrap" style="position:relative;display:inline-block">
       <div id="avatarCircle" style="width:110px;height:110px;border-radius:50%;background:var(--teal);color:#fff;font-size:2.5rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto;border:4px solid #fff;box-shadow:var(--shadow-lg)">?</div>
-      <label for="photoInput" style="position:absolute;bottom:0;right:0;width:32px;height:32px;background:var(--gold);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff" title="Change Photo">📷</label>
+      <label for="photoInput" style="position:absolute;bottom:0;right:0;width:32px;height:32px;background:var(--gold);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff" title="Change Photo"><i class="bi bi-camera" aria-hidden="true"></i></label>
       <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
     </div>
     <div id="photoStatus" class="small text-muted mt-2"></div>
@@ -67,9 +68,9 @@
 
   <!-- TABS -->
   <ul class="nav nav-tabs mb-4" id="profileTabs">
-    <li class="nav-item"><button class="nav-link active" onclick="showTab('tabInfo',this)">👤 Basic Info</button></li>
-    <li class="nav-item"><button class="nav-link" onclick="showTab('tabSecurity',this)">🔒 Password</button></li>
-    <li id="tabGuideNav" class="nav-item d-none"><button class="nav-link" onclick="showTab('tabGuide',this)">🎒 Guide Settings</button></li>
+    <li class="nav-item"><button class="nav-link active" onclick="showTab('tabInfo',this)"><i class="bi bi-person" aria-hidden="true"></i> Basic Info</button></li>
+    <li class="nav-item"><button class="nav-link" onclick="showTab('tabSecurity',this)"><i class="bi bi-lock" aria-hidden="true"></i> Password</button></li>
+    <li id="tabGuideNav" class="nav-item d-none"><button class="nav-link" onclick="showTab('tabGuide',this)"><i class="bi bi-backpack" aria-hidden="true"></i> Guide Settings</button></li>
   </ul>
 
   <!-- TAB: Basic Info -->
@@ -101,7 +102,7 @@
             </select>
           </div>
         </div>
-        <button type="submit" class="btn-teal btn mt-4 px-4">💾 Save Changes</button>
+        <button type="submit" class="btn-teal btn mt-4 px-4"><i class="bi bi-floppy" aria-hidden="true"></i> Save Changes</button>
       </form>
     </div>
   </div>
@@ -125,7 +126,7 @@
             <input type="password" class="form-control" id="fConfPass" required minlength="8">
           </div>
         </div>
-        <button type="submit" class="btn-teal btn mt-4 px-4">🔒 Change Password</button>
+        <button type="submit" class="btn-teal btn mt-4 px-4"><i class="bi bi-lock" aria-hidden="true"></i> Change Password</button>
       </form>
     </div>
   </div>
@@ -157,7 +158,7 @@
             <input type="text" class="form-control" id="gSpecs" placeholder="Historical Sites, Desert Safaris, Cultural Tours">
           </div>
         </div>
-        <button type="submit" class="btn-teal btn mt-4 px-4">💾 Save Guide Settings</button>
+        <button type="submit" class="btn-teal btn mt-4 px-4"><i class="bi bi-floppy" aria-hidden="true"></i> Save Guide Settings</button>
       </form>
     </div>
   </div>
@@ -165,14 +166,14 @@
   <!-- REFERRAL PROGRAM -->
   <div class="guide-card p-4 mt-4" style="background:linear-gradient(135deg,#fff,#f0fdfa);border:1px solid #99f6e4">
     <div class="d-flex align-items-center gap-2 mb-2">
-      <span style="font-size:1.6rem">🎁</span>
+      <span style="font-size:1.6rem"><i class="bi bi-gift" aria-hidden="true"></i></span>
       <h5 class="fw-800 mb-0" data-i18n-en="Invite friends, earn rewards" data-i18n-ar="ادعُ أصدقاءك واربح مكافآت">Invite friends, earn rewards</h5>
     </div>
     <p class="text-muted small mb-3" data-i18n-en="Share your referral link. When a friend completes their first booking, you both get 5 OMR credit." data-i18n-ar="شارك رابط الإحالة. عندما يكمل صديقك أوّل حجز، تحصلان كلاكما على رصيد 5 ر.ع.">Share your referral link. When a friend completes their first booking, you both get 5 OMR credit.</p>
     <div class="d-flex gap-2 align-items-center" style="background:#fff;border:1px dashed #14b8a6;border-radius:10px;padding:10px 14px">
       <code id="refLink" style="flex:1;font-size:.9rem;color:#0f1c3e;word-break:break-all">…</code>
       <button class="btn btn-sm btn-success" type="button" onclick="copyRef()" data-i18n-en="Copy" data-i18n-ar="نسخ">Copy</button>
-      <button class="btn btn-sm btn-outline-success" type="button" onclick="shareRef()">📤</button>
+      <button class="btn btn-sm btn-outline-success" type="button" onclick="shareRef()"><i class="bi bi-upload" aria-hidden="true"></i></button>
     </div>
     <div class="row g-2 mt-3 text-center">
       <div class="col-4"><div class="p-2 bg-white rounded border"><div class="fw-800 fs-5" id="refCount">0</div><div class="small text-muted" data-i18n-en="Friends invited" data-i18n-ar="أصدقاء مدعوّون">Friends invited</div></div></div>
@@ -215,8 +216,8 @@ function shareRef() {
 </script>
 
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script>
 let currentUser = null;
 
@@ -356,7 +357,7 @@ async function uploadPhoto(input) {
 loadProfile();
 </script>
 <script src="/js/pwa.js?v=16" defer></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>
 

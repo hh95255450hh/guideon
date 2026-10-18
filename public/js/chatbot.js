@@ -64,12 +64,12 @@
 </button>
 <div id="chat-box" role="dialog" aria-label="GuideonBot Chat">
   <div class="cb-header">
-    <div class="cb-avatar">🌿</div>
+    <div class="cb-avatar"><i class="bi bi-tree" aria-hidden="true"></i></div>
     <div style="flex:1">
       <div class="cb-title">GuideonBot 🇴🇲</div>
       <div class="cb-status"><div class="cb-dot"></div><span>Online · AI Tourism Assistant</span></div>
     </div>
-    <button class="cb-clear" onclick="cbClear()">🗑 Clear</button>
+    <button class="cb-clear" onclick="cbClear()"><i class="bi bi-trash" aria-hidden="true"></i> Clear</button>
     <button class="cb-close" onclick="cbToggle()">✕</button>
   </div>
   <div class="cb-msgs" id="cb-msgs"></div>
@@ -80,7 +80,7 @@
       <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
     </button>
   </div>
-  <div class="cb-footer-txt">Powered by Guideon AI · Ask anything about Oman 🌿</div>
+  <div class="cb-footer-txt">Powered by Guideon AI · Ask anything about Oman <i class="bi bi-tree" aria-hidden="true"></i></div>
 </div>`);
 
     initChatbot();
@@ -156,7 +156,7 @@
     function startBotStream() {
       const el = document.createElement('div');
       el.className = 'cb-msg bot';
-      el.innerHTML = `<div class="cb-msg-av">🌿</div><div><div class="cb-bubble"></div><div class="cb-time">GuideonBot · ${time()}</div></div>`;
+      el.innerHTML = `<div class="cb-msg-av"><i class="bi bi-tree" aria-hidden="true"></i></div><div><div class="cb-bubble"></div><div class="cb-time">GuideonBot · ${time()}</div></div>`;
       document.getElementById('cb-msgs').appendChild(el);
       scrollEnd();
       return el.querySelector('.cb-bubble');
@@ -196,7 +196,7 @@
     function showTyping() {
       const el = document.createElement('div');
       el.className = 'cb-msg bot'; el.id = 'cb-typing';
-      el.innerHTML = `<div class="cb-msg-av">🌿</div><div class="cb-typing"><div class="cb-tdot"></div><div class="cb-tdot"></div><div class="cb-tdot"></div></div>`;
+      el.innerHTML = `<div class="cb-msg-av"><i class="bi bi-tree" aria-hidden="true"></i></div><div class="cb-typing"><div class="cb-tdot"></div><div class="cb-tdot"></div><div class="cb-tdot"></div></div>`;
       document.getElementById('cb-msgs').appendChild(el); scrollEnd();
     }
     function hideTyping()  { const e = document.getElementById('cb-typing'); if (e) e.remove(); }

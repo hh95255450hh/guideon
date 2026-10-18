@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -109,6 +109,7 @@ window.showToast = function (msg, type) {
   } catch (e) { /* never let a toast break the caller */ }
 };
 </script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -120,11 +121,11 @@ window.showToast = function (msg, type) {
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
-        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
-        <a href="/admin-revenue.html" class="btn btn-sm btn-info fw-700">💰 <span data-i18n="admin_revenue_link">Revenue</span></a>
-        <a href="/admin-homepage.html" class="btn btn-sm btn-warning fw-700">🎨 <span data-i18n="admin_homepage_link">Homepage Manager</span></a>
-        <a href="/marketing/" class="btn btn-sm btn-success fw-700">📢 <span data-i18n="admin_marketing_link">Marketing Kit</span></a>
-        <span class="text-white opacity-75 small" data-i18n="admin_panel">🛡️ Admin Panel</span>
+        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
+        <a href="/admin-revenue.html" class="btn btn-sm btn-info fw-700"><i class="bi bi-cash-coin" aria-hidden="true"></i> <span data-i18n="admin_revenue_link">Revenue</span></a>
+        <a href="/admin-homepage.html" class="btn btn-sm btn-warning fw-700"><i class="bi bi-palette" aria-hidden="true"></i> <span data-i18n="admin_homepage_link">Homepage Manager</span></a>
+        <a href="/marketing/" class="btn btn-sm btn-success fw-700"><i class="bi bi-megaphone" aria-hidden="true"></i> <span data-i18n="admin_marketing_link">Marketing Kit</span></a>
+        <span class="text-white opacity-75 small"><i class="bi bi-shield-check" aria-hidden="true"></i> <span data-i18n="admin_panel">Admin Panel</span></span>
         <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
       </div>
     </div>
@@ -134,7 +135,7 @@ window.showToast = function (msg, type) {
 <!-- Stats Header -->
 <div class="dash-header">
   <div class="container">
-    <h2 class="fw-800 mb-3" data-i18n="admin_dash">Admin Dashboard 🛡️</h2>
+    <h2 class="fw-800 mb-3" data-i18n="admin_dash">Admin Dashboard <i class="bi bi-shield-check" aria-hidden="true"></i></h2>
     <div class="row g-3">
       <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statGuides">—</div><div class="lbl" data-i18n="total_guides">Guides</div></div></div>
       <div class="col-6 col-md" ><div class="dash-stat"><div class="num" id="statCompanies">—</div><div class="lbl" data-i18n="stat_companies">Companies</div></div></div>
@@ -154,7 +155,7 @@ window.showToast = function (msg, type) {
         <div class="guide-card p-3 h-100 d-flex align-items-center gap-3"
              style="background:linear-gradient(135deg,#0a5c50,#14a085);color:#fff;cursor:pointer;transition:.15s"
              onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-          <div style="font-size:2.2rem">💰</div>
+          <div style="font-size:2.2rem"><i class="bi bi-cash-coin" aria-hidden="true"></i></div>
           <div>
             <div class="fw-800" style="font-size:1.05rem">لوحة الإيرادات</div>
             <div class="small opacity-75">تحليلات مالية · عمليّات · تنبيهات · تصدير</div>
@@ -166,7 +167,7 @@ window.showToast = function (msg, type) {
     <div class="col-md-4">
       <a href="/admin-homepage.html" class="text-decoration-none">
         <div class="guide-card p-3 h-100 d-flex align-items-center gap-3" style="cursor:pointer">
-          <div style="font-size:2.2rem">🎨</div>
+          <div style="font-size:2.2rem"><i class="bi bi-palette" aria-hidden="true"></i></div>
           <div>
             <div class="fw-800" style="font-size:1.05rem">إدارة الصفحة الرئيسيّة</div>
             <div class="small text-muted">المحتوى · الوجهات · الشرائح</div>
@@ -177,7 +178,7 @@ window.showToast = function (msg, type) {
     <div class="col-md-4">
       <a href="/marketing/" class="text-decoration-none">
         <div class="guide-card p-3 h-100 d-flex align-items-center gap-3" style="cursor:pointer">
-          <div style="font-size:2.2rem">📢</div>
+          <div style="font-size:2.2rem"><i class="bi bi-megaphone" aria-hidden="true"></i></div>
           <div>
             <div class="fw-800" style="font-size:1.05rem">حقيبة التسويق</div>
             <div class="small text-muted">ملصقات · منشورات · قصص</div>
@@ -191,13 +192,13 @@ window.showToast = function (msg, type) {
   <div class="row g-3 mb-4">
     <div class="col-md-6">
       <div class="guide-card p-3">
-        <h6 class="fw-700 mb-3" data-i18n="chart_bookings_status">📊 Bookings by Status</h6>
+        <h6 class="fw-700 mb-3"><i class="bi bi-bar-chart" aria-hidden="true"></i> <span data-i18n="chart_bookings_status">Bookings by Status</span></h6>
         <div id="chartStatus" style="min-height:200px;padding:8px 4px"></div>
       </div>
     </div>
     <div class="col-md-6">
       <div class="guide-card p-3">
-        <h6 class="fw-700 mb-3" data-i18n="chart_guide_ratings">⭐ Guide Ratings Distribution</h6>
+        <h6 class="fw-700 mb-3"><i class="bi bi-star-fill" aria-hidden="true"></i> <span data-i18n="chart_guide_ratings">Guide Ratings Distribution</span></h6>
         <div id="chartRatings" style="min-height:200px;padding:8px 4px"></div>
       </div>
     </div>
@@ -206,33 +207,33 @@ window.showToast = function (msg, type) {
   <!-- Tab bar -->
   <div class="admin-tabs">
     <a href="/admin-revenue.html" class="admin-tab" style="background:linear-gradient(135deg,#0a5c50,#14a085);color:#fff;text-decoration:none">
-      💰 لوحة الإيرادات ←
+      <i class="bi bi-cash-coin" aria-hidden="true"></i> لوحة الإيرادات ←
     </a>
     <button class="admin-tab active" onclick="showTab('pending',this)" data-i18n="tab_pending_g">
-      ⏳ Pending Approvals <span class="badge bg-danger ms-1" id="pendingBadge" style="font-size:.7rem">0</span>
+      <i class="bi bi-hourglass-split" aria-hidden="true"></i> Pending Approvals <span class="badge bg-danger ms-1" id="pendingBadge" style="font-size:.7rem">0</span>
     </button>
-    <button class="admin-tab" onclick="showTab('activity',this)" data-i18n="tab_activity">📋 Activity</button>
-    <button class="admin-tab" onclick="showTab('guides',this)" data-i18n="tab_guides">🎒 All Guides</button>
-    <button class="admin-tab" onclick="showTab('companies',this)" data-i18n="tab_companies">🏢 Companies</button>
-    <button class="admin-tab" onclick="showTab('teams',this)" data-i18n="tab_teams_admin">🎪 الفرق</button>
-    <button class="admin-tab" onclick="showTab('tourists',this)" data-i18n="tab_tourists">👤 Tourists</button>
-    <button class="admin-tab" onclick="showTab('bookings',this)" data-i18n="tab_bookings">📋 Bookings</button>
-    <button class="admin-tab" onclick="showTab('admins',this)" data-i18n="tab_admins">👑 Admins</button>
+    <button class="admin-tab" onclick="showTab('activity',this)"><i class="bi bi-clipboard" aria-hidden="true"></i> <span data-i18n="tab_activity">Activity</span></button>
+    <button class="admin-tab" onclick="showTab('guides',this)"><i class="bi bi-backpack" aria-hidden="true"></i> <span data-i18n="tab_guides">All Guides</span></button>
+    <button class="admin-tab" onclick="showTab('companies',this)"><i class="bi bi-building" aria-hidden="true"></i> <span data-i18n="tab_companies">Companies</span></button>
+    <button class="admin-tab" onclick="showTab('teams',this)"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> <span data-i18n="tab_teams_admin">الفرق</span></button>
+    <button class="admin-tab" onclick="showTab('tourists',this)"><i class="bi bi-person" aria-hidden="true"></i> <span data-i18n="tab_tourists">Tourists</span></button>
+    <button class="admin-tab" onclick="showTab('bookings',this)"><i class="bi bi-clipboard" aria-hidden="true"></i> <span data-i18n="tab_bookings">Bookings</span></button>
+    <button class="admin-tab" onclick="showTab('admins',this)"><i class="bi bi-award" aria-hidden="true"></i> <span data-i18n="tab_admins">Admins</span></button>
     <button class="admin-tab" onclick="showTab('staff',this)" data-i18n="tab_staff">👔 Staff</button>
-    <button class="admin-tab" onclick="showTab('messages',this)">💬 Messages <span class="badge bg-danger" id="adminMsgBadge" style="display:none"></span></button>
-    <button class="admin-tab" onclick="showTab('chatmod',this); loadAllChats()">🔍 Chat Moderation</button>
-    <button class="admin-tab" onclick="showTab('content',this)">🗺️ المحتوى</button>
-    <button class="admin-tab" onclick="showTab('broadcast',this)" data-i18n="tab_broadcast">📢 Broadcast</button>
-    <button class="admin-tab" onclick="showTab('analytics',this)" data-i18n="tab_analytics">📈 Analytics</button>
-    <button class="admin-tab" onclick="showTab('audit',this)" data-i18n="tab_audit">🔍 Audit Log</button>
-    <button class="admin-tab" onclick="showTab('export',this)" data-i18n="tab_export">📥 Export</button>
+    <button class="admin-tab" onclick="showTab('messages',this)"><i class="bi bi-chat-dots" aria-hidden="true"></i> Messages <span class="badge bg-danger" id="adminMsgBadge" style="display:none"></span></button>
+    <button class="admin-tab" onclick="showTab('chatmod',this); loadAllChats()"><i class="bi bi-search" aria-hidden="true"></i> Chat Moderation</button>
+    <button class="admin-tab" onclick="showTab('content',this)"><i class="bi bi-map" aria-hidden="true"></i> المحتوى</button>
+    <button class="admin-tab" onclick="showTab('broadcast',this)"><i class="bi bi-megaphone" aria-hidden="true"></i> <span data-i18n="tab_broadcast">Broadcast</span></button>
+    <button class="admin-tab" onclick="showTab('analytics',this)"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> <span data-i18n="tab_analytics">Analytics</span></button>
+    <button class="admin-tab" onclick="showTab('audit',this)"><i class="bi bi-search" aria-hidden="true"></i> <span data-i18n="tab_audit">Audit Log</span></button>
+    <button class="admin-tab" onclick="showTab('export',this)"><i class="bi bi-download" aria-hidden="true"></i> <span data-i18n="tab_export">Export</span></button>
   </div>
 
   <!-- ════════════════ ACTIVITY TIMELINE ════════════════ -->
   <div id="tab-activity" class="d-none">
     <div class="card p-3 p-md-4 shadow-sm" style="border-radius:14px">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-700 mb-0" data-i18n="activity_title">📋 Recent Activity</h6>
+        <h6 class="fw-700 mb-0"><i class="bi bi-clipboard" aria-hidden="true"></i> <span data-i18n="activity_title">Recent Activity</span></h6>
         <button class="btn btn-sm btn-outline-secondary" onclick="loadActivity()" data-i18n="refresh_btn">Refresh</button>
       </div>
       <p class="text-muted small mb-3" data-i18n="activity_desc">Latest actions by guides, companies and tourists across the platform.</p>
@@ -250,11 +251,11 @@ window.showToast = function (msg, type) {
     <div class="gd-kpis mb-3" id="guideKpis"></div>
     <div class="filter-bar" id="guideFilters">
       <button class="filter-btn on" onclick="filterGuides('all',this)">All</button>
-      <button class="filter-btn" onclick="filterGuides('verified',this)">✅ Verified</button>
-      <button class="filter-btn" onclick="filterGuides('pending',this)">⏳ Pending</button>
-      <button class="filter-btn" onclick="filterGuides('licensed',this)">🏛️ MOT Licensed</button>
-      <button class="filter-btn" onclick="filterGuides('unlicensed',this)">⚠️ Unlicensed</button>
-      <button class="filter-btn" onclick="filterGuides('suspended',this)">⛔ Suspended</button>
+      <button class="filter-btn" onclick="filterGuides('verified',this)"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Verified</button>
+      <button class="filter-btn" onclick="filterGuides('pending',this)"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Pending</button>
+      <button class="filter-btn" onclick="filterGuides('licensed',this)"><i class="bi bi-bank2" aria-hidden="true"></i> MOT Licensed</button>
+      <button class="filter-btn" onclick="filterGuides('unlicensed',this)"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Unlicensed</button>
+      <button class="filter-btn" onclick="filterGuides('suspended',this)"><i class="bi bi-slash-circle" aria-hidden="true"></i> Suspended</button>
     </div>
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
@@ -278,9 +279,9 @@ window.showToast = function (msg, type) {
     <div class="gd-kpis mb-3" id="companyKpis"></div>
     <div class="filter-bar" id="companyFilters">
       <button class="filter-btn on" onclick="filterCompanies('all',this)">All</button>
-      <button class="filter-btn" onclick="filterCompanies('verified',this)">✅ Approved</button>
-      <button class="filter-btn" onclick="filterCompanies('pending',this)">⏳ Pending</button>
-      <button class="filter-btn" onclick="filterCompanies('suspended',this)">⛔ Suspended</button>
+      <button class="filter-btn" onclick="filterCompanies('verified',this)"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Approved</button>
+      <button class="filter-btn" onclick="filterCompanies('pending',this)"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Pending</button>
+      <button class="filter-btn" onclick="filterCompanies('suspended',this)"><i class="bi bi-slash-circle" aria-hidden="true"></i> Suspended</button>
     </div>
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
@@ -303,8 +304,8 @@ window.showToast = function (msg, type) {
   <div id="tab-teams" class="d-none">
     <div class="filter-bar" id="teamFilters">
       <button class="filter-btn on" onclick="filterTeams('all',this)">الكل</button>
-      <button class="filter-btn" onclick="filterTeams('verified',this)">✅ موثّقة</button>
-      <button class="filter-btn" onclick="filterTeams('pending',this)">⏳ قيد المراجعة</button>
+      <button class="filter-btn" onclick="filterTeams('verified',this)"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> موثّقة</button>
+      <button class="filter-btn" onclick="filterTeams('pending',this)"><i class="bi bi-hourglass-split" aria-hidden="true"></i> قيد المراجعة</button>
     </div>
     <div class="t-card">
       <table class="table table-hover align-middle mb-0">
@@ -390,7 +391,7 @@ window.showToast = function (msg, type) {
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">🧾 <span data-i18n="trip_full_details">Trip & Guide Details</span></h5>
+          <h5 class="modal-title"><i class="bi bi-receipt" aria-hidden="true"></i> <span data-i18n="trip_full_details">Trip & Guide Details</span></h5>
           <button type="button" class="btn-close" onclick="closeBookingDetail()" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="bookingDetailBody" style="max-height:70vh;overflow-y:auto"></div>
@@ -406,7 +407,7 @@ window.showToast = function (msg, type) {
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">✏️ <span id="editUserTitle" data-i18n="edit_profile_title">تعديل الملف / Edit profile</span></h5>
+          <h5 class="modal-title"><i class="bi bi-pencil" aria-hidden="true"></i> <span id="editUserTitle" data-i18n="edit_profile_title">تعديل الملف / Edit profile</span></h5>
           <button type="button" class="btn-close" onclick="closeEditUser()" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="editUserBody" style="max-height:72vh;overflow-y:auto"></div>
@@ -442,18 +443,18 @@ window.showToast = function (msg, type) {
           </select>
         </div>
         <div class="col-12 mt-1 d-none" id="stPermsWrap">
-          <label class="form-label fw-700 small mb-2">🔐 <span data-i18n="staff_custom_perms">Custom Permissions — pick what this staff member can do</span></label>
+          <label class="form-label fw-700 small mb-2"><i class="bi bi-shield-lock" aria-hidden="true"></i> <span data-i18n="staff_custom_perms">Custom Permissions — pick what this staff member can do</span></label>
           <div id="stPermsBox" class="d-flex flex-wrap gap-2"></div>
         </div>
         <div class="col-12 mt-2">
-          <button class="btn btn-primary" type="submit" data-i18n="staff_add_btn">➕ Add Staff Member</button>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg" aria-hidden="true"></i> <span data-i18n="staff_add_btn">Add Staff Member</span></button>
           <small class="text-muted ms-2" data-i18n="staff_email_note">An email with login credentials will be sent automatically.</small>
         </div>
         <div id="stMsg" class="col-12 small"></div>
       </form>
     </div>
     <div class="t-card p-3 mb-3" style="background:#fffbea;border-color:#ffe58a">
-      <strong data-i18n="roles_ref">💡 Role Permissions Reference:</strong>
+      <strong><i class="bi bi-lightbulb" aria-hidden="true"></i> <span data-i18n="roles_ref">Role Permissions Reference:</span></strong>
       <div class="small mt-2" id="rolesGuide" data-i18n="loading">Loading roles…</div>
     </div>
     <div class="t-card">
@@ -504,7 +505,7 @@ window.showToast = function (msg, type) {
     </style>
     <div class="gd-chat" style="max-width:760px">
       <div class="p-3 border-bottom d-flex justify-content-between align-items-center" id="adminConvoHeader">
-        <h5 class="fw-700 mb-0" id="adminInboxTitle">💬 صندوق الدعم</h5>
+        <h5 class="fw-700 mb-0" id="adminInboxTitle"><i class="bi bi-chat-dots" aria-hidden="true"></i> صندوق الدعم</h5>
         <span class="text-muted small" id="adminInboxSub">رسائل من المرشدين والسياح</span>
       </div>
       <!-- conversation list -->
@@ -541,7 +542,7 @@ window.showToast = function (msg, type) {
     <div class="t-card p-4">
       <div class="d-flex justify-content-between align-items-start mb-3 gap-2 flex-wrap">
         <div>
-          <h5 class="fw-700 mb-1">🔍 جميع محادثات المستخدمين</h5>
+          <h5 class="fw-700 mb-1"><i class="bi bi-search" aria-hidden="true"></i> جميع محادثات المستخدمين</h5>
           <p class="text-muted small mb-0">يمكنك مراجعة كلّ محادثة بين السياح والمرشدين/الشركات لمنع تجاوز المنصّة والكشف عن النزاعات.</p>
         </div>
         <div class="d-flex gap-2">
@@ -561,7 +562,7 @@ window.showToast = function (msg, type) {
         <div class="col-md-7">
           <div class="border rounded p-3" style="min-height:600px;background:#f4f6f9" id="chatModThread">
             <div class="text-center text-muted py-5">
-              <div style="font-size:3rem;opacity:.3">💬</div>
+              <div style="font-size:3rem;opacity:.3"><i class="bi bi-chat-dots" aria-hidden="true"></i></div>
               <p class="mb-0">اختر محادثة من القائمة لعرضها</p>
             </div>
           </div>
@@ -579,28 +580,28 @@ window.showToast = function (msg, type) {
     <div class="t-card p-4">
       <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
         <div>
-          <h5 class="fw-700 mb-1">🗺️ إدارة محتوى الصفحات</h5>
+          <h5 class="fw-700 mb-1"><i class="bi bi-map" aria-hidden="true"></i> إدارة محتوى الصفحات</h5>
           <p class="text-muted small mb-0">تحكّم كامل بصور وتفاصيل صفحات المناطق والمسارات. التغييرات تظهر مباشرة على الموقع.</p>
         </div>
         <div class="d-flex gap-2">
           <button class="btn btn-sm" id="cmTabRegions" style="background:var(--teal);color:#fff" onclick="cmSwitch('regions')">🏞️ المناطق</button>
-          <button class="btn btn-sm btn-outline-secondary" id="cmTabTrails" onclick="cmSwitch('trails')">🥾 المسارات</button>
+          <button class="btn btn-sm btn-outline-secondary" id="cmTabTrails" onclick="cmSwitch('trails')"><i class="bi bi-signpost-2" aria-hidden="true"></i> المسارات</button>
         </div>
       </div>
 
       <div class="alert alert-info small d-flex justify-content-between align-items-center">
-        <span>💡 اضغط على أي حقل لتعديله. لتغيير الصورة اضغط "رفع صورة". لا تُنشر التغييرات حتى تضغط <strong>حفظ الكل</strong>.</span>
+        <span><i class="bi bi-lightbulb" aria-hidden="true"></i> اضغط على أي حقل لتعديله. لتغيير الصورة اضغط "رفع صورة". لا تُنشر التغييرات حتى تضغط <strong>حفظ الكل</strong>.</span>
         <div class="d-flex gap-2 flex-shrink-0">
           <button class="btn btn-sm btn-outline-danger" onclick="cmReset()">↺ استعادة الافتراضي</button>
-          <button class="btn btn-sm btn-success" onclick="cmSaveAll()" id="cmSaveBtn">💾 حفظ الكل</button>
+          <button class="btn btn-sm btn-success" onclick="cmSaveAll()" id="cmSaveBtn"><i class="bi bi-floppy" aria-hidden="true"></i> حفظ الكل</button>
         </div>
       </div>
 
       <div id="cmEditor"><div class="text-center py-5 text-muted">جارٍ التحميل…</div></div>
 
       <div class="d-flex justify-content-between mt-3">
-        <button class="btn btn-outline-teal btn-sm" onclick="cmAddItem()">➕ إضافة عنصر جديد</button>
-        <button class="btn btn-success" onclick="cmSaveAll()">💾 حفظ الكل</button>
+        <button class="btn btn-outline-teal btn-sm" onclick="cmAddItem()"><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة عنصر جديد</button>
+        <button class="btn btn-success" onclick="cmSaveAll()"><i class="bi bi-floppy" aria-hidden="true"></i> حفظ الكل</button>
       </div>
     </div>
   </div>
@@ -608,7 +609,7 @@ window.showToast = function (msg, type) {
   <!-- ═════════════════════════ BROADCAST ═════════════════════════ -->
   <div id="tab-broadcast" class="d-none">
     <div class="t-card p-4">
-      <h5 class="fw-700 mb-1" data-i18n="bc_title">📢 Send Broadcast Email</h5>
+      <h5 class="fw-700 mb-1"><i class="bi bi-megaphone" aria-hidden="true"></i> <span data-i18n="bc_title">Send Broadcast Email</span></h5>
       <p class="text-muted small mb-3" data-i18n="bc_desc">Reach all users or a specific group at once.</p>
       <form id="broadcastForm" class="row g-3">
         <div class="col-md-4">
@@ -640,9 +641,9 @@ window.showToast = function (msg, type) {
   <!-- ═════════════════════════ ANALYTICS ═════════════════════════ -->
   <div id="tab-analytics" class="d-none">
     <div class="row g-3">
-      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3" data-i18n="top_guides">🏆 Top 10 Guides</h6><div id="topGuidesList" class="small" data-i18n="loading">Loading…</div></div></div>
-      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3" data-i18n="top_dests">📍 Top 10 Destinations</h6><div id="topDestsList" class="small" data-i18n="loading">Loading…</div></div></div>
-      <div class="col-12"><div class="t-card p-4"><h6 class="fw-700 mb-3" data-i18n="rev_by_month">💰 Revenue by Month (last 12)</h6><canvas id="chartRevenue" height="80"></canvas></div></div>
+      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3"><i class="bi bi-trophy" aria-hidden="true"></i> <span data-i18n="top_guides">Top 10 Guides</span></h6><div id="topGuidesList" class="small" data-i18n="loading">Loading…</div></div></div>
+      <div class="col-md-6"><div class="t-card p-4"><h6 class="fw-700 mb-3"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> <span data-i18n="top_dests">Top 10 Destinations</span></h6><div id="topDestsList" class="small" data-i18n="loading">Loading…</div></div></div>
+      <div class="col-12"><div class="t-card p-4"><h6 class="fw-700 mb-3"><i class="bi bi-cash-coin" aria-hidden="true"></i> <span data-i18n="rev_by_month">Revenue by Month (last 12)</span></h6><canvas id="chartRevenue" height="80"></canvas></div></div>
       <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small" data-i18n="avg_rating">Avg Rating</div><div class="fs-3 fw-700" id="anAvgRating">—</div></div></div>
       <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small" data-i18n="total_reviews">Total Reviews</div><div class="fs-3 fw-700" id="anTotalReviews">—</div></div></div>
       <div class="col-md-4"><div class="t-card p-3 text-center"><div class="text-muted small" data-i18n="new_users_7d">New Users (7d)</div><div class="fs-3 fw-700" id="anNewUsers">—</div></div></div>
@@ -652,7 +653,7 @@ window.showToast = function (msg, type) {
   <!-- ═════════════════════════ AUDIT LOG ═════════════════════════ -->
   <div id="tab-audit" class="d-none">
     <div class="t-card p-4 mb-3">
-      <h6 class="fw-700 mb-2" data-i18n="audit_title">🔍 Admin Audit Log</h6>
+      <h6 class="fw-700 mb-2"><i class="bi bi-search" aria-hidden="true"></i> <span data-i18n="audit_title">Admin Audit Log</span></h6>
       <p class="text-muted small mb-3" data-i18n="audit_desc">Every admin action is recorded here.</p>
       <div class="d-flex gap-2 mb-3 flex-wrap">
         <input id="auditFilter" class="form-control form-control-sm" data-i18n-ph="audit_filter_ph" placeholder="Filter by action" style="max-width:260px">
@@ -677,13 +678,13 @@ window.showToast = function (msg, type) {
   <!-- ═════════════════════════ EXPORT ═════════════════════════ -->
   <div id="tab-export" class="d-none">
     <div class="t-card p-4">
-      <h5 class="fw-700 mb-1" data-i18n="export_title">📥 Export Data (CSV)</h5>
+      <h5 class="fw-700 mb-1"><i class="bi bi-download" aria-hidden="true"></i> <span data-i18n="export_title">Export Data (CSV)</span></h5>
       <p class="text-muted small mb-4" data-i18n="export_desc">Download data for backup or analysis.</p>
       <div class="row g-3">
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/users" download data-i18n="exp_users">👥 Users</a></div>
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/bookings" download data-i18n="exp_bookings">📋 Bookings</a></div>
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/reviews" download data-i18n="exp_reviews">⭐ Reviews</a></div>
-        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/audit-log" download data-i18n="exp_audit">🔍 Audit Log</a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/users" download><i class="bi bi-people" aria-hidden="true"></i> <span data-i18n="exp_users">Users</span></a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/bookings" download><i class="bi bi-clipboard" aria-hidden="true"></i> <span data-i18n="exp_bookings">Bookings</span></a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/reviews" download><i class="bi bi-star-fill" aria-hidden="true"></i> <span data-i18n="exp_reviews">Reviews</span></a></div>
+        <div class="col-md-3"><a class="btn btn-outline-primary w-100" href="/api/admin/export/audit-log" download><i class="bi bi-search" aria-hidden="true"></i> <span data-i18n="exp_audit">Audit Log</span></a></div>
       </div>
     </div>
   </div>
@@ -693,8 +694,8 @@ window.showToast = function (msg, type) {
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
 <script src="/vendor/chart.umd.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script>
 // ── Helpers ──────────────────────────────────────────────────
 function toast(msg, type='') {
@@ -1216,14 +1217,14 @@ async function loadPending() {
     const el        = document.getElementById('pendingList');
 
     if (!guides.length && !companies.length && !teams.length) {
-      el.innerHTML = `<div class="empty-state"><div class="icon">✅</div><h5>${I18N.t('all_caught_up')}</h5><p class="text-muted">${I18N.t('no_pending_all')}</p></div>`;
+      el.innerHTML = `<div class="empty-state"><div class="icon"><i class="bi bi-check-circle-fill" aria-hidden="true"></i></div><h5>${I18N.t('all_caught_up')}</h5><p class="text-muted">${I18N.t('no_pending_all')}</p></div>`;
       return;
     }
 
     let html = '';
 
     if (guides.length) {
-      html += `<div class="section-divider"><span>🎒 ${I18N.t('pending_guides_sec')} (${guides.length})</span></div>`;
+      html += `<div class="section-divider"><span><i class="bi bi-backpack" aria-hidden="true"></i> ${I18N.t('pending_guides_sec')} (${guides.length})</span></div>`;
       html += guides.map(g => `
         <div class="pend-card">
           <div class="d-flex align-items-start gap-3">
@@ -1255,15 +1256,15 @@ async function loadPending() {
     }
 
     if (companies.length) {
-      html += `<div class="section-divider"><span>🏢 ${I18N.t('pending_companies_sec')} (${companies.length})</span></div>`;
+      html += `<div class="section-divider"><span><i class="bi bi-building" aria-hidden="true"></i> ${I18N.t('pending_companies_sec')} (${companies.length})</span></div>`;
       html += companies.map(c => `
         <div class="pend-card">
           <div class="d-flex align-items-start gap-3">
-            <div class="avatar company-avatar">🏢</div>
+            <div class="avatar company-avatar"><i class="bi bi-building" aria-hidden="true"></i></div>
             <div style="flex:1;min-width:0">
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="fw-800">${gdEsc(c.companyName || c.fullName)}</span>
-                <span class="mot-badge mot-company">🏢 ${I18N.t('tab_company')}</span>
+                <span class="mot-badge mot-company"><i class="bi bi-building" aria-hidden="true"></i> ${I18N.t('tab_company')}</span>
               </div>
               <div class="small text-muted mb-2">${I18N.t('contact_person')}: ${gdEsc(c.fullName)} · ${gdEsc(c.email)}${c.phone ? ' · ' + gdEsc(c.phone) : ''}</div>
               <div class="row g-2 small">
@@ -1283,15 +1284,15 @@ async function loadPending() {
     }
 
     if (teams.length) {
-      html += `<div class="section-divider"><span>🎪 ${I18N.t('pending_teams_sec') || 'فرق بانتظار التوثيق'} (${teams.length})</span></div>`;
+      html += `<div class="section-divider"><span><i class="bi bi-ticket-perforated" aria-hidden="true"></i> ${I18N.t('pending_teams_sec') || 'فرق بانتظار التوثيق'} (${teams.length})</span></div>`;
       html += teams.map(t => `
         <div class="pend-card">
           <div class="d-flex align-items-start gap-3">
-            <div class="avatar company-avatar">🎪</div>
+            <div class="avatar company-avatar"><i class="bi bi-ticket-perforated" aria-hidden="true"></i></div>
             <div style="flex:1;min-width:0">
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="fw-800">${t.teamName || t.fullName}</span>
-                <span class="mot-badge mot-company">🎪 ${I18N.t('tab_teams') || 'فريق'}</span>
+                <span class="mot-badge mot-company"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> ${I18N.t('tab_teams') || 'فريق'}</span>
               </div>
               <div class="small text-muted mb-2">${t.fullName ? t.fullName + ' · ' : ''}${t.email}${t.phone ? ' · ' + t.phone : ''}</div>
               <div class="row g-2 small">
@@ -1357,7 +1358,7 @@ function renderGuides() {
         <div class="gd-identity">
           <span class="gd-avatar">${g.photo ? `<img src="${window.gdSafeUrl(g.photo)}" alt="">` : window.gdEsc(initials(g.fullName))}</span>
           <div style="min-width:0">
-            <div class="gd-identity__name"><a href="/guide-profile.html?id=${g.id}" target="_blank" style="color:var(--teal);text-decoration:none">${window.gdEsc(g.fullName)} ↗</a></div>
+            <div class="gd-identity__name"><a href="/guide-profile.html?id=${g.id}" target="_blank" style="color:var(--teal);text-decoration:none">${window.gdEsc(g.fullName)} <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
             ${contactLinks(g)}
             <div class="small text-muted">${fdate(g.createdAt)}</div>
           </div>
@@ -1380,10 +1381,10 @@ function renderGuides() {
       <td class="py-2">
         <div class="gd-actions">
           ${!g.isVerified && !g.isSuspended ? `<button class="btn-approve" onclick="verifyGuide('${g.id}','${jattr(g.fullName)}')">${I18N.t('approve_btn')}</button>` : ''}
-          <button class="gd-iconbtn gd-iconbtn--primary" onclick="openEditUser('${g.id}','guide')" title="${I18N.t('edit_btn')||'تعديل'}" aria-label="${I18N.t('edit_btn')||'تعديل'}">✏️</button>
-          <button class="gd-iconbtn" onclick="messageUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}" aria-label="${I18N.t('message_btn')||'Message'}">💬</button>
+          <button class="gd-iconbtn gd-iconbtn--primary" onclick="openEditUser('${g.id}','guide')" title="${I18N.t('edit_btn')||'تعديل'}" aria-label="${I18N.t('edit_btn')||'تعديل'}"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+          <button class="gd-iconbtn" onclick="messageUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}" aria-label="${I18N.t('message_btn')||'Message'}"><i class="bi bi-chat-dots" aria-hidden="true"></i></button>
           ${!g.isSuspended ? `<button class="gd-iconbtn gd-iconbtn--danger" onclick="suspendUser('${g.id}','${jattr(g.fullName)}')" title="${I18N.t('suspend_btn')||'تعليق'}" aria-label="${I18N.t('suspend_btn')||'تعليق'}">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${g.id}','${jattr(g.fullName)}')">${I18N.t('reactivate_btn')}</button>`}
-          <button class="gd-iconbtn gd-iconbtn--danger" onclick="deleteUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="Delete" aria-label="Delete">🗑</button>
+          <button class="gd-iconbtn gd-iconbtn--danger" onclick="deleteUser('${g.id}', ${JSON.stringify(g.fullName).replace(/"/g,'&quot;')})" title="Delete" aria-label="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>
         </div>
       </td>
     </tr>`).join('')
@@ -1453,10 +1454,10 @@ function renderCompanies() {
       <td class="py-2">
         <div class="gd-actions">
           ${!c.isVerified && !c.isSuspended ? `<button class="btn-approve" onclick="verifyCompany('${c.id}','${c.companyName||c.fullName}')">${I18N.t('approve_btn')}</button>` : ''}
-          <button class="gd-iconbtn gd-iconbtn--primary" onclick="openEditUser('${c.id}','company')" title="${I18N.t('edit_btn')||'تعديل'}" aria-label="${I18N.t('edit_btn')||'تعديل'}">✏️</button>
-          <button class="gd-iconbtn" onclick="messageUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}" aria-label="${I18N.t('message_btn')||'Message'}">💬</button>
+          <button class="gd-iconbtn gd-iconbtn--primary" onclick="openEditUser('${c.id}','company')" title="${I18N.t('edit_btn')||'تعديل'}" aria-label="${I18N.t('edit_btn')||'تعديل'}"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+          <button class="gd-iconbtn" onclick="messageUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}" aria-label="${I18N.t('message_btn')||'Message'}"><i class="bi bi-chat-dots" aria-hidden="true"></i></button>
           ${!c.isSuspended ? `<button class="gd-iconbtn gd-iconbtn--danger" onclick="suspendUser('${c.id}','${c.companyName||c.fullName}')" title="${I18N.t('suspend_btn')||'تعليق'}" aria-label="${I18N.t('suspend_btn')||'تعليق'}">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${c.id}','${c.companyName||c.fullName}')">${I18N.t('reactivate_btn')}</button>`}
-          <button class="gd-iconbtn gd-iconbtn--danger" onclick="deleteUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="Delete" aria-label="Delete">🗑</button>
+          <button class="gd-iconbtn gd-iconbtn--danger" onclick="deleteUser('${c.id}', ${JSON.stringify(c.companyName||c.fullName).replace(/"/g,'&quot;')})" title="Delete" aria-label="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>
         </div>
       </td>
     </tr>`).join('')
@@ -1488,9 +1489,9 @@ function renderTeams() {
   document.getElementById('teamsTable').innerHTML = list.length ? list.map(t => `
     <tr>
       <td>
-        <div class="fw-700">🎪 ${t.teamName || t.fullName || '—'}</div>
+        <div class="fw-700"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> ${t.teamName || t.fullName || '—'}</div>
         <div class="small text-muted">${(t.teamDescription||'').slice(0,60)}</div>
-        <a class="small" href="/team-profile.html?id=${t.id}" target="_blank" style="color:var(--teal)">عرض الصفحة ↗</a>
+        <a class="small" href="/team-profile.html?id=${t.id}" target="_blank" style="color:var(--teal)">عرض الصفحة <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
       </td>
       <td class="small">${TEAM_CAT[t.teamCategory] || t.teamCategory || '—'}</td>
       <td class="small">${t.teamGovernorate || '—'}${t.membersCount ? `<br><span class="text-muted">${t.membersCount} عضو</span>` : ''}</td>
@@ -1503,9 +1504,9 @@ function renderTeams() {
       </td>
       <td class="d-flex gap-1 flex-wrap py-2">
         ${!t.isVerified && !t.isSuspended ? `<button class="btn-approve" onclick="verifyTeam('${t.id}','${(t.teamName||t.fullName||'').replace(/'/g,'')}')">توثيق ✓</button>` : ''}
-        <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${t.id}', ${JSON.stringify(t.teamName||t.fullName).replace(/"/g,'&quot;')})" title="مراسلة">💬</button>
+        <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${t.id}', ${JSON.stringify(t.teamName||t.fullName).replace(/"/g,'&quot;')})" title="مراسلة"><i class="bi bi-chat-dots" aria-hidden="true"></i></button>
         ${!t.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${(t.teamName||t.fullName||'').replace(/'/g,'')}')">⛔</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${t.id}','${(t.teamName||t.fullName||'').replace(/'/g,'')}')">تفعيل</button>`}
-        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${t.id}', ${JSON.stringify(t.teamName||t.fullName).replace(/"/g,'&quot;')})" title="حذف">🗑</button>
+        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${t.id}', ${JSON.stringify(t.teamName||t.fullName).replace(/"/g,'&quot;')})" title="حذف"><i class="bi bi-trash" aria-hidden="true"></i></button>
       </td>
     </tr>`).join('')
   : `<tr><td colspan="7" class="text-center text-muted py-4">لا فرق بعد.</td></tr>`;
@@ -1533,9 +1534,9 @@ async function loadTourists() {
         <td class="small">${fdate(t.createdAt)}</td>
         <td>${t.isSuspended ? `<span class="chip chip-suspended">${I18N.t('status_suspended')}</span>` : `<span class="chip chip-verified">${I18N.t('status_active')}</span>`}</td>
         <td>
-          <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${t.id}', ${JSON.stringify(t.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}">💬</button>
+          <button class="btn btn-sm btn-outline-teal py-0 px-2" onclick="messageUser('${t.id}', ${JSON.stringify(t.fullName).replace(/"/g,'&quot;')})" title="${I18N.t('message_btn')||'Message'}"><i class="bi bi-chat-dots" aria-hidden="true"></i></button>
           ${!t.isSuspended ? `<button class="btn-suspend-sm" onclick="suspendUser('${t.id}','${jattr(t.fullName)}')">${I18N.t('suspend_btn')}</button>` : `<button class="btn-unsuspend-sm" onclick="unsuspendUser('${t.id}','${jattr(t.fullName)}')">${I18N.t('reactivate_btn')}</button>`}
-          <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${t.id}', ${JSON.stringify(t.fullName).replace(/"/g,'&quot;')})" title="Delete">🗑</button>
+          <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deleteUser('${t.id}', ${JSON.stringify(t.fullName).replace(/"/g,'&quot;')})" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>
         </td>
       </tr>`).join('') || `<tr><td colspan="6" class="text-center text-muted py-4">${I18N.t('no_tourists_found')}</td></tr>`;
   } catch {}
@@ -1551,7 +1552,7 @@ async function loadAllBookings() {
     document.getElementById('bookingsTable').innerHTML = ALL_BOOKINGS.map(b=>`
       <tr>
         <td class="small">${esc(b.touristName)}<br><span class="text-muted">${esc(b.touristEmail)}</span></td>
-        <td class="small fw-600">${esc(b.guideName)} ${b.guideVerified?'<span title="Verified">✅</span>':''}</td>
+        <td class="small fw-600">${esc(b.guideName)} ${b.guideVerified?'<span title="Verified"><i class="bi bi-check-circle-fill" aria-hidden="true"></i></span>':''}</td>
         <td class="small">${esc(b.destination||'')}</td>
         <td class="small">${b.tourDate ? new Date(b.tourDate+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—'}</td>
         <td class="small">${b.duration==='half'?I18N.t('half_day_lbl'):I18N.t('full_day_lbl')}</td>
@@ -1561,7 +1562,7 @@ async function loadAllBookings() {
           ${b.tourTime?`<div class="small text-muted">${b.tourTime==='morning'?'🌅 صباح':b.tourTime==='afternoon'?'🌇 مساء':'☀️ يوم كامل'}</div>`:''}
         </td>
         <td class="d-flex gap-1">
-          <button class="btn btn-sm btn-outline-secondary" onclick="viewBookingDetails('${b.id}')">👁 ${I18N.t('details_btn')||'Details'}</button>
+          <button class="btn btn-sm btn-outline-secondary" onclick="viewBookingDetails('${b.id}')"><i class="bi bi-eye" aria-hidden="true"></i> ${I18N.t('details_btn')||'Details'}</button>
           ${b.status==='confirmed'?`<button class="btn-approve" onclick="markComplete('${b.id}')">${I18N.t('complete_btn')}</button>`:''}
           ${b.status==='completed'?`<span style="color:#0f7b6c;font-weight:700;font-size:13px;">✅ ${I18N.t('trip_completed')||'تم إنهاء الرحلة'}</span>`:''}
         </td>
@@ -1579,7 +1580,7 @@ function viewBookingDetails(id) {
   const rowKV = (k,v) => `<div class="d-flex justify-content-between py-1 border-bottom"><span class="text-muted small">${k}</span><span class="small fw-600 text-end">${v||'—'}</span></div>`;
   const body = `
     <div class="mb-3">
-      <div class="fw-700 mb-2" style="color:var(--teal,#0f7b6c)">🧭 ${I18N.t('trip_details')||'Trip Details'}</div>
+      <div class="fw-700 mb-2" style="color:var(--teal,#0f7b6c)"><i class="bi bi-compass" aria-hidden="true"></i> ${I18N.t('trip_details')||'Trip Details'}</div>
       ${rowKV(I18N.t('destination')||'Destination', esc(b.destination))}
       ${rowKV(I18N.t('col_date')||'Date', date)}
       ${rowKV(I18N.t('duration_lbl')||'Duration', b.duration==='half'?(I18N.t('half_day_lbl')||'Half day'):(I18N.t('full_day_lbl')||'Full day'))}
@@ -1593,16 +1594,16 @@ function viewBookingDetails(id) {
       ${b.completedAt?rowKV('Completed', new Date(b.completedAt).toLocaleString('en-GB')):''}
     </div>
     <div class="mb-3">
-      <div class="fw-700 mb-2" style="color:var(--teal,#0f7b6c)">🎒 ${I18N.t('guide_details')||'Guide Details'}</div>
-      ${rowKV('Name', esc(b.guideName)+(b.guideVerified?' ✅':''))}
+      <div class="fw-700 mb-2" style="color:var(--teal,#0f7b6c)"><i class="bi bi-backpack" aria-hidden="true"></i> ${I18N.t('guide_details')||'Guide Details'}</div>
+      ${rowKV('Name', esc(b.guideName)+(b.guideVerified?' <i class="bi bi-check-circle-fill" aria-hidden="true"></i>':''))}
       ${rowKV('Email', b.guideEmail?`<a href="mailto:${esc(b.guideEmail)}">${esc(b.guideEmail)}</a>`:'—')}
       ${rowKV('Phone', b.guidePhone?`<a href="tel:${esc(b.guidePhone)}">${esc(b.guidePhone)}</a>`:'—')}
       ${rowKV('Rating', (b.guideRating||0)+' ★')}
       ${rowKV('Price/day', 'OMR '+(b.guidePricePerDay||0))}
-      <div class="mt-2"><a class="btn btn-sm btn-teal" href="/guide-profile.html?id=${encodeURIComponent(b.guideId)}" target="_blank">${I18N.t('view_guide_profile')||'Open guide profile'} ↗</a></div>
+      <div class="mt-2"><a class="btn btn-sm btn-teal" href="/guide-profile.html?id=${encodeURIComponent(b.guideId)}" target="_blank">${I18N.t('view_guide_profile')||'Open guide profile'} <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
     </div>
     <div>
-      <div class="fw-700 mb-2" style="color:var(--teal,#0f7b6c)">👤 ${I18N.t('tourist_details')||'Tourist Details'}</div>
+      <div class="fw-700 mb-2" style="color:var(--teal,#0f7b6c)"><i class="bi bi-person" aria-hidden="true"></i> ${I18N.t('tourist_details')||'Tourist Details'}</div>
       ${rowKV('Name', esc(b.touristName))}
       ${rowKV('Email', b.touristEmail?`<a href="mailto:${esc(b.touristEmail)}">${esc(b.touristEmail)}</a>`:'—')}
       ${rowKV('Phone', b.touristPhone?`<a href="tel:${esc(b.touristPhone)}">${esc(b.touristPhone)}</a>`:'—')}
@@ -1674,15 +1675,15 @@ function openEditUser(id, type) {
     return `<div class="mb-3"><label class="form-label small fw-600" for="${id2}">${f.ar}</label>${input}</div>`;
   }).join('');
   document.getElementById('editUserTitle').textContent =
-    (type === 'company' ? '🏢 ' : '🧭 ') + (u.companyName || u.fullName || '');
+    (type === 'company' ? '<i class="bi bi-building" aria-hidden="true"></i> ' : '<i class="bi bi-compass" aria-hidden="true"></i> ') + (u.companyName || u.fullName || '');
   document.getElementById('editUserBody').innerHTML =
     `<div class="row"><div class="col-md-12">${rows}</div></div>` +
     `<hr class="my-3">` +
     `<div class="d-flex align-items-center justify-content-between mb-2">
-       <h6 class="fw-800 mb-0">🗺️ الرحلات والأسعار · Tours &amp; prices</h6>
+       <h6 class="fw-800 mb-0"><i class="bi bi-map" aria-hidden="true"></i> الرحلات والأسعار · Tours &amp; prices</h6>
        <div class="d-flex align-items-center gap-2">
          <span class="small text-muted" id="pkgCount"></span>
-         <button class="btn btn-sm btn-success py-0 px-2" onclick="toggleAddPkg()">➕ إضافة رحلة</button>
+         <button class="btn btn-sm btn-success py-0 px-2" onclick="toggleAddPkg()"><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة رحلة</button>
        </div>
      </div>` +
     `<div id="addPkgForm" class="border rounded p-2 mb-2 d-none" style="background:#f6fff9">
@@ -1731,7 +1732,7 @@ async function loadEditPkgs(uid) {
           <span class="small text-muted">${esc(p.destination || '')} · ${esc(p.category || '')}</span>
           <div class="d-flex gap-1">
             <button class="btn btn-sm btn-primary py-0 px-2" onclick="savePkg('${p.id}', this)">حفظ</button>
-            <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deletePkg('${p.id}', this)">🗑</button>
+            <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="deletePkg('${p.id}', this)"><i class="bi bi-trash" aria-hidden="true"></i></button>
           </div>
         </div>
       </div>`;
@@ -1925,7 +1926,7 @@ async function markComplete(id) {
 function localizeAdminChrome() {
   const isAr = (window.I18N && I18N.lang) ? I18N.lang === 'ar' : (localStorage.getItem('gd_lang') === 'ar');
   const set = (id, en, ar) => { const el = document.getElementById(id); if (el) el.textContent = isAr ? ar : en; };
-  set('adminInboxTitle',  '💬 Support Inbox',                 '💬 صندوق الدعم');
+  set('adminInboxTitle',  '<i class="bi bi-chat-dots" aria-hidden="true"></i> Support Inbox',                 '<i class="bi bi-chat-dots" aria-hidden="true"></i> صندوق الدعم');
   set('adminInboxSub',    'Messages from guides & tourists', 'رسائل من المرشدين والسياح');
   set('adminBackBtn',     '← Back',                           '→ رجوع');
   set('adminConvoLoading','Loading…',                         'جارٍ التحميل…');
@@ -1963,7 +1964,7 @@ async function adminLoadConvos(){
       if(!list.length){el.innerHTML='<div class="text-center py-4 text-muted small">No messages yet.</div>';}
       else{
         el.innerHTML=list.map(c=>{
-          const preview=(c.lastMessage.content||'📎 attachment').slice(0,55);
+          const preview=(c.lastMessage.content||'<i class="bi bi-paperclip" aria-hidden="true"></i> attachment').slice(0,55);
           const unread=c.unread>0?`<span class="badge bg-danger ms-1">${c.unread}</span>`:'';
           const dot=c.online?'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;margin-inline-end:4px"></span>':'';
           return `<button class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2" onclick="adminOpenThread('${c.otherId}',${JSON.stringify(c.otherName).replace(/"/g,'&quot;').replace(/'/g,'&#39;')})">
@@ -1982,8 +1983,8 @@ function adminUpdateBadge(n){const b=document.getElementById('adminMsgBadge');if
 // Build clickable contact links (email → mailto, phone → call / WhatsApp / SMS).
 function waNum(p){ let n=String(p||'').replace(/[^0-9]/g,''); if(n.length===8) n='968'+n; return n; }
 function contactLinks(u){
-  const email = u.email ? `<div class="small mb-1"><a href="mailto:${u.email}" style="color:#0f7b6c;text-decoration:none">✉️ ${u.email}</a></div>` : '';
-  const phone = u.phone ? `<div class="small mb-1">📞 <a href="tel:${u.phone}" style="color:#444;text-decoration:none">${u.phone}</a> · <a href="https://wa.me/${waNum(u.phone)}" target="_blank" style="color:#25D366;text-decoration:none;font-weight:600">WhatsApp</a> · <a href="sms:${u.phone}" style="color:#444;text-decoration:none">SMS</a></div>` : '';
+  const email = u.email ? `<div class="small mb-1"><a href="mailto:${u.email}" style="color:#0f7b6c;text-decoration:none"><i class="bi bi-envelope" aria-hidden="true"></i> ${u.email}</a></div>` : '';
+  const phone = u.phone ? `<div class="small mb-1"><i class="bi bi-telephone" aria-hidden="true"></i> <a href="tel:${u.phone}" style="color:#444;text-decoration:none">${u.phone}</a> · <a href="https://wa.me/${waNum(u.phone)}" target="_blank" style="color:#25D366;text-decoration:none;font-weight:600">WhatsApp</a> · <a href="sms:${u.phone}" style="color:#444;text-decoration:none">SMS</a></div>` : '';
   return email + phone;
 }
 // Open a direct conversation with any user straight from their table row.
@@ -2022,14 +2023,14 @@ function adminRenderThread(msgs){
   const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<60;
   const isAr=(window.I18N&&I18N.lang)?I18N.lang==='ar':(localStorage.getItem('gd_lang')==='ar');
   if(!msgs.length){
-    el.innerHTML=`<div class="gd-chat-empty"><div class="ic">💬</div><div>${isAr?'لا توجد رسائل بعد':'No messages yet'}</div></div>`;
+    el.innerHTML=`<div class="gd-chat-empty"><div class="ic"><i class="bi bi-chat-dots" aria-hidden="true"></i></div><div>${isAr?'لا توجد رسائل بعد':'No messages yet'}</div></div>`;
     return;
   }
   el.innerHTML=msgs.map(m=>{
     const mine=m.fromId===me;
     let body='';
     if(m.attachmentUrl&&m.attachmentType==='image')body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener"><img alt="" src="${m.attachmentUrl}" style="max-width:200px;border-radius:10px;display:block;margin-bottom:${m.content?'6px':'0'}"></a>`;
-    else if(m.attachmentUrl)body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${admEsc(m.attachmentName||'file')}</a>`;
+    else if(m.attachmentUrl)body+=`<a href="${m.attachmentUrl}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline"><i class="bi bi-paperclip" aria-hidden="true"></i> ${admEsc(m.attachmentName||'file')}</a>`;
     if(m.content)body+=`<div class="txt">${admEsc(m.content)}</div>`;
     const tick=mine?`<span class="tick">${m.isRead?'✓✓':'✓'}</span>`:'';
     return `<div class="gd-bubble ${mine?'mine':'theirs'}">${body}<div class="meta"><span>${admTime(m.createdAt)}</span>${tick}</div></div>`;
@@ -2163,13 +2164,13 @@ function cmRender() {
     <div class="border rounded p-3 mb-3" style="background:#fafbfc" data-card="${idx}">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="fw-700 mb-0">#${idx+1} · ${(item.name_ar||item.name_en||item.id||'عنصر')}</h6>
-        <button class="btn btn-sm btn-outline-danger" onclick="cmRemove(${idx})">🗑️ حذف</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="cmRemove(${idx})"><i class="bi bi-trash" aria-hidden="true"></i> حذف</button>
       </div>
       <div class="row g-2 align-items-start">
         <div class="col-md-3 text-center">
           <img alt="" src="${img||'/logo.png'}" id="cmImg_${idx}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;background:#eee" onerror="this.src='/logo.png'">
           <input type="file" accept="image/*" id="cmFile_${idx}" style="display:none" onchange="cmUpload(${idx},this)">
-          <button class="btn btn-sm btn-outline-teal w-100 mt-2" onclick="document.getElementById('cmFile_${idx}').click()">📷 رفع صورة</button>
+          <button class="btn btn-sm btn-outline-teal w-100 mt-2" onclick="document.getElementById('cmFile_${idx}').click()"><i class="bi bi-camera" aria-hidden="true"></i> رفع صورة</button>
           <input class="form-control form-control-sm mt-1" placeholder="أو الصق رابط صورة" value="${String(img).replace(/"/g,'&quot;')}" data-idx="${idx}" data-k="${schema.img}" data-t="text" oninput="document.getElementById('cmImg_${idx}').src=this.value||'/logo.png'">
         </div>
         <div class="col-md-9"><div class="row g-2">${fieldsHtml}</div></div>
@@ -2307,7 +2308,7 @@ function renderChatList(items) {
           <div class="text-muted small text-truncate">${snippet}${flagged}</div>
         </div>
         <div class="text-muted" style="font-size:.7rem;white-space:nowrap;margin-inline-start:8px">
-          <div>${c.count} 💬</div><div>${(when.split(',')[0] || '')}</div>
+          <div>${c.count} <i class="bi bi-chat-dots" aria-hidden="true"></i></div><div>${(when.split(',')[0] || '')}</div>
         </div>
       </div>
     </button>`;
@@ -2339,7 +2340,7 @@ async function openChatModThread(aId, bId, aName, bName) {
           const mine = m.fromId === aId;
           const flagged = /•••/.test(m.content || '');
           const time = new Date(m.createdAt).toLocaleString('ar');
-          const txt = (m.content || (m.attachmentType ? ('📎 ' + (m.attachmentName||'مرفق')) : '')).replace(/</g,'&lt;');
+          const txt = (m.content || (m.attachmentType ? ('<i class="bi bi-paperclip" aria-hidden="true"></i> ' + (m.attachmentName||'مرفق')) : '')).replace(/</g,'&lt;');
           return `<div style="align-self:${mine?'flex-start':'flex-end'};max-width:75%">
             <div style="background:${mine?'#fff':'#dcf8c6'};padding:9px 13px;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.06)">
               <div style="font-size:.7rem;font-weight:700;opacity:.7;margin-bottom:3px">${mine?aName:bName}</div>
@@ -2355,7 +2356,7 @@ async function openChatModThread(aId, bId, aName, bName) {
 }
 </script>
 <script src="/js/pwa.js?v=16" defer></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>
 

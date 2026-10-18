@@ -74,11 +74,12 @@ textarea,input[type=number]{width:100%;border:1.5px solid var(--line);border-rad
 .leaflet-marker-icon.gmark{background:var(--teal);border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.35);color:#fff;font-weight:800;display:grid;place-items:center;font-size:13px}
 .leaflet-marker-icon.me{background:#2f6fed;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 6px rgba(47,111,237,.25)}
 </style>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 <div class="top">
   <a class="back" href="/explore.html" aria-label="رجوع">→</a>
-  <div><h1>⚡ المرشد الفوري <span class="en">Instant Guide — available now</span></h1></div>
+  <div><h1><i class="bi bi-lightning-charge" aria-hidden="true"></i> المرشد الفوري <span class="en">Instant Guide — available now</span></h1></div>
 </div>
 
 <!-- ===== Tourist / visitor view ===== -->
@@ -101,7 +102,7 @@ textarea,input[type=number]{width:100%;border:1.5px solid var(--line);border-rad
     <div class="total"><span>الإجمالي</span><span class="v" id="mTotal">—</span></div>
     <div class="err" id="mErr"></div>
     <div class="row" style="margin-bottom:0">
-      <button class="btn btn-teal" id="mSend" style="flex:1">⚡ اطلب الآن</button>
+      <button class="btn btn-teal" id="mSend" style="flex:1"><i class="bi bi-lightning-charge" aria-hidden="true"></i> اطلب الآن</button>
       <button class="btn btn-light" onclick="closeModal()">إلغاء</button>
     </div>
     <div class="sub" style="margin:10px 0 0">الدفع إلكترونيًا بعد قبول المرشد · لن يُخصم أي مبلغ قبل القبول.</div>
@@ -113,7 +114,7 @@ textarea,input[type=number]{width:100%;border:1.5px solid var(--line);border-rad
 <!-- ===== Guide view ===== -->
 <div class="gv" id="gv">
   <div class="card">
-    <h2>⚡ استقبال الطلبات الفورية</h2>
+    <h2><i class="bi bi-lightning-charge" aria-hidden="true"></i> استقبال الطلبات الفورية</h2>
     <div class="sub">فعّل الإتاحة ليظهر موقعك التقريبي للسيّاح القريبين، ويطلبوك مباشرة. تُرسَل لك الطلبات وتردّ عليها خلال ١٠ دقائق.</div>
     <label style="font-weight:700;font-size:14px">سعر الساعة (ريال عُماني)</label>
     <input type="number" id="rate" min="1" max="200" step="0.5" placeholder="مثال: 10" style="margin:6px 0 12px">
@@ -187,7 +188,7 @@ async function loadGuides() {
       ${g.photo ? `<img src="${esc(g.photo)}" alt="">` : `<div class="ph">${esc((g.fullName || '؟').trim().charAt(0))}</div>`}
       <div class="info">
         <div class="nm">${esc(g.fullName)}</div>
-        <div class="meta">${g.distanceKm != null ? '📍 ' + g.distanceKm + ' كم · ' : ''}⭐ ${g.rating ? g.rating.toFixed(1) : 'جديد'}${g.totalReviews ? ' (' + g.totalReviews + ')' : ''}</div>
+        <div class="meta">${g.distanceKm != null ? '<i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ' + g.distanceKm + ' كم · ' : ''}<i class="bi bi-star-fill" aria-hidden="true"></i> ${g.rating ? g.rating.toFixed(1) : 'جديد'}${g.totalReviews ? ' (' + g.totalReviews + ')' : ''}</div>
       </div>
       <div style="text-align:center">
         <div class="rate">${fmtOMR(g.hourlyRate)}<small style="font-weight:600;color:var(--muted)"> /ساعة</small></div>
@@ -266,7 +267,7 @@ function renderStatus(cur, latest) {
   } else if (cur.status === 'accepted') {
     t.textContent = `✅ قبل ${cur.otherName || 'المرشد'} طلبك`;
     b.textContent = `ادفع ${fmtOMR(cur.totalAmount)} الآن لتأكيد الحجز، وسيتوجّه المرشد إليك فورًا.`;
-    a.innerHTML = `<button class="btn btn-teal" style="flex:1" onclick="payNow('${esc(cur.bookingId)}', this)">💳 ادفع الآن</button>`;
+    a.innerHTML = `<button class="btn btn-teal" style="flex:1" onclick="payNow('${esc(cur.bookingId)}', this)"><i class="bi bi-credit-card" aria-hidden="true"></i> ادفع الآن</button>`;
   }
 }
 
@@ -330,7 +331,7 @@ async function loadIncoming() {
     const labels = { pending: 'جديد', accepted: 'مقبول', declined: 'مرفوض', expired: 'منتهي', cancelled: 'ألغاه السائح' };
     el.innerHTML = reqs.length ? reqs.map(r => {
       const left = Math.max(0, Math.round((new Date(r.expiresAt) - Date.now()) / 60000));
-      const map = (r.lat != null && r.lng != null) ? `<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" rel="noopener">📍 موقع السائح</a>` : '';
+      const map = (r.lat != null && r.lng != null) ? `<a href="https://www.google.com/maps?q=${r.lat},${r.lng}" target="_blank" rel="noopener"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> موقع السائح</a>` : '';
       return `<div class="req">
         <div class="t"><b>${esc(r.otherName || 'سائح')}</b><span class="badge b-${esc(r.status)}">${labels[r.status] || esc(r.status)}</span></div>
         <div class="sub" style="margin:6px 0">${r.hours} ساعة · ${fmtOMR(r.totalAmount)}${r.status === 'pending' ? ' · تنتهي خلال ' + left + ' د' : ''} ${map}</div>
@@ -383,6 +384,6 @@ const syncIv = setInterval(() => { syncLayout(); if (++syncTries > 20) clearInte
   }
 })();
 </script>
-<script src="/js/common-widgets.js?v=32" defer></script>
+<script src="/js/common-widgets.js?v=33" defer></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -41,6 +41,7 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 <a class="skip-link" href="#mainContent" data-i18n="skip_to_content">Skip to main content</a>
@@ -53,7 +54,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
-        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
         <select class="currency-selector" id="currencySelect" onchange="setCurrency(this.value)">
           <option value="OMR">OMR</option><option value="USD">USD</option>
           <option value="EUR">EUR</option><option value="GBP">GBP</option>
@@ -115,7 +116,7 @@
         </select>
       </div>
       <div class="col-md-1">
-        <button class="btn-search btn w-100" onclick="loadGuides()" style="background:var(--gold);border:none;border-radius:10px;padding:9px;font-size:1.2rem">🔍</button>
+        <button class="btn-search btn w-100" onclick="loadGuides()" style="background:var(--gold);border:none;border-radius:10px;padding:9px;font-size:1.2rem"><i class="bi bi-search" aria-hidden="true"></i></button>
       </div>
     </div>
 
@@ -153,7 +154,7 @@
       </div>
       <div class="col-md-3 d-flex align-items-end gap-2">
         <button class="btn btn-sm btn-outline-light w-100" onclick="clearFilters()" data-i18n="clear_filters">Clear Filters</button>
-        <button class="btn btn-sm w-100" id="wishlistToggleBtn" onclick="toggleWishlistView()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4)">❤️ <span data-i18n="saved_guides">Saved</span></button>
+        <button class="btn btn-sm w-100" id="wishlistToggleBtn" onclick="toggleWishlistView()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4)"><i class="bi bi-heart-fill" aria-hidden="true"></i> <span data-i18n="saved_guides">Saved</span></button>
       </div>
     </div>
   </div>
@@ -164,39 +165,39 @@
   <div class="container">
     <div class="category-tabs" id="catTabs">
       <div class="cat-tab active" onclick="selectCategory('',this)" data-cat="">
-        <span class="cat-icon">🌍</span>
+        <span class="cat-icon"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i></span>
         <span data-i18n="cat_all">All</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Historical',this)" data-cat="Historical">
-        <span class="cat-icon">🏛️</span>
+        <span class="cat-icon"><i class="bi bi-bank2" aria-hidden="true"></i></span>
         <span data-i18n="cat_historical">Historical</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Desert',this)" data-cat="Desert">
-        <span class="cat-icon">🐪</span>
+        <span class="cat-icon"><i class="bi bi-sun" aria-hidden="true"></i></span>
         <span data-i18n="cat_desert">Desert Safari</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Cultural',this)" data-cat="Cultural">
-        <span class="cat-icon">🎭</span>
+        <span class="cat-icon"><i class="bi bi-mask" aria-hidden="true"></i></span>
         <span data-i18n="cat_cultural">Cultural</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Mountain',this)" data-cat="Mountain">
-        <span class="cat-icon">🏔️</span>
+        <span class="cat-icon"><i class="bi bi-image-alt" aria-hidden="true"></i></span>
         <span data-i18n="cat_mountain">Mountain</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Marine',this)" data-cat="Marine">
-        <span class="cat-icon">🐬</span>
+        <span class="cat-icon"><i class="bi bi-water" aria-hidden="true"></i></span>
         <span data-i18n="cat_marine">Marine</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Wildlife',this)" data-cat="Wildlife">
-        <span class="cat-icon">🐢</span>
+        <span class="cat-icon"><i class="bi bi-tree" aria-hidden="true"></i></span>
         <span data-i18n="cat_wildlife">Wildlife</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Adventure',this)" data-cat="Adventure">
-        <span class="cat-icon">⚡</span>
+        <span class="cat-icon"><i class="bi bi-lightning-charge" aria-hidden="true"></i></span>
         <span data-i18n="cat_adventure">Adventure</span>
       </div>
       <div class="cat-tab" onclick="selectCategory('Aerial',this)" data-cat="Aerial">
-        <span class="cat-icon">🎈</span>
+        <span class="cat-icon"><i class="bi bi-balloon" aria-hidden="true"></i></span>
         <span data-i18n="cat_aerial">Aerial Adventures</span>
       </div>
     </div>
@@ -207,14 +208,14 @@
 <div class="container py-4" id="mainContent">
   <!-- Wishlist bar (hidden by default) -->
   <div id="wishlistBar" class="wishlist-bar d-none">
-    <span class="wishlist-count">❤️ <span data-i18n="saved_guides">Saved Guides</span>: <span id="wishlistCountNum">0</span></span>
+    <span class="wishlist-count"><i class="bi bi-heart-fill" aria-hidden="true"></i> <span data-i18n="saved_guides">Saved Guides</span>: <span id="wishlistCountNum">0</span></span>
     <button class="btn btn-sm btn-outline-danger" onclick="clearWishlist()" data-i18n="clear_wishlist">Clear All</button>
   </div>
 
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0 fw-700" id="resultCount">...</h5>
     <div class="d-flex gap-2 align-items-center">
-      <button class="btn btn-sm btn-outline-teal" id="mapToggle" onclick="toggleMap()">🗺️ <span id="mapToggleLabel">الخريطة</span></button>
+      <button class="btn btn-sm btn-outline-teal" id="mapToggle" onclick="toggleMap()"><i class="bi bi-map" aria-hidden="true"></i> <span id="mapToggleLabel">الخريطة</span></button>
       <a href="/" class="text-muted small" data-i18n="back_home">← Back to Home</a>
     </div>
   </div>
@@ -236,9 +237,9 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
+<script src="/js/i18n.js?v=59"></script>
 <script src="/js/oman-locations.js?v=1"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script src="/js/seo.js" defer></script>
 <script>document.addEventListener('DOMContentLoaded',function(){if(window.seoSet)seoSet({ title:'Find a Guide — Guideon', description:'Browse certified local guides across Oman. Filter by destination, language, price, and rating.' });});</script>
 <script>
@@ -515,7 +516,7 @@ function updateMap() {
     const d0 = (isCo ? (g.companyDestinations || g.destinations) : g.destinations || [])[0] || '';
     m.bindPopup(`<div style="text-align:center;min-width:140px">
       <strong>${window.gdEsc(nm)}</strong><br>
-      <span style="color:#666;font-size:.85rem">⭐ ${g.rating || '—'} · ${window.gdEsc(d0)}</span><br>
+      <span style="color:#666;font-size:.85rem"><i class="bi bi-star-fill" aria-hidden="true"></i> ${g.rating || '—'} · ${window.gdEsc(d0)}</span><br>
       <a href="${url}" style="color:var(--teal);font-weight:700">View profile →</a>
     </div>`);
     _markers.push(m);
@@ -550,7 +551,7 @@ function renderGuides(guides) {
   if (!guides.length) {
     document.getElementById('guideGrid').innerHTML = `
       <div class="col-12 empty-state">
-        <div class="icon">${SHOWING_WISHLIST ? '❤️' : '🔍'}</div>
+        <div class="icon">${SHOWING_WISHLIST ? '<i class="bi bi-heart-fill" aria-hidden="true"></i>' : '<i class="bi bi-search" aria-hidden="true"></i>'}</div>
         <h5>${SHOWING_WISHLIST ? I18N.t('wishlist_empty') : I18N.t('no_results')}</h5>
         <p class="text-muted">${SHOWING_WISHLIST ? I18N.t('wishlist_empty_sub') : I18N.t('no_results_sub')}</p>
         ${!SHOWING_WISHLIST ? `<button class="btn-teal btn mt-2" onclick="clearFilters()">${I18N.t('clear_filters')}</button>` : ''}
@@ -593,7 +594,7 @@ function renderGuides(guides) {
               <span class="text-muted ms-1">${g.rating} · ${I18N.t('reviews_count', g.totalReviews)}</span>
             </div>
 
-            <div class="small text-muted mb-2">📍 ${window.gdEsc(dests.join(', '))}</div>
+            <div class="small text-muted mb-2"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${window.gdEsc(dests.join(', '))}</div>
             <div class="mb-2">${(g.languages||[]).map(l => `<span class="lang-badge me-1">${window.gdEsc(l)}</span>`).join('')}</div>
             <p class="small text-muted mb-3" style="line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${window.gdEsc(g.bio || '')}</p>
 
@@ -705,8 +706,8 @@ loadGuides();
 </style>
 <script src="/js/pwa.js?v=16" defer></script>
 <script src="/js/oman-coords.js?v=1"></script>
-<script src="/js/gd-map.js?v=3"></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/gd-map.js?v=6"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>
 

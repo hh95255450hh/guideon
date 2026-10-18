@@ -25,6 +25,7 @@
   .cancel-note{font-size:13px;color:#b91c1c;background:#fef2f2;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:none}
   .pay-methods{display:flex;gap:8px;justify-content:center;margin-top:10px;opacity:.7;font-size:12px;color:#666}
 </style>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 <div class="pay-card">
@@ -36,7 +37,7 @@
 
   <!-- Free-launch screen -->
   <div id="freeScreen" style="display:none;padding:48px 32px;text-align:center">
-    <div style="font-size:64px;margin-bottom:16px">🎉</div>
+    <div style="font-size:64px;margin-bottom:16px"><i class="bi bi-balloon" aria-hidden="true"></i></div>
     <h3 style="color:var(--teal);font-weight:800;margin-bottom:12px">مجّاناً خلال فترة الإطلاق!</h3>
     <p style="color:#555;line-height:1.8;margin-bottom:24px">شكراً لانضمامك مبكراً — كلّ الحجوزات مجانية حالياً. حجزك مؤكّد، تواصل مع مزوّد الخدمة عبر الرسائل واستمتع برحلتك!</p>
     <a href="/tourist-dashboard.html" class="btn btn-teal btn-lg w-100" style="padding:14px">العودة إلى حجوزاتي</a>
@@ -54,12 +55,12 @@
       <div class="pay-row total"><span>الإجمالي</span><span id="sTotal">—</span></div>
     </div>
     <div class="pay-body">
-      <div id="cancelNote" class="cancel-note">⚠️ تم إلغاء عملية الدفع السابقة. يمكنك المحاولة مرّة أخرى.</div>
+      <div id="cancelNote" class="cancel-note"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> تم إلغاء عملية الدفع السابقة. يمكنك المحاولة مرّة أخرى.</div>
       <div id="errMsg" class="alert alert-danger d-none mb-3 small"></div>
       <button class="thawani-btn" id="payBtn" onclick="goToThawani()">
-        🔒 ادفع بأمان عبر Paymob
+        <i class="bi bi-lock" aria-hidden="true"></i> ادفع بأمان عبر Paymob
       </button>
-      <div class="pay-methods">💳 Visa · Mastercard</div>
+      <div class="pay-methods"><i class="bi bi-credit-card" aria-hidden="true"></i> Visa · Mastercard</div>
       <p class="secure-note">سيتم تحويلك إلى صفحة Paymob الآمنة لإتمام الدفع.</p>
     </div>
   </div>
@@ -124,6 +125,6 @@ async function goToThawani() {
 </script>
 <script src="/js/pwa.js?v=16" defer></script>
 
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>

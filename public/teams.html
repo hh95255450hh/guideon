@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
 <link rel="stylesheet" href="/css/gd-cine.css?v=4">
 <script src="/js/gd-cine.js?v=4" defer></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
@@ -30,14 +31,14 @@
     <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="48"></a>
     <div class="ms-auto d-flex gap-2">
       <a href="/search.html" class="btn btn-sm btn-outline-light">ابحث عن مرشد</a>
-      <a href="/register.html?type=team" class="btn btn-sm btn-gold">سجّل فريقك 🎪</a>
+      <a href="/register.html?type=team" class="btn btn-sm btn-gold">سجّل فريقك <i class="bi bi-ticket-perforated" aria-hidden="true"></i></a>
     </div>
   </div>
 </nav>
 
 <section class="cine cine--page" data-cine data-cine-page="teams" data-cine-word="EVENTS" data-cine-image="/media/hero/hero-3.jpg">
   <div class="cine-content">
-    <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl">🎪 فرق الفعاليّات في عُمان</span></h1>
+    <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> فرق الفعاليّات في عُمان</span></h1>
     <p class="cine-sub cine-in" style="--i:1">اكتشف الفرق المحليّة وفعاليّاتهم القادمة — ثقافة، رياضة، موسيقى، مغامرات والمزيد</p>
   </div>
 </section>
@@ -45,15 +46,15 @@
 <div class="container py-4">
   <div class="d-flex gap-2 flex-wrap mb-4" id="catChips"></div>
 
-  <h4 class="fw-700 mb-3">🗓️ الفعاليّات القادمة</h4>
+  <h4 class="fw-700 mb-3"><i class="bi bi-calendar3" aria-hidden="true"></i> الفعاليّات القادمة</h4>
   <div class="row g-3 mb-5" id="eventsGrid"><div class="col-12 text-center text-muted py-4">جارٍ التحميل…</div></div>
 
-  <h4 class="fw-700 mb-3">👥 الفرق</h4>
+  <h4 class="fw-700 mb-3"><i class="bi bi-people" aria-hidden="true"></i> الفرق</h4>
   <div class="row g-3" id="teamsGrid"><div class="col-12 text-center text-muted py-4">جارٍ التحميل…</div></div>
 </div>
 
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 <script>
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const CAT={cultural:'🎭 ثقافيّة',sports:'⚽ رياضيّة',music:'🎵 موسيقيّة',adventure:'🏔️ مغامرات',kids:'🧒 أطفال',food:'🍽️ طعام',arts:'🎨 فنون',other:'📦 أخرى'};
@@ -86,12 +87,12 @@ function renderEvents(list){
   el.innerHTML=list.map(e=>`
     <div class="col-md-6 col-lg-4">
       <div class="ev-card">
-        <div class="cover" ${e.coverImage?`style="background-image:url('${esc(e.coverImage)}')"`:''}>${e.coverImage?'':'🎟️'}</div>
+        <div class="cover" ${e.coverImage?`style="background-image:url('${esc(e.coverImage)}')"`:''}>${e.coverImage?'':'<i class="bi bi-ticket-perforated" aria-hidden="true"></i>'}</div>
         <div class="p-3">
           <span class="cat-tag">${esc(CAT[e.category]||e.category)}</span>
           <h6 class="fw-700 mt-2 mb-1">${esc(e.title)}</h6>
           <div class="small text-muted">${esc(e.teamName)} · ${e.eventDate?new Date(e.eventDate).toLocaleDateString('en-GB'):'—'}</div>
-          <div class="small mt-1">📍 ${esc(e.governorate||e.location||'عُمان')} · ${e.ticketPrice>0?`<strong>${e.ticketPrice} ر.ع</strong>`:'<span style="color:#16a34a;font-weight:700">مجّاني</span>'}</div>
+          <div class="small mt-1"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${esc(e.governorate||e.location||'عُمان')} · ${e.ticketPrice>0?`<strong>${e.ticketPrice} ر.ع</strong>`:'<span style="color:#16a34a;font-weight:700">مجّاني</span>'}</div>
           ${e.description?`<p class="small text-muted mt-2 mb-0" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(e.description)}</p>`:''}
           <a class="btn btn-sm btn-teal w-100 mt-2" href="/team-profile.html?id=${esc(e.teamId)}">عرض التفاصيل</a>
         </div>
@@ -105,10 +106,10 @@ function renderTeams(list){
     <div class="col-md-6 col-lg-3">
       <a href="/team-profile.html?id=${esc(t.id)}" style="text-decoration:none;color:inherit">
         <div class="team-card text-center p-3">
-          <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 10px;background:#e2f0ee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#0f7b6c" ${t.photo?`style="background-image:url('${esc(t.photo)}')"`:''}>${t.photo?'':'🎪'}</div>
+          <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 10px;background:#e2f0ee center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#0f7b6c" ${t.photo?`style="background-image:url('${esc(t.photo)}')"`:''}>${t.photo?'':'<i class="bi bi-ticket-perforated" aria-hidden="true"></i>'}</div>
           <h6 class="fw-700 mb-1">${esc(t.teamName)}</h6>
           <span class="cat-tag">${esc(CAT[t.teamCategory]||t.teamCategory||'')}</span>
-          <div class="small text-muted mt-2">📍 ${esc(t.teamGovernorate||'عُمان')}${t.membersCount?` · ${t.membersCount} عضو`:''}</div>
+          <div class="small text-muted mt-2"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${esc(t.teamGovernorate||'عُمان')}${t.membersCount?` · ${t.membersCount} عضو`:''}</div>
         </div>
       </a>
     </div>`).join('');

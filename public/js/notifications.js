@@ -131,7 +131,7 @@
     wrap.className = 'gd-bell-wrap';
     wrap.innerHTML = `
       <button class="gd-bell-btn" id="gdBellBtn" title="Notifications" aria-label="Notifications">
-        🔔<span class="gd-bell-badge" id="gdBellBadge">0</span>
+        <i class="bi bi-bell" aria-hidden="true"></i><span class="gd-bell-badge" id="gdBellBadge">0</span>
       </button>
       <div class="gd-bell-panel" id="gdBellPanel" style="display:none">
         <div class="gd-bell-header">
@@ -139,7 +139,7 @@
           <button class="gd-bell-mark-all" id="gdMarkAll">Mark all read</button>
         </div>
         <div class="gd-bell-list" id="gdBellList">
-          <div class="gd-bell-empty"><div class="ico">⏳</div>Loading…</div>
+          <div class="gd-bell-empty"><div class="ico"><i class="bi bi-hourglass-split" aria-hidden="true"></i></div>Loading…</div>
         </div>
         <div class="gd-bell-footer">
           <a href="/notifications.html" id="gdBellViewAll">View all notifications →</a>
@@ -162,7 +162,7 @@
         <button class="gd-bell-mark-all" id="gdMarkAll">Mark all read</button>
       </div>
       <div class="gd-bell-list" id="gdBellList">
-        <div class="gd-bell-empty"><div class="ico">⏳</div>Loading…</div>
+        <div class="gd-bell-empty"><div class="ico"><i class="bi bi-hourglass-split" aria-hidden="true"></i></div>Loading…</div>
       </div>
       <div class="gd-bell-footer">
         <a href="/notifications.html" id="gdBellViewAll">View all notifications →</a>
@@ -319,7 +319,7 @@
         const body  = pickLang(n.body, isAr);
         return `
         <a class="gd-bell-item ${n.isRead ? '' : 'unread'}" href="${n.link || '#'}" data-id="${n.id}" ${isAr ? 'dir="rtl"' : ''}>
-          <span class="gd-bell-icon">${escapeHtml(n.icon || '🔔')}</span>
+          <span class="gd-bell-icon">${escapeHtml(n.icon || '<i class="bi bi-bell" aria-hidden="true"></i>')}</span>
           <div class="gd-bell-content">
             <div class="gd-bell-title">${escapeHtml(title)}</div>
             ${body ? `<div class="gd-bell-body">${escapeHtml(body)}</div>` : ''}

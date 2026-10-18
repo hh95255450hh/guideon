@@ -154,6 +154,7 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Tahoma,Arial,sans-s
   display:flex;align-items:center;justify-content:center
 }
 </style>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -168,17 +169,17 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Tahoma,Arial,sans-s
   </div>
   <div class="search-wrap">
     <input id="searchBox" type="search" placeholder="ابحث عن وجهة أو مرشد… · Search destination">
-    <span class="search-icon">🔍</span>
-    <button id="nearMeBtn" title="بالقرب مني">📍</button>
+    <span class="search-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+    <button id="nearMeBtn" title="بالقرب مني"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></button>
   </div>
-  <a href="/instant.html" id="instantBtn" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;background:#c8912f;color:#fff;font-weight:800;border-radius:22px;padding:9px 14px;text-decoration:none;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)">⚡ مرشد متاح الآن · Instant guide</a>
+  <a href="/instant.html" id="instantBtn" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;background:#c8912f;color:#fff;font-weight:800;border-radius:22px;padding:9px 14px;text-decoration:none;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)"><i class="bi bi-lightning-charge" aria-hidden="true"></i> مرشد متاح الآن · Instant guide</a>
 </div>
 
 <!-- FILTER PILLS -->
 <div class="pills" id="pillBar">
   <button class="pill active" data-filter="all">الكل · All</button>
-  <button class="pill" data-filter="top">⭐ الأعلى تقييماً</button>
-  <button class="pill" data-filter="cheap">💰 الأرخص</button>
+  <button class="pill" data-filter="top"><i class="bi bi-star-fill" aria-hidden="true"></i> الأعلى تقييماً</button>
+  <button class="pill" data-filter="cheap"><i class="bi bi-cash-coin" aria-hidden="true"></i> الأرخص</button>
   <button class="pill" data-filter="muscat">مسقط</button>
   <button class="pill" data-filter="salalah">صلالة</button>
   <button class="pill" data-filter="nizwa">نزوى</button>
@@ -187,13 +188,13 @@ html,body{height:100%;overflow:hidden;font-family:'Segoe UI',Tahoma,Arial,sans-s
 </div>
 
 <!-- FAB LOCATE -->
-<button id="fabLocate" title="موقعي">📍</button>
+<button id="fabLocate" title="موقعي"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></button>
 
 <!-- BOTTOM SHEET -->
 <div id="sheet" class="half">
   <div id="sheetHandle"></div>
   <div id="sheetHeader">
-    <div id="sheetTitle">🗺️ المرشدون المتاحون</div>
+    <div id="sheetTitle"><i class="bi bi-map" aria-hidden="true"></i> المرشدون المتاحون</div>
     <div id="sheetCount"></div>
   </div>
   <div id="cardScroll"></div>
@@ -359,7 +360,7 @@ function renderCards() {
     const price    = g.pricePerDay > 0 ? `${parseFloat(g.pricePerDay).toFixed(0)} <small>OMR/يوم</small>` : '<small>بالاتفاق</small>';
     const imgHtml  = g.photo
       ? `<img class="gcard-img" src="${esc(g.photo)}" alt="${name}" loading="lazy">`
-      : `<div class="gcard-img-placeholder">🧭</div>`;
+      : `<div class="gcard-img-placeholder"><i class="bi bi-compass" aria-hidden="true"></i></div>`;
     const tagsHtml = specs.map(s => `<span class="tag">${esc(s)}</span>`).join('');
     const verHtml  = g.isVerified ? '<span class="verified-badge">✓ موثّق</span>' : '';
 
@@ -369,7 +370,7 @@ function renderCards() {
         ${imgHtml}
         <div class="gcard-body">
           <div class="gcard-name">${name}</div>
-          <div class="gcard-dest">📍 ${dests||'عُمان'}</div>
+          <div class="gcard-dest"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${dests||'عُمان'}</div>
           <div class="gcard-tags">${tagsHtml}</div>
           <div class="gcard-footer">
             <div class="gcard-rating">${stars}</div>
@@ -578,6 +579,6 @@ loadLeaflet(() => {
 </script>
 
 <!-- common-widgets for gdTrack + WhatsApp button -->
-<script src="/js/common-widgets.js?v=32" defer></script>
+<script src="/js/common-widgets.js?v=33" defer></script>
 </body>
 </html>

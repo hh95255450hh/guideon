@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -50,13 +50,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
 <link rel="stylesheet" href="/css/gd-cine.css?v=4">
 <script src="/js/gd-cine.js?v=4" defer></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
   <div class="container">
     <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="44"></a>
-    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()">🌐 عربي</button>
+    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
   </div>
 </nav>
 
@@ -108,17 +109,17 @@
     <h2 class="fw-800 text-center mb-5" data-i18n="hiw_why_title">Why Travelers Trust Guideon</h2>
     <div class="row g-3">
       <div class="col-6 col-md-3"><div class="trust-item">
-        <div class="icon">✅</div>
+        <div class="icon"><i class="bi bi-check-circle-fill" aria-hidden="true"></i></div>
         <h6 data-i18n="hiw_t1_title">Verified Guides</h6>
         <p data-i18n="hiw_t1_desc">All guides hold valid Oman Ministry of Heritage & Tourism licences.</p>
       </div></div>
       <div class="col-6 col-md-3"><div class="trust-item">
-        <div class="icon">💬</div>
+        <div class="icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></div>
         <h6 data-i18n="hiw_t2_title">Direct Chat</h6>
         <p data-i18n="hiw_t2_desc">Talk to your guide before booking — ask questions, agree on details.</p>
       </div></div>
       <div class="col-6 col-md-3"><div class="trust-item">
-        <div class="icon">🔒</div>
+        <div class="icon"><i class="bi bi-lock" aria-hidden="true"></i></div>
         <h6 data-i18n="hiw_t3_title">Secure Booking</h6>
         <p data-i18n="hiw_t3_desc">SSL encryption, 2FA available, your deposit held until tour completion.</p>
       </div></div>
@@ -138,7 +139,7 @@
 
       <div class="col-md-6">
         <div class="for-card">
-          <div class="ico">🌍</div>
+          <div class="ico"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i></div>
           <h3 data-i18n="hiw_tourist_title">For Tourists</h3>
           <p class="text-muted" data-i18n="hiw_tourist_desc">Find your perfect Oman experience with someone who actually lives there.</p>
           <ul>
@@ -148,13 +149,13 @@
             <li data-i18n="hiw_tourist_b4">Free cancellation up to 48 hours before</li>
             <li data-i18n="hiw_tourist_b5">PDF voucher emailed instantly</li>
           </ul>
-          <a href="/search.html" class="btn-teal btn fw-700" data-i18n="hiw_tourist_cta">🔍 Find a Guide</a>
+          <a href="/search.html" class="btn-teal btn fw-700"><i class="bi bi-search" aria-hidden="true"></i> <span data-i18n="hiw_tourist_cta">Find a Guide</span></a>
         </div>
       </div>
 
       <div class="col-md-6">
         <div class="for-card">
-          <div class="ico">👤</div>
+          <div class="ico"><i class="bi bi-person" aria-hidden="true"></i></div>
           <h3 data-i18n="hiw_guide_title">For Guides & Companies</h3>
           <p class="text-muted" data-i18n="hiw_guide_desc">Grow your tourism business with our free marketing platform.</p>
           <ul>
@@ -164,7 +165,7 @@
             <li data-i18n="hiw_guide_b4">Analytics: views, conversions, achievements, payouts</li>
             <li data-i18n="hiw_guide_b5">Get paid directly — Guideon never holds your money*</li>
           </ul>
-          <a href="/register.html?type=guide" class="btn-gold btn fw-700" data-i18n="hiw_guide_cta">📝 Register as Guide</a>
+          <a href="/register.html?type=guide" class="btn-gold btn fw-700"><i class="bi bi-pencil-square" aria-hidden="true"></i> <span data-i18n="hiw_guide_cta">Register as Guide</span></a>
           <p class="small text-muted mt-2"><span data-i18n="hiw_guide_note">*During the free launch period.</span></p>
         </div>
       </div>
@@ -187,7 +188,7 @@
   <p class="mb-1">© 2026 Guideon · <a href="/terms.html" class="text-muted">Terms</a> · <a href="/privacy.html" class="text-muted">Privacy</a> · <a href="/faq.html" class="text-muted">FAQ</a></p>
 </footer>
 
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>

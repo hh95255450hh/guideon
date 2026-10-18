@@ -171,6 +171,7 @@
     body { background:#fff; color:#000; }
   }
 </style>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 <div class="wrap">
@@ -185,10 +186,10 @@
       <button data-period="30">30 يوم</button>
       <button data-period="365">سنة</button>
     </div>
-    <button class="btn" onclick="exportCSV()">⬇️ CSV</button>
-    <button class="btn" onclick="window.print()">🖨️ PDF</button>
-    <button class="btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
-    <button class="btn" onclick="loadAll(true)" id="refreshBtn">🔄 تحديث</button>
+    <button class="btn" onclick="exportCSV()"><i class="bi bi-arrow-down" aria-hidden="true"></i> CSV</button>
+    <button class="btn" onclick="window.print()"><i class="bi bi-printer" aria-hidden="true"></i> PDF</button>
+    <button class="btn" id="themeBtn" onclick="toggleTheme()"><i class="bi bi-sun" aria-hidden="true"></i></button>
+    <button class="btn" onclick="loadAll(true)" id="refreshBtn"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> تحديث</button>
     <a class="btn" href="/admin.html">← لوحة الإدارة</a>
   </div>
 
@@ -256,7 +257,7 @@ async function loadAll(force) {
     loadRates();
   } catch (e) {
     document.getElementById('app').innerHTML =
-      `<div class="empty">⚠️ ${esc(e.message)}<br><br><button class="btn" onclick="loadAll(true)">إعادة المحاولة</button></div>`;
+      `<div class="empty"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> ${esc(e.message)}<br><br><button class="btn" onclick="loadAll(true)">إعادة المحاولة</button></div>`;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🔄 تحديث'; }
   }
@@ -273,36 +274,36 @@ function render() {
 
   document.getElementById('app').innerHTML = `
     <div class="tabbar no-print">
-      <button data-tab="overview"   onclick="switchTab('overview')">📊 نظرة عامة</button>
-      <button data-tab="expenses"   onclick="switchTab('expenses')">💸 المصروفات</button>
-      <button data-tab="payables"   onclick="switchTab('payables')">🤝 المستحقّات</button>
-      <button data-tab="operations" onclick="switchTab('operations')">🧾 العمليّات</button>
-      <button data-tab="treasury"   onclick="switchTab('treasury')">🏦 الخزانة</button>
-      <button data-tab="invoices"   onclick="switchTab('invoices')">📄 الفواتير</button>
+      <button data-tab="overview"   onclick="switchTab('overview')"><i class="bi bi-bar-chart" aria-hidden="true"></i> نظرة عامة</button>
+      <button data-tab="expenses"   onclick="switchTab('expenses')"><i class="bi bi-cash-stack" aria-hidden="true"></i> المصروفات</button>
+      <button data-tab="payables"   onclick="switchTab('payables')"><i class="bi bi-people-fill" aria-hidden="true"></i> المستحقّات</button>
+      <button data-tab="operations" onclick="switchTab('operations')"><i class="bi bi-receipt" aria-hidden="true"></i> العمليّات</button>
+      <button data-tab="treasury"   onclick="switchTab('treasury')"><i class="bi bi-bank" aria-hidden="true"></i> الخزانة</button>
+      <button data-tab="invoices"   onclick="switchTab('invoices')"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> الفواتير</button>
     </div>
 
     <div class="tabpane" data-pane="overview">
     <!-- KPI cards -->
     <div class="kpis">
-      ${kpiCard('💰 إجمالي الإيرادات', omr(o.revTotal), null, 'كلّ العمليّات المدفوعة')}
-      ${kpiCard('📅 إيراد الفترة', omr(periodRev), periodGrowth, periodLabel())}
-      ${kpiCard('🧾 عدد العمليّات', fmt0(o.txnCount), null, `معلّقة: ${fmt0(o.pendingPay)} · ملغاة: ${fmt0(o.cancelled)}`)}
+      ${kpiCard('<i class="bi bi-cash-coin" aria-hidden="true"></i> إجمالي الإيرادات', omr(o.revTotal), null, 'كلّ العمليّات المدفوعة')}
+      ${kpiCard('<i class="bi bi-calendar-event" aria-hidden="true"></i> إيراد الفترة', omr(periodRev), periodGrowth, periodLabel())}
+      ${kpiCard('<i class="bi bi-receipt" aria-hidden="true"></i> عدد العمليّات', fmt0(o.txnCount), null, `معلّقة: ${fmt0(o.pendingPay)} · ملغاة: ${fmt0(o.cancelled)}`)}
       ${kpiCard('📊 متوسّط قيمة الطلب', omr(o.aov), null, 'Average Order Value')}
       ${kpiCard('🏦 أرباح المنصّة', omr(o.platformEarnings), null, `عمولة ${(DATA.commissionRate*100).toFixed(0)}%`)}
-      ${kpiCard('🤝 مستحقّات المزوّدين', omr(o.providerPayouts), null, 'بعد خصم العمولة')}
+      ${kpiCard('<i class="bi bi-people-fill" aria-hidden="true"></i> مستحقّات المزوّدين', omr(o.providerPayouts), null, 'بعد خصم العمولة')}
     </div>
 
     <!-- Financial bottom line -->
     <div class="kpis">
-      ${kpiCard('💸 إجمالي المصروفات', omr(FIN.expTotal), null, `${fmt0(FIN.count)} بند · آخر 30 يوم: ${fmt(FIN.exp30)}`)}
+      ${kpiCard('<i class="bi bi-cash-stack" aria-hidden="true"></i> إجمالي المصروفات', omr(FIN.expTotal), null, `${fmt0(FIN.count)} بند · آخر 30 يوم: ${fmt(FIN.exp30)}`)}
       ${kpiCard('🔁 مصروفات شهريّة متكرّرة', omr(FIN.recurringMonthly), null, 'رواتب · إيجار · اشتراكات')}
       ${netCard('📈 صافي الربح', FIN.netProfit, `أرباح المنصّة − المصروفات · هامش ${FIN.margin}%`)}
-      ${netCard('🧮 الصافي الإجمالي', FIN.netGross, 'إجمالي الإيراد − المصروفات')}
+      ${netCard('<i class="bi bi-calculator" aria-hidden="true"></i> الصافي الإجمالي', FIN.netGross, 'إجمالي الإيراد − المصروفات')}
     </div>
 
     <!-- Alerts -->
     <div class="panel">
-      <div class="panel-head"><h3>🔔 التنبيهات الذكيّة</h3></div>
+      <div class="panel-head"><h3><i class="bi bi-bell" aria-hidden="true"></i> التنبيهات الذكيّة</h3></div>
       ${DATA.alerts.map(a => `
         <div class="alert ${a.level}">
           <span class="ico">${{danger:'🚨',warning:'⚠️',success:'🎉',info:'✅'}[a.level]||'ℹ️'}</span>
@@ -314,7 +315,7 @@ function render() {
     <div class="grid cols-2">
       <div class="panel">
         <div class="panel-head">
-          <div><h3>📈 الإيرادات عبر الزمن</h3><div class="sub">المبالغ بالريال العُماني</div></div>
+          <div><h3><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> الإيرادات عبر الزمن</h3><div class="sub">المبالغ بالريال العُماني</div></div>
           <div class="seg" id="chartScale">
             <button data-scale="daily" class="active">يومي (30)</button>
             <button data-scale="monthly">شهري (12)</button>
@@ -332,12 +333,12 @@ function render() {
     <!-- Top earners + destinations -->
     <div class="grid cols-2">
       <div class="panel">
-        <h3>🏆 أعلى المزوّدين دخلاً</h3>
+        <h3><i class="bi bi-trophy" aria-hidden="true"></i> أعلى المزوّدين دخلاً</h3>
         <div class="sub">أفضل 10 حسب الإيراد المدفوع</div>
         <div id="topEarners">${barList(DATA.topEarners.map(e => ({ name: e.name, value: e.revenue, meta: `${e.txns} عمليّة · ${e.type === 'company' ? 'شركة' : 'مرشد'}` })))}</div>
       </div>
       <div class="panel">
-        <h3>📍 الإيرادات حسب الوجهة</h3>
+        <h3><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> الإيرادات حسب الوجهة</h3>
         <div class="sub">أفضل 10 وجهات</div>
         <div id="byDest">${barList(DATA.byDestination.map(e => ({ name: e.destination, value: e.revenue })))}</div>
       </div>
@@ -346,7 +347,7 @@ function render() {
     <!-- Payment methods -->
     <div class="grid cols-2">
       <div class="panel">
-        <h3>💳 طرق الدفع</h3>
+        <h3><i class="bi bi-credit-card" aria-hidden="true"></i> طرق الدفع</h3>
         <div class="sub">التوزيع حسب البوّابة</div>
         <div id="chartMethods"></div>
         <div style="margin-top:14px">
@@ -364,7 +365,7 @@ function render() {
         <h3>♻️ الاشتراكات المتكرّرة (MRR)</h3>
         <div class="sub">${esc(DATA.subscriptions.note)}</div>
         <div class="empty" style="padding:40px 20px">
-          <div style="font-size:2.4rem;margin-bottom:8px">🧾</div>
+          <div style="font-size:2.4rem;margin-bottom:8px"><i class="bi bi-receipt" aria-hidden="true"></i></div>
           النموذج الحالي: <strong>عمولة لكل حجز</strong><br>
           لا يوجد اشتراكات شهريّة متكرّرة بعد.<br><br>
           <span class="sub">عند إطلاق باقات اشتراك للمرشدين/الشركات،<br>ستظهر هنا: MRR · Churn · عدد المشتركين.</span>
@@ -378,8 +379,8 @@ function render() {
     <!-- ════════ Financial management: expenses / salaries / discounts ════════ -->
     <div class="panel">
       <div class="panel-head">
-        <div><h3>🏦 الإدارة المالية — المصروفات والرواتب</h3><div class="sub">سجّل كل ما يخرج من الصندوق: رواتب، خصومات، تسويق، إيجار…</div></div>
-        <button class="btn btn-primary" onclick="toggleExpForm()" id="expFormBtn">➕ إضافة مصروف</button>
+        <div><h3><i class="bi bi-bank" aria-hidden="true"></i> الإدارة المالية — المصروفات والرواتب</h3><div class="sub">سجّل كل ما يخرج من الصندوق: رواتب، خصومات، تسويق، إيجار…</div></div>
+        <button class="btn btn-primary" onclick="toggleExpForm()" id="expFormBtn"><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة مصروف</button>
       </div>
 
       <!-- Add/Edit form (hidden by default) -->
@@ -389,16 +390,16 @@ function render() {
           <div>
             <label class="explbl">التصنيف</label>
             <select id="expCategory" class="expinput">
-              <option value="salary">💼 راتب</option>
-              <option value="discount">🏷️ خصم / كوبون</option>
-              <option value="marketing">📢 تسويق وإعلانات</option>
-              <option value="operational">⚙️ تشغيلي</option>
-              <option value="rent">🏢 إيجار</option>
-              <option value="software">💻 برمجيّات / اشتراكات</option>
-              <option value="refund">↩️ استرداد</option>
-              <option value="commission_payout">🤝 دفعة لمزوّد</option>
-              <option value="tax">🧾 ضرائب ورسوم</option>
-              <option value="other">📦 أخرى</option>
+              <option value="salary"><i class="bi bi-briefcase" aria-hidden="true"></i> راتب</option>
+              <option value="discount"><i class="bi bi-tag" aria-hidden="true"></i> خصم / كوبون</option>
+              <option value="marketing"><i class="bi bi-megaphone" aria-hidden="true"></i> تسويق وإعلانات</option>
+              <option value="operational"><i class="bi bi-gear" aria-hidden="true"></i> تشغيلي</option>
+              <option value="rent"><i class="bi bi-building" aria-hidden="true"></i> إيجار</option>
+              <option value="software"><i class="bi bi-laptop" aria-hidden="true"></i> برمجيّات / اشتراكات</option>
+              <option value="refund"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> استرداد</option>
+              <option value="commission_payout"><i class="bi bi-people-fill" aria-hidden="true"></i> دفعة لمزوّد</option>
+              <option value="tax"><i class="bi bi-receipt" aria-hidden="true"></i> ضرائب ورسوم</option>
+              <option value="other"><i class="bi bi-box-seam" aria-hidden="true"></i> أخرى</option>
             </select>
           </div>
           <div>
@@ -419,7 +420,7 @@ function render() {
           </div>
           <div style="display:flex; align-items:flex-end; gap:8px; padding-bottom:6px">
             <label style="display:flex; align-items:center; gap:7px; cursor:pointer; font-size:.85rem; font-weight:700">
-              <input type="checkbox" id="expRecurring" style="width:18px; height:18px"> شهري متكرّر 🔁
+              <input type="checkbox" id="expRecurring" style="width:18px; height:18px"> شهري متكرّر <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
             </label>
           </div>
         </div>
@@ -428,7 +429,7 @@ function render() {
           <input id="expNote" class="expinput" style="width:100%" placeholder="تفاصيل إضافيّة…">
         </div>
         <div style="margin-top:14px; display:flex; gap:10px">
-          <button class="btn btn-primary" onclick="saveExpense()" id="expSaveBtn">💾 حفظ</button>
+          <button class="btn btn-primary" onclick="saveExpense()" id="expSaveBtn"><i class="bi bi-floppy" aria-hidden="true"></i> حفظ</button>
           <button class="btn" onclick="cancelExpForm()">إلغاء</button>
           <span class="sub" id="expFormMsg" style="align-self:center"></span>
         </div>
@@ -442,7 +443,7 @@ function render() {
 
       <!-- Full-width expenses table — the focus of this panel -->
       <div class="filters no-print" style="margin-bottom:12px">
-        <input id="expSearch" placeholder="🔍 بحث في المصروفات" oninput="renderExpenses()" style="flex:1; min-width:220px">
+        <input id="expSearch" placeholder="<i class="bi bi-search" aria-hidden="true"></i> بحث في المصروفات" oninput="renderExpenses()" style="flex:1; min-width:220px">
         <select id="expFilterCat" onchange="renderExpenses()">
           <option value="">كل التصنيفات</option>
           <option value="salary">راتب</option><option value="discount">خصم</option>
@@ -467,7 +468,7 @@ function render() {
     <div class="grid cols-2">
       <!-- Commission settings -->
       <div class="panel">
-        <h3>⚙️ نسب العمولة</h3>
+        <h3><i class="bi bi-gear" aria-hidden="true"></i> نسب العمولة</h3>
         <div class="sub">تختلف الشركات عن المرشدين الأفراد — عدّلها دون إعادة نشر</div>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-top:14px">
           <div>
@@ -495,19 +496,19 @@ function render() {
             <input id="rateVatNum" class="expinput" placeholder="OMxxxxxxxxxxxxxxx">
           </div>
         </div>
-        <div class="sub" style="margin-top:8px">🧾 اتركها <strong>0</strong> حتّى تُسجّل في الضريبة. عند الإدخال، تتحوّل الفواتير إلى <strong>فواتير ضريبيّة</strong> رسميّة تلقائياً (تحتاج الرقم الضريبي لتظهر كـTax Invoice).</div>
+        <div class="sub" style="margin-top:8px"><i class="bi bi-receipt" aria-hidden="true"></i> اتركها <strong>0</strong> حتّى تُسجّل في الضريبة. عند الإدخال، تتحوّل الفواتير إلى <strong>فواتير ضريبيّة</strong> رسميّة تلقائياً (تحتاج الرقم الضريبي لتظهر كـTax Invoice).</div>
 
         <div style="margin-top:14px; display:flex; gap:10px; align-items:center">
-          <button class="btn btn-primary" onclick="saveRates()" id="rateSaveBtn">💾 حفظ النسب</button>
+          <button class="btn btn-primary" onclick="saveRates()" id="rateSaveBtn"><i class="bi bi-floppy" aria-hidden="true"></i> حفظ النسب</button>
           <span class="sub" id="rateMsg"></span>
         </div>
-        <div class="sub" style="margin-top:12px">💡 لتخصيص نسبة لمزوّد بعينه (نسبة متفاوض عليها)، يُضبط حقل <code>commissionRate</code> على سجلّه — يتجاوز هذه النسبة.</div>
+        <div class="sub" style="margin-top:12px"><i class="bi bi-lightbulb" aria-hidden="true"></i> لتخصيص نسبة لمزوّد بعينه (نسبة متفاوض عليها)، يُضبط حقل <code>commissionRate</code> على سجلّه — يتجاوز هذه النسبة.</div>
       </div>
 
       <!-- Provider payouts -->
       <div class="panel">
         <div class="panel-head">
-          <div><h3>🤝 مستحقّات المزوّدين</h3><div class="sub">أرصدة جاهزة للتحويل (رحلات مكتملة ومدفوعة)</div></div>
+          <div><h3><i class="bi bi-people-fill" aria-hidden="true"></i> مستحقّات المزوّدين</h3><div class="sub">أرصدة جاهزة للتحويل (رحلات مكتملة ومدفوعة)</div></div>
           <div class="money" id="payoutTotal" style="color:var(--teal);font-size:1.1rem">—</div>
         </div>
         <div class="tbl-wrap" style="max-height:300px;overflow-y:auto">
@@ -525,10 +526,10 @@ function render() {
     <!-- Transactions -->
     <div class="panel">
       <div class="panel-head">
-        <div><h3>🧾 سجلّ العمليّات المالية</h3><div class="sub">آخر العمليّات المدفوعة والمعلّقة</div></div>
+        <div><h3><i class="bi bi-receipt" aria-hidden="true"></i> سجلّ العمليّات المالية</h3><div class="sub">آخر العمليّات المدفوعة والمعلّقة</div></div>
       </div>
       <div class="filters no-print">
-        <input id="fSearch" placeholder="🔍 بحث (سائح، مزوّد، وجهة، مرجع)" oninput="renderTxns()" style="min-width:240px">
+        <input id="fSearch" placeholder="<i class="bi bi-search" aria-hidden="true"></i> بحث (سائح، مزوّد، وجهة، مرجع)" oninput="renderTxns()" style="min-width:240px">
         <select id="fStatus" onchange="renderTxns()">
           <option value="">كل الحالات</option>
           <option value="paid">ناجحة</option>
@@ -564,41 +565,41 @@ function render() {
     <!-- ════════ Treasury (main vault) ════════ -->
     <div class="tabpane" data-pane="treasury">
       <div class="panel" style="background:linear-gradient(135deg,#0f7b6c 0%,#0a5c50 100%);color:#fff;border:none">
-        <div class="sub" style="color:rgba(255,255,255,.85);font-weight:700">🏦 رصيد الخزانة الرئيسيّة</div>
+        <div class="sub" style="color:rgba(255,255,255,.85);font-weight:700"><i class="bi bi-bank" aria-hidden="true"></i> رصيد الخزانة الرئيسيّة</div>
         <div id="trzBalance" style="font-size:2.6rem;font-weight:800;margin:6px 0">—</div>
         <div class="sub" style="color:rgba(255,255,255,.8)">الحساب الرئيسي للشركة — كلّ ما يدخل ويخرج</div>
       </div>
       <div class="kpis">
-        <div class="kpi"><div class="label">📥 دخل (عمولات)</div><div class="value" id="trzIncome">—</div></div>
-        <div class="kpi"><div class="label">📤 مصروفات</div><div class="value" id="trzExp">—</div></div>
-        <div class="kpi"><div class="label">➕ إيداعات يدويّة</div><div class="value" id="trzIn">—</div></div>
-        <div class="kpi"><div class="label">➖ سحوبات/تحويلات</div><div class="value" id="trzOut">—</div></div>
+        <div class="kpi"><div class="label"><i class="bi bi-download" aria-hidden="true"></i> دخل (عمولات)</div><div class="value" id="trzIncome">—</div></div>
+        <div class="kpi"><div class="label"><i class="bi bi-upload" aria-hidden="true"></i> مصروفات</div><div class="value" id="trzExp">—</div></div>
+        <div class="kpi"><div class="label"><i class="bi bi-plus-lg" aria-hidden="true"></i> إيداعات يدويّة</div><div class="value" id="trzIn">—</div></div>
+        <div class="kpi"><div class="label"><i class="bi bi-dash-lg" aria-hidden="true"></i> سحوبات/تحويلات</div><div class="value" id="trzOut">—</div></div>
       </div>
       <div class="panel">
         <div class="panel-head">
-          <div><h3>💼 حركة الخزانة</h3><div class="sub">إيداع رأس مال · سحب · إرسال مبلغ لمزوّد</div></div>
+          <div><h3><i class="bi bi-briefcase" aria-hidden="true"></i> حركة الخزانة</h3><div class="sub">إيداع رأس مال · سحب · إرسال مبلغ لمزوّد</div></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="openTrzForm('deposit')">➕ إيداع</button>
-            <button class="btn" onclick="openTrzForm('withdrawal')">➖ سحب</button>
-            <button class="btn" onclick="openTrzForm('send')">📤 إرسال مبلغ</button>
+            <button class="btn btn-primary" onclick="openTrzForm('deposit')"><i class="bi bi-plus-lg" aria-hidden="true"></i> إيداع</button>
+            <button class="btn" onclick="openTrzForm('withdrawal')"><i class="bi bi-dash-lg" aria-hidden="true"></i> سحب</button>
+            <button class="btn" onclick="openTrzForm('send')"><i class="bi bi-upload" aria-hidden="true"></i> إرسال مبلغ</button>
           </div>
         </div>
         <div id="trzForm" style="display:none;background:var(--card-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
             <div><label class="explbl">النوع</label>
               <select id="trzType" class="expinput" onchange="trzTypeChanged()">
-                <option value="deposit">➕ إيداع</option><option value="withdrawal">➖ سحب</option><option value="send">📤 إرسال لمزوّد</option>
+                <option value="deposit"><i class="bi bi-plus-lg" aria-hidden="true"></i> إيداع</option><option value="withdrawal"><i class="bi bi-dash-lg" aria-hidden="true"></i> سحب</option><option value="send"><i class="bi bi-upload" aria-hidden="true"></i> إرسال لمزوّد</option>
               </select></div>
             <div><label class="explbl">المبلغ (ر.ع) *</label><input id="trzAmount" class="expinput" type="number" step="0.001" min="0" placeholder="0.000"></div>
             <div id="trzPayeeTypeWrap" style="display:none"><label class="explbl">نوع المستفيد</label>
               <select id="trzPayeeType" class="expinput" onchange="fillTrzPayees(true)">
-                <option value="guide">🧭 مرشد</option><option value="company">🏢 شركة</option><option value="team">🎪 فريق</option>
+                <option value="guide"><i class="bi bi-compass" aria-hidden="true"></i> مرشد</option><option value="company"><i class="bi bi-building" aria-hidden="true"></i> شركة</option><option value="team"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> فريق</option>
               </select></div>
             <div id="trzPayeeWrap" style="display:none"><label class="explbl">المستفيد</label><select id="trzPayee" class="expinput"></select></div>
             <div><label class="explbl">الوصف</label><input id="trzDesc" class="expinput" placeholder="مثال: إيداع رأس مال"></div>
           </div>
           <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
-            <button class="btn btn-primary" onclick="saveTrz()" id="trzSaveBtn">💾 تنفيذ</button>
+            <button class="btn btn-primary" onclick="saveTrz()" id="trzSaveBtn"><i class="bi bi-floppy" aria-hidden="true"></i> تنفيذ</button>
             <button class="btn" onclick="document.getElementById('trzForm').style.display='none'">إلغاء</button>
             <span class="sub" id="trzMsg"></span>
           </div>
@@ -615,28 +616,28 @@ function render() {
     <!-- ════════ Invoices ════════ -->
     <div class="tabpane" data-pane="invoices">
       <div class="panel">
-        <div class="panel-head"><div><h3>📄 إصدار فاتورة</h3><div class="sub">فاتورة احترافيّة (PDF) للمرشدين والشركات والفرق — بنود متعدّدة وضريبة تلقائيّة</div></div></div>
+        <div class="panel-head"><div><h3><i class="bi bi-file-earmark-text" aria-hidden="true"></i> إصدار فاتورة</h3><div class="sub">فاتورة احترافيّة (PDF) للمرشدين والشركات والفرق — بنود متعدّدة وضريبة تلقائيّة</div></div></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
           <div><label class="explbl">نوع المستفيد</label>
             <select id="invType" class="expinput" onchange="fillInvProviders(true)">
-              <option value="guide">🧭 مرشد</option><option value="company">🏢 شركة</option><option value="team">🎪 فريق</option>
+              <option value="guide"><i class="bi bi-compass" aria-hidden="true"></i> مرشد</option><option value="company"><i class="bi bi-building" aria-hidden="true"></i> شركة</option><option value="team"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> فريق</option>
             </select></div>
           <div><label class="explbl">المستفيد *</label><select id="invRecipient" class="expinput"></select></div>
         </div>
         <div style="margin-top:16px">
           <label class="explbl">البنود</label>
           <div id="invItems"></div>
-          <button class="btn" type="button" onclick="addInvItem()" style="margin-top:8px">➕ إضافة بند</button>
+          <button class="btn" type="button" onclick="addInvItem()" style="margin-top:8px"><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة بند</button>
         </div>
         <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
           <span class="sub">الإجمالي: <strong id="invTotal" class="money" style="font-size:1.2rem">0.000</strong> ر.ع</span>
-          <button class="btn btn-primary" onclick="genInvoice()" id="invBtn" style="margin-inline-start:auto">🧾 إصدار الفاتورة (PDF)</button>
+          <button class="btn btn-primary" onclick="genInvoice()" id="invBtn" style="margin-inline-start:auto"><i class="bi bi-receipt" aria-hidden="true"></i> إصدار الفاتورة (PDF)</button>
           <span class="sub" id="invMsg"></span>
         </div>
       </div>
 
       <div class="panel">
-        <div class="panel-head"><div><h3>🗂️ الفواتير الصادرة</h3></div></div>
+        <div class="panel-head"><div><h3><i class="bi bi-folder" aria-hidden="true"></i> الفواتير الصادرة</h3></div></div>
         <div class="tbl-wrap" style="max-height:480px;overflow-y:auto">
           <table style="width:100%">
             <thead><tr><th>الرقم</th><th>المستفيد</th><th>النوع</th><th>الإجمالي</th><th>التاريخ</th><th>التحويل</th><th></th></tr></thead>
@@ -684,7 +685,7 @@ async function loadTreasury() {
     renderTreasury();
   } catch (e) {
     const b = document.getElementById('trzBody');
-    if (b) b.innerHTML = `<tr><td colspan="6" class="empty">⚠️ ${esc(e.message)}</td></tr>`;
+    if (b) b.innerHTML = `<tr><td colspan="6" class="empty"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> ${esc(e.message)}</td></tr>`;
   }
 }
 function renderTreasury() {
@@ -694,7 +695,7 @@ function renderTreasury() {
   set('trzBalance', `${fmt(t.balance)} <small style="font-size:1.1rem;opacity:.85">ر.ع</small>`);
   set('trzIncome', omr(t.income)); set('trzExp', omr(t.expenses));
   set('trzIn', omr(t.manualIn)); set('trzOut', omr(t.manualOut));
-  const TLBL = { deposit: '➕ إيداع', withdrawal: '➖ سحب', send: '📤 إرسال' };
+  const TLBL = { deposit: '<i class="bi bi-plus-lg" aria-hidden="true"></i> إيداع', withdrawal: '<i class="bi bi-dash-lg" aria-hidden="true"></i> سحب', send: '<i class="bi bi-upload" aria-hidden="true"></i> إرسال' };
   const body = document.getElementById('trzBody');
   if (!t.transactions.length) { body.innerHTML = '<tr><td colspan="6" class="empty">لا حركات يدويّة بعد</td></tr>'; return; }
   body.innerHTML = t.transactions.map(x => `
@@ -704,7 +705,7 @@ function renderTreasury() {
       <td>${esc(x.payeeName) || '—'}</td>
       <td class="money" style="color:${x.type === 'deposit' ? 'var(--teal)' : 'var(--danger,#e5484d)'}">${x.type === 'deposit' ? '+' : '−'}${fmt(x.amount)}</td>
       <td>${new Date(x.createdAt).toLocaleDateString('en-GB')}</td>
-      <td style="white-space:nowrap">${x.type === 'send' ? `<a class="icon-btn" title="الفاتورة (PDF)" href="/api/admin/treasury/${x.id}/voucher" target="_blank">🧾</a>` : ''}<button class="icon-btn" title="حذف" onclick="delTrz('${x.id}')">🗑️</button></td>
+      <td style="white-space:nowrap">${x.type === 'send' ? `<a class="icon-btn" title="الفاتورة (PDF)" href="/api/admin/treasury/${x.id}/voucher" target="_blank"><i class="bi bi-receipt" aria-hidden="true"></i></a>` : ''}<button class="icon-btn" title="حذف" onclick="delTrz('${x.id}')"><i class="bi bi-trash" aria-hidden="true"></i></button></td>
     </tr>`).join('');
 }
 function openTrzForm(type) {
@@ -741,9 +742,9 @@ async function saveTrz() {
   const description = document.getElementById('trzDesc').value.trim();
   const payeeId = type === 'send' ? document.getElementById('trzPayee').value : null;
   const msg = document.getElementById('trzMsg');
-  if (!(amount > 0)) { msg.textContent = '⚠️ أدخل مبلغاً صحيحاً'; return; }
-  if (type === 'send' && !payeeId) { msg.textContent = '⚠️ اختر المستفيد'; return; }
-  const btn = document.getElementById('trzSaveBtn'); btn.disabled = true; btn.textContent = '⏳ …';
+  if (!(amount > 0)) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> أدخل مبلغاً صحيحاً'; return; }
+  if (type === 'send' && !payeeId) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> اختر المستفيد'; return; }
+  const btn = document.getElementById('trzSaveBtn'); btn.disabled = true; btn.textContent = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> …';
   try {
     const r = await fetch('/api/admin/treasury', {
       method: 'POST', credentials: 'include',
@@ -759,8 +760,8 @@ async function saveTrz() {
     document.getElementById('trzForm').style.display = 'none';
     ['trzAmount', 'trzDesc'].forEach(id => document.getElementById(id).value = '');
     await loadTreasury();
-  } catch (e) { msg.textContent = '⚠️ ' + e.message; }
-  finally { btn.disabled = false; btn.textContent = '💾 تنفيذ'; }
+  } catch (e) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> ' + e.message; }
+  finally { btn.disabled = false; btn.textContent = '<i class="bi bi-floppy" aria-hidden="true"></i> تنفيذ'; }
 }
 async function delTrz(id) {
   if (!confirm('حذف هذه الحركة؟')) return;
@@ -784,7 +785,7 @@ function addInvItem() {
   row.innerHTML = `
     <input class="expinput inv-desc" placeholder="البيان (مثال: عمولة المنصّة — يونيو)" oninput="recalcInv()" style="flex:1">
     <input class="expinput inv-amt" type="number" step="0.001" min="0" placeholder="0.000" oninput="recalcInv()" style="width:130px">
-    <button class="icon-btn" type="button" title="حذف البند" onclick="this.parentElement.remove();recalcInv()">🗑️</button>`;
+    <button class="icon-btn" type="button" title="حذف البند" onclick="this.parentElement.remove();recalcInv()"><i class="bi bi-trash" aria-hidden="true"></i></button>`;
   wrap.appendChild(row);
 }
 function recalcInv() {
@@ -814,9 +815,9 @@ async function genInvoice() {
     amount: parseFloat(r.querySelector('.inv-amt').value) || 0,
   })).filter(it => it.amount > 0);
   const msg = document.getElementById('invMsg');
-  if (!recipientId) { msg.textContent = '⚠️ اختر المستفيد'; return; }
-  if (!items.length) { msg.textContent = '⚠️ أضف بنداً واحداً بمبلغ صحيح'; return; }
-  const btn = document.getElementById('invBtn'); btn.disabled = true; btn.textContent = '⏳ …';
+  if (!recipientId) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> اختر المستفيد'; return; }
+  if (!items.length) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> أضف بنداً واحداً بمبلغ صحيح'; return; }
+  const btn = document.getElementById('invBtn'); btn.disabled = true; btn.textContent = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> …';
   try {
     const r = await fetch('/api/admin/invoices', {
       method: 'POST', credentials: 'include',
@@ -828,10 +829,10 @@ async function genInvoice() {
     window.open('/api/admin/invoices/' + d.invoice.id + '/pdf', '_blank');
     document.getElementById('invItems').innerHTML = ''; addInvItem();
     recalcInv();
-    msg.textContent = '✅ صدرت الفاتورة';
+    msg.textContent = '<i class="bi bi-check-circle-fill" aria-hidden="true"></i> صدرت الفاتورة';
     loadInvoices();
-  } catch (e) { msg.textContent = '⚠️ ' + e.message; }
-  finally { btn.disabled = false; btn.textContent = '🧾 إصدار الفاتورة (PDF)'; }
+  } catch (e) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> ' + e.message; }
+  finally { btn.disabled = false; btn.textContent = '<i class="bi bi-receipt" aria-hidden="true"></i> إصدار الفاتورة (PDF)'; }
 }
 async function loadInvoices() {
   try {
@@ -842,9 +843,9 @@ async function loadInvoices() {
     const TL = { guide: 'مرشد', company: 'شركة', team: 'فريق' };
     body.innerHTML = rows.length ? rows.map(i => {
       const transfer = i.paidOutAt
-        ? `<span style="color:#16a34a;font-weight:700">✅ تمّ التحويل</span><br>
+        ? `<span style="color:#16a34a;font-weight:700"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> تمّ التحويل</span><br>
            <span style="font-size:.74rem;color:#64748b">${esc(i.paidOutByName) || '—'} · ${new Date(i.paidOutAt).toLocaleString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span>`
-        : `<button class="btn btn-sm" style="background:#0f7b6c;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer" onclick="settleInvoice('${i.id}','${esc(i.recipientName)}',${i.total})">💸 تحويل للمرشد</button>`;
+        : `<button class="btn btn-sm" style="background:#0f7b6c;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer" onclick="settleInvoice('${i.id}','${esc(i.recipientName)}',${i.total})"><i class="bi bi-cash-stack" aria-hidden="true"></i> تحويل للمرشد</button>`;
       return `
       <tr>
         <td>${esc(i.number)}</td>
@@ -853,7 +854,7 @@ async function loadInvoices() {
         <td class="money">${fmt(i.total)}</td>
         <td>${new Date(i.createdAt).toLocaleDateString('en-GB')}</td>
         <td style="white-space:nowrap">${transfer}</td>
-        <td style="white-space:nowrap"><a class="icon-btn" title="فتح PDF" href="/api/admin/invoices/${i.id}/pdf" target="_blank">🧾</a><button class="icon-btn" title="حذف" onclick="delInvoice('${i.id}')">🗑️</button></td>
+        <td style="white-space:nowrap"><a class="icon-btn" title="فتح PDF" href="/api/admin/invoices/${i.id}/pdf" target="_blank"><i class="bi bi-receipt" aria-hidden="true"></i></a><button class="icon-btn" title="حذف" onclick="delInvoice('${i.id}')"><i class="bi bi-trash" aria-hidden="true"></i></button></td>
       </tr>`; }).join('') : '<tr><td colspan="7" class="empty">لا فواتير صادرة بعد</td></tr>';
   } catch (_) {}
 }
@@ -871,7 +872,7 @@ async function settleInvoice(id, name, amount) {
     const r = await fetch('/api/admin/invoices/' + id + '/settle', { method: 'POST', credentials: 'include' });
     const d = await r.json();
     if (d.success) {
-      if (window.showToast) showToast('تمّ تحويل المبلغ للمزوّد وخصمه من الخزانة ✅', 'success');
+      if (window.showToast) showToast('تمّ تحويل المبلغ للمزوّد وخصمه من الخزانة <i class="bi bi-check-circle-fill" aria-hidden="true"></i>', 'success');
       loadInvoices();
       if (typeof loadTreasury === 'function') loadTreasury();  // refresh treasury balance
     } else if (window.showToast) showToast(d.message || 'تعذّر التحويل', 'danger');
@@ -1116,7 +1117,7 @@ function toggleExpForm() {
     document.getElementById('expNote').value = '';
     document.getElementById('expRecurring').checked = false;
     document.getElementById('expDate').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('expSaveBtn').textContent = '💾 حفظ';
+    document.getElementById('expSaveBtn').textContent = '<i class="bi bi-floppy" aria-hidden="true"></i> حفظ';
     document.getElementById('expFormMsg').textContent = '';
   }
 }
@@ -1134,7 +1135,7 @@ function editExpense(id) {
   document.getElementById('expPayee').value = e.payee || '';
   document.getElementById('expNote').value = e.note || '';
   document.getElementById('expRecurring').checked = !!e.recurring;
-  document.getElementById('expSaveBtn').textContent = '💾 تحديث';
+  document.getElementById('expSaveBtn').textContent = '<i class="bi bi-floppy" aria-hidden="true"></i> تحديث';
   document.getElementById('expForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -1150,11 +1151,11 @@ async function saveExpense() {
     note:      document.getElementById('expNote').value.trim(),
     recurring: document.getElementById('expRecurring').checked,
   };
-  if (!payload.title) { msg.textContent = '⚠️ العنوان مطلوب'; msg.style.color = 'var(--red)'; return; }
-  if (!(payload.amount > 0)) { msg.textContent = '⚠️ المبلغ غير صالح'; msg.style.color = 'var(--red)'; return; }
+  if (!payload.title) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> العنوان مطلوب'; msg.style.color = 'var(--red)'; return; }
+  if (!(payload.amount > 0)) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> المبلغ غير صالح'; msg.style.color = 'var(--red)'; return; }
 
   const btn = document.getElementById('expSaveBtn');
-  btn.disabled = true; btn.textContent = '⏳ …';
+  btn.disabled = true; btn.textContent = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> …';
   try {
     const url = id ? `/api/admin/expenses/${id}` : '/api/admin/expenses';
     const method = id ? 'PATCH' : 'POST';
@@ -1168,9 +1169,9 @@ async function saveExpense() {
     cancelExpForm();
     await loadAll(true);  // reload everything → net profit recomputed
   } catch (e) {
-    msg.textContent = '⚠️ ' + e.message; msg.style.color = 'var(--red)';
+    msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> ' + e.message; msg.style.color = 'var(--red)';
   } finally {
-    btn.disabled = false; btn.textContent = id ? '💾 تحديث' : '💾 حفظ';
+    btn.disabled = false; btn.textContent = id ? '<i class="bi bi-floppy" aria-hidden="true"></i> تحديث' : '<i class="bi bi-floppy" aria-hidden="true"></i> حفظ';
   }
 }
 
@@ -1201,13 +1202,13 @@ function renderExpenses() {
   if (!rows.length) { body.innerHTML = '<tr><td colspan="5" class="empty">لا مصروفات بعد — اضغط «إضافة مصروف»</td></tr>'; return; }
   body.innerHTML = rows.map(e => `
     <tr>
-      <td><span class="cat-tag">${esc(CAT_LABELS[e.category] || e.category)}</span>${e.recurring ? ' 🔁' : ''}</td>
+      <td><span class="cat-tag">${esc(CAT_LABELS[e.category] || e.category)}</span>${e.recurring ? ' <i class="bi bi-arrow-repeat" aria-hidden="true"></i>' : ''}</td>
       <td title="${esc(e.note || '')}">${esc(e.title)}${e.payee ? `<div class="sub">${esc(e.payee)}</div>` : ''}</td>
       <td class="money" style="color:var(--red)">−${fmt(e.amount)}</td>
       <td>${e.spentAt ? new Date(e.spentAt).toLocaleDateString('en-GB') : '—'}</td>
       <td style="white-space:nowrap">
-        <button class="icon-btn" onclick="editExpense('${e.id}')" title="تعديل">✏️</button>
-        <button class="icon-btn" onclick="deleteExpense('${e.id}')" title="حذف">🗑️</button>
+        <button class="icon-btn" onclick="editExpense('${e.id}')" title="تعديل"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+        <button class="icon-btn" onclick="deleteExpense('${e.id}')" title="حذف"><i class="bi bi-trash" aria-hidden="true"></i></button>
       </td>
     </tr>
   `).join('');
@@ -1248,9 +1249,9 @@ async function saveRates() {
   const team = parseFloat(document.getElementById('rateTeam').value);
   const vat = parseFloat(document.getElementById('rateVat').value) || 0;
   const vatNumber = document.getElementById('rateVatNum').value.trim();
-  if (!(guide >= 0) || !(company >= 0) || !(team >= 0)) { msg.textContent = '⚠️ قيم غير صالحة'; msg.style.color = 'var(--red)'; return; }
-  if (vat > 0 && !vatNumber) { msg.textContent = '⚠️ أدخل الرقم الضريبي لتفعيل الضريبة'; msg.style.color = 'var(--red)'; return; }
-  const btn = document.getElementById('rateSaveBtn'); btn.disabled = true; btn.textContent = '⏳ …';
+  if (!(guide >= 0) || !(company >= 0) || !(team >= 0)) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> قيم غير صالحة'; msg.style.color = 'var(--red)'; return; }
+  if (vat > 0 && !vatNumber) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> أدخل الرقم الضريبي لتفعيل الضريبة'; msg.style.color = 'var(--red)'; return; }
+  const btn = document.getElementById('rateSaveBtn'); btn.disabled = true; btn.textContent = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> …';
   try {
     const r = await fetch('/api/site-settings/commission', {
       method: 'PUT', credentials: 'include',
@@ -1261,8 +1262,8 @@ async function saveRates() {
     if (!r.ok || !d.success) throw new Error(d.message || 'فشل الحفظ');
     msg.textContent = '✓ حُفظت'; msg.style.color = 'var(--green)';
     loadAll(true); // recompute revenue with new rates
-  } catch (e) { msg.textContent = '⚠️ ' + e.message; msg.style.color = 'var(--red)'; }
-  finally { btn.disabled = false; btn.textContent = '💾 حفظ النسب'; }
+  } catch (e) { msg.textContent = '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> ' + e.message; msg.style.color = 'var(--red)'; }
+  finally { btn.disabled = false; btn.textContent = '<i class="bi bi-floppy" aria-hidden="true"></i> حفظ النسب'; }
 }
 
 /* ════════════════════════ Provider payouts ════════════════════════ */
@@ -1274,7 +1275,7 @@ async function loadPayouts() {
     const tot = document.getElementById('payoutTotal');
     if (tot) tot.innerHTML = fmt(d.totalDue) + ' <small style="color:var(--muted)">ر.ع</small>';
     const body = document.getElementById('payoutBody');
-    if (!d.payouts.length) { body.innerHTML = '<tr><td colspan="5" class="empty">لا مستحقّات حاليّاً ✅</td></tr>'; return; }
+    if (!d.payouts.length) { body.innerHTML = '<tr><td colspan="5" class="empty">لا مستحقّات حاليّاً <i class="bi bi-check-circle-fill" aria-hidden="true"></i></td></tr>'; return; }
     body.innerHTML = d.payouts.map(p => `
       <tr>
         <td>${esc(p.name)}<div class="sub">${p.bookings} رحلة</div></td>
@@ -1303,6 +1304,6 @@ async function settlePayout(id, name, net) {
 loadAll();
 </script>
 
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>

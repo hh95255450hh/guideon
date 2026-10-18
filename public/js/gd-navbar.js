@@ -1,7 +1,7 @@
 /**
  * Guideon unified navigation bar.
  *
- * Drop one <script src="/js/gd-navbar.js?v=1"></script> on any page and it:
+ * Drop one <script src="/js/gd-navbar.js?v=22"></script> on any page and it:
  *   • Replaces any existing <nav> with a clean, responsive bar
  *   • Auto-flips for RTL/LTR using CSS logical properties
  *   • Desktop: nav links + single accent CTA + utility cluster
@@ -18,6 +18,13 @@
   if (document.body && document.body.dataset.noGdNav !== undefined) return;
   if (window.__gdNavMounted) return;
   window.__gdNavMounted = true;
+
+  // Bootstrap Icons (self-hosted) — the site's icon set, on every page.
+  if (!document.querySelector('link[href*="bootstrap-icons.min.css"]')) {
+    const bi = document.createElement('link');
+    bi.rel = 'stylesheet'; bi.href = '/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1';
+    document.head.appendChild(bi);
+  }
 
   // ─── Style ────────────────────────────────────────────────────────────
   const css = `
@@ -407,7 +414,7 @@
         </nav>
 
         <a class="gd-nav-cta gd-nav-cta-desk" href="/plan-trip.html">
-          ✨ ${tr('Plan My Trip','خطط رحلتي')}
+          <i class="bi bi-stars" aria-hidden="true"></i> ${tr('Plan My Trip','خطط رحلتي')}
         </a>
 
         <div class="gd-nav-utils">
@@ -425,7 +432,7 @@
               </select>
             </label>
             <label class="gd-nav-chip" title="${tr('Currency','العملة')}">
-              <span>💰</span>
+              <span><i class="bi bi-cash-coin" aria-hidden="true"></i></span>
               <select id="gdNavCurrency">
                 <option value="OMR">OMR</option>
                 <option value="USD">USD</option>
@@ -448,7 +455,7 @@
 
     const bottom = document.createElement('div');
     bottom.className = 'gd-nav-bottom-cta';
-    bottom.innerHTML = `<a href="/plan-trip.html">✨ ${tr('Plan My Trip','خطط رحلتي')} <span style="opacity:.85;font-weight:500;font-size:13px">— ${tr('get a price quote','اطلب عرض سعر')}</span></a>`;
+    bottom.innerHTML = `<a href="/plan-trip.html"><i class="bi bi-stars" aria-hidden="true"></i> ${tr('Plan My Trip','خطط رحلتي')} <span style="opacity:.85;font-weight:500;font-size:13px">— ${tr('get a price quote','اطلب عرض سعر')}</span></a>`;
     return { nav, bottom };
   }
 
@@ -468,7 +475,7 @@
         <nav id="gdDrawerNav">
           <!-- Browse — visible to everyone -->
           <div class="gd-drawer-section">${tr('Browse','تصفّح')}</div>
-          <a href="/"               ${activeAttr('/')}><span style="font-size:18px">🏠</span> ${tr('Home','الرئيسية')}</a>
+          <a href="/"               ${activeAttr('/')}><span style="font-size:18px"><i class="bi bi-house" aria-hidden="true"></i></span> ${tr('Home','الرئيسية')}</a>
           <a href="/search.html"    ${activeAttr('/search')}>${svg('search')} ${tr('Find a Guide','ابحث عن مرشد','nav_find')}</a>
           <a href="/regions.html"   ${activeAttr('/regions')}>${svg('map')} ${tr('Explore Regions','استكشف المناطق')}</a>
           <a href="/plan-trip.html" ${activeAttr('/plan-trip')}>${svg('sparkle')} ${tr('Plan a Trip','خطط رحلة')}</a>
@@ -493,7 +500,7 @@
               </select>
             </label>
             <label class="gd-nav-chip" style="flex:1;justify-content:center;background:var(--gd-ink-50);color:var(--gd-ink-900);border-color:var(--gd-ink-100)">
-              <span>💰</span>
+              <span><i class="bi bi-cash-coin" aria-hidden="true"></i></span>
               <select id="gdDrawerCurrency" style="color:var(--gd-ink-900);width:100%">
                 <option value="OMR">OMR</option><option value="USD">USD</option>
                 <option value="EUR">EUR</option><option value="GBP">GBP</option>

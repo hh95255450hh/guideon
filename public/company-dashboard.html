@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -49,7 +49,8 @@
 .btn-teal:hover { background:#0c6457; color:#fff; }
 </style>
 <script src="/js/image-compress.js?v=3"></script>
-<script src="/js/gd-map.js?v=3" defer></script>
+<script src="/js/gd-map.js?v=6" defer></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -61,9 +62,9 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
-        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
         <span class="text-white opacity-75 small" id="navName"></span>
-        <a href="/guides/company-handbook-ar.pdf" target="_blank" class="btn btn-sm btn-outline-light" title="دليل الاستخدام" data-i18n="nav_handbook">📖 دليل الاستخدام</a>
+        <a href="/guides/company-handbook-ar.pdf" target="_blank" class="btn btn-sm btn-outline-light" title="دليل الاستخدام"><i class="bi bi-book" aria-hidden="true"></i> <span data-i18n="nav_handbook">دليل الاستخدام</span></a>
         <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
       </div>
     </div>
@@ -75,9 +76,9 @@
   <div class="container">
     <div class="d-flex align-items-center gap-3 mb-3">
       <div style="position:relative;width:60px;height:60px;flex-shrink:0">
-        <div style="width:60px;height:60px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;overflow:hidden" id="companyLogo" onclick="document.getElementById('coPhotoInput').click()" title="Click to upload photo">🏢</div>
+        <div style="width:60px;height:60px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;overflow:hidden" id="companyLogo" onclick="document.getElementById('coPhotoInput').click()" title="Click to upload photo"><i class="bi bi-building" aria-hidden="true"></i></div>
         <input type="file" id="coPhotoInput" accept="image/*" style="display:none" onchange="uploadCompanyPhoto(this)">
-        <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:.5rem;border-radius:0 0 14px 14px;width:60px;text-align:center;padding:2px 0;pointer-events:none">📷</div>
+        <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:.5rem;border-radius:0 0 14px 14px;width:60px;text-align:center;padding:2px 0;pointer-events:none"><i class="bi bi-camera" aria-hidden="true"></i></div>
       </div>
       <div>
         <h4 class="fw-800 mb-0" id="companyNameDisplay">—</h4>
@@ -101,15 +102,15 @@
 
       <!-- Pending Review Notice -->
       <div id="pendingNotice" class="alert d-none mb-4" style="background:#fff8e6;border:1px solid #ffe58a;border-radius:12px;padding:16px 20px;">
-        <div style="font-weight:700;color:#7a5a00;margin-bottom:4px;">⏳ <span data-i18n="co_pending_title">Profile Under Review</span></div>
+        <div style="font-weight:700;color:#7a5a00;margin-bottom:4px;"><i class="bi bi-hourglass-split" aria-hidden="true"></i> <span data-i18n="co_pending_title">Profile Under Review</span></div>
         <div style="font-size:.87rem;color:#7a5a00;line-height:1.5;" data-i18n="co_pending_desc">Your company profile is being reviewed by our team. Once approved, tourists will be able to discover your services. You can still edit your profile in the meantime.</div>
       </div>
 
       <!-- Company Profile Card -->
       <div class="card-section mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="section-title mb-0">🏢 <span data-i18n="co_profile_title">Company Profile</span></div>
-          <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit()" data-i18n="edit_btn">✏️ Edit</button>
+          <div class="section-title mb-0"><i class="bi bi-building" aria-hidden="true"></i> <span data-i18n="co_profile_title">Company Profile</span></div>
+          <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit()"><i class="bi bi-pencil" aria-hidden="true"></i> <span data-i18n="edit_btn">Edit</span></button>
         </div>
 
         <!-- View Mode -->
@@ -149,7 +150,7 @@
             </div>
             <!-- Gallery -->
             <div class="col-12">
-              <div class="small text-muted mb-2" data-i18n="gallery_title">📸 Photo Gallery</div>
+              <div class="small text-muted mb-2"><i class="bi bi-camera" aria-hidden="true"></i> <span data-i18n="gallery_title">Photo Gallery</span></div>
               <div id="vGallery" class="d-flex flex-wrap gap-2 mb-2"></div>
               <div class="d-flex align-items-center gap-2">
                 <label class="btn btn-sm btn-outline-secondary" style="cursor:pointer;margin:0;font-size:.8rem">
@@ -161,7 +162,7 @@
             </div>
             <!-- Video -->
             <div class="col-12" id="vVideoRow" style="display:none">
-              <div class="small text-muted mb-1" data-i18n="video_title">🎬 Intro Video</div>
+              <div class="small text-muted mb-1"><i class="bi bi-film" aria-hidden="true"></i> <span data-i18n="video_title">Intro Video</span></div>
               <div id="vVideoWrap"></div>
             </div>
           </div>
@@ -209,9 +210,9 @@
             <div class="col-12">
               <label class="form-label fw-600 small" data-i18n="company_desc_lbl">وصف الشركة *</label>
               <textarea class="form-control" id="eDescription" rows="4" data-i18n-ph="company_desc_ph" placeholder="حدّث السياح عن شركتك وخبرتك وما يميزك..."></textarea>
-              <button type="button" class="btn btn-sm btn-outline-teal mt-2" id="aiImproveBtn" onclick="aiImproveDesc()">✨ حسّن وصفي بالذكاء الاصطناعي</button>
+              <button type="button" class="btn btn-sm btn-outline-teal mt-2" id="aiImproveBtn" onclick="aiImproveDesc()"><i class="bi bi-stars" aria-hidden="true"></i> حسّن وصفي بالذكاء الاصطناعي</button>
               <div id="aiImproveBox" class="mt-2" style="display:none;background:#f0faf8;border:1px solid #d6efe9;border-radius:10px;padding:12px">
-                <div class="small fw-700 mb-2" style="color:#0f7b6c">✨ اقتراح محسّن (عربي):</div>
+                <div class="small fw-700 mb-2" style="color:#0f7b6c"><i class="bi bi-stars" aria-hidden="true"></i> اقتراح محسّن (عربي):</div>
                 <div id="aiImproveAr" class="small text-dark mb-2" style="white-space:pre-wrap;line-height:1.6"></div>
                 <button type="button" class="btn btn-sm btn-teal" onclick="aiApplyDesc()">استخدم هذا النص</button>
                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('aiImproveBox').style.display='none'">إلغاء</button>
@@ -219,7 +220,7 @@
             </div>
           </div>
           <div class="d-flex gap-2 mt-3">
-            <button class="btn-teal btn px-4" onclick="saveProfile()" data-i18n="co_save_changes">💾 Save Changes</button>
+            <button class="btn-teal btn px-4" onclick="saveProfile()"><i class="bi bi-floppy" aria-hidden="true"></i> <span data-i18n="co_save_changes">Save Changes</span></button>
             <button class="btn btn-outline-secondary px-4" onclick="toggleEdit()" data-i18n="cancel_btn">Cancel</button>
           </div>
         </div>
@@ -228,7 +229,7 @@
       <!-- Booking Requests Section -->
       <div class="card-section mb-4" id="coBookingsSection">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="section-title mb-0">📋 طلبات الحجز <span id="coBkPendingBadge" class="badge bg-danger ms-1" style="display:none"></span></div>
+          <div class="section-title mb-0"><i class="bi bi-clipboard" aria-hidden="true"></i> طلبات الحجز <span id="coBkPendingBadge" class="badge bg-danger ms-1" style="display:none"></span></div>
           <button class="btn btn-sm btn-outline-secondary" onclick="coLoadBookings()" style="border-radius:8px">↻ تحديث</button>
         </div>
         <div class="d-flex gap-2 mb-3 flex-wrap" id="coBkFilters">
@@ -245,7 +246,7 @@
       <!-- Invoices & Payouts Section -->
       <div class="card-section mb-4" id="coInvoicesSection">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="section-title mb-0">🧾 الفواتير والمستحقّات · Invoices &amp; Payouts</div>
+          <div class="section-title mb-0"><i class="bi bi-receipt" aria-hidden="true"></i> الفواتير والمستحقّات · Invoices &amp; Payouts</div>
           <button class="btn btn-sm btn-outline-secondary" onclick="coLoadEarnings()" style="border-radius:8px">↻ تحديث</button>
         </div>
         <div class="row g-2 mb-3">
@@ -270,13 +271,13 @@
       <!-- Tour Packages / Services Section -->
       <div class="card-section" id="packages" style="scroll-margin-top:84px">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="section-title mb-0">🗺️ <span data-i18n="co_packages_title">Tour Packages & Services</span></div>
+          <div class="section-title mb-0"><i class="bi bi-map" aria-hidden="true"></i> <span data-i18n="co_packages_title">Tour Packages & Services</span></div>
           <button class="btn btn-sm" id="add" style="background:var(--teal);color:#fff;border-radius:8px;scroll-margin-top:90px" onclick="openAddPackage()" data-i18n="co_add_pkg_btn">+ Add Package</button>
         </div>
 
         <div id="packagesContainer">
           <div class="text-center py-4 text-muted small" id="noPackages">
-            <div style="font-size:2rem;margin-bottom:8px;">📦</div>
+            <div style="font-size:2rem;margin-bottom:8px;"><i class="bi bi-box-seam" aria-hidden="true"></i></div>
             No packages added yet. Click "Add Package" to list your first tour.
           </div>
         </div>
@@ -290,7 +291,7 @@
       <!-- Messages -->
       <div class="card-section mb-4" id="coMsgSection" style="padding:0;overflow:hidden">
         <div class="d-flex justify-content-between align-items-center px-3 py-2" style="background:var(--teal,#0f7b6c);color:#fff;border-radius:14px 14px 0 0">
-          <h6 class="mb-0 fw-700">💬 الرسائل</h6>
+          <h6 class="mb-0 fw-700"><i class="bi bi-chat-dots" aria-hidden="true"></i> الرسائل</h6>
           <span class="badge bg-danger" id="coMsgBadge" style="display:none"></span>
         </div>
         <div id="coMsgConvoView">
@@ -308,7 +309,7 @@
           <div id="coMsgTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic">…</div>
           <div class="p-2 border-top d-flex gap-2 align-items-center">
             <input type="file" id="coMsgFile" accept="image/*" style="display:none" onchange="coAttach(this)">
-            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('coMsgFile').click()" title="إرفاق صورة" style="flex-shrink:0">📎</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('coMsgFile').click()" title="إرفاق صورة" style="flex-shrink:0"><i class="bi bi-paperclip" aria-hidden="true"></i></button>
             <input class="form-control form-control-sm" id="coMsgInput" placeholder="اكتب رداً…" oninput="coTyping()">
             <button class="btn btn-sm btn-teal" onclick="coSendMsg()" style="flex-shrink:0">إرسال</button>
           </div>
@@ -317,7 +318,7 @@
 
       <!-- Status Card -->
       <div class="card-section mb-4">
-        <div class="section-title">📊 <span data-i18n="co_acct_status">Account Status</span></div>
+        <div class="section-title"><i class="bi bi-bar-chart" aria-hidden="true"></i> <span data-i18n="co_acct_status">Account Status</span></div>
         <div class="d-flex align-items-center gap-2 mb-3">
           <div id="bigStatusBadge"></div>
         </div>
@@ -326,7 +327,7 @@
 
       <!-- Tips -->
       <div class="card-section mb-4">
-        <div class="section-title">💡 <span data-i18n="co_tips_title">Tips to Get Noticed</span></div>
+        <div class="section-title"><i class="bi bi-lightbulb" aria-hidden="true"></i> <span data-i18n="co_tips_title">Tips to Get Noticed</span></div>
         <ul style="padding-left:18px;font-size:.87rem;line-height:2;color:#555;">
           <li data-i18n="co_tip1">Add a clear company description</li>
           <li data-i18n="co_tip2">List all destinations you cover</li>
@@ -338,9 +339,9 @@
 
       <!-- Contact Support -->
       <div class="card-section">
-        <div class="section-title">📞 <span data-i18n="co_help_title">Need Help?</span></div>
+        <div class="section-title"><i class="bi bi-telephone" aria-hidden="true"></i> <span data-i18n="co_help_title">Need Help?</span></div>
         <p class="small text-muted mb-3" data-i18n="co_help_desc">Contact Guideon support for listing help, verification questions, or platform issues.</p>
-        <a href="mailto:admin@guideon.om" class="btn btn-outline-secondary btn-sm w-100" data-i18n="co_contact_btn">✉️ Contact Support</a>
+        <a href="mailto:admin@guideon.om" class="btn btn-outline-secondary btn-sm w-100"><i class="bi bi-envelope" aria-hidden="true"></i> <span data-i18n="co_contact_btn">Contact Support</span></a>
       </div>
 
     </div>
@@ -365,7 +366,7 @@
         <!-- Duration: proper days/hours/minutes (was a single free-text box that
              companies filled with "30" for a 30-minute tour → stored as 30 days). -->
         <div class="mb-3">
-          <label class="form-label fw-600 small">⏱ المدة · Duration</label>
+          <label class="form-label fw-600 small"><i class="bi bi-stopwatch" aria-hidden="true"></i> المدة · Duration</label>
           <div class="row g-2">
             <div class="col-4"><div class="input-group input-group-sm"><input type="number" class="form-control" id="pkgDurDays" min="0" max="30" value="0"><span class="input-group-text">يوم</span></div></div>
             <div class="col-4"><div class="input-group input-group-sm"><input type="number" class="form-control" id="pkgDurHours" min="0" max="23" value="1"><span class="input-group-text">ساعة</span></div></div>
@@ -376,7 +377,7 @@
 
         <!-- Pricing: flat OR group-size tiers + age (TripAdvisor-style) -->
         <div class="mb-3">
-          <label class="form-label fw-600 small">💰 التسعير · Pricing</label>
+          <label class="form-label fw-600 small"><i class="bi bi-cash-coin" aria-hidden="true"></i> التسعير · Pricing</label>
           <div class="btn-group w-100 mb-2" role="group">
             <input type="radio" class="btn-check" name="pkgPmode" id="pmodeSimple" value="simple" checked onchange="togglePkgPricing()">
             <label class="btn btn-outline-teal btn-sm" for="pmodeSimple">سعر ثابت · Flat</label>
@@ -392,7 +393,7 @@
           <div id="pkgTieredBox" style="display:none">
             <div class="small text-muted mb-1">حدّد السعر حسب عدد الأشخاص. اترك خانة «إلى» فارغة لتعني «فأكثر».</div>
             <div id="pkgTiersList" class="d-flex flex-column gap-1 mb-2"></div>
-            <button type="button" class="btn btn-sm btn-outline-teal" onclick="addPkgTier()">➕ إضافة شريحة</button>
+            <button type="button" class="btn btn-sm btn-outline-teal" onclick="addPkgTier()"><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة شريحة</button>
             <div class="row g-2 mt-2">
               <div class="col-4"><label class="form-label small mb-1">سعر الطفل (ر.ع)</label><input type="number" class="form-control form-control-sm" id="pkgChildPrice" min="0" step="0.5" value="0"></div>
               <div class="col-4"><label class="form-label small mb-1">عمر الطفل من–إلى</label><div class="input-group input-group-sm"><input type="number" class="form-control" id="pkgChildMin" min="0" max="17" value="6"><input type="number" class="form-control" id="pkgChildMax" min="0" max="17" value="12"></div></div>
@@ -433,16 +434,16 @@
         <div class="mb-3">
           <label class="form-label fw-600 small" data-i18n="pkg_desc_lbl">الوصف</label>
           <textarea class="form-control" id="pkgDescription" rows="3" placeholder="صف هذه الرحلة للسياح..."></textarea>
-          <button type="button" class="btn btn-sm btn-outline-teal mt-2" id="aiPkgBtn" onclick="aiImprovePkg()">✨ حسّن وصف الرحلة بالذكاء</button>
+          <button type="button" class="btn btn-sm btn-outline-teal mt-2" id="aiPkgBtn" onclick="aiImprovePkg()"><i class="bi bi-stars" aria-hidden="true"></i> حسّن وصف الرحلة بالذكاء</button>
           <div id="aiPkgBox" class="mt-2" style="display:none;background:#f0faf8;border:1px solid #d6efe9;border-radius:10px;padding:12px">
-            <div class="small fw-700 mb-2" style="color:#0f7b6c">✨ اقتراح محسّن (عربي):</div>
+            <div class="small fw-700 mb-2" style="color:#0f7b6c"><i class="bi bi-stars" aria-hidden="true"></i> اقتراح محسّن (عربي):</div>
             <div id="aiPkgAr" class="small text-dark mb-2" style="white-space:pre-wrap;line-height:1.6"></div>
             <button type="button" class="btn btn-sm btn-teal" onclick="aiApplyPkg()">استخدم هذا النص</button>
             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('aiPkgBox').style.display='none'">إلغاء</button>
           </div>
         </div>
         <div class="mb-3">
-          <label class="form-label fw-600 small">🗺️ خريطة الرحلة <span class="text-muted fw-400">(اختياري)</span></label>
+          <label class="form-label fw-600 small"><i class="bi bi-map" aria-hidden="true"></i> خريطة الرحلة <span class="text-muted fw-400">(اختياري)</span></label>
           <div class="form-text mb-2">حدّد نقطة اللقاء والمسار المتوقّع — سيظهر للسياح على صفحة الرحلة.</div>
           <div id="pkgMap"></div>
         </div>
@@ -450,7 +451,7 @@
         <!-- ═══ Service Tiers (Standard / Premium / VIP) ═══ -->
         <div class="mb-3 p-3" style="background:#f7f9fb;border-radius:12px;border:1px solid #eef0f4">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <label class="form-label fw-700 mb-0">💼 الباقات (Standard · Premium · VIP)</label>
+            <label class="form-label fw-700 mb-0"><i class="bi bi-briefcase" aria-hidden="true"></i> الباقات (Standard · Premium · VIP)</label>
             <button type="button" class="btn btn-sm btn-outline-teal" onclick="addPkgVariant()">+ إضافة باقة</button>
           </div>
           <div class="form-text mb-2">أنشئ مستويات مختلفة (عادي / متميّز / VIP) بأسعار وميزات مختلفة. السائح يختار ما يناسبه.</div>
@@ -460,7 +461,7 @@
         <!-- ═══ Optional Add-ons (extra services) ═══ -->
         <div class="mb-3 p-3" style="background:#f7f9fb;border-radius:12px;border:1px solid #eef0f4">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <label class="form-label fw-700 mb-0">🎁 خدمات إضافية اختياريّة</label>
+            <label class="form-label fw-700 mb-0"><i class="bi bi-gift" aria-hidden="true"></i> خدمات إضافية اختياريّة</label>
             <button type="button" class="btn btn-sm btn-outline-teal" onclick="addPkgAddon()">+ إضافة خدمة</button>
           </div>
           <div class="form-text mb-2">خدمات يمكن للسائح إضافتها لرحلته (مثل: مصوّر، عشاء بدويّ، نقل من المطار…)</div>
@@ -469,7 +470,7 @@
 
         <!-- ═══ Special Offer / Discount ═══ -->
         <div class="mb-3 p-3" style="background:linear-gradient(135deg,#fff8e6,#fef3c7);border-radius:12px;border:1px solid #fde68a">
-          <label class="form-label fw-700 mb-2">🏷️ عرض خاصّ (اختياري)</label>
+          <label class="form-label fw-700 mb-2"><i class="bi bi-tag" aria-hidden="true"></i> عرض خاصّ (اختياري)</label>
           <div class="row g-2">
             <div class="col-md-4">
               <label class="form-label small mb-1">نسبة الخصم %</label>
@@ -497,8 +498,8 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script>
 let COMPANY = null;
 let PACKAGES = [];
@@ -687,7 +688,7 @@ function render() {
   svcEl.innerHTML = svcs.length ? svcs.map(s => `<span class="tag-pill">${s}</span>`).join('') : `<span class="text-muted small">${I18N.t('co_none_listed')}</span>`;
 
   const dstEl = document.getElementById('vDestinations');
-  dstEl.innerHTML = dsts.length ? dsts.map(d => `<span class="tag-pill">📍 ${d}</span>`).join('') : `<span class="text-muted small">${I18N.t('co_none_listed')}</span>`;
+  dstEl.innerHTML = dsts.length ? dsts.map(d => `<span class="tag-pill"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${d}</span>`).join('') : `<span class="text-muted small">${I18N.t('co_none_listed')}</span>`;
 
   // Gallery
   renderGallery();
@@ -717,7 +718,7 @@ function render() {
 function renderPackages() {
   const container = document.getElementById('packagesContainer');
   if (!PACKAGES.length) {
-    container.innerHTML = `<div class="text-center py-4 text-muted small" id="noPackages"><div style="font-size:2rem;margin-bottom:8px;">📦</div>${I18N.t('co_no_packages')}</div>`;
+    container.innerHTML = `<div class="text-center py-4 text-muted small" id="noPackages"><div style="font-size:2rem;margin-bottom:8px;"><i class="bi bi-box-seam" aria-hidden="true"></i></div>${I18N.t('co_no_packages')}</div>`;
     return;
   }
   container.innerHTML = PACKAGES.map((pkg) => `
@@ -730,7 +731,7 @@ function renderPackages() {
           <div class="d-flex justify-content-between align-items-start">
             <div style="flex:1">
               <div class="fw-800 mb-1">${pkg.name}</div>
-              <div class="small text-muted mb-2">📍 ${pkg.destination || '—'} ${pkg.duration ? '· ⏱ ' + pkg.duration : ''}</div>
+              <div class="small text-muted mb-2"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${pkg.destination || '—'} ${pkg.duration ? '· <i class="bi bi-stopwatch" aria-hidden="true"></i> ' + pkg.duration : ''}</div>
             </div>
             <div style="text-align:left;flex-shrink:0;margin-left:10px">
               <div class="fw-800" style="color:var(--teal);font-size:1.1rem">${pkg.price ? 'OMR ' + parseFloat(pkg.price).toFixed(0) : '—'}</div>
@@ -740,9 +741,9 @@ function renderPackages() {
           ${pkg.includes ? `<div class="small mb-2"><span style="color:#0f7b6c;font-weight:600">يشمل:</span> ${pkg.includes}</div>` : ''}
           ${(pkg.images||[]).length > 1 ? `<div class="small text-muted mb-2">📷 ${pkg.images.length} صور</div>` : ''}
           <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary" onclick="editPackage('${pkg.id}')">✏️ تعديل</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deletePackage('${pkg.id}')">🗑 حذف</button>
-            <a class="btn btn-sm btn-outline-success" href="/tour-package.html?id=${pkg.id}" target="_blank">👁 معاينة</a>
+            <button class="btn btn-sm btn-outline-secondary" onclick="editPackage('${pkg.id}')"><i class="bi bi-pencil" aria-hidden="true"></i> تعديل</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deletePackage('${pkg.id}')"><i class="bi bi-trash" aria-hidden="true"></i> حذف</button>
+            <a class="btn btn-sm btn-outline-success" href="/tour-package.html?id=${pkg.id}" target="_blank"><i class="bi bi-eye" aria-hidden="true"></i> معاينة</a>
           </div>
         </div>
       </div>
@@ -847,9 +848,9 @@ function renderPkgVariants() {
         <div class="col-md-2 text-end">
           <label class="form-check form-check-inline small" style="margin:0">
             <input type="checkbox" class="form-check-input" ${v.isVIP?'checked':''} onchange="PKG_VARIANTS[${i}].isVIP=this.checked">
-            <span class="form-check-label">✨ VIP</span>
+            <span class="form-check-label"><i class="bi bi-stars" aria-hidden="true"></i> VIP</span>
           </label>
-          <button type="button" class="btn btn-sm btn-outline-danger ms-1" onclick="PKG_VARIANTS.splice(${i},1);renderPkgVariants()">🗑️</button>
+          <button type="button" class="btn btn-sm btn-outline-danger ms-1" onclick="PKG_VARIANTS.splice(${i},1);renderPkgVariants()"><i class="bi bi-trash" aria-hidden="true"></i></button>
         </div>
         <div class="col-12">
           <label class="form-label small mb-1">ما يميّز هذه الباقة (افصل بفواصل)</label>
@@ -876,7 +877,7 @@ function renderPkgAddons() {
         <input type="number" min="0" step="0.5" class="form-control form-control-sm" value="${a.price||''}" oninput="PKG_ADDONS[${i}].price=parseFloat(this.value)||0" placeholder="OMR">
       </div>
       <div class="col-md-1 text-end">
-        <button type="button" class="btn btn-sm btn-outline-danger" onclick="PKG_ADDONS.splice(${i},1);renderPkgAddons()">🗑️</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="PKG_ADDONS.splice(${i},1);renderPkgAddons()"><i class="bi bi-trash" aria-hidden="true"></i></button>
       </div>
     </div>`).join('');
 }
@@ -1230,18 +1231,18 @@ function _cf3(n){ return (Number(n)||0).toFixed(3); }
 function _coStatus(row){
   if (row.settled){
     const when = row.paidOutAt ? ` · ${new Date(row.paidOutAt).toLocaleDateString('en-GB')}` : '';
-    return `<span class="badge rounded-pill" style="background:#e6f6ef;color:#0a7d45;font-weight:700">✅ مدفوعة${when}</span>`;
+    return `<span class="badge rounded-pill" style="background:#e6f6ef;color:#0a7d45;font-weight:700"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> مدفوعة${when}</span>`;
   }
   if (row.status === 'completed'){
     return row.requested
-      ? `<span class="badge rounded-pill" style="background:#fff3cd;color:#8a6d00;font-weight:700">⏳ قيد المراجعة</span>`
-      : `<span class="badge rounded-pill" style="background:#eef2f7;color:#475569;font-weight:700">💰 مستحقّة</span>`;
+      ? `<span class="badge rounded-pill" style="background:#fff3cd;color:#8a6d00;font-weight:700"><i class="bi bi-hourglass-split" aria-hidden="true"></i> قيد المراجعة</span>`
+      : `<span class="badge rounded-pill" style="background:#eef2f7;color:#475569;font-weight:700"><i class="bi bi-cash-coin" aria-hidden="true"></i> مستحقّة</span>`;
   }
-  return `<span class="badge rounded-pill" style="background:#eef2f7;color:#64748b;font-weight:700">🚌 قيد التنفيذ</span>`;
+  return `<span class="badge rounded-pill" style="background:#eef2f7;color:#64748b;font-weight:700"><i class="bi bi-bus-front" aria-hidden="true"></i> قيد التنفيذ</span>`;
 }
 function _coPayoutBtn(row){
   if (row.settled || row.status !== 'completed' || row.requested) return '';
-  return `<button class="btn btn-sm btn-teal" onclick="coRequestPayout('${row.id}', this)" title="اطلب من المنصّة تحويل مستحقّك">💸 طلب الدفع</button>`;
+  return `<button class="btn btn-sm btn-teal" onclick="coRequestPayout('${row.id}', this)" title="اطلب من المنصّة تحويل مستحقّك"><i class="bi bi-cash-stack" aria-hidden="true"></i> طلب الدفع</button>`;
 }
 async function coLoadEarnings(){
   const body = document.getElementById('coLedger');
@@ -1271,7 +1272,7 @@ async function coLoadEarnings(){
         <td>${_coStatus(row)}</td>
         <td class="text-end" style="white-space:nowrap">
           ${_coPayoutBtn(row)}
-          <a class="btn btn-sm btn-outline-secondary" href="/api/guides/me/invoice/${encodeURIComponent(row.id)}" target="_blank" title="تحميل الفاتورة">🧾</a>
+          <a class="btn btn-sm btn-outline-secondary" href="/api/guides/me/invoice/${encodeURIComponent(row.id)}" target="_blank" title="تحميل الفاتورة"><i class="bi bi-receipt" aria-hidden="true"></i></a>
         </td>
       </tr>`).join('');
   } catch(e){ /* non-critical */ }
@@ -1285,8 +1286,8 @@ async function coRequestPayout(bookingId, btn){
     });
     const d = await r.json();
     if (d.success){ alert(d.message || 'تمّ إرسال طلب الدفع.'); coLoadEarnings(); }
-    else { alert(d.message || 'تعذّر إرسال الطلب.'); if(btn){ btn.disabled=false; btn.textContent='💸 طلب الدفع'; } }
-  } catch(e){ alert('تعذّر الاتصال بالخادم.'); if(btn){ btn.disabled=false; btn.textContent='💸 طلب الدفع'; } }
+    else { alert(d.message || 'تعذّر إرسال الطلب.'); if(btn){ btn.disabled=false; btn.textContent='<i class="bi bi-cash-stack" aria-hidden="true"></i> طلب الدفع'; } }
+  } catch(e){ alert('تعذّر الاتصال بالخادم.'); if(btn){ btn.disabled=false; btn.textContent='<i class="bi bi-cash-stack" aria-hidden="true"></i> طلب الدفع'; } }
 }
 
 async function coLoadBookings(){
@@ -1341,13 +1342,13 @@ function coRenderBookings(){
   else if (CO_BK_FILTER === 'past')  list = CO_BOOKINGS.filter(b => b.status==='completed' || b.status==='cancelled' || (b.status==='confirmed' && b.tourDate < today));
 
   if (!list.length){
-    el.innerHTML = '<div class="text-center py-4 text-muted small"><div style="font-size:2rem">📭</div>لا توجد طلبات في هذا التصنيف.</div>';
+    el.innerHTML = '<div class="text-center py-4 text-muted small"><div style="font-size:2rem"><i class="bi bi-inbox" aria-hidden="true"></i></div>لا توجد طلبات في هذا التصنيف.</div>';
     return;
   }
 
   const statusMap = {
-    pending:'⏳ بانتظار ردّك', quoted:'💬 عرض مُرسَل', confirmed:'✅ مؤكّد',
-    in_progress:'🚗 جارية', completed:'🏁 منتهية', cancelled:'❌ ملغاة',
+    pending:'<i class="bi bi-hourglass-split" aria-hidden="true"></i> بانتظار ردّك', quoted:'<i class="bi bi-chat-dots" aria-hidden="true"></i> عرض مُرسَل', confirmed:'<i class="bi bi-check-circle-fill" aria-hidden="true"></i> مؤكّد',
+    in_progress:'<i class="bi bi-car-front" aria-hidden="true"></i> جارية', completed:'<i class="bi bi-flag" aria-hidden="true"></i> منتهية', cancelled:'<i class="bi bi-x-circle" aria-hidden="true"></i> ملغاة',
   };
   const statusColor = {
     pending:'#a16207', quoted:'#7c3aed', confirmed:'#15803d',
@@ -1361,26 +1362,26 @@ function coRenderBookings(){
     if (b.status === 'pending'){
       // Company packages are fixed-price → accept / reject directly.
       actions = `
-        <button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','confirmed', this)">✅ قبول</button>
+        <button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','confirmed', this)"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> قبول</button>
         <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled', this)">رفض</button>`;
     } else if (b.status === 'confirmed' && b.tourDate >= today){
       actions = `
-        <button class="btn btn-sm btn-primary" onclick="coBkStatus('${b.id}','in_progress', this)">🚗 بدء الرحلة</button>
+        <button class="btn btn-sm btn-primary" onclick="coBkStatus('${b.id}','in_progress', this)"><i class="bi bi-car-front" aria-hidden="true"></i> بدء الرحلة</button>
         <button class="btn btn-sm btn-outline-danger" onclick="coBkStatus('${b.id}','cancelled', this)">إلغاء</button>`;
     } else if (b.status === 'in_progress'){
-      actions = `<button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','completed', this)">🏁 إنهاء</button>`;
+      actions = `<button class="btn btn-sm btn-success" onclick="coBkStatus('${b.id}','completed', this)"><i class="bi bi-flag" aria-hidden="true"></i> إنهاء</button>`;
     }
     return `
       <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-bottom:10px;background:#fff">
         <div class="d-flex justify-content-between align-items-start mb-1">
           <div>
-            <div class="fw-700">👤 ${coEsc(b.touristName || 'سائح')}</div>
+            <div class="fw-700"><i class="bi bi-person" aria-hidden="true"></i> ${coEsc(b.touristName || 'سائح')}</div>
             <div class="small text-muted">${coEsc(b.touristEmail || '')}</div>
           </div>
           <span style="background:${statusColor[b.status]}18;color:${statusColor[b.status]};padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700;white-space:nowrap">${statusMap[b.status]||b.status}</span>
         </div>
-        <div class="small text-muted mb-1">📅 ${coBkDate(b.tourDate)} · 📍 ${coEsc(b.destination||'—')} · ${b.participants||1} أشخاص${pkgName}</div>
-        ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${coEsc(b.specialRequests)}"</div>` : ''}
+        <div class="small text-muted mb-1"><i class="bi bi-calendar-event" aria-hidden="true"></i> ${coBkDate(b.tourDate)} · <i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${coEsc(b.destination||'—')} · ${b.participants||1} أشخاص${pkgName}</div>
+        ${b.specialRequests ? `<div class="small text-muted mb-2"><i class="bi bi-chat-dots" aria-hidden="true"></i> "${coEsc(b.specialRequests)}"</div>` : ''}
         <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
           <div class="fw-700" style="color:var(--teal,#0f7b6c)">${amount}</div>
           <div class="d-flex gap-2">${actions}</div>
@@ -1411,7 +1412,7 @@ async function coBkStatus(id, status, btn){
     });
     const d = await r.json().catch(() => ({}));
     if (!r.ok || !d.success) throw new Error(d.message || 'فشل تحديث الحالة');
-    showToast(status==='confirmed' ? 'تم قبول الحجز ✅' : status==='cancelled' ? 'تم الإلغاء' : 'تم التحديث', 'success');
+    showToast(status==='confirmed' ? 'تم قبول الحجز <i class="bi bi-check-circle-fill" aria-hidden="true"></i>' : status==='cancelled' ? 'تم الإلغاء' : 'تم التحديث', 'success');
     await coLoadBookings();
   } catch (e) {
     showToast(e.message || 'فشل تحديث الحالة', 'danger');
@@ -1453,7 +1454,7 @@ async function aiImproveDesc(){
   const txt = document.getElementById('eDescription').value.trim();
   if(txt.length < 10){ alert('اكتب وصفاً مبدئيّاً أوّلاً (بضع كلمات على الأقل).'); return; }
   const btn = document.getElementById('aiImproveBtn');
-  btn.disabled = true; btn.textContent = '✨ جارٍ التحسين…';
+  btn.disabled = true; btn.textContent = '<i class="bi bi-stars" aria-hidden="true"></i> جارٍ التحسين…';
   try{
     const r = await fetch('/api/ai/improve',{method:'POST',credentials:'include',
       headers:{'Content-Type':'application/json'},
@@ -1463,7 +1464,7 @@ async function aiImproveDesc(){
     document.getElementById('aiImproveAr').textContent = d.ar || '';
     document.getElementById('aiImproveBox').style.display = 'block';
   }catch(e){ alert(e.message || 'تعذّر التحسين حالياً'); }
-  finally{ btn.disabled=false; btn.textContent='✨ حسّن وصفي بالذكاء الاصطناعي'; }
+  finally{ btn.disabled=false; btn.textContent='<i class="bi bi-stars" aria-hidden="true"></i> حسّن وصفي بالذكاء الاصطناعي'; }
 }
 function aiApplyDesc(){
   const ar = document.getElementById('aiImproveAr').textContent;
@@ -1476,7 +1477,7 @@ async function aiImprovePkg(){
   const txt = document.getElementById('pkgDescription').value.trim();
   if(txt.length < 10){ alert('اكتب وصفاً مبدئيّاً للرحلة أوّلاً (بضع كلمات على الأقل).'); return; }
   const btn = document.getElementById('aiPkgBtn');
-  btn.disabled = true; btn.textContent = '✨ جارٍ التحسين…';
+  btn.disabled = true; btn.textContent = '<i class="bi bi-stars" aria-hidden="true"></i> جارٍ التحسين…';
   try{
     const r = await fetch('/api/ai/improve',{method:'POST',credentials:'include',
       headers:{'Content-Type':'application/json'},
@@ -1486,7 +1487,7 @@ async function aiImprovePkg(){
     document.getElementById('aiPkgAr').textContent = d.ar || '';
     document.getElementById('aiPkgBox').style.display = 'block';
   }catch(e){ alert(e.message || 'تعذّر التحسين حالياً'); }
-  finally{ btn.disabled=false; btn.textContent='✨ حسّن وصف الرحلة بالذكاء'; }
+  finally{ btn.disabled=false; btn.textContent='<i class="bi bi-stars" aria-hidden="true"></i> حسّن وصف الرحلة بالذكاء'; }
 }
 function aiApplyPkg(){
   const ar = document.getElementById('aiPkgAr').textContent;
@@ -1496,10 +1497,10 @@ function aiApplyPkg(){
 
 init();
 </script>
-<script src="/js/gd-messages.js?v=2"></script>
+<script src="/js/gd-messages.js?v=3"></script>
 <script src="/js/pwa.js?v=16" defer></script>
 <script src="/js/gd-gallery.js?v=1"></script>
 <script src="/js/gd-video-upload.js?v=1"></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>

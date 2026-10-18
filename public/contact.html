@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -102,6 +102,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap">
 <link rel="stylesheet" href="/css/gd-cine.css?v=4">
 <script src="/js/gd-cine.js?v=4" defer></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -116,7 +117,7 @@
         <li class="nav-item"><a class="nav-link" href="/how-it-works.html" data-i18n="footer_howitworks">How it works</a></li>
         <li class="nav-item"><a class="nav-link active" href="/contact.html" data-i18n="nav_contact">Contact</a></li>
         <li class="nav-item"><a class="nav-link" href="/login.html" data-i18n="nav_login">Log In</a></li>
-        <li class="nav-item"><button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()">🌐 عربي</button></li>
+        <li class="nav-item"><button class="btn btn-sm btn-outline-light" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button></li>
       </ul>
     </div>
   </div>
@@ -128,8 +129,8 @@
     <h1 class="cine-title cine-in" style="--i:0"><span class="cine-hl" data-i18n="contact_hero_title">Get in Touch</span></h1>
     <p class="cine-sub cine-in" style="--i:1" data-i18n="contact_hero_sub">We're here to help — whether you're planning a tour, need support, or want to partner with us. Pick the channel that works best for you.</p>
     <div class="cine-facts cine-in" style="--i:2">
-      <span class="cine-fact">⚡ <span data-i18n="contact_reply_24">Reply within 24h</span></span>
-      <span class="cine-fact">🌐 <span data-i18n="contact_bilingual">EN · العربية</span></span>
+      <span class="cine-fact"><i class="bi bi-lightning-charge" aria-hidden="true"></i> <span data-i18n="contact_reply_24">Reply within 24h</span></span>
+      <span class="cine-fact"><i class="bi bi-globe2" aria-hidden="true"></i> <span data-i18n="contact_bilingual">EN · العربية</span></span>
       <span class="cine-fact">🇴🇲 <span data-i18n="contact_oman_based">Based in Muscat, Oman</span></span>
     </div>
   </div>
@@ -138,14 +139,14 @@
 <!-- ─── OFFICIAL EMAIL ADDRESSES ──────────────────────────────────────── -->
 <section class="section">
   <div class="container">
-    <h2 class="section-title" data-i18n="contact_addresses_title">📧 Official Email Addresses</h2>
+    <h2 class="section-title"><i class="bi bi-envelope" aria-hidden="true"></i> <span data-i18n="contact_addresses_title">Official Email Addresses</span></h2>
     <p class="section-sub" data-i18n="contact_addresses_sub">Pick the right address for the fastest response. All addresses are routed to our team in Muscat.</p>
 
     <div class="row g-3">
       <div class="col-md-6 col-lg-4">
         <div class="email-card">
           <button class="ec-copy" onclick="copyEmail('admin@guideon.om', this)" data-i18n="copy">Copy</button>
-          <div class="ec-icon">📨</div>
+          <div class="ec-icon"><i class="bi bi-envelope-arrow-down" aria-hidden="true"></i></div>
           <h5 data-i18n="contact_addr_info">General Inquiries</h5>
           <a class="ec-addr" href="mailto:admin@guideon.om">admin@guideon.om</a>
           <p class="ec-desc" data-i18n="contact_addr_info_desc">For general questions, partnerships, press, or anything that doesn't fit the categories below.</p>
@@ -165,7 +166,7 @@
       <div class="col-md-6 col-lg-4">
         <div class="email-card">
           <button class="ec-copy" onclick="copyEmail('admin@guideon.om', this)" data-i18n="copy">Copy</button>
-          <div class="ec-icon">📅</div>
+          <div class="ec-icon"><i class="bi bi-calendar-event" aria-hidden="true"></i></div>
           <h5 data-i18n="contact_addr_bookings">Bookings & Tours</h5>
           <a class="ec-addr" href="mailto:admin@guideon.om">admin@guideon.om</a>
           <p class="ec-desc" data-i18n="contact_addr_bookings_desc">Modify, cancel, or ask about a specific booking. Include your booking ID for fastest help.</p>
@@ -175,7 +176,7 @@
       <div class="col-md-6 col-lg-4">
         <div class="email-card">
           <button class="ec-copy" onclick="copyEmail('admin@guideon.om', this)" data-i18n="copy">Copy</button>
-          <div class="ec-icon">🔐</div>
+          <div class="ec-icon"><i class="bi bi-shield-lock" aria-hidden="true"></i></div>
           <h5 data-i18n="contact_addr_admin">Verification & Licensing</h5>
           <a class="ec-addr" href="mailto:admin@guideon.om">admin@guideon.om</a>
           <p class="ec-desc" data-i18n="contact_addr_admin_desc">Guide & company verification, document submission, ministry licensing inquiries.</p>
@@ -185,7 +186,7 @@
       <div class="col-md-6 col-lg-4">
         <div class="email-card">
           <button class="ec-copy" onclick="copyEmail('admin@guideon.om', this)" data-i18n="copy">Copy</button>
-          <div class="ec-icon">🤖</div>
+          <div class="ec-icon"><i class="bi bi-robot" aria-hidden="true"></i></div>
           <h5 data-i18n="contact_addr_noreply">Automated Messages</h5>
           <a class="ec-addr">admin@guideon.om</a>
           <p class="ec-desc" data-i18n="contact_addr_noreply_desc">System emails come from this address (booking confirmations, password resets). Do not reply — replies are auto-routed to support.</p>
@@ -207,7 +208,7 @@
 <!-- ─── CONTACT FORM + SIDEBAR ────────────────────────────────────────── -->
 <section class="section" style="background:#fff;">
   <div class="container">
-    <h2 class="section-title" data-i18n="contact_form_title">💬 Send Us a Message</h2>
+    <h2 class="section-title"><i class="bi bi-chat-dots" aria-hidden="true"></i> <span data-i18n="contact_form_title">Send Us a Message</span></h2>
     <p class="section-sub" data-i18n="contact_form_sub">Fill the form below and we'll get back to you within 24 hours. You'll also receive a confirmation email instantly.</p>
 
     <div class="row g-4">
@@ -259,9 +260,9 @@
               <div class="col-12" id="contactAlert"></div>
               <div class="col-12">
                 <button type="submit" class="btn-send btn" id="sendBtn">
-                  <span data-i18n="contact_form_send">✉️ Send Message</span>
+                  <span><i class="bi bi-envelope" aria-hidden="true"></i> <span data-i18n="contact_form_send">Send Message</span></span>
                 </button>
-                <span class="ms-3 small text-muted" data-i18n="contact_form_security">🔒 Secure · No spam · Reply in 24h</span>
+                <span class="ms-3 small text-muted"><i class="bi bi-lock" aria-hidden="true"></i> <span data-i18n="contact_form_security">Secure · No spam · Reply in 24h</span></span>
               </div>
             </div>
           </form>
@@ -273,7 +274,7 @@
           <h5 class="fw-800 mb-3" style="color:var(--navy)" data-i18n="contact_info_title">Direct Contact Info</h5>
 
           <div class="info-row">
-            <div class="ir-icon">📞</div>
+            <div class="ir-icon"><i class="bi bi-telephone" aria-hidden="true"></i></div>
             <div>
               <div class="ir-label" data-i18n="contact_info_phone">Phone</div>
               <div class="ir-value"><bdi><a href="tel:+96895255450" dir="ltr">+968 9525 5450</a></bdi></div>
@@ -282,7 +283,7 @@
           </div>
 
           <div class="info-row">
-            <div class="ir-icon">💬</div>
+            <div class="ir-icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></div>
             <div>
               <div class="ir-label">WhatsApp</div>
               <div class="ir-value"><a href="https://wa.me/96895255450" target="_blank" rel="noopener" dir="ltr">+968 9525 5450</a></div>
@@ -291,7 +292,7 @@
           </div>
 
           <div class="info-row">
-            <div class="ir-icon">📍</div>
+            <div class="ir-icon"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></div>
             <div>
               <div class="ir-label" data-i18n="contact_info_address">Address</div>
               <div class="ir-value" data-i18n="contact_info_city">Muscat, Sultanate of Oman</div>
@@ -300,7 +301,7 @@
           </div>
 
           <div class="info-row">
-            <div class="ir-icon">🌐</div>
+            <div class="ir-icon"><i class="bi bi-globe2" aria-hidden="true"></i></div>
             <div>
               <div class="ir-label" data-i18n="contact_info_web">Website</div>
               <div class="ir-value"><a href="https://guideon.om" dir="ltr">guideon.om</a></div>
@@ -308,7 +309,7 @@
           </div>
 
           <hr style="margin:20px 0;border-color:#eee">
-          <h6 class="fw-800 mb-2" style="color:var(--navy)" data-i18n="contact_hours_title">🕒 Business Hours (Oman Time)</h6>
+          <h6 class="fw-800 mb-2" style="color:var(--navy)"><i class="bi bi-clock" aria-hidden="true"></i> <span data-i18n="contact_hours_title">Business Hours (Oman Time)</span></h6>
           <div id="hoursList"></div>
         </div>
       </div>
@@ -319,13 +320,13 @@
 <!-- ─── CHANNELS ───────────────────────────────────────────────────────── -->
 <section class="section">
   <div class="container">
-    <h2 class="section-title" data-i18n="contact_channels_title">🌍 More Ways to Reach Us</h2>
+    <h2 class="section-title"><i class="bi bi-globe-europe-africa" aria-hidden="true"></i> <span data-i18n="contact_channels_title">More Ways to Reach Us</span></h2>
     <p class="section-sub" data-i18n="contact_channels_sub">Choose your preferred channel — we're active everywhere.</p>
 
     <div class="row g-3">
       <div class="col-6 col-md-3">
         <div class="channel-card">
-          <div class="ch-icon">💬</div>
+          <div class="ch-icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></div>
           <div class="ch-name">WhatsApp</div>
           <div class="ch-meta" data-i18n="contact_ch_wa_meta">Reply &lt; 1 hour</div>
           <a href="https://wa.me/96895255450" target="_blank" rel="noopener" class="ch-btn" data-i18n="contact_ch_open">Open</a>
@@ -333,7 +334,7 @@
       </div>
       <div class="col-6 col-md-3">
         <div class="channel-card">
-          <div class="ch-icon">📧</div>
+          <div class="ch-icon"><i class="bi bi-envelope" aria-hidden="true"></i></div>
           <div class="ch-name">Email</div>
           <div class="ch-meta" data-i18n="contact_ch_email_meta">Reply &lt; 24 hours</div>
           <a href="mailto:admin@guideon.om" class="ch-btn" data-i18n="contact_ch_email_btn">Email Us</a>
@@ -341,7 +342,7 @@
       </div>
       <div class="col-6 col-md-3">
         <div class="channel-card">
-          <div class="ch-icon">📞</div>
+          <div class="ch-icon"><i class="bi bi-telephone" aria-hidden="true"></i></div>
           <div class="ch-name" data-i18n="contact_ch_phone">Phone</div>
           <div class="ch-meta" data-i18n="contact_ch_phone_meta">Business hours</div>
           <a href="tel:+96895255450" class="ch-btn" data-i18n="contact_ch_call">Call</a>
@@ -349,7 +350,7 @@
       </div>
       <div class="col-6 col-md-3">
         <div class="channel-card">
-          <div class="ch-icon">📍</div>
+          <div class="ch-icon"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></div>
           <div class="ch-name" data-i18n="contact_ch_visit">Visit</div>
           <div class="ch-meta" data-i18n="contact_ch_visit_meta">By appointment</div>
           <a href="mailto:admin@guideon.om?subject=Visit%20Request" class="ch-btn" data-i18n="contact_ch_book">Book</a>
@@ -363,7 +364,7 @@
 <section class="section" style="background:#fff">
   <div class="container">
     <div class="newsletter-card">
-      <div style="font-size:2.4rem">📬</div>
+      <div style="font-size:2.4rem"><i class="bi bi-mailbox" aria-hidden="true"></i></div>
       <h3 class="mt-2" data-i18n="contact_news_title">Stay in the Loop</h3>
       <p class="opacity-75 mb-4" data-i18n="contact_news_sub">Get the best of Oman travel — hidden gems, new tours, and exclusive offers — delivered monthly. No spam, unsubscribe anytime.</p>
       <form id="newsletterForm" class="row g-2 justify-content-center" style="max-width:520px;margin:0 auto">
@@ -378,7 +379,7 @@
 <!-- ─── EMAIL FAQ ──────────────────────────────────────────────────────── -->
 <section class="section">
   <div class="container" style="max-width:780px">
-    <h2 class="section-title" data-i18n="contact_faq_title">❓ Common Questions About Our Emails</h2>
+    <h2 class="section-title"><i class="bi bi-question-circle" aria-hidden="true"></i> <span data-i18n="contact_faq_title">Common Questions About Our Emails</span></h2>
     <p class="section-sub" data-i18n="contact_faq_sub">Quick answers about how email and communication work on Guideon.</p>
 
     <div class="faq-mini">
@@ -436,9 +437,9 @@
       <div class="col-md-4">
         <h6 data-i18n="footer_contact">Contact Us</h6>
         <div class="small opacity-75">
-          <div class="mb-1">📧 <a href="mailto:admin@guideon.om" class="text-white text-decoration-none" dir="ltr">admin@guideon.om</a></div>
-          <div class="mb-1">📞 <bdi><a href="tel:+96895255450" class="text-white text-decoration-none" dir="ltr">+968 9525 5450</a></bdi></div>
-          <div class="mb-1">💬 <a href="https://wa.me/96895255450" target="_blank" rel="noopener" class="text-white text-decoration-none">WhatsApp</a></div>
+          <div class="mb-1"><i class="bi bi-envelope" aria-hidden="true"></i> <a href="mailto:admin@guideon.om" class="text-white text-decoration-none" dir="ltr">admin@guideon.om</a></div>
+          <div class="mb-1"><i class="bi bi-telephone" aria-hidden="true"></i> <bdi><a href="tel:+96895255450" class="text-white text-decoration-none" dir="ltr">+968 9525 5450</a></bdi></div>
+          <div class="mb-1"><i class="bi bi-chat-dots" aria-hidden="true"></i> <a href="https://wa.me/96895255450" target="_blank" rel="noopener" class="text-white text-decoration-none">WhatsApp</a></div>
         </div>
       </div>
       <div class="col-md-4">
@@ -458,7 +459,7 @@
 <div id="toast-container"></div>
 
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
+<script src="/js/i18n.js?v=59"></script>
 <script>
 // ─── Copy email to clipboard ───────────────────────────────────────────────
 function copyEmail(addr, btn) {
@@ -530,14 +531,14 @@ document.getElementById('contactForm').addEventListener('submit', async e => {
     });
     const d = await r.json();
     if (!d.success) throw new Error(d.message || 'Failed');
-    alertBox.innerHTML = `<div class="alert alert-success">✅ ${isAr ? 'تم إرسال رسالتك! ستصلك رسالة تأكيد على بريدك الإلكتروني، وسنرد خلال 24 ساعة.' : 'Your message has been sent! Check your inbox for a confirmation. We will reply within 24 hours.'}</div>`;
+    alertBox.innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> ${isAr ? 'تم إرسال رسالتك! ستصلك رسالة تأكيد على بريدك الإلكتروني، وسنرد خلال 24 ساعة.' : 'Your message has been sent! Check your inbox for a confirmation. We will reply within 24 hours.'}</div>`;
     e.target.reset();
     document.getElementById('charCount').textContent = '0';
   } catch (err) {
-    alertBox.innerHTML = `<div class="alert alert-danger">❌ ${err.message || (isAr ? 'فشل الإرسال. حاول مرة أخرى.' : 'Failed to send. Please try again.')}</div>`;
+    alertBox.innerHTML = `<div class="alert alert-danger"><i class="bi bi-x-circle" aria-hidden="true"></i> ${err.message || (isAr ? 'فشل الإرسال. حاول مرة أخرى.' : 'Failed to send. Please try again.')}</div>`;
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<span>${isAr ? '✉️ إرسال الرسالة' : '✉️ Send Message'}</span>`;
+    btn.innerHTML = `<span>${isAr ? '<i class="bi bi-envelope" aria-hidden="true"></i> إرسال الرسالة' : '<i class="bi bi-envelope" aria-hidden="true"></i> Send Message'}</span>`;
   }
 });
 
@@ -557,7 +558,7 @@ document.getElementById('newsletterForm').addEventListener('submit', async e => 
     });
     const d = await r.json();
     msg.innerHTML = d.success
-      ? `<div class="text-warning">🎉 ${d.message}</div>`
+      ? `<div class="text-warning"><i class="bi bi-balloon" aria-hidden="true"></i> ${d.message}</div>`
       : `<div class="text-warning">${d.message}</div>`;
     if (d.success) e.target.reset();
   } catch (err) {
@@ -565,6 +566,6 @@ document.getElementById('newsletterForm').addEventListener('submit', async e => 
   }
 });
 </script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>

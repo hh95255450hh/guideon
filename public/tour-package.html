@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -35,14 +35,15 @@
   .offer-banner { background:linear-gradient(135deg,#ffd700,#ffa500); color:#fff; padding:6px 14px; border-radius:8px; font-weight:700; display:inline-block; margin-bottom:10px; font-size:.9rem }
 </style>
 <script src="/js/image-compress.js?v=3"></script>
-<script src="/js/gd-map.js?v=3" defer></script>
+<script src="/js/gd-map.js?v=6" defer></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
 <nav class="navbar navbar-dark sticky-top">
   <div class="container">
     <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="48"></a>
-    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()">🌐 عربي</button>
+    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
   </div>
 </nav>
 
@@ -55,10 +56,10 @@
     </div>
     <h1 class="fw-800 mb-2" id="pkgTitle">Loading...</h1>
     <div class="d-flex gap-3 flex-wrap small opacity-90">
-      <span>📍 <span id="pkgDestination">—</span></span>
-      <span>⏱ <span id="pkgDuration">—</span></span>
-      <span>👥 max <span id="pkgMaxGroup">—</span></span>
-      <span>⭐ <span id="pkgRating">—</span></span>
+      <span><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> <span id="pkgDestination">—</span></span>
+      <span><i class="bi bi-stopwatch" aria-hidden="true"></i> <span id="pkgDuration">—</span></span>
+      <span><i class="bi bi-people" aria-hidden="true"></i> max <span id="pkgMaxGroup">—</span></span>
+      <span><i class="bi bi-star-fill" aria-hidden="true"></i> <span id="pkgRating">—</span></span>
     </div>
   </div>
 </div>
@@ -67,30 +68,30 @@
   <div class="row g-4">
     <div class="col-lg-8">
       <div class="mb-4 d-none" id="pkgGallerySection">
-        <h5 class="fw-700">📸 <span>صور الرحلة · Tour photos</span></h5>
+        <h5 class="fw-700"><i class="bi bi-camera" aria-hidden="true"></i> <span>صور الرحلة · Tour photos</span></h5>
         <div id="pkgGallery"></div>
       </div>
       <div class="mb-4 d-none" id="pkgVideoSection">
-        <h5 class="fw-700">🎬 <span>فيديو الرحلة · Tour video</span></h5>
+        <h5 class="fw-700"><i class="bi bi-film" aria-hidden="true"></i> <span>فيديو الرحلة · Tour video</span></h5>
         <div id="pkgVideo"></div>
       </div>
       <div class="mb-4"><h4 class="fw-700" data-i18n="about_tour">About this tour</h4><p id="pkgDescription" class="text-muted" style="white-space:pre-wrap"></p></div>
-      <div class="mb-4 d-none" id="highlightsSection"><h5 class="fw-700" data-i18n="highlights">✨ Highlights</h5><ul id="pkgHighlights" class="text-muted"></ul></div>
+      <div class="mb-4 d-none" id="highlightsSection"><h5 class="fw-700"><i class="bi bi-stars" aria-hidden="true"></i> <span data-i18n="highlights">Highlights</span></h5><ul id="pkgHighlights" class="text-muted"></ul></div>
       <div class="mb-4 d-none" id="includesSection"><h5 class="fw-700" data-i18n="included">✓ What's Included</h5><ul id="pkgIncludes" class="text-muted"></ul></div>
-      <div class="mb-4 d-none" id="meetingSection"><h5 class="fw-700" data-i18n="meeting_point">📍 Meeting Point</h5><p id="pkgMeeting" class="text-muted"></p></div>
+      <div class="mb-4 d-none" id="meetingSection"><h5 class="fw-700"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> <span data-i18n="meeting_point">Meeting Point</span></h5><p id="pkgMeeting" class="text-muted"></p></div>
       <div class="mb-4 d-none" id="mapSection">
-        <h5 class="fw-700">🗺️ <span>خريطة الرحلة</span></h5>
+        <h5 class="fw-700"><i class="bi bi-map" aria-hidden="true"></i> <span>خريطة الرحلة</span></h5>
         <p class="small text-muted mb-2">نقطة اللقاء والمسار المتوقّع كما حدّدها مزوّد الخدمة.</p>
         <div id="pkgMapView"></div>
       </div>
-      <div class="mb-4 d-none" id="itinerarySection"><h5 class="fw-700" data-i18n="day_itinerary">🗺️ Day-by-day Itinerary</h5><div id="pkgItinerary"></div></div>
+      <div class="mb-4 d-none" id="itinerarySection"><h5 class="fw-700"><i class="bi bi-map" aria-hidden="true"></i> <span data-i18n="day_itinerary">Day-by-day Itinerary</span></h5><div id="pkgItinerary"></div></div>
       <div class="mb-4 d-none" id="variantsSection">
-        <h5 class="fw-700" data-i18n="choose_package">💼 Choose Your Package</h5>
+        <h5 class="fw-700"><i class="bi bi-briefcase" aria-hidden="true"></i> <span data-i18n="choose_package">Choose Your Package</span></h5>
         <p class="small text-muted" data-i18n="choose_package_desc">Select the tier that matches your budget and preferences.</p>
         <div id="pkgVariants"></div>
       </div>
       <div class="mb-4 d-none" id="addonsSection">
-        <h5 class="fw-700" data-i18n="optional_addons">🎁 Optional Add-ons</h5>
+        <h5 class="fw-700"><i class="bi bi-gift" aria-hidden="true"></i> <span data-i18n="optional_addons">Optional Add-ons</span></h5>
         <p class="small text-muted" data-i18n="addons_desc">Enhance your experience with these extras.</p>
         <div id="pkgAddons"></div>
       </div>
@@ -98,7 +99,7 @@
 
       <!-- ─── REVIEWS ─────────────────────────────────────── -->
       <div class="mb-4" id="reviewsSection">
-        <h5 class="fw-700 mb-3" data-i18n="reviews_title">⭐ Reviews from previous travelers</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-star-fill" aria-hidden="true"></i> <span data-i18n="reviews_title">Reviews from previous travelers</span></h5>
         <div id="reviewsAvg" class="mb-3"></div>
         <div id="reviewsList"></div>
       </div>
@@ -121,24 +122,24 @@
         </div>
         <hr>
         <div class="mb-3">
-          <label class="form-label small fw-700" data-i18n="select_date">📅 Select Date</label>
+          <label class="form-label small fw-700"><i class="bi bi-calendar-event" aria-hidden="true"></i> <span data-i18n="select_date">Select Date</span></label>
           <div id="datesContainer" class="d-flex gap-2 flex-wrap" style="max-height:140px;overflow-y:auto">
             <div class="small text-muted">Loading dates...</div>
           </div>
         </div>
         <!-- Time Slot -->
         <div class="mb-3" id="timeSlotSection" style="display:none">
-          <label class="form-label small fw-700">🕐 الوقت <span class="text-muted fw-400 small">(اختياري)</span></label>
+          <label class="form-label small fw-700"><i class="bi bi-clock" aria-hidden="true"></i> الوقت <span class="text-muted fw-400 small">(اختياري)</span></label>
           <div id="pkgSlotBtns" class="d-flex gap-2 flex-wrap"></div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label small fw-700" data-i18n="num_travelers">👥 Number of Travelers</label>
+          <label class="form-label small fw-700"><i class="bi bi-people" aria-hidden="true"></i> <span data-i18n="num_travelers">Number of Travelers</span></label>
           <input type="number" class="form-control" id="adultCount" value="2" min="2" max="50" onchange="recalcPrice()">
           <div class="form-text small" id="adultHint" data-i18n="travelers_hint">Tour starts at 2 people. Each extra person is charged separately.</div>
           <!-- children input shown only for tiered (age-based) pricing -->
           <div id="childWrap" style="display:none;margin-top:8px">
-            <label class="form-label small fw-700" id="childLbl">🧒 الأطفال · Children</label>
+            <label class="form-label small fw-700" id="childLbl"><i class="bi bi-person-arms-up" aria-hidden="true"></i> الأطفال · Children</label>
             <input type="number" class="form-control" id="childCount" value="0" min="0" max="50" onchange="recalcPrice()">
             <div class="form-text small" id="childHint"></div>
           </div>
@@ -147,13 +148,13 @@
         </div>
         <!-- provider's group-size price table (tiered pricing) -->
         <div class="mb-3" id="tierTableWrap" style="display:none">
-          <div class="small fw-700 mb-1">💰 الأسعار حسب العدد · Group pricing</div>
+          <div class="small fw-700 mb-1"><i class="bi bi-cash-coin" aria-hidden="true"></i> الأسعار حسب العدد · Group pricing</div>
           <div id="tierTable" class="small" style="background:#f8f9fa;border-radius:8px;padding:8px 10px"></div>
         </div>
         <div class="mb-3 small" id="priceBreakdown" style="background:#f8f9fa;padding:12px;border-radius:8px">
           <div class="text-muted" data-i18n="pick_pkg_first">Pick a package above to see price breakdown.</div>
         </div>
-        <button class="btn btn-teal w-100 fw-700 py-2" id="bookBtn" onclick="bookTour()" disabled data-i18n="pay_and_book" style="background:#0f7b6c !important;color:#fff !important;border:none">💳 ادفع واحجز · Pay &amp; Book</button>
+        <button class="btn btn-teal w-100 fw-700 py-2" id="bookBtn" onclick="bookTour()" disabled style="background:#0f7b6c !important;color:#fff !important;border:none"><i class="bi bi-credit-card" aria-hidden="true"></i> <span data-i18n="pay_and_book">ادفع واحجز · Pay &amp; Book</span></button>
         <p class="small text-muted text-center mt-2 mb-0" id="bookHint" data-i18n="select_date_hint">Select a date and package to book.</p>
       </div>
     </div>
@@ -162,8 +163,8 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script>
 const qs = p => new URLSearchParams(window.location.search).get(p);
 const PKG_ID = qs('id');
@@ -372,8 +373,8 @@ function renderPackage() {
       <input type="date" id="freeDateInput" class="form-control form-control-sm" min="${today}"
              onchange="selectFreeDate(this.value)" style="max-width:210px">
       <div class="small text-muted mt-1" style="width:100%">
-        ${isAr ? '🗓️ متاحة كل يوم — اختر أي تاريخ يناسبك.'
-               : '🗓️ Available every day — pick any date that suits you.'}
+        ${isAr ? '<i class="bi bi-calendar3" aria-hidden="true"></i> متاحة كل يوم — اختر أي تاريخ يناسبك.'
+               : '<i class="bi bi-calendar3" aria-hidden="true"></i> Available every day — pick any date that suits you.'}
       </div>`;
   } else if (future.length) {
     // Guide set specific dates → show them as quick-pick buttons
@@ -420,7 +421,7 @@ function renderTimeSlots(date) {
   const fmtDur = m => m < 60 ? m + ' دقيقة' : Math.floor(m/60) + 'س' + (m%60 ? m%60+'د' : '');
   btns.innerHTML = slots.map(s => `
     <div class="dur-btn" id="pkgslot_${s.startTime.replace(':','')}" onclick="selectSlot(${JSON.stringify(s).replace(/"/g,'&quot;')})">
-      <div class="fw-700" style="font-size:.82rem">🕐 ${s.startTime} – ${s.endTime}</div>
+      <div class="fw-700" style="font-size:.82rem"><i class="bi bi-clock" aria-hidden="true"></i> ${s.startTime} – ${s.endTime}</div>
       <div style="font-size:.72rem;color:#888">${fmtDur(s.durationMin)}</div>
     </div>`).join('');
   section.style.display = 'block';
@@ -579,7 +580,7 @@ function recalcPrice() {
     let html = `<div class="price-line"><span>${adults} بالغ</span><span>${money(adultCost)}</span></div>`;
     if (children > 0) html += `<div class="price-line"><span>${children} طفل × ${money(PACKAGE.child_price)}</span><span>${money(childCost)}</span></div>`;
     addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${gdEsc(a.name)}</span><span>${money(a.price)}</span></div>`; });
-    if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 خصم (${discount}%)</span><span>−${money(subtotal*discount/100)}</span></div>`;
+    if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span><i class="bi bi-gift" aria-hidden="true"></i> خصم (${discount}%)</span><span>−${money(subtotal*discount/100)}</span></div>`;
     html += `<div class="price-line price-total"><span>الإجمالي (${adults + children} أشخاص)</span><span style="color:var(--teal)">${money(total)}</span></div>`;
     bd.innerHTML = html;
     const ready = SELECTED_DATE && adults >= 1;
@@ -625,7 +626,7 @@ function recalcPrice() {
     html += `<div class="price-line"><span>+ ${extras} ${extraLbl} × ${money(perExtra)}</span><span>${money(perExtra*extras)}</span></div>`;
   }
   addonLines.forEach(a => { html += `<div class="price-line"><span>+ ${gdEsc(a.name)}</span><span>${money(a.price)}</span></div>`; });
-  if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span>🎁 Discount (${discount}%)</span><span>−${money(discountAmount)}</span></div>`;
+  if (discount > 0) html += `<div class="price-line" style="color:#cc0000"><span><i class="bi bi-gift" aria-hidden="true"></i> Discount (${discount}%)</span><span>−${money(discountAmount)}</span></div>`;
   html += `<div class="price-line price-total"><span>Total (${people} ${(window.I18N && I18N.t('people')) || 'people'})</span><span style="color:var(--teal)">${money(total)}</span></div>`;
   document.getElementById('priceBreakdown').innerHTML = html;
 
@@ -809,6 +810,6 @@ loadPackage();
 if (PKG_ID) fetch('/api/views/' + PKG_ID, { method: 'POST', credentials: 'include' }).catch(() => {});
 </script>
 <script src="/js/gd-gallery.js?v=1"></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>

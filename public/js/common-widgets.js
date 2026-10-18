@@ -259,7 +259,7 @@
   function loadNotifications() {
     if (document.querySelector('script[data-gd-notif]')) return;
     const s = document.createElement('script');
-    s.src = '/js/notifications.js?v=5';
+    s.src = '/js/notifications.js?v=6';
     s.async = true;
     s.dataset.gdNotif = '1';
     document.body.appendChild(s);
@@ -271,7 +271,7 @@
     if (document.querySelector('script[data-gd-nav]')) return;
     if (document.body && document.body.dataset.noGdNav !== undefined) return;
     const s = document.createElement('script');
-    s.src = '/js/gd-navbar.js?v=21';
+    s.src = '/js/gd-navbar.js?v=22';
     s.dataset.gdNav = '1';
     document.body.appendChild(s);
   }
@@ -355,6 +355,12 @@ window.gdTrack = function (event, meta) {
 /* ── Polish layer loader — adds motion + micro-interactions site-wide.
    Injected here so it ships on every page that already loads common-widgets. */
 (function () {
+  // Bootstrap Icons (self-hosted) — the site's icon set, on every page.
+  if (!document.querySelector('link[href*="bootstrap-icons.min.css"]')) {
+    var bi = document.createElement('link');
+    bi.rel = 'stylesheet'; bi.href = '/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1';
+    document.head.appendChild(bi);
+  }
   if (!document.getElementById('gd-ds-css')) {
     var ds = document.createElement('link');
     ds.id = 'gd-ds-css'; ds.rel = 'stylesheet'; ds.href = '/css/design-system.css?v=2';

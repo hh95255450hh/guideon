@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -31,6 +31,7 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -42,7 +43,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
-        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
         <div id="navAuth" class="d-flex gap-2">
           <a href="/login.html" class="btn btn-outline-light btn-sm" data-i18n="nav_login">Log In</a>
           <a href="/register.html" class="btn-gold btn btn-sm" data-i18n="nav_signup">Sign Up</a>
@@ -60,7 +61,7 @@
 <!-- HERO BANNER -->
 <div class="plan-trip-banner mx-0" style="border-radius:0;padding:48px 0">
   <div class="container">
-    <div class="badge-gold d-inline-block mb-3" style="background:var(--gold);color:#fff;padding:6px 16px;border-radius:20px;font-weight:700" data-pt-ar="✨ خطّط رحلتك" data-pt-en="✨ Plan your trip">✨ خطّط رحلتك</div>
+    <div class="badge-gold d-inline-block mb-3" style="background:var(--gold);color:#fff;padding:6px 16px;border-radius:20px;font-weight:700" data-pt-ar="✨ خطّط رحلتك" data-pt-en="✨ Plan your trip"><i class="bi bi-stars" aria-hidden="true"></i> خطّط رحلتك</div>
     <h2 class="fw-800 mb-2 text-white" style="font-size:2rem">خطّط رحلتك في عُمان 🇴🇲</h2>
     <p class="text-white opacity-75 mb-0" style="max-width:560px">ابنِ برنامجاً كاملاً بالذكاء الاصطناعي في ثوانٍ، أو اطلب من مرشد معتمد يفصّل رحلتك يدويّاً. <span class="opacity-75">Build an instant AI itinerary, or have a verified guide tailor it for you.</span></p>
   </div>
@@ -74,15 +75,15 @@
 
       <!-- Segmented mode toggle -->
       <div class="pt-toggle mb-4">
-        <button class="pt-seg active" id="segAi" type="button" onclick="setPlanMode('ai')">✨ <span data-pt-ar="خطة ذكية فورية" data-pt-en="Instant AI plan">خطة ذكية فورية</span></button>
-        <button class="pt-seg" id="segGuide" type="button" onclick="setPlanMode('guide')">🧭 <span data-pt-ar="اطلب من مرشد" data-pt-en="Ask a guide">اطلب من مرشد</span></button>
+        <button class="pt-seg active" id="segAi" type="button" onclick="setPlanMode('ai')"><i class="bi bi-stars" aria-hidden="true"></i> <span data-pt-ar="خطة ذكية فورية" data-pt-en="Instant AI plan">خطة ذكية فورية</span></button>
+        <button class="pt-seg" id="segGuide" type="button" onclick="setPlanMode('guide')"><i class="bi bi-compass" aria-hidden="true"></i> <span data-pt-ar="اطلب من مرشد" data-pt-en="Ask a guide">اطلب من مرشد</span></button>
       </div>
 
       <!-- ══ MODE 1: AI SMART PLANNER ══ -->
       <div id="aiMode">
         <div class="planner-card mb-4">
-          <div class="ai-badge mb-3" data-pt-ar="✨ مدعوم بالذكاء الاصطناعي" data-pt-en="✨ AI-powered">✨ مدعوم بالذكاء الاصطناعي</div>
-          <label class="fw-700 mb-2 d-block" for="reqText" data-pt-ar="صف رحلتك بكلماتك 👇" data-pt-en="Describe your trip in your own words 👇">صف رحلتك بكلماتك 👇</label>
+          <div class="ai-badge mb-3" data-pt-ar="✨ مدعوم بالذكاء الاصطناعي" data-pt-en="✨ AI-powered"><i class="bi bi-stars" aria-hidden="true"></i> مدعوم بالذكاء الاصطناعي</div>
+          <label class="fw-700 mb-2 d-block" for="reqText" data-pt-ar="صف رحلتك بكلماتك 👇" data-pt-en="Describe your trip in your own words 👇">صف رحلتك بكلماتك <i class="bi bi-hand-index" aria-hidden="true"></i></label>
           <textarea id="reqText" class="form-control mb-3" rows="3" placeholder="مثال: ٤ أيّام في عُمان، أحبّ الجبال والتاريخ، مع عائلتي، ميزانيّة متوسّطة" data-pt-ph-ar="مثال: ٤ أيّام في عُمان، أحبّ الجبال والتاريخ، مع عائلتي، ميزانيّة متوسّطة" data-pt-ph-en="e.g. 4 days in Oman, I love mountains and history, with my family, mid-range budget"></textarea>
           <div class="d-flex flex-wrap gap-2 mb-3" id="chips"></div>
           <div class="row g-2 mb-3">
@@ -90,7 +91,7 @@
             <div class="col-6 col-md-4"><input id="budget" class="form-control" placeholder="الميزانيّة (اختياري)" data-pt-ph-ar="الميزانيّة (اختياري)" data-pt-ph-en="Budget (optional)"></div>
             <div class="col-12 col-md-5"><input id="interests" class="form-control" placeholder="اهتماماتك (جبال، بحر…)" data-pt-ph-ar="اهتماماتك (جبال، بحر…)" data-pt-ph-en="Interests (mountains, sea…)"></div>
           </div>
-          <button id="goBtn" class="btn btn-teal w-100 py-3 fw-700" type="button" onclick="aiPlan()" data-pt-ar="✨ ابنِ خطتي" data-pt-en="✨ Build my plan">✨ ابنِ خطتي</button>
+          <button id="goBtn" class="btn btn-teal w-100 py-3 fw-700" type="button" onclick="aiPlan()" data-pt-ar="✨ ابنِ خطتي" data-pt-en="✨ Build my plan"><i class="bi bi-stars" aria-hidden="true"></i> ابنِ خطتي</button>
         </div>
         <div id="out"></div>
       </div>
@@ -187,21 +188,21 @@
       <div class="info-card mb-4">
         <h5 class="fw-700 mb-3" data-i18n="sec_how">How It Works</h5>
         <div class="d-flex gap-3 mb-3">
-          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem">📝</div>
+          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem"><i class="bi bi-pencil-square" aria-hidden="true"></i></div>
           <div>
             <div class="fw-700 small" data-i18n="step1_title">1. Post Your Request</div>
             <div class="text-muted small" data-i18n="step1_desc">Describe your destination, dates, and preferences.</div>
           </div>
         </div>
         <div class="d-flex gap-3 mb-3">
-          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem">🎒</div>
+          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem"><i class="bi bi-backpack" aria-hidden="true"></i></div>
           <div>
             <div class="fw-700 small" data-i18n="step2_title">2. Guides Respond</div>
             <div class="text-muted small" data-i18n="step2_desc">Verified local guides matching your request will reach out.</div>
           </div>
         </div>
         <div class="d-flex gap-3">
-          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem">🌿</div>
+          <div class="step-icon flex-shrink-0" style="width:44px;height:44px;font-size:1.1rem"><i class="bi bi-tree" aria-hidden="true"></i></div>
           <div>
             <div class="fw-700 small" data-i18n="step3_title">3. Explore Oman</div>
             <div class="text-muted small" data-i18n="step3_desc">Book your preferred guide and enjoy an authentic experience.</div>
@@ -224,8 +225,8 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script>
 let SESSION = null;
 let groupValue = 2;
@@ -329,7 +330,7 @@ async function loadMyRequests() {
       <div class="trip-request-card ${t.status === 'closed' ? 'closed' : ''}">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <div>
-            <h6 class="fw-700 mb-0">📍 ${window.gdEsc(t.destination)}</h6>
+            <h6 class="fw-700 mb-0"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${window.gdEsc(t.destination)}</h6>
             <div class="small text-muted">${formatDate(t.startDate)}${t.endDate ? ' → ' + formatDate(t.endDate) : ''}</div>
           </div>
           <span class="${t.status === 'open' ? 'open-badge' : 'closed-badge'}">
@@ -337,7 +338,7 @@ async function loadMyRequests() {
           </span>
         </div>
         <div class="small text-muted mb-2">
-          👥 ${window.gdEsc(String(t.groupSize||''))} ${I18N.t('persons_lbl')}
+          <i class="bi bi-people" aria-hidden="true"></i> ${window.gdEsc(String(t.groupSize||''))} ${I18N.t('persons_lbl')}
           ${t.language ? ` · 🌐 ${window.gdEsc(t.language)}` : ''}
           ${t.budget ? ` · 💰 ${I18N.t('omr_day')} ${window.gdEsc(String(t.budget))}/day` : ''}
         </div>
@@ -433,11 +434,11 @@ checkAuth();
     const days=(p.days||[]).map(d=>`
       <div class="day-card">
         <div class="day-head"><div class="day-num">${d.day}</div>
-          <div><div class="fw-800">${escp(d.theme)}</div><div class="small text-muted">📍 ${escp(d.governorate)}${d.estimatedCostOMR?` · ~${d.estimatedCostOMR} ${PT('ر.ع','OMR')}`:''}</div></div></div>
+          <div><div class="fw-800">${escp(d.theme)}</div><div class="small text-muted"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${escp(d.governorate)}${d.estimatedCostOMR?` · ~${d.estimatedCostOMR} ${PT('ر.ع','OMR')}`:''}</div></div></div>
         <div class="p-3">
           <ul class="mb-0 ps-3">${(d.activities||[]).map(a=>`<li class="mb-1">${escp(a)}</li>`).join('')}</ul>
           ${d.suggestedGuideId?`<a class="guide-pick text-decoration-none text-dark" href="/guide-profile.html?id=${escp(d.suggestedGuideId)}">
-            ${d.suggestedGuidePhoto?`<img src="${escp(d.suggestedGuidePhoto)}" alt="">`:`<div class="ph">👤</div>`}
+            ${d.suggestedGuidePhoto?`<img src="${escp(d.suggestedGuidePhoto)}" alt="">`:`<div class="ph"><i class="bi bi-person" aria-hidden="true"></i></div>`}
             <div class="flex-grow-1"><div class="small text-muted">${PT('المرشد المقترح','Suggested guide')}</div><div class="fw-700">${escp(d.suggestedGuideName)}</div></div>
             <span class="btn btn-sm btn-teal">${PT('احجز','Book')}</span></a>`:''}
         </div></div>`).join('');
@@ -450,10 +451,10 @@ checkAuth();
       ${days}
       ${(p.tips&&p.tips.length)?`<div class="planner-card"><h6 class="fw-800 mb-2">💡 ${PT('نصائح','Tips')}</h6><ul class="mb-0 ps-3">${p.tips.map(t=>`<li class="mb-1">${escp(t)}</li>`).join('')}</ul></div>`:''}
       <div class="planner-card text-center mt-3" style="background:#f8fafc">
-        <div class="fw-700 mb-2">${PT('أعجبتك الخطة؟ دَع مرشداً معتمداً ينفّذها لك','Like the plan? Let a licensed guide run it for you')} 🧭</div>
+        <div class="fw-700 mb-2">${PT('أعجبتك الخطة؟ دَع مرشداً معتمداً ينفّذها لك','Like the plan? Let a licensed guide run it for you')} <i class="bi bi-compass" aria-hidden="true"></i></div>
         <button class="btn btn-teal fw-700" type="button" onclick="bridgeToGuide()">${PT('اطلب من مرشد ينفّذ هذه الرحلة','Ask a guide to run this trip')}</button>
       </div>
-      <div class="text-center text-muted small mt-3">✨ ${PT('خطّة مُولّدة بالذكاء الاصطناعي — تحقّق من التفاصيل قبل الحجز','AI-generated plan — check the details before booking')}</div>`;
+      <div class="text-center text-muted small mt-3"><i class="bi bi-stars" aria-hidden="true"></i> ${PT('خطّة مُولّدة بالذكاء الاصطناعي — تحقّق من التفاصيل قبل الحجز','AI-generated plan — check the details before booking')}</div>`;
     document.getElementById('out').scrollIntoView({behavior:'smooth'});
   }
 
@@ -472,7 +473,7 @@ checkAuth();
 })();
 </script>
 <script src="/js/pwa.js?v=16" defer></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>
 

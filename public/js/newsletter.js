@@ -20,7 +20,7 @@
       <style>@keyframes ogslide{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}</style>
       <button onclick="document.getElementById('ogNewsletter').remove();localStorage.setItem('og_newsletter_dismissed','1')"
         style="position:absolute;top:8px;right:10px;background:none;border:none;font-size:20px;cursor:pointer;color:#999">×</button>
-      <div style="font-size:28px;margin-bottom:6px">🌿</div>
+      <div style="font-size:28px;margin-bottom:6px"><i class="bi bi-tree" aria-hidden="true"></i></div>
       <h5 style="margin:0 0 6px;font-weight:800;color:#0f7b6c">Get Oman travel tips</h5>
       <p style="margin:0 0 12px;font-size:13px;color:#666;line-height:1.5">Hidden gems, festivals, deals. No spam.</p>
       <form id="ogSubForm" style="display:flex;gap:6px">

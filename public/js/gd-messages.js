@@ -295,7 +295,7 @@
       if (!msgs.length) {
         el.innerHTML = config.threadEmptyHtml
           || `<div class="text-center text-muted small mt-auto pt-4">${
-               escHtml(t('msg_empty', 'Start the conversation 👋'))
+               escHtml(t('msg_empty', 'Start the conversation <i class="bi bi-emoji-smile" aria-hidden="true"></i>'))
              }</div>`;
         return;
       }
@@ -325,7 +325,7 @@
         if (safeUrl && m.attachmentType === 'image') {
           body += `<a href="${escHtml(safeUrl)}" target="_blank" rel="noopener"><img src="${escHtml(safeUrl)}" alt="image" style="max-width:${BUBBLE_MAX_PX}px;max-height:${BUBBLE_MAX_PX}px;border-radius:9px;display:block;margin-bottom:${m.content ? '4px' : '0'}"></a>`;
         } else if (safeUrl) {
-          body += `<a href="${escHtml(safeUrl)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">📎 ${escHtml(m.attachmentName || 'file')}</a>`;
+          body += `<a href="${escHtml(safeUrl)}" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline"><i class="bi bi-paperclip" aria-hidden="true"></i> ${escHtml(m.attachmentName || 'file')}</a>`;
         }
         if (m.content) body += `<div style="font-size:.92rem">${escHtml(m.content)}</div>`;
 

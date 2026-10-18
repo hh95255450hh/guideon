@@ -131,25 +131,25 @@
     if (!host) throw new Error('gdMap.editor: container not found');
     host.innerHTML = `
       <div class="gd-map-help" style="background:#eef7f5;border:1px solid #b6e0d6;color:#0a5c50;padding:10px 14px;border-radius:10px;font-size:.85rem;margin-bottom:10px;line-height:1.6">
-        💡 <strong>طريقة سهلة:</strong> ابحث عن المكان بالاسم في المربّع أدناه (مثل "قلعة نزوى") واضغطه — ستُسقط النقطة تلقائياً.
-        أو <strong>انقر على الخريطة</strong> مباشرة. أوّل نقرة = موقع اللقاء 📍، النقرات التالية = نقاط المسار 🛣️.
+        <i class="bi bi-lightbulb" aria-hidden="true"></i> <strong>طريقة سهلة:</strong> ابحث عن المكان بالاسم في المربّع أدناه (مثل "قلعة نزوى") واضغطه — ستُسقط النقطة تلقائياً.
+        أو <strong>انقر على الخريطة</strong> مباشرة. أوّل نقرة = موقع اللقاء <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>، النقرات التالية = نقاط المسار 🛣️.
       </div>
       <div class="gd-map-search" style="position:relative;margin-bottom:8px">
-        <input type="text" class="form-control" placeholder="🔍 ابحث عن مكان… (قلعة نزوى، وادي شاب، جبل شمس...)" autocomplete="off">
+        <input type="text" class="form-control" placeholder="<i class="bi bi-search" aria-hidden="true"></i> ابحث عن مكان… (قلعة نزوى، وادي شاب، جبل شمس...)" autocomplete="off">
         <div class="gd-map-results" style="position:absolute;top:100%;inset-inline:0;background:#fff;border:1px solid #dee2e6;border-top:0;border-radius:0 0 10px 10px;box-shadow:0 8px 20px rgba(0,0,0,.08);max-height:240px;overflow-y:auto;z-index:1000;display:none"></div>
       </div>
       <div class="gd-map-toolbar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
         <div class="btn-group btn-group-sm" role="group">
-          <button type="button" data-tool="meet"  class="btn btn-success">📍 نقطة اللقاء</button>
+          <button type="button" data-tool="meet"  class="btn btn-success"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> نقطة اللقاء</button>
           <button type="button" data-tool="route" class="btn btn-outline-primary">🛣️ نقاط المسار</button>
         </div>
-        <button type="button" data-act="locate"   class="btn btn-sm btn-outline-secondary" title="استخدم موقعي الحالي">📡 موقعي</button>
+        <button type="button" data-act="locate"   class="btn btn-sm btn-outline-secondary" title="استخدم موقعي الحالي"><i class="bi bi-broadcast" aria-hidden="true"></i> موقعي</button>
         <button type="button" data-act="undo"     class="btn btn-sm btn-outline-secondary" title="تراجع عن آخر نقطة">↶ تراجع</button>
-        <button type="button" data-act="clear-route" class="btn btn-sm btn-outline-danger">🗑️ مسح المسار</button>
+        <button type="button" data-act="clear-route" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash" aria-hidden="true"></i> مسح المسار</button>
         <span class="gd-map-stats small fw-700" style="margin-inline-start:auto;color:#0f1c3e">المسار: 0 نقطة · 0 كم</span>
       </div>
       <div class="gd-map-canvas" style="height:380px;border-radius:12px;overflow:hidden;border:1px solid #dee2e6"></div>
-      <div class="gd-map-hint small text-muted" style="margin-top:6px">انقر على رقم نقطة في المسار لحذفها. اسحب 📍 نقطة اللقاء لتعديل موقعها.</div>`;
+      <div class="gd-map-hint small text-muted" style="margin-top:6px">انقر على رقم نقطة في المسار لحذفها. اسحب <i class="bi bi-geo-alt-fill" aria-hidden="true"></i> نقطة اللقاء لتعديل موقعها.</div>`;
 
     const canvas    = host.querySelector('.gd-map-canvas');
     const stats     = host.querySelector('.gd-map-stats');
@@ -297,7 +297,7 @@
         if (!hits.length) { results.innerHTML = '<div style="padding:10px;color:#888;font-size:.85rem">لا توجد نتائج. جرّب اسماً آخر.</div>'; return; }
         results.innerHTML = hits.map((h, i) =>
           `<button type="button" data-i="${i}" style="display:block;width:100%;text-align:start;padding:10px 14px;background:transparent;border:0;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:.88rem">
-             <span style="color:#0f7b6c;font-weight:700">📍</span> ${h.name.replace(/</g,'&lt;')}
+             <span style="color:#0f7b6c;font-weight:700"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i></span> ${h.name.replace(/</g,'&lt;')}
            </button>`).join('');
         results.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
           const h = hits[+b.dataset.i];
@@ -424,7 +424,7 @@
       placed[idx] = L.marker([p.lat, p.lng], { icon })
         .addTo(map)
         .bindPopup(`<div style="font-weight:700;margin-bottom:4px">${name}</div>
-                    <a href="${gmaps}" target="_blank" rel="noopener" style="font-size:.85rem">${isAr?'افتح في خرائط Google':'Open in Google Maps'} ↗</a>`);
+                    <a href="${gmaps}" target="_blank" rel="noopener" style="font-size:.85rem">${isAr?'افتح في خرائط Google':'Open in Google Maps'} <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>`);
       bounds.extend([p.lat, p.lng]);
       typesShown.add(type);
     });

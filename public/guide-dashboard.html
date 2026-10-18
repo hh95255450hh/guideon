@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -31,7 +31,8 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <script src="/js/image-compress.js?v=3"></script>
-<script src="/js/gd-map.js?v=3" defer></script>
+<script src="/js/gd-map.js?v=6" defer></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -43,11 +44,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
-        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
         <span class="text-white opacity-75 small" id="navName"></span>
-        <a href="/guides/guide-handbook-ar.pdf" target="_blank" class="btn btn-sm btn-outline-light" title="دليل الاستخدام" data-i18n="nav_handbook">📖 دليل الاستخدام</a>
-        <a href="/instant.html" class="btn btn-sm btn-warning fw-bold" title="Instant requests">⚡ المرشد الفوري</a>
-        <a href="/profile.html" class="btn btn-sm btn-outline-light" title="Edit Profile">👤 Edit Profile</a>
+        <a href="/guides/guide-handbook-ar.pdf" target="_blank" class="btn btn-sm btn-outline-light" title="دليل الاستخدام"><i class="bi bi-book" aria-hidden="true"></i> <span data-i18n="nav_handbook">دليل الاستخدام</span></a>
+        <a href="/instant.html" class="btn btn-sm btn-warning fw-bold" title="Instant requests"><i class="bi bi-lightning-charge" aria-hidden="true"></i> المرشد الفوري</a>
+        <a href="/profile.html" class="btn btn-sm btn-outline-light" title="Edit Profile"><i class="bi bi-person" aria-hidden="true"></i> Edit Profile</a>
         <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
       </div>
     </div>
@@ -60,7 +61,7 @@
       <div style="position:relative">
         <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;color:#fff;cursor:pointer;overflow:hidden" id="guideAvatar" onclick="document.getElementById('avatarInput').click()" title="Click to change photo">?</div>
         <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadPhoto(this)">
-        <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:.55rem;border-radius:0 0 50% 50%;width:56px;text-align:center;padding:2px 0;pointer-events:none">📷</div>
+        <div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:.55rem;border-radius:0 0 50% 50%;width:56px;text-align:center;padding:2px 0;pointer-events:none"><i class="bi bi-camera" aria-hidden="true"></i></div>
       </div>
       <div>
         <h4 class="fw-800 mb-0" id="guideName">—</h4>
@@ -81,26 +82,26 @@
     <!-- LEFT: Bookings -->
     <div class="col-lg-8">
       <div class="mb-4" id="bookings">
-        <h5 class="fw-700 mb-3" data-i18n="pending_section">⏳ Pending Booking Requests</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-hourglass-split" aria-hidden="true"></i> <span data-i18n="pending_section">Pending Booking Requests</span></h5>
         <div id="pendingList">
           <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
         </div>
       </div>
 
       <div class="mb-4">
-        <h5 class="fw-700 mb-3" data-i18n="in_progress_section">🟢 Trips In Progress</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-circle-fill" aria-hidden="true"></i> <span data-i18n="in_progress_section">Trips In Progress</span></h5>
         <div id="inProgressList"></div>
       </div>
 
       <div class="mb-4">
-        <h5 class="fw-700 mb-3" data-i18n="confirmed_section">✅ Upcoming Confirmed Bookings</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> <span data-i18n="confirmed_section">Upcoming Confirmed Bookings</span></h5>
         <div id="confirmedList">
           <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
         </div>
       </div>
 
       <div class="mb-4">
-        <h5 class="fw-700 mb-3" data-i18n="past_section">📋 Past Bookings</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-clipboard" aria-hidden="true"></i> <span data-i18n="past_section">Past Bookings</span></h5>
         <div id="pastList">
           <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
         </div>
@@ -108,7 +109,7 @@
 
       <!-- Trip Requests (TourHQ feature) -->
       <div class="mb-4">
-        <h5 class="fw-700 mb-3" data-i18n="matching_trips">✈️ Trip Requests Matching Your Area</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-airplane" aria-hidden="true"></i> <span data-i18n="matching_trips">Trip Requests Matching Your Area</span></h5>
         <div id="tripRequestsList">
           <div class="text-muted small text-center py-3" data-i18n="loading_guides">Loading...</div>
         </div>
@@ -117,7 +118,7 @@
       <!-- Messages -->
       <div class="card shadow-sm mb-4" id="guideMsgSection">
         <div class="card-header d-flex justify-content-between align-items-center" style="background:var(--teal);color:#fff">
-          <h6 class="mb-0 fw-700" data-i18n="msg_section">💬 Messages</h6>
+          <h6 class="mb-0 fw-700"><i class="bi bi-chat-dots" aria-hidden="true"></i> <span data-i18n="msg_section">Messages</span></h6>
           <span class="badge bg-danger" id="guideMsgBadge" style="display:none"></span>
         </div>
         <div id="guideMsgConvoView">
@@ -138,7 +139,7 @@
           <div id="guideMsgTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic">…</div>
           <div class="p-2 border-top d-flex gap-2 align-items-center">
             <input type="file" id="guideMsgFile" accept="image/*" style="display:none" onchange="guideAttach(this)">
-            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('guideMsgFile').click()" title="Attach image" style="flex-shrink:0">📎</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('guideMsgFile').click()" title="Attach image" style="flex-shrink:0"><i class="bi bi-paperclip" aria-hidden="true"></i></button>
             <input class="form-control form-control-sm" id="guideMsgInput" data-i18n-ph="msg_reply_ph" placeholder="Write a reply..." oninput="guideTyping()">
             <button class="btn btn-sm btn-teal" onclick="guideSendMsg()" data-i18n="msg_send" style="flex-shrink:0">Send</button>
           </div>
@@ -147,7 +148,7 @@
 
       <!-- ════════════════════════ ANALYTICS & ACHIEVEMENTS ════════════════════════ -->
       <div class="info-card mb-4">
-        <h5 class="fw-700 mb-3">📊 Your Analytics</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-bar-chart" aria-hidden="true"></i> Your Analytics</h5>
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff"><div class="num" id="anViews">—</div><div class="lbl">Total Views</div></div></div>
           <div class="col-6 col-md-3"><div class="dash-stat" style="background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff"><div class="num" id="anConv">—%</div><div class="lbl">Conversion</div></div></div>
@@ -158,25 +159,25 @@
         <div class="row g-3 mb-4">
           <div class="col-12 col-lg-7">
             <div class="border rounded-3 p-3 h-100">
-              <h6 class="fw-700 mb-2">📈 <span data-i18n="an_trend">Bookings & earnings (6 months)</span></h6>
+              <h6 class="fw-700 mb-2"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> <span data-i18n="an_trend">Bookings & earnings (6 months)</span></h6>
               <div id="anTrendChart" style="min-height:240px"></div>
             </div>
           </div>
           <div class="col-12 col-lg-5">
             <div class="border rounded-3 p-3 h-100">
-              <h6 class="fw-700 mb-2">⭐ <span data-i18n="an_ratings">Ratings breakdown</span></h6>
+              <h6 class="fw-700 mb-2"><i class="bi bi-star-fill" aria-hidden="true"></i> <span data-i18n="an_ratings">Ratings breakdown</span></h6>
               <div id="anRatingChart" style="min-height:240px"></div>
             </div>
           </div>
           <div class="col-12">
             <div class="border rounded-3 p-3">
-              <h6 class="fw-700 mb-2">📍 <span data-i18n="an_dests">Your top destinations</span></h6>
+              <h6 class="fw-700 mb-2"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> <span data-i18n="an_dests">Your top destinations</span></h6>
               <div id="anDestChart" style="min-height:120px"></div>
             </div>
           </div>
         </div>
 
-        <h6 class="fw-700 mb-2">📈 Per-Tour Performance</h6>
+        <h6 class="fw-700 mb-2"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Per-Tour Performance</h6>
         <div class="table-responsive">
           <table class="table table-sm mb-0">
             <thead><tr><th>Tour</th><th class="text-end">Views</th><th class="text-end">Bookings</th><th class="text-end">Conversion</th></tr></thead>
@@ -188,10 +189,10 @@
       <!-- ════════════════════════ EARNINGS & INVOICES ════════════════════════ -->
       <div class="info-card mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-          <h5 class="fw-700 mb-0">💼 <span data-i18n="acc_title">Earnings & Invoices</span></h5>
+          <h5 class="fw-700 mb-0"><i class="bi bi-briefcase" aria-hidden="true"></i> <span data-i18n="acc_title">Earnings & Invoices</span></h5>
           <div class="d-flex gap-2 align-items-center">
             <select class="form-select form-select-sm" id="accMonth" style="width:auto"></select>
-            <button class="btn btn-sm btn-teal" onclick="downloadStatement()" data-i18n="acc_statement">📄 Statement</button>
+            <button class="btn btn-sm btn-teal" onclick="downloadStatement()"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> <span data-i18n="acc_statement">Statement</span></button>
           </div>
         </div>
 
@@ -224,8 +225,8 @@
       <!-- ════════════════════════ MY TOURS ════════════════════════ -->
       <div class="info-card mb-4" id="tours">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-700 mb-0" data-i18n="my_tours_title">🗺️ My Tours</h5>
-          <button class="btn btn-sm btn-teal" onclick="openTourModal()" data-i18n="add_tour_btn">➕ Add New Tour</button>
+          <h5 class="fw-700 mb-0"><i class="bi bi-map" aria-hidden="true"></i> <span data-i18n="my_tours_title">My Tours</span></h5>
+          <button class="btn btn-sm btn-teal" onclick="openTourModal()"><i class="bi bi-plus-lg" aria-hidden="true"></i> <span data-i18n="add_tour_btn">Add New Tour</span></button>
         </div>
         <p class="small text-muted mb-3" data-i18n="my_tours_desc">Create individual tours with their own price, duration, and destination. Add special offers anytime.</p>
         <div id="myToursList">
@@ -243,11 +244,11 @@
             </div>
             <div class="modal-body">
               <ul class="nav nav-tabs mb-3">
-                <li class="nav-item"><button class="nav-link active" type="button" onclick="showTourTab('basics',this)" data-i18n="tour_tab_basics">📝 Basics</button></li>
-                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('variants',this)" data-i18n="tour_tab_variants">💼 Packages</button></li>
-                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('addons',this)" data-i18n="tour_tab_addons">🎁 Add-ons</button></li>
-                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('dates',this)" data-i18n="tour_tab_dates">📅 Dates</button></li>
-                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('offer',this)" data-i18n="tour_tab_offer">🏷️ Offer</button></li>
+                <li class="nav-item"><button class="nav-link active" type="button" onclick="showTourTab('basics',this)"><i class="bi bi-pencil-square" aria-hidden="true"></i> <span data-i18n="tour_tab_basics">Basics</span></button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('variants',this)"><i class="bi bi-briefcase" aria-hidden="true"></i> <span data-i18n="tour_tab_variants">Packages</span></button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('addons',this)"><i class="bi bi-gift" aria-hidden="true"></i> <span data-i18n="tour_tab_addons">Add-ons</span></button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('dates',this)"><i class="bi bi-calendar-event" aria-hidden="true"></i> <span data-i18n="tour_tab_dates">Dates</span></button></li>
+                <li class="nav-item"><button class="nav-link" type="button" onclick="showTourTab('offer',this)"><i class="bi bi-tag" aria-hidden="true"></i> <span data-i18n="tour_tab_offer">Offer</span></button></li>
               </ul>
 
               <form id="tourForm">
@@ -256,20 +257,20 @@
                 <!-- BASICS -->
                 <div id="tt-basics" class="tour-tab row g-3">
                   <div class="col-12">
-                    <label class="form-label small fw-600">📷 <span data-i18n="tour_cover">صورة الغلاف</span></label>
-                    <div id="tourImgPreview" style="height:170px;border-radius:12px;background:#eef1f3;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:#9aa3ab;font-size:2rem;margin-bottom:8px">🗺️</div>
+                    <label class="form-label small fw-600"><i class="bi bi-camera" aria-hidden="true"></i> <span data-i18n="tour_cover">صورة الغلاف</span></label>
+                    <div id="tourImgPreview" style="height:170px;border-radius:12px;background:#eef1f3;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:#9aa3ab;font-size:2rem;margin-bottom:8px"><i class="bi bi-map" aria-hidden="true"></i></div>
                     <input type="file" accept="image/*" class="form-control form-control-sm" id="tourImgFile" onchange="uploadTourImage(this)">
                     <input type="hidden" id="tourCoverUrl">
                     <div class="small text-muted mt-1">يُنصح بـ 1200×600 — تظهر على بطاقة الرحلة.</div>
                   </div>
                   <div class="col-12">
-                    <label class="form-label small fw-600">🖼️ صور إضافية للرحلة (حتى 12 صورة)</label>
+                    <label class="form-label small fw-600"><i class="bi bi-image" aria-hidden="true"></i> صور إضافية للرحلة (حتى 12 صورة)</label>
                     <div id="tourGalleryPreview" class="d-flex flex-wrap gap-2 mb-2"></div>
                     <input type="file" accept="image/*" multiple class="form-control form-control-sm" id="tourGalleryInput" onchange="onTourGallerySelected(this)">
                     <div class="small text-muted mt-1" id="tourGalleryStatus">انقر على ✕ لحذف صورة. تظهر للسياح في صفحة الرحلة.</div>
                   </div>
                   <div class="col-12">
-                    <label class="form-label small fw-600">🎬 فيديو الرحلة · Tour video <span class="text-muted fw-400">(اختياري)</span></label>
+                    <label class="form-label small fw-600"><i class="bi bi-film" aria-hidden="true"></i> فيديو الرحلة · Tour video <span class="text-muted fw-400">(اختياري)</span></label>
                     <div id="tourVideoUpload"></div>
                   </div>
                   <div class="col-md-8">
@@ -279,17 +280,17 @@
                   <div class="col-12">
                     <label class="form-label small fw-600" data-i18n="tour_categories_lbl">Categories (pick one or more) *</label>
                     <div id="tourCategoryChips" class="d-flex flex-wrap gap-2" data-multi-cat>
-                      <label class="cat-chip"><input type="checkbox" value="Cultural"   hidden><span>🏰 <span data-i18n="cat_cultural">Cultural</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Mountain"   hidden><span>🏔️ <span data-i18n="cat_mountain">Mountain</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Desert"     hidden><span>🐪 <span data-i18n="cat_desert">Desert</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Marine"     hidden><span>🐬 <span data-i18n="cat_marine">Marine</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Wildlife"   hidden><span>🐢 <span data-i18n="cat_wildlife">Wildlife</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Historical" hidden><span>🕌 <span data-i18n="cat_historical">Historical</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Adventure"  hidden><span>⚡ <span data-i18n="cat_adventure">Adventure</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Aerial"     hidden><span>🎈 <span data-i18n="cat_aerial">Aerial Tours</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Food"       hidden><span>🍽️ <span data-i18n="cat_food">Food</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Cultural"   hidden><span><i class="bi bi-bank" aria-hidden="true"></i> <span data-i18n="cat_cultural">Cultural</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Mountain"   hidden><span><i class="bi bi-image-alt" aria-hidden="true"></i> <span data-i18n="cat_mountain">Mountain</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Desert"     hidden><span><i class="bi bi-sun" aria-hidden="true"></i> <span data-i18n="cat_desert">Desert</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Marine"     hidden><span><i class="bi bi-water" aria-hidden="true"></i> <span data-i18n="cat_marine">Marine</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Wildlife"   hidden><span><i class="bi bi-tree" aria-hidden="true"></i> <span data-i18n="cat_wildlife">Wildlife</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Historical" hidden><span><i class="bi bi-moon-stars" aria-hidden="true"></i> <span data-i18n="cat_historical">Historical</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Adventure"  hidden><span><i class="bi bi-lightning-charge" aria-hidden="true"></i> <span data-i18n="cat_adventure">Adventure</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Aerial"     hidden><span><i class="bi bi-balloon" aria-hidden="true"></i> <span data-i18n="cat_aerial">Aerial Tours</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Food"       hidden><span><i class="bi bi-egg-fried" aria-hidden="true"></i> <span data-i18n="cat_food">Food</span></span></label>
                       <label class="cat-chip"><input type="checkbox" value="Wadi"       hidden><span>💦 <span data-i18n="cat_wadi">Wadi</span></span></label>
-                      <label class="cat-chip"><input type="checkbox" value="Beach"      hidden><span>🏖️ <span data-i18n="cat_beach">Beach</span></span></label>
+                      <label class="cat-chip"><input type="checkbox" value="Beach"      hidden><span><i class="bi bi-umbrella" aria-hidden="true"></i> <span data-i18n="cat_beach">Beach</span></span></label>
                     </div>
                     <div class="form-text small" data-i18n="tour_categories_hint">A tour can belong to several categories — e.g. Desert + Adventure + Wildlife.</div>
                   </div>
@@ -331,7 +332,7 @@
                        mid-form). A clear pricing header + how-it-works note makes the
                        2-people-base + per-extra model findable and understandable. -->
                   <div class="col-12">
-                    <h6 class="fw-700 mt-2 mb-1" style="color:#0f7b6c">💰 تسعير الرحلة · Pricing</h6>
+                    <h6 class="fw-700 mt-2 mb-1" style="color:#0f7b6c"><i class="bi bi-cash-coin" aria-hidden="true"></i> تسعير الرحلة · Pricing</h6>
                     <div class="btn-group w-100 mb-2" role="group">
                       <input type="radio" class="btn-check" name="gtPmode" id="gtSimple" value="simple" checked onchange="toggleGtPricing()">
                       <label class="btn btn-outline-teal btn-sm" for="gtSimple">سعر ثابت · Flat</label>
@@ -352,7 +353,7 @@
                   <div class="col-12 gt-tiered" style="display:none">
                     <div class="small text-muted mb-1">حدّد السعر حسب عدد الأشخاص. اترك خانة «إلى» فارغة لتعني «فأكثر».</div>
                     <div id="gtTiersList" class="d-flex flex-column gap-1 mb-2"></div>
-                    <button type="button" class="btn btn-sm btn-outline-teal" onclick="addGtTier()">➕ إضافة شريحة</button>
+                    <button type="button" class="btn btn-sm btn-outline-teal" onclick="addGtTier()"><i class="bi bi-plus-lg" aria-hidden="true"></i> إضافة شريحة</button>
                     <div class="row g-2 mt-2">
                       <div class="col-md-4"><label class="form-label small mb-1">سعر الطفل (ر.ع)</label><input type="number" class="form-control form-control-sm" id="gtChildPrice" min="0" step="0.5" value="0"></div>
                       <div class="col-md-4"><label class="form-label small mb-1">عمر الطفل من–إلى</label><div class="input-group input-group-sm"><input type="number" class="form-control" id="gtChildMin" min="0" max="17" value="6"><input type="number" class="form-control" id="gtChildMax" min="0" max="17" value="12"></div></div>
@@ -368,12 +369,12 @@
                   <div class="col-12">
                     <label class="form-label small fw-600" data-i18n="tour_description">Description *</label>
                     <textarea class="form-control" id="tourDescription" rows="3" data-i18n-ph="tour_desc_ph" placeholder="Describe what makes this tour special..." required></textarea>
-                    <button type="button" class="btn btn-sm btn-teal mt-2" id="aiPkgBtn" onclick="aiImprovePkg()">✨ حسّن وصف الرحلة بالذكاء · Improve with AI</button>
+                    <button type="button" class="btn btn-sm btn-teal mt-2" id="aiPkgBtn" onclick="aiImprovePkg()"><i class="bi bi-stars" aria-hidden="true"></i> حسّن وصف الرحلة بالذكاء · Improve with AI</button>
                     <div id="aiPkgBox" style="display:none;margin-top:10px;background:#f0faf8;border:1px solid #c7e9e2;border-radius:12px;padding:12px">
-                      <div class="small fw-700 mb-1" style="color:#0f7b6c">✨ اقتراح الذكاء الاصطناعي</div>
+                      <div class="small fw-700 mb-1" style="color:#0f7b6c"><i class="bi bi-stars" aria-hidden="true"></i> اقتراح الذكاء الاصطناعي</div>
                       <div id="aiPkgAr" class="small" style="white-space:pre-wrap;line-height:1.7;color:#23303f"></div>
                       <div class="d-flex gap-2 mt-2 flex-wrap">
-                        <button type="button" class="btn btn-sm btn-teal" onclick="aiApplyPkg()">✅ استخدم هذا الوصف</button>
+                        <button type="button" class="btn btn-sm btn-teal" onclick="aiApplyPkg()"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> استخدم هذا الوصف</button>
                         <button type="button" class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('aiPkgBox').style.display='none'">إلغاء</button>
                       </div>
                     </div>
@@ -383,7 +384,7 @@
                     <input class="form-control" id="tourMeeting" data-i18n-ph="tour_meeting_ph" placeholder="e.g. Nizwa Fort entrance, 7:00 AM">
                   </div>
                   <div class="col-12">
-                    <label class="form-label small fw-600">🗺️ Trip Map (optional) — drop the meeting pin and draw the expected route</label>
+                    <label class="form-label small fw-600"><i class="bi bi-map" aria-hidden="true"></i> Trip Map (optional) — drop the meeting pin and draw the expected route</label>
                     <div id="tourMap"></div>
                   </div>
                   <div class="col-md-6">
@@ -399,28 +400,28 @@
                 <!-- VARIANTS (hotel-room style) -->
                 <div id="tt-variants" class="tour-tab" style="display:none">
                   <div class="alert alert-info small" data-i18n="variants_info">
-                    💡 <strong>Like hotel rooms</strong>: offer the same tour at multiple price levels. Tourists pick what fits their budget. <strong>Examples:</strong> Standard, Premium (with lunch & transport), VIP (private + photographer)
+                    <i class="bi bi-lightbulb" aria-hidden="true"></i> <strong>Like hotel rooms</strong>: offer the same tour at multiple price levels. Tourists pick what fits their budget. <strong>Examples:</strong> Standard, Premium (with lunch & transport), VIP (private + photographer)
                   </div>
                   <div id="variantsList"></div>
-                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addVariant()" data-i18n="add_variant_btn">➕ Add Package Variant</button>
+                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addVariant()"><i class="bi bi-plus-lg" aria-hidden="true"></i> <span data-i18n="add_variant_btn">Add Package Variant</span></button>
                 </div>
 
                 <!-- ADD-ONS -->
                 <div id="tt-addons" class="tour-tab" style="display:none">
                   <div class="alert alert-info small" data-i18n="addons_info">
-                    🎁 <strong>Optional extras</strong> tourists can add to their booking. <strong>Examples:</strong> Hotel pickup (+5 OMR), Professional photos (+15 OMR), Lunch upgrade (+10 OMR)
+                    <i class="bi bi-gift" aria-hidden="true"></i> <strong>Optional extras</strong> tourists can add to their booking. <strong>Examples:</strong> Hotel pickup (+5 OMR), Professional photos (+15 OMR), Lunch upgrade (+10 OMR)
                   </div>
                   <div id="addonsList"></div>
-                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addAddon()" data-i18n="add_addon_btn">➕ Add Add-on</button>
+                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addAddon()"><i class="bi bi-plus-lg" aria-hidden="true"></i> <span data-i18n="add_addon_btn">Add Add-on</span></button>
                 </div>
 
                 <!-- DATES + ITINERARY -->
                 <div id="tt-dates" class="tour-tab" style="display:none">
-                  <h6 class="fw-700 mb-2" data-i18n="available_dates_title">📅 Available Departure Dates</h6>
+                  <h6 class="fw-700 mb-2"><i class="bi bi-calendar-event" aria-hidden="true"></i> <span data-i18n="available_dates_title">Available Departure Dates</span></h6>
                   <p class="small text-muted mb-2" style="line-height:1.6">هذه <b>تواريخ بدء الرحلة</b> فقط — النظام يحسب مدتها تلقائيًا من حقل «المدة». <span dir="ltr">These are trip <b>start</b> dates; the duration is added automatically.</span></p>
                   <div class="form-check mb-2">
                     <input class="form-check-input" type="checkbox" id="dailyAvailableCheck" onchange="toggleDailyAvailable()">
-                    <label class="form-check-label fw-600" for="dailyAvailableCheck">🗓️ متاح كل يوم — Available every day</label>
+                    <label class="form-check-label fw-600" for="dailyAvailableCheck"><i class="bi bi-calendar3" aria-hidden="true"></i> متاح كل يوم — Available every day</label>
                   </div>
                   <div id="specificDatesWrap">
                     <p class="small text-muted" data-i18n="available_dates_desc">Tourists can only book these specific dates.</p>
@@ -430,17 +431,17 @@
                     </div>
                     <div id="availableDatesList" class="d-flex flex-wrap gap-1 mb-4"></div>
                   </div>
-                  <div id="dailyAvailableNote" class="small text-muted mb-4" style="display:none">✅ الرحلة متاحة كل يوم — يختار السائح أي تاريخ مستقبلي.</div>
+                  <div id="dailyAvailableNote" class="small text-muted mb-4" style="display:none"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> الرحلة متاحة كل يوم — يختار السائح أي تاريخ مستقبلي.</div>
 
                   <hr>
-                  <h6 class="fw-700 mb-2 mt-3" data-i18n="itinerary_title">🗺️ Day-by-day Itinerary</h6>
+                  <h6 class="fw-700 mb-2 mt-3"><i class="bi bi-map" aria-hidden="true"></i> <span data-i18n="itinerary_title">Day-by-day Itinerary</span></h6>
                   <div id="itineraryList"></div>
-                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addItineraryDay()" data-i18n="add_day_btn">➕ Add Day</button>
+                  <button type="button" class="btn btn-sm btn-outline-teal mt-2" onclick="addItineraryDay()"><i class="bi bi-plus-lg" aria-hidden="true"></i> <span data-i18n="add_day_btn">Add Day</span></button>
                 </div>
 
                 <!-- OFFER + PUBLISH -->
                 <div id="tt-offer" class="tour-tab row g-3" style="display:none">
-                  <div class="col-12"><h6 class="fw-700" data-i18n="offer_section">🏷️ Special Offer (Optional)</h6></div>
+                  <div class="col-12"><h6 class="fw-700"><i class="bi bi-tag" aria-hidden="true"></i> <span data-i18n="offer_section">Special Offer (Optional)</span></h6></div>
                   <div class="col-md-3">
                     <label class="form-label small fw-600" data-i18n="discount_percent">Discount %</label>
                     <input type="number" class="form-control" id="tourDiscount" min="0" max="90" placeholder="0">
@@ -473,7 +474,7 @@
 
       <!-- Gallery & Video -->
       <div class="info-card mb-4" id="gallery">
-        <h5 class="fw-700 mb-3" data-i18n="gallery_title">📸 Photo Gallery</h5>
+        <h5 class="fw-700 mb-3"><i class="bi bi-camera" aria-hidden="true"></i> <span data-i18n="gallery_title">Photo Gallery</span></h5>
         <div id="galleryGrid" class="d-flex flex-wrap gap-2 mb-3"></div>
         <div class="d-flex align-items-center gap-2">
           <label class="btn btn-sm btn-outline-secondary" style="cursor:pointer;margin:0">
@@ -485,7 +486,7 @@
 
         <hr class="my-3">
 
-        <h5 class="fw-700 mb-2" data-i18n="video_title">🎬 Intro Video</h5>
+        <h5 class="fw-700 mb-2"><i class="bi bi-film" aria-hidden="true"></i> <span data-i18n="video_title">Intro Video</span></h5>
         <p class="small text-muted mb-2">رابط YouTube — أو ارفع فيديو من جهازك بالأسفل. يظهر في ملفك العام.</p>
         <div class="d-flex gap-2 mb-3">
           <input type="url" class="form-control form-control-sm" id="videoUrlInput" data-i18n-ph="video_url_ph" placeholder="https://www.youtube.com/watch?v=..." style="flex:1">
@@ -499,12 +500,12 @@
     <!-- RIGHT: Availability Slots -->
     <div class="col-lg-4">
       <div class="info-card sticky-top" id="availability" style="top:80px">
-        <h5 class="fw-700 mb-2">📅 إدارة المواعيد</h5>
+        <h5 class="fw-700 mb-2"><i class="bi bi-calendar-event" aria-hidden="true"></i> إدارة المواعيد</h5>
 
         <!-- Guides kept trying to schedule multi-day trips here (slot duration
              maxes at a full day), so point them to Tour Packages instead. -->
         <div class="small" style="background:#fbf4e6;border:1px solid #ecdcb4;color:#7a5a12;border-radius:10px;padding:9px 12px;margin-bottom:14px;line-height:1.6">
-          ⏱️ <b>للمواعيد القصيرة داخل اليوم فقط</b> (ساعة، نصف يوم، يوم كامل).<br>
+          <i class="bi bi-stopwatch" aria-hidden="true"></i> <b>للمواعيد القصيرة داخل اليوم فقط</b> (ساعة، نصف يوم، يوم كامل).<br>
           للرحلات متعددة الأيام (مثل ٣ أيام وليلتان) أنشئها من قسم
           <b>«الرحلات»</b> وحدّد المدة بالأيام هناك.
         </div>
@@ -512,16 +513,16 @@
         <!-- Add slot form -->
         <div style="background:#f8fffe;border:1px solid #d0ede8;border-radius:10px;padding:14px;margin-bottom:14px">
           <div class="mb-2">
-            <label class="form-label small fw-600 mb-1">📆 التاريخ</label>
+            <label class="form-label small fw-600 mb-1"><i class="bi bi-calendar3" aria-hidden="true"></i> التاريخ</label>
             <input type="date" id="slotDate" class="form-control form-control-sm">
           </div>
           <div class="d-flex gap-2 mb-2">
             <div style="flex:1">
-              <label class="form-label small fw-600 mb-1">🕐 وقت البداية</label>
+              <label class="form-label small fw-600 mb-1"><i class="bi bi-clock" aria-hidden="true"></i> وقت البداية</label>
               <input type="time" id="slotStart" class="form-control form-control-sm" value="09:00">
             </div>
             <div style="flex:1">
-              <label class="form-label small fw-600 mb-1">⏱ المدة</label>
+              <label class="form-label small fw-600 mb-1"><i class="bi bi-stopwatch" aria-hidden="true"></i> المدة</label>
               <select id="slotDuration" class="form-select form-select-sm">
                 <option value="20">20 دقيقة</option>
                 <option value="30">30 دقيقة</option>
@@ -535,7 +536,7 @@
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-600 mb-1">💰 السعر (OMR)</label>
+            <label class="form-label small fw-600 mb-1"><i class="bi bi-cash-coin" aria-hidden="true"></i> السعر (OMR)</label>
             <input type="number" id="slotPrice" class="form-control form-control-sm" min="1" step="0.5" placeholder="مثال: 5">
           </div>
           <button class="btn btn-sm btn-teal w-100 fw-700" onclick="addSlot()">+ إضافة موعد</button>
@@ -544,7 +545,7 @@
         <!-- Slots list -->
         <div id="slotsList" style="max-height:280px;overflow-y:auto"></div>
 
-        <button class="btn-teal btn w-100 mt-3 fw-700" onclick="saveSlots()">💾 حفظ المواعيد</button>
+        <button class="btn-teal btn w-100 mt-3 fw-700" onclick="saveSlots()"><i class="bi bi-floppy" aria-hidden="true"></i> حفظ المواعيد</button>
         <div class="small text-muted mt-2 text-center" id="calStatus"></div>
       </div>
     </div>
@@ -555,7 +556,7 @@
 <div class="container py-4">
   <div class="info-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-700 mb-0">🚗 مميزاتي — ما أملكه لخدمتك</h5>
+      <h5 class="fw-700 mb-0"><i class="bi bi-car-front" aria-hidden="true"></i> مميزاتي — ما أملكه لخدمتك</h5>
       <span class="small text-muted">أضف سياراتك، قوارب، يخوت، مخيمات... مع صور وشرح</span>
     </div>
 
@@ -597,14 +598,14 @@
     <!-- قائمة المميزات -->
     <div id="assetsList"></div>
 
-    <button class="btn btn-outline-secondary btn-sm w-100 mt-3" onclick="saveAssets()" title="يحفظ تلقائياً عند كل تغيير — هذا الزر للتأكيد فقط">🔄 إعادة الحفظ يدوياً</button>
+    <button class="btn btn-outline-secondary btn-sm w-100 mt-3" onclick="saveAssets()" title="يحفظ تلقائياً عند كل تغيير — هذا الزر للتأكيد فقط"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> إعادة الحفظ يدوياً</button>
   </div>
 </div>
 
 <!-- ════════════════════ MY REVIEWS ════════════════════ -->
 <div class="container py-4">
   <div class="info-card" id="reviews">
-    <h5 class="fw-700 mb-3">⭐ <span data-i18n="my_reviews_title">تقييمات السياح</span></h5>
+    <h5 class="fw-700 mb-3"><i class="bi bi-star-fill" aria-hidden="true"></i> <span data-i18n="my_reviews_title">تقييمات السياح</span></h5>
     <div id="guideReviewsList">
       <div class="text-muted small text-center py-3" data-i18n="loading">Loading…</div>
     </div>
@@ -613,8 +614,8 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script>
 let GUIDE = null;
 let ALL_BOOKINGS = [];
@@ -811,7 +812,7 @@ async function loadMyTours() {
     const d = await r.json();
     MY_TOURS = d.packages || d.data?.packages || [];
     if (!MY_TOURS.length) {
-      el.innerHTML = `<div class="text-center py-4 text-muted"><div style="font-size:2.5rem">🗺️</div><p class="mb-0">${I18N.t('no_tours_yet') || 'No tours yet. Click "Add New Tour" to create your first.'}</p></div>`;
+      el.innerHTML = `<div class="text-center py-4 text-muted"><div style="font-size:2.5rem"><i class="bi bi-map" aria-hidden="true"></i></div><p class="mb-0">${I18N.t('no_tours_yet') || 'No tours yet. Click "Add New Tour" to create your first.'}</p></div>`;
       return;
     }
     el.innerHTML = MY_TOURS.map(t => {
@@ -826,7 +827,7 @@ async function loadMyTours() {
               ${t.isPublished ? '<span class="badge bg-success" style="font-size:.65rem">PUBLISHED</span>' : '<span class="badge bg-secondary" style="font-size:.65rem">DRAFT</span>'}
               ${hasOffer ? `<span class="badge bg-warning text-dark" style="font-size:.65rem">🎁 ${t.discountPercent}% OFF ${t.offerLabel ? '— '+t.offerLabel : ''}</span>` : ''}
             </div>
-            <div class="small text-muted">📍 ${t.destination || '—'} · ⏱ ${fmtDuration(t)} · 👥 max ${t.max_group_size}</div>
+            <div class="small text-muted"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${t.destination || '—'} · <i class="bi bi-stopwatch" aria-hidden="true"></i> ${fmtDuration(t)} · <i class="bi bi-people" aria-hidden="true"></i> max ${t.max_group_size}</div>
             <div class="small mt-1">
               ${hasOffer
                 ? `<span style="text-decoration:line-through;color:#999">${t.price_adult} OMR</span> <strong class="text-teal">${finalPrice} OMR</strong> ${I18N.t('per_2_people') || 'for 2 people'}`
@@ -835,8 +836,8 @@ async function loadMyTours() {
             </div>
           </div>
           <div class="d-flex flex-column gap-1">
-            <button class="btn btn-sm btn-outline-secondary" onclick="editTour('${t.id}')">✏️ ${I18N.t('edit_btn') || 'Edit'}</button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteTour('${t.id}','${(t.title||'').replace(/'/g,"\\'")}')">🗑️ ${I18N.t('delete_btn') || 'Delete'}</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="editTour('${t.id}')"><i class="bi bi-pencil" aria-hidden="true"></i> ${I18N.t('edit_btn') || 'Edit'}</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteTour('${t.id}','${(t.title||'').replace(/'/g,"\\'")}')"><i class="bi bi-trash" aria-hidden="true"></i> ${I18N.t('delete_btn') || 'Delete'}</button>
           </div>
         </div>
       </div>`;
@@ -945,7 +946,7 @@ function openTourModal(tour) {
   document.getElementById('tourCoverUrl').value = cover;
   const prev = document.getElementById('tourImgPreview');
   if (cover) { prev.style.backgroundImage = `url('${cover}')`; prev.textContent = ''; }
-  else { prev.style.backgroundImage = ''; prev.textContent = '🗺️'; }
+  else { prev.style.backgroundImage = ''; prev.textContent = '<i class="bi bi-map" aria-hidden="true"></i>'; }
   const f = document.getElementById('tourImgFile'); if (f) f.value = '';
   // Gallery: load existing images (excluding the cover), reset pending uploads.
   const allImgs = Array.isArray(tour?.images) ? tour.images : [];
@@ -1057,8 +1058,8 @@ async function uploadTourImage(input) {
     document.getElementById('tourCoverUrl').value = d.url;
     const prev = document.getElementById('tourImgPreview');
     prev.style.backgroundImage = `url('${d.url}')`; prev.textContent = '';
-    toast('✅ ' + (I18N.t('hp_image_uploaded') || 'Image uploaded'));
-  } catch (e) { toast('❌ ' + (e.message || 'Upload failed'), 'error'); input.value=''; }
+    toast('<i class="bi bi-check-circle-fill" aria-hidden="true"></i> ' + (I18N.t('hp_image_uploaded') || 'Image uploaded'));
+  } catch (e) { toast('<i class="bi bi-x-circle" aria-hidden="true"></i> ' + (e.message || 'Upload failed'), 'error'); input.value=''; }
 }
 
 // ── Tour gallery (extra images per tour) ─────────────────────────────
@@ -1210,7 +1211,7 @@ async function saveTour() {
         const lost = d._droppedCols;
         const mapLost = lost.includes('meetingPoint') || lost.includes('route');
         toast(
-          (mapLost ? '⚠️ تم الحفظ لكن بيانات الخريطة لم تُحفظ — يحتاج الأدمن تشغيل migration 036.' : '⚠️ تم الحفظ لكن بعض الحقول الجديدة لم تُحفظ بعد.'),
+          (mapLost ? '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> تم الحفظ لكن بيانات الخريطة لم تُحفظ — يحتاج الأدمن تشغيل migration 036.' : '<i class="bi bi-exclamation-triangle" aria-hidden="true"></i> تم الحفظ لكن بعض الحقول الجديدة لم تُحفظ بعد.'),
           'warning'
         );
       } else {
@@ -1372,7 +1373,7 @@ async function loadEarnings() {
         <td>${_ledgerStatus(row)}</td>
         <td class="text-end" style="white-space:nowrap">
           ${_payoutBtn(row)}
-          <a class="btn btn-sm btn-outline-secondary" href="/api/guides/me/invoice/${encodeURIComponent(row.id)}" target="_blank" title="Download invoice">🧾</a>
+          <a class="btn btn-sm btn-outline-secondary" href="/api/guides/me/invoice/${encodeURIComponent(row.id)}" target="_blank" title="Download invoice"><i class="bi bi-receipt" aria-hidden="true"></i></a>
         </td>
       </tr>`).join('');
   } catch (e) { /* non-critical */ }
@@ -1382,20 +1383,20 @@ async function loadEarnings() {
 function _ledgerStatus(row) {
   if (row.settled) {
     const when = row.paidOutAt ? ` <span class="text-muted" style="font-weight:500">· ${new Date(row.paidOutAt).toLocaleDateString('en-GB')}</span>` : '';
-    return `<span class="badge rounded-pill" style="background:#e6f6ef;color:#0a7d45;font-weight:700">✅ مدفوعة · Paid${when}</span>`;
+    return `<span class="badge rounded-pill" style="background:#e6f6ef;color:#0a7d45;font-weight:700"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> مدفوعة · Paid${when}</span>`;
   }
   if (row.status === 'completed') {
     return row.requested
-      ? `<span class="badge rounded-pill" style="background:#fff3cd;color:#8a6d00;font-weight:700">⏳ طلب الدفع قيد المراجعة · Requested</span>`
-      : `<span class="badge rounded-pill" style="background:#eef2f7;color:#475569;font-weight:700">💰 مستحقّة · Due</span>`;
+      ? `<span class="badge rounded-pill" style="background:#fff3cd;color:#8a6d00;font-weight:700"><i class="bi bi-hourglass-split" aria-hidden="true"></i> طلب الدفع قيد المراجعة · Requested</span>`
+      : `<span class="badge rounded-pill" style="background:#eef2f7;color:#475569;font-weight:700"><i class="bi bi-cash-coin" aria-hidden="true"></i> مستحقّة · Due</span>`;
   }
-  return `<span class="badge rounded-pill" style="background:#eef2f7;color:#64748b;font-weight:700">🚌 قيد التنفيذ · In&nbsp;progress</span>`;
+  return `<span class="badge rounded-pill" style="background:#eef2f7;color:#64748b;font-weight:700"><i class="bi bi-bus-front" aria-hidden="true"></i> قيد التنفيذ · In&nbsp;progress</span>`;
 }
 
 // "Request payment" button — only for earned (completed+paid) but unsettled rows.
 function _payoutBtn(row) {
   if (row.settled || row.status !== 'completed' || row.requested) return '';
-  return `<button class="btn btn-sm btn-teal" onclick="requestPayout('${row.id}', this)" title="اطلب من المنصّة تحويل مستحقّك">💸 طلب الدفع</button>`;
+  return `<button class="btn btn-sm btn-teal" onclick="requestPayout('${row.id}', this)" title="اطلب من المنصّة تحويل مستحقّك"><i class="bi bi-cash-stack" aria-hidden="true"></i> طلب الدفع</button>`;
 }
 
 async function requestPayout(bookingId, btn) {
@@ -1412,11 +1413,11 @@ async function requestPayout(bookingId, btn) {
       loadEarnings();
     } else {
       alert(d.message || 'تعذّر إرسال الطلب.');
-      if (btn) { btn.disabled = false; btn.textContent = '💸 طلب الدفع'; }
+      if (btn) { btn.disabled = false; btn.textContent = '<i class="bi bi-cash-stack" aria-hidden="true"></i> طلب الدفع'; }
     }
   } catch (e) {
     alert('تعذّر الاتصال بالخادم. حاول مجدّداً.');
-    if (btn) { btn.disabled = false; btn.textContent = '💸 طلب الدفع'; }
+    if (btn) { btn.disabled = false; btn.textContent = '<i class="bi bi-cash-stack" aria-hidden="true"></i> طلب الدفع'; }
   }
 }
 // ── AI: improve a tour-package description (guide) ──
@@ -1426,7 +1427,7 @@ async function aiImprovePkg() {
   if (txt.length < 10) { alert('اكتب وصفاً مبدئيّاً للرحلة أوّلاً (بضع كلمات على الأقل).'); return; }
   const btn = document.getElementById('aiPkgBtn');
   const orig = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = '✨ جارٍ التحسين…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '<i class="bi bi-stars" aria-hidden="true"></i> جارٍ التحسين…'; }
   try {
     const r = await fetch('/api/ai/improve', {
       method: 'POST', credentials: 'include',
@@ -1440,7 +1441,7 @@ async function aiImprovePkg() {
   } catch (e) {
     alert(e.message || 'تعذّر التحسين حالياً');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = orig || '✨ حسّن وصف الرحلة بالذكاء · Improve with AI'; }
+    if (btn) { btn.disabled = false; btn.textContent = orig || '<i class="bi bi-stars" aria-hidden="true"></i> حسّن وصف الرحلة بالذكاء · Improve with AI'; }
   }
 }
 function aiApplyPkg() {
@@ -1488,13 +1489,13 @@ function bookingCard(b, actions = '', displayAmount) {
   <div class="booking-card ${b.status}">
     <div class="d-flex justify-content-between align-items-start mb-1">
       <div>
-        <div class="fw-700">👤 ${b.touristName}</div>
+        <div class="fw-700"><i class="bi bi-person" aria-hidden="true"></i> ${b.touristName}</div>
         <div class="small text-muted">${b.touristEmail}</div>
       </div>
       <span class="status-badge status-${b.status}">${statusLabel}</span>
     </div>
-    <div class="small text-muted mb-1">📅 ${formatDate(b.tourDate)} &nbsp;·&nbsp; ${durationLabel} &nbsp;·&nbsp; 📍 ${b.destination} &nbsp;·&nbsp; ${b.participants} ${pLabel}</div>
-    ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${b.specialRequests}"</div>` : ''}
+    <div class="small text-muted mb-1"><i class="bi bi-calendar-event" aria-hidden="true"></i> ${formatDate(b.tourDate)} &nbsp;·&nbsp; ${durationLabel} &nbsp;·&nbsp; <i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${b.destination} &nbsp;·&nbsp; ${b.participants} ${pLabel}</div>
+    ${b.specialRequests ? `<div class="small text-muted mb-2"><i class="bi bi-chat-dots" aria-hidden="true"></i> "${b.specialRequests}"</div>` : ''}
     <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
       <div class="fw-700" style="color:var(--teal)">${amount ? 'OMR ' + amount : ''}</div>
       <div class="d-flex gap-2">${actions}</div>
@@ -1505,15 +1506,15 @@ function bookingCard(b, actions = '', displayAmount) {
 function renderPending(list) {
   const el = document.getElementById('pendingList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty-state" style="padding:20px"><div class="icon">📭</div><p class="text-muted small">${I18N.t('no_pending')}</p></div>`;
+    el.innerHTML = `<div class="empty-state" style="padding:20px"><div class="icon"><i class="bi bi-inbox" aria-hidden="true"></i></div><p class="text-muted small">${I18N.t('no_pending')}</p></div>`;
     return;
   }
   el.innerHTML = list.map(b => {
     if (b.status === 'quoted') {
       // Already priced — waiting for the tourist to accept. Guide may re-price.
       return bookingCard(b, `
-        <span class="badge bg-warning-subtle text-warning align-self-center">${I18N.t('awaiting_tourist') || '⏳ بانتظار قبول السائح'}</span>
-        <button class="btn btn-sm btn-outline-secondary" onclick="quotePrompt('${b.id}', ${b.quotedAmount || 0})">${I18N.t('edit_price') || '✏️ تعديل السعر'}</button>
+        <span class="badge bg-warning-subtle text-warning align-self-center">${I18N.t('awaiting_tourist') || '<i class="bi bi-hourglass-split" aria-hidden="true"></i> بانتظار قبول السائح'}</span>
+        <button class="btn btn-sm btn-outline-secondary" onclick="quotePrompt('${b.id}', ${b.quotedAmount || 0})">${I18N.t('edit_price') || '<i class="bi bi-pencil" aria-hidden="true"></i> تعديل السعر'}</button>
         <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled', this)">${I18N.t('reject_btn')}</button>
       `, b.quotedAmount);
     }
@@ -1521,7 +1522,7 @@ function renderPending(list) {
     // the listing. Guide just accepts or declines (no quote step).
     if (b.packageId || b.startTime) {
       return bookingCard(b, `
-        <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','confirmed', this)">${I18N.t('accept_btn') || '✅ قبول'}</button>
+        <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','confirmed', this)">${I18N.t('accept_btn') || '<i class="bi bi-check-circle-fill" aria-hidden="true"></i> قبول'}</button>
         <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled', this)">${I18N.t('reject_btn')}</button>
       `);
     }
@@ -1530,18 +1531,18 @@ function renderPending(list) {
       <div class="booking-card ${b.status}">
         <div class="d-flex justify-content-between align-items-start mb-1">
           <div>
-            <div class="fw-700">👤 ${b.touristName}</div>
+            <div class="fw-700"><i class="bi bi-person" aria-hidden="true"></i> ${b.touristName}</div>
             <div class="small text-muted">${b.touristEmail}</div>
           </div>
           <span class="status-badge status-${b.status}">${I18N.t('status_' + b.status) || b.status}</span>
         </div>
-        <div class="small text-muted mb-1">📅 ${formatDate(b.tourDate)} &nbsp;·&nbsp; 📍 ${b.destination} &nbsp;·&nbsp; ${b.participants} ${b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl')}</div>
-        ${b.specialRequests ? `<div class="small text-muted mb-2">💬 "${b.specialRequests}"</div>` : ''}
+        <div class="small text-muted mb-1"><i class="bi bi-calendar-event" aria-hidden="true"></i> ${formatDate(b.tourDate)} &nbsp;·&nbsp; <i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${b.destination} &nbsp;·&nbsp; ${b.participants} ${b.participants > 1 ? I18N.t('persons_lbl') : I18N.t('person_lbl')}</div>
+        ${b.specialRequests ? `<div class="small text-muted mb-2"><i class="bi bi-chat-dots" aria-hidden="true"></i> "${b.specialRequests}"</div>` : ''}
         <div class="border-top pt-2 mt-2">
-          <label class="form-label small fw-600 mb-1">${I18N.t('set_price_lbl') || '💰 حدّد سعر الرحلة (OMR)'}</label>
+          <label class="form-label small fw-600 mb-1">${I18N.t('set_price_lbl') || '<i class="bi bi-cash-coin" aria-hidden="true"></i> حدّد سعر الرحلة (OMR)'}</label>
           <div class="d-flex gap-2">
             <input type="number" min="0" step="0.5" class="form-control form-control-sm" id="quote_${b.id}" placeholder="0.00" style="max-width:140px">
-            <button class="btn btn-sm btn-verify" onclick="sendQuote('${b.id}')">${I18N.t('send_offer') || '📤 إرسال العرض'}</button>
+            <button class="btn btn-sm btn-verify" onclick="sendQuote('${b.id}')">${I18N.t('send_offer') || '<i class="bi bi-upload" aria-hidden="true"></i> إرسال العرض'}</button>
             <button class="btn btn-sm btn-suspend" onclick="updateStatus('${b.id}','cancelled', this)">${I18N.t('reject_btn')}</button>
           </div>
         </div>
@@ -1567,7 +1568,7 @@ async function sendQuote(id) {
 }
 
 function quotePrompt(id, current) {
-  const v = prompt(I18N.t('set_price_lbl') || '💰 حدّد سعر الرحلة (OMR)', current || '');
+  const v = prompt(I18N.t('set_price_lbl') || '<i class="bi bi-cash-coin" aria-hidden="true"></i> حدّد سعر الرحلة (OMR)', current || '');
   if (v == null) return;
   const amount = parseFloat(v);
   if (!Number.isFinite(amount) || amount < 0) { toast(I18N.t('enter_valid_price') || 'أدخل سعراً صحيحاً', 'error'); return; }
@@ -1587,7 +1588,7 @@ function renderInProgress(list) {
   if (!el) return;
   if (!list.length) { el.innerHTML = ''; return; }
   el.innerHTML = list.map(b => bookingCard(b, `
-    <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','completed', this)">${I18N.t('end_trip_btn') || '🏁 End Trip'}</button>
+    <button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','completed', this)">${I18N.t('end_trip_btn') || '<i class="bi bi-flag" aria-hidden="true"></i> End Trip'}</button>
   `)).join('');
 }
 
@@ -1604,7 +1605,7 @@ function renderConfirmed(list) {
     const dayBefore = tripDate - 24*60*60*1000;
     const canStart = now >= dayBefore;
     return bookingCard(b, canStart
-      ? `<button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','in_progress', this)">${I18N.t('start_trip_btn') || '🚀 Start Trip'}</button>`
+      ? `<button class="btn btn-sm btn-verify" onclick="updateStatus('${b.id}','in_progress', this)">${I18N.t('start_trip_btn') || '<i class="bi bi-rocket-takeoff" aria-hidden="true"></i> Start Trip'}</button>`
       : '');
   }).join('');
 }
@@ -1722,7 +1723,7 @@ function renderSlots() {
         </span>
       </div>`).join('');
     return `<div style="margin-bottom:10px">
-      <div class="small fw-700 mb-1" style="color:#444">📅 ${dateLabel}</div>
+      <div class="small fw-700 mb-1" style="color:#444"><i class="bi bi-calendar-event" aria-hidden="true"></i> ${dateLabel}</div>
       ${rows}
     </div>`;
   }).join('');
@@ -1767,16 +1768,16 @@ async function loadTripRequests() {
           <span class="open-badge">${I18N.t('trip_status_open')}</span>
         </div>
         <div class="small text-muted mb-1">
-          📅 ${new Date(t.startDate+'T00:00:00').toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}
+          <i class="bi bi-calendar-event" aria-hidden="true"></i> ${new Date(t.startDate+'T00:00:00').toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}
           ${t.endDate ? ' → ' + new Date(t.endDate+'T00:00:00').toLocaleDateString(locale,{day:'numeric',month:'short'}) : ''}
-          · 👥 ${t.groupSize} ${I18N.t('persons_lbl')}
-          ${t.language ? ` · 🌐 ${t.language}` : ''}
-          ${t.budget ? ` · 💰 ${I18N.t('omr_day')} ${t.budget}` : ''}
+          · <i class="bi bi-people" aria-hidden="true"></i> ${t.groupSize} ${I18N.t('persons_lbl')}
+          ${t.language ? ` · <i class="bi bi-globe2" aria-hidden="true"></i> ${t.language}` : ''}
+          ${t.budget ? ` · <i class="bi bi-cash-coin" aria-hidden="true"></i> ${I18N.t('omr_day')} ${t.budget}` : ''}
         </div>
         ${t.notes ? `<div class="small text-muted border-top pt-2 mt-2">${t.notes}</div>` : ''}
         <div class="border-top pt-2 mt-2 d-flex gap-2 flex-wrap">
-          <button class="btn btn-sm btn-verify" onclick="contactTouristInApp('${t.touristId}', ${JSON.stringify(t.touristName).replace(/"/g,'&quot;').replace(/'/g,"&#39;")})">💬 ${I18N.t('contact_tourist')}: ${t.touristName}</button>
-          <a href="mailto:${t.touristEmail}" class="btn btn-sm btn-outline-secondary">✉️</a>
+          <button class="btn btn-sm btn-verify" onclick="contactTouristInApp('${t.touristId}', ${JSON.stringify(t.touristName).replace(/"/g,'&quot;').replace(/'/g,"&#39;")})"><i class="bi bi-chat-dots" aria-hidden="true"></i> ${I18N.t('contact_tourist')}: ${t.touristName}</button>
+          <a href="mailto:${t.touristEmail}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-envelope" aria-hidden="true"></i></a>
         </div>
       </div>`).join('');
   } catch {}
@@ -1825,7 +1826,7 @@ function renderGuideReviews() {
       <div style="font-size:.72rem;color:#aaa">${new Date(r.createdAt).toLocaleDateString(locale,{day:'numeric',month:'short',year:'numeric'})}</div>
       ${r.guideReply ? `
         <div style="margin-top:8px;background:#f4f8f7;border-left:3px solid #0f7b6c;border-radius:8px;padding:8px 10px">
-          <div class="fw-700 small" style="color:#0f7b6c">↩️ ${I18N.t('your_reply') || 'ردّك'}</div>
+          <div class="fw-700 small" style="color:#0f7b6c"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> ${I18N.t('your_reply') || 'ردّك'}</div>
           <p class="mb-0 small" style="line-height:1.5">${gdEsc(r.guideReply)}</p>
         </div>`
       : `
@@ -1859,7 +1860,7 @@ let ASSET_PENDING_PHOTOS = []; // { file, previewUrl } before upload
 let ASSET_EDITING_ID = null;   // ID of asset being edited (null = add mode)
 let ASSET_KEPT_PHOTOS = [];    // existing photo URLs kept during edit
 
-const ASSET_ICONS  = { car:'🚗', boat:'⛵', yacht:'🛥️', camp:'⛺', bike:'🏍️', other:'✨' };
+const ASSET_ICONS  = { car:'<i class="bi bi-car-front" aria-hidden="true"></i>', boat:'<i class="bi bi-water" aria-hidden="true"></i>', yacht:'🛥️', camp:'<i class="bi bi-house" aria-hidden="true"></i>', bike:'🏍️', other:'<i class="bi bi-stars" aria-hidden="true"></i>' };
 const ASSET_LABELS = { car:'سيارة', boat:'قارب', yacht:'يخت', camp:'مخيم', bike:'دراجة', other:'أخرى' };
 
 document.getElementById('assetPhotosInput').addEventListener('change', function() {
@@ -1918,7 +1919,7 @@ function editAsset(id) {
   });
 
   const submitBtn = document.getElementById('assetSubmitBtn');
-  submitBtn.textContent = '💾 تحديث';
+  submitBtn.textContent = '<i class="bi bi-floppy" aria-hidden="true"></i> تحديث';
   submitBtn.onclick = updateAsset;
   document.getElementById('assetCancelBtn').classList.remove('d-none');
 
@@ -2004,7 +2005,7 @@ function renderAssets() {
   }
   list.innerHTML = ASSETS.map(a => `
     <div style="background:#fff;border:1px solid ${ASSET_EDITING_ID===a.id?'#0f7b6c':'#d0ede8'};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start">
-      <div style="font-size:2.2rem;line-height:1">${ASSET_ICONS[a.type]||'✨'}</div>
+      <div style="font-size:2.2rem;line-height:1">${ASSET_ICONS[a.type]||'<i class="bi bi-stars" aria-hidden="true"></i>'}</div>
       <div style="flex:1">
         <div class="fw-700 mb-1">${ASSET_LABELS[a.type]||a.type} — ${a.title}</div>
         ${a.description ? `<div class="small text-muted mb-2">${a.description}</div>` : ''}
@@ -2014,7 +2015,7 @@ function renderAssets() {
           </div>` : '<div class="small text-muted">بدون صور</div>'}
       </div>
       <div class="d-flex flex-column gap-1">
-        <button onclick="editAsset('${a.id}')" class="btn btn-sm btn-outline-primary">✏️</button>
+        <button onclick="editAsset('${a.id}')" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil" aria-hidden="true"></i></button>
         <button onclick="removeAsset('${a.id}')" class="btn btn-sm btn-outline-danger">✕</button>
       </div>
     </div>`).join('');
@@ -2085,12 +2086,12 @@ function guideConnectSSE()     { return GUIDE_MSG && GUIDE_MSG.connectSSE(); }
 #tours, #bookings, #reviews, #availability, #gallery { scroll-margin-top: 84px; }
 @media (max-width: 576px){ .acc-dest { max-width: 120px; } }
 </style>
-<script src="/js/gd-messages.js?v=2"></script>
+<script src="/js/gd-messages.js?v=3"></script>
 <script src="/vendor/apexcharts.min.js" defer></script>
 <script src="/js/pwa.js?v=16" defer></script>
 <script src="/js/gd-gallery.js?v=1"></script>
 <script src="/js/gd-video-upload.js?v=1"></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>
 

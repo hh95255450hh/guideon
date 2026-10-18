@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -35,28 +35,29 @@
   .badge-off{ background:#fee2e2; color:#991b1b; padding:5px 14px; border-radius:20px; font-size:.82rem; font-weight:700; }
 </style>
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
 <nav class="navbar navbar-dark">
   <div class="container">
     <a class="navbar-brand" href="/"><img src="/logo.png" alt="Guideon" height="44"></a>
-    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()">🌐 عربي</button>
+    <button class="btn btn-sm btn-outline-light ms-auto" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
   </div>
 </nav>
 
 <div class="container py-4">
 
   <div class="tfa-card" id="loadingCard">
-    <div class="text-center py-4">⏳ Loading...</div>
+    <div class="text-center py-4"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Loading...</div>
   </div>
 
   <!-- ─── State: 2FA disabled (offer setup) ─────────────────────────────── -->
   <div class="tfa-card d-none" id="disabledCard">
     <div class="text-center mb-3">
-      <div style="font-size:3rem">🔐</div>
+      <div style="font-size:3rem"><i class="bi bi-shield-lock" aria-hidden="true"></i></div>
       <h3 class="fw-800 mt-2" data-i18n="tfa_setup_title">Two-Factor Authentication</h3>
-      <p class="text-muted mb-2"><span class="badge-off" data-i18n="tfa_status_off">⚠️ Disabled</span></p>
+      <p class="text-muted mb-2"><span class="badge-off"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> <span data-i18n="tfa_status_off">Disabled</span></span></p>
       <p class="text-muted" data-i18n="tfa_setup_intro">Add a second layer of security to your account. You'll need a 6-digit code from your phone every time you sign in.</p>
     </div>
     <ol class="mb-4" style="padding-left:20px">
@@ -64,7 +65,7 @@
       <li class="mb-2"><span data-i18n="tfa_step2">Scan the QR code we'll show you.</span></li>
       <li class="mb-2"><span data-i18n="tfa_step3">Enter the 6-digit code to confirm.</span></li>
     </ol>
-    <button class="btn-teal btn w-100 py-2 fw-700" onclick="startSetup()" data-i18n="tfa_start_btn">🔒 Start Setup</button>
+    <button class="btn-teal btn w-100 py-2 fw-700" onclick="startSetup()"><i class="bi bi-lock" aria-hidden="true"></i> <span data-i18n="tfa_start_btn">Start Setup</span></button>
     <div class="text-center mt-3">
       <a href="/" class="text-muted small text-decoration-none" data-i18n="back_home">← Back to Home</a>
     </div>
@@ -73,7 +74,7 @@
   <!-- ─── State: setup in progress (show QR + verify) ────────────────────── -->
   <div class="tfa-card d-none" id="setupCard">
     <div class="text-center mb-3">
-      <h4 class="fw-800" data-i18n="tfa_scan_title">📱 Scan This QR Code</h4>
+      <h4 class="fw-800"><i class="bi bi-phone" aria-hidden="true"></i> <span data-i18n="tfa_scan_title">Scan This QR Code</span></h4>
       <p class="text-muted small" data-i18n="tfa_scan_sub">Open your authenticator app and scan the code below.</p>
       <div class="qr-box"><img loading="lazy" decoding="async" id="qrImg" src="" alt="QR"></div>
       <p class="text-muted small" data-i18n="tfa_manual_lbl">Or enter this secret manually:</p>
@@ -94,18 +95,18 @@
   <!-- ─── State: 2FA enabled (show backup codes / disable button) ────────── -->
   <div class="tfa-card d-none" id="enabledCard">
     <div class="text-center mb-3">
-      <div style="font-size:3rem">✅</div>
+      <div style="font-size:3rem"><i class="bi bi-check-circle-fill" aria-hidden="true"></i></div>
       <h3 class="fw-800 mt-2" data-i18n="tfa_enabled_title">Two-Factor is Active</h3>
-      <p class="text-muted mb-2"><span class="badge-on" data-i18n="tfa_status_on">🔒 Enabled</span></p>
+      <p class="text-muted mb-2"><span class="badge-on"><i class="bi bi-lock" aria-hidden="true"></i> <span data-i18n="tfa_status_on">Enabled</span></span></p>
       <p class="text-muted small" data-i18n="tfa_enabled_sub">Your account is protected by an authenticator app.</p>
     </div>
 
     <!-- Backup codes — shown only right after setup -->
     <div id="backupCodesBox" class="backup-codes d-none mb-3">
-      <h6 class="fw-800 text-warning mb-2">⚠️ <span data-i18n="tfa_backup_title">Save These Backup Codes</span></h6>
+      <h6 class="fw-800 text-warning mb-2"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> <span data-i18n="tfa_backup_title">Save These Backup Codes</span></h6>
       <p class="small mb-2" data-i18n="tfa_backup_desc">If you lose your phone, you can use one of these codes (each works only once) to sign in. <strong>Save them in a safe place now</strong> — you won't see them again.</p>
       <div id="backupCodesList"></div>
-      <button class="btn btn-sm btn-outline-secondary mt-2" onclick="downloadBackupCodes()">⬇️ <span data-i18n="tfa_download_backup">Download as text file</span></button>
+      <button class="btn btn-sm btn-outline-secondary mt-2" onclick="downloadBackupCodes()"><i class="bi bi-arrow-down" aria-hidden="true"></i> <span data-i18n="tfa_download_backup">Download as text file</span></button>
     </div>
 
     <hr>
@@ -125,7 +126,7 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
+<script src="/js/i18n.js?v=59"></script>
 <script>
 let backupCodesCache = [];
 
@@ -229,6 +230,6 @@ function downloadBackupCodes() {
 
 loadStatus();
 </script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>

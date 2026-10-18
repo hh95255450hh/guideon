@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-<link rel="preload" as="script" href="/js/common-widgets.js?v=32">
+<link rel="preload" as="script" href="/js/common-widgets.js?v=33">
 <link rel="stylesheet" href="/css/gd-instant.css?v=1">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -31,6 +31,7 @@
 </script>
 <link rel="stylesheet" href="/css/style.css?v=42">
 <script src="/js/image-compress.js?v=3"></script>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 
@@ -42,11 +43,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <div class="navbar-controls ms-auto">
-        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()">🌐 عربي</button>
+        <button class="btn btn-sm btn-outline-light lang-toggle" onclick="I18N.toggle()"><i class="bi bi-globe2" aria-hidden="true"></i> عربي</button>
         <span class="text-white opacity-75 small" id="navName"></span>
-        <a href="/guides/tourist-handbook-ar.pdf" target="_blank" class="btn btn-sm btn-outline-light" title="دليل الاستخدام">📖</a>
-        <a href="/wishlist.html" class="btn btn-sm btn-outline-light" title="Wishlist">❤️</a>
-        <a href="/profile.html" class="btn btn-sm btn-outline-light" title="My Profile">👤</a>
+        <a href="/guides/tourist-handbook-ar.pdf" target="_blank" class="btn btn-sm btn-outline-light" title="دليل الاستخدام"><i class="bi bi-book" aria-hidden="true"></i></a>
+        <a href="/wishlist.html" class="btn btn-sm btn-outline-light" title="Wishlist"><i class="bi bi-heart-fill" aria-hidden="true"></i></a>
+        <a href="/profile.html" class="btn btn-sm btn-outline-light" title="My Profile"><i class="bi bi-person" aria-hidden="true"></i></a>
         <a href="/search.html" class="btn btn-outline-light btn-sm" data-i18n="nav_find">Find a Guide</a>
         <button class="btn btn-sm btn-danger" onclick="doLogout()" data-i18n="nav_signout">Sign Out</button>
       </div>
@@ -56,7 +57,7 @@
 
 <div class="dash-header">
   <div class="container">
-    <h2 class="mb-3" data-i18n="tourist_dash">My Dashboard 📋</h2>
+    <h2 class="mb-3" data-i18n="tourist_dash">My Dashboard <i class="bi bi-clipboard" aria-hidden="true"></i></h2>
     <div class="row g-3">
       <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statTotal">—</div><div class="lbl" data-i18n="total_bk">Total Bookings</div></div></div>
       <div class="col-6 col-md-3"><div class="dash-stat"><div class="num" id="statConfirmed">—</div><div class="lbl" data-i18n="confirmed_bk">Confirmed</div></div></div>
@@ -80,7 +81,7 @@
   </div>
 
   <div class="mt-4 text-center">
-    <a href="/search.html" class="btn-teal btn" data-i18n="find_guides">🔍 Find More Guides</a>
+    <a href="/search.html" class="btn-teal btn"><i class="bi bi-search" aria-hidden="true"></i> <span data-i18n="find_guides">Find More Guides</span></a>
   </div>
 
   <!-- ── REFERRAL WIDGET (populated by JS after login) ── -->
@@ -89,7 +90,7 @@
   <!-- ── MESSAGES SECTION ── -->
   <div class="card shadow-sm mt-5" id="msgSection">
     <div class="card-header d-flex justify-content-between align-items-center" style="background:var(--teal);color:#fff">
-      <h6 class="mb-0 fw-700" data-i18n="msg_section">💬 Messages</h6>
+      <h6 class="mb-0 fw-700"><i class="bi bi-chat-dots" aria-hidden="true"></i> <span data-i18n="msg_section">Messages</span></h6>
       <span class="badge bg-danger" id="msgUnreadBadge" style="display:none"></span>
     </div>
     <!-- Conversation list -->
@@ -112,7 +113,7 @@
       <div id="msgTyping" class="px-3 pb-1 text-muted small" style="display:none;font-style:italic">…</div>
       <div class="p-2 border-top d-flex gap-2 align-items-center">
         <input type="file" id="msgFile" accept="image/*" style="display:none" onchange="attachMsg(this)">
-        <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('msgFile').click()" title="Attach image" style="flex-shrink:0">📎</button>
+        <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('msgFile').click()" title="Attach image" style="flex-shrink:0"><i class="bi bi-paperclip" aria-hidden="true"></i></button>
         <input class="form-control form-control-sm" id="msgInput" data-i18n-ph="msg_type_ph" placeholder="Type a message..." oninput="typingMsg()">
         <button class="btn btn-sm btn-teal" onclick="sendMsg()" data-i18n="msg_send" style="flex-shrink:0">Send</button>
       </div>
@@ -156,8 +157,8 @@
 
 <div id="toast-container"></div>
 <script defer src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/i18n.js?v=58"></script>
-<script src="/js/chatbot.js?v=13" defer></script>
+<script src="/js/i18n.js?v=59"></script>
+<script src="/js/chatbot.js?v=14" defer></script>
 <script>
 let ALL_BOOKINGS = [];
 let CURRENT_FILTER = 'all';
@@ -247,7 +248,7 @@ function renderBookings() {
 
   if (!list.length) {
     const emptyLabel = CURRENT_FILTER === 'all' ? '' : I18N.t('tab_' + CURRENT_FILTER);
-    container.innerHTML = `<div class="empty-state"><div class="icon">📋</div><h5>${I18N.t('no_bookings')}${emptyLabel ? ' — ' + emptyLabel : ''}</h5><p class="text-muted">${CURRENT_FILTER === 'all' ? I18N.t('no_bookings_sub') : ''}</p></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="icon"><i class="bi bi-clipboard" aria-hidden="true"></i></div><h5>${I18N.t('no_bookings')}${emptyLabel ? ' — ' + emptyLabel : ''}</h5><p class="text-muted">${CURRENT_FILTER === 'all' ? I18N.t('no_bookings_sub') : ''}</p></div>`;
     return;
   }
 
@@ -268,8 +269,8 @@ function renderBookings() {
     <div class="booking-card ${b.status}">
       <div class="d-flex justify-content-between align-items-start mb-2">
         <div>
-          <h6 class="fw-700 mb-1">📍 ${window.gdEsc(b.destination||'')} — ${window.gdEsc(b.guideName||'')}</h6>
-          <div class="small text-muted">📅 ${formatDate(b.tourDate)} &nbsp;·&nbsp; ${durationLabel} &nbsp;·&nbsp; ${b.participants} ${pLabel}</div>
+          <h6 class="fw-700 mb-1"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${window.gdEsc(b.destination||'')} — ${window.gdEsc(b.guideName||'')}</h6>
+          <div class="small text-muted"><i class="bi bi-calendar-event" aria-hidden="true"></i> ${formatDate(b.tourDate)} &nbsp;·&nbsp; ${durationLabel} &nbsp;·&nbsp; ${b.participants} ${pLabel}</div>
         </div>
         <span class="status-badge status-${b.status}">${statusIcon} ${statusLabel}</span>
       </div>
@@ -428,9 +429,9 @@ function connectMsgSSE()  { return MSG && MSG.connectSSE(); }
 .star-picker { cursor: pointer; color: #d1d5db; transition: color .1s; }
 .star-picker:hover { color: #f59e0b; }
 </style>
-<script src="/js/gd-messages.js?v=2"></script>
+<script src="/js/gd-messages.js?v=3"></script>
 <script src="/js/pwa.js?v=16" defer></script>
-<script src="/js/common-widgets.js?v=32"></script>
+<script src="/js/common-widgets.js?v=33"></script>
 </body>
 </html>
 

@@ -53,6 +53,7 @@
   .cf{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;opacity:.9;animation:fall linear forwards}
   @keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:0}}
 </style>
+<link rel="stylesheet" href="/vendor/bootstrap-icons/bootstrap-icons.min.css?v=1">
 </head>
 <body>
 <div class="card" id="card">
@@ -81,7 +82,7 @@ function seal(kind){
   if(kind==='ok') return `<div class="seal">
     <svg class="ring" viewBox="0 0 88 88"><circle cx="44" cy="44" r="40"></circle><circle class="p" cx="44" cy="44" r="40"></circle></svg>
     <svg class="tick" viewBox="0 0 36 36"><path d="M9 19l6 6 12-13"></path></svg></div>`;
-  if(kind==='warn') return `<div class="seal warn"><span class="x">⚠️</span></div>`;
+  if(kind==='warn') return `<div class="seal warn"><span class="x"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></span></div>`;
   return `<div class="seal"><div class="spin"></div></div>`;
 }
 
@@ -92,7 +93,7 @@ function done(b){
     <div class="band"><img src="/logo.png" class="logo" alt="Guideon"></div>
     ${seal('ok')}
     <div class="body">
-      <h1>تم الدفع بنجاح 🎉</h1>
+      <h1>تم الدفع بنجاح <i class="bi bi-balloon" aria-hidden="true"></i></h1>
       <p class="sub">استلمنا دفعتك وأرسلنا حجزك إلى مزوّد الخدمة لتأكيده.</p>
       <div class="chips">
         ${amt?`<div class="chip"><div class="l">المبلغ المدفوع</div><div class="v">${amt}</div></div>`:''}
@@ -101,7 +102,7 @@ function done(b){
       <div class="steps">
         <div class="step"><span class="n">1</span> يؤكّد المرشد حجزك خلال وقت قصير.</div>
         <div class="step"><span class="n">2</span> تواصل معه عبر الرسائل لترتيب التفاصيل.</div>
-        <div class="step"><span class="n">3</span> استمتع بتجربتك العُمانية الأصيلة 🌿</div>
+        <div class="step"><span class="n">3</span> استمتع بتجربتك العُمانية الأصيلة <i class="bi bi-tree" aria-hidden="true"></i></div>
       </div>
       <a href="/tourist-dashboard.html#bookings" class="btn btn-primary">العودة إلى حجوزاتي</a>
       <a href="/" class="btn btn-ghost">الصفحة الرئيسية</a>
