@@ -1,3 +1,28 @@
+/* Shared /api/auth/me request — see comment inside. Must run before any page script asks. */
+(function () {
+  // The navbar, the widgets, the PWA layer and the page itself each asked
+  // /api/auth/me on load — 3-4 identical requests per page view. They now share
+  // one in-flight request (each caller gets its own clone of the response).
+  if (!window.__gdMeShared && window.fetch) {
+    window.__gdMeShared = true;
+    var realFetch = window.fetch;
+    let me = null;
+    window.fetch = function (input, init) {
+      var url = typeof input === 'string' ? input : (input && input.url) || '';
+      var method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+      if (method === 'GET' && /\/api\/auth\/me(\?|$)/.test(url)) {
+        if (!me) {
+          me = realFetch.call(this, input, init);
+          me.catch(() => {}).finally(() => setTimeout(() => { me = null; }, 3000));
+        }
+        return me.then(r => r.clone());
+      }
+      return realFetch.apply(this, arguments);
+    };
+  }
+
+})();
+
 /**
  * Site-wide widgets: WhatsApp floating button + Cookie consent banner.
  * Auto-injects into every page that includes this script.

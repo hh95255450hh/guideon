@@ -357,8 +357,14 @@ exports.search = async (req, res) => {
   // for long or unusual ones, and the local reading is the fallback when the
   // model is unavailable (no key, no credit, outage).
   const local = localSearch.parse(q, loc, today);
+  // Whatever happens to the model, the visitor lands on the search page: with
+  // the filters we understood, or on the full list of licensed guides.
+  const fallback = () => {
+    if (!local._hits) { local.summary_ar = 'كل المرشدين المعتمدين'; local.summary_en = 'All licensed guides'; }
+    return reply(local, 'local');
+  };
   if (localSearch.confident(local)) return reply(local, 'local');
-  if (!ai.enabled) return local._hits ? reply(local, 'local') : res.status(503).json(AI_OFF);
+  if (!ai.enabled) return fallback();
 
   try {
     const key = `${today}|${q.toLowerCase().replace(/\s+/g, ' ')}`;
@@ -366,7 +372,7 @@ exports.search = async (req, res) => {
     if (!raw) {
       // Only a real model call spends the visitor's daily AI quota.
       const over = charge(req);
-      if (over) return local._hits ? reply(local, 'local') : res.status(over.status).json(over.body);
+      if (over) return fallback();
       raw = await ai.completeJSON({
         system: SEARCH_SYSTEM(today),
         messages: [{ role: 'user', content: q }],
@@ -381,8 +387,8 @@ exports.search = async (req, res) => {
     reply(raw, 'ai');
   } catch (e) {
     console.error('[ai:search]', e.message);
-    if (local._hits) return reply(local, 'local');
-    aiFailure(res, e, 'Could not understand the search right now. — تعذّر فهم البحث حالياً.');
+    if (e && e.code === 'AI_REFUSED') return aiFailure(res, e, '');
+    fallback();
   }
 };
 
