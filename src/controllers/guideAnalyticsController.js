@@ -9,12 +9,33 @@ const reviews  = new SupabaseDB('reviews', 'reviewId');
 const payouts  = new SupabaseDB('guide_payouts');
 const users    = new SupabaseDB('users');
 
+// One view per visitor per package per 30 minutes, and never the provider
+// viewing their own tour: refreshing a page (or a script hammering this public
+// endpoint) used to inflate the counts guides see and rankings use.
+const VIEW_WINDOW_MS = 30 * 60 * 1000;
+const recentViews = new Map();
+exports._recentViews = recentViews;
+function seenRecently(key) {
+  const now = Date.now();
+  const last = recentViews.get(key);
+  if (last && now - last < VIEW_WINDOW_MS) return true;
+  if (recentViews.size > 50000) {
+    for (const [k, t] of recentViews) if (now - t >= VIEW_WINDOW_MS) recentViews.delete(k);
+    if (recentViews.size > 50000) recentViews.clear();
+  }
+  recentViews.set(key, now);
+  return false;
+}
+
 // POST /api/packages/:id/view — record a page view
 exports.recordView = async (req, res) => {
   try {
     const { id } = req.params;
     const pkg = await packages.findById(id);
     if (!pkg) return res.status(404).json({ success: false });
+    const viewer = (req.session && req.session.userId) || req.ip || '';
+    if (viewer && viewer === pkg.providerId) return res.json({ success: true, counted: false });
+    if (seenRecently(`${id}|${viewer}`)) return res.json({ success: true, counted: false });
 
     await views.insert({
       id: 'v-' + uuidv4().slice(0, 12),
@@ -49,7 +70,8 @@ exports.recordEvent = async (req, res) => {
       guideId:    guideId   || null,
       userId:     req.session?.userId || null,
       sessionRef: req.session?.id     || null,
-      meta:       typeof meta === 'object' && meta ? meta : {},
+      // Capped: a public endpoint must not store arbitrarily large blobs.
+      meta:       typeof meta === 'object' && meta && JSON.stringify(meta).length <= 2000 ? meta : {},
       ip:         req.ip || req.headers['x-forwarded-for']?.split(',')[0] || null,
       createdAt:  new Date().toISOString(),
     });

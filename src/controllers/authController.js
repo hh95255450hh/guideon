@@ -16,6 +16,17 @@ function randomToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+// Reset and verification tokens are stored as a SHA-256 hash; only the email
+// carries the raw token. A leaked users table then gives no usable reset link.
+const hashToken = t => crypto.createHash('sha256').update(String(t)).digest('hex');
+// Lookup by hash only. No fallback to raw values: raw and hashed tokens look
+// alike (64 hex chars), so a fallback would let a leaked hash work as a link.
+// Links sent before this change expire within 1-24h; users can request anew.
+async function findByToken(field, token) {
+  if (!token || typeof token !== 'string') return null;
+  return users.findByField(field, hashToken(token));
+}
+
 // Generate a short, URL-safe referral code unique per user (6 chars, uppercase).
 function generateReferralCode() {
   return crypto.randomBytes(4).toString('base64url').toUpperCase().slice(0, 6);
@@ -108,7 +119,7 @@ exports.register = async (req, res) => {
       phone: phone || '', userType,
       createdAt: new Date().toISOString(), isSuspended: false,
       emailVerified: false,
-      emailVerifyToken: verifyToken,
+      emailVerifyToken: hashToken(verifyToken),
       emailVerifyExpires: verifyExpires,
       referralCode,
       ...(referredByUserId && { referredBy: referredByUserId }),
@@ -662,7 +673,7 @@ exports.forgotPassword = async (req, res) => {
     const token = randomToken();
     const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
     await users.update(user.id, {
-      resetPasswordToken: token,
+      resetPasswordToken: hashToken(token),
       resetPasswordExpires: expires,
     });
 
@@ -697,7 +708,7 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ success: false, message: pwdError });
     }
 
-    const user = await users.findByField('resetPasswordToken', token);
+    const user = await findByToken('resetPasswordToken', token);
     if (!user) {
       return res.status(400).json({ success: false, message: 'Invalid or expired reset link. Please request a new one.' });
     }
@@ -723,7 +734,7 @@ exports.resetPassword = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
-    const user = await users.findByField('emailVerifyToken', token);
+    const user = await findByToken('emailVerifyToken', token);
 
     if (!user) {
       return res.status(400).send('<h2>Invalid verification link</h2><p>This link is invalid or has already been used.</p>');
@@ -769,7 +780,7 @@ exports.resendVerification = async (req, res) => {
     const token = randomToken();
     const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await users.update(user.id, {
-      emailVerifyToken: token,
+      emailVerifyToken: hashToken(token),
       emailVerifyExpires: expires,
     });
 

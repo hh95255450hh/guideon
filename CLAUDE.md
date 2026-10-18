@@ -39,10 +39,14 @@ strings in the product are bilingual **Arabic + English**.
   HMAC callback, `src/config/paymob.js`); Thawani (`src/config/thawani.js`,
   amounts in *baisa* = OMR×1000) is the fallback. `PAYMENTS_ENABLED` gates the
   whole Pay-Now flow. Do **not** reintroduce Stripe (it is NOT in package.json).
-  AI uses the **Claude API** (`@anthropic-ai/sdk`, model `claude-opus-4-8`);
+  AI uses the **Claude API** (`@anthropic-ai/sdk`): tiers in `src/services/ai.js` — Opus 5.5
+  (trip plan), Sonnet 5.5 (bios/match), Haiku 5.5 (search/summaries); short searches resolve
+  locally for free (`src/services/localSearch.js`);
   `openai` lingers in package.json but is not the active AI provider.
-- **Hosting:** **Oman Data Park VPS** (`185.64.25.111`), Docker Compose stack
-  (`guideon-app` + `guideon-nginx`). Deploy: SSH in and run `bash /opt/deploy.sh`.
+- **Hosting:** **LightNode Dubai VPS** (`130.94.45.155`, ssh key `~/.ssh/guideon_rsa`) since
+  2026-10-18; the old Oman Data Park VPS (`185.64.25.111`) is kept only as rollback. Docker
+  Compose stack (`guideon-app` + `guideon-nginx`). Deploy: push to `main` — the webhook runs
+  `/opt/deploy.sh`, which runs the test suite first and refuses to deploy on failure.
   **Railway was deleted** — never reference it. Env vars live in
   `/opt/guideon/deploy/.env`; rotate secrets via `/opt/rotate-secret.sh VAR`.
   Self-hosted Supabase runs on the same server (Kong on port 8000).
@@ -58,8 +62,8 @@ strings in the product are bilingual **Arabic + English**.
 
 ```bash
 node src/app.js          # run locally on PORT (needs SUPABASE_* env to hit DB)
-npm test                 # node --test test/*.test.js  (no DB needed; 55 tests)
-git add -A && git commit && git push   # then SSH: bash /opt/deploy.sh
+npm test                 # node --test test/*.test.js  (no DB needed; ~190 tests)
+git add -A && git commit && git push   # auto-deploys via the webhook
 ```
 
 - Local `npm test` has **no database** — it can't catch data-shape bugs.
@@ -169,7 +173,9 @@ Live and working on ODP VPS. Recent work:
 - **Security audit (2026-07-02)**: fixed stored-XSS in review/asset rendering,
   review photo-URL validation, shared-wishlist contact leak, and the
   `isSuspended:false` NULL-trap in all public listing paths.
-- Tests: 66 passing (`test/*.test.js`).
+- Tests: ~190 passing (`test/*.test.js`). Rules from the 2026-10-19 security audit: never
+  trust a price, amount or file URL from the request (derive it from the DB); user strings in
+  admin onclick arguments go through `jattr()`, in HTML through `esc()`.
 
 Open follow-ups: AI Trip Planner, WhatsApp Omani number verification,
 escrow payments, iOS push setup. Architectural: real RLS, Redis for SSE/cache.
