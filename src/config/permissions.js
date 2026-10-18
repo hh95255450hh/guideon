@@ -36,6 +36,9 @@ const PERMISSIONS = {
   EXPORT_DATA:       'export_data',
   VIEW_ANALYTICS:    'view_analytics',
   MANAGE_FINANCE:    'manage_finance',   // add/edit expenses, salaries, discounts
+  // Site content (blog, regions, trails) and homepage settings. Content is
+  // rendered on public pages, so it is no longer open to every staff role.
+  MANAGE_CONTENT:    'manage_content',
 
   // Staff management
   MANAGE_STAFF:      'manage_staff',
@@ -81,7 +84,7 @@ const ROLES = {
     description: 'Send email campaigns, view analytics, export user data',
     permissions: [
       'view_users', 'view_analytics',
-      'broadcast_email', 'export_data',
+      'broadcast_email', 'export_data', 'manage_content',
     ],
   },
 

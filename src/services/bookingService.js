@@ -98,6 +98,7 @@ async function createBooking(touristId, body, guest = null) {
   let totalAmount;
   let people;            // hoisted: authoritative seat count, reused for participantCount
   let slotData = null;
+  let addonsSrv = [];
 
   if (packageId) {
     packageData = await packages.findById(packageId);
@@ -111,8 +112,25 @@ async function createBooking(touristId, body, guest = null) {
       throw new BookingError(400, 'Selected date is not available for this tour.', 'DATE_UNAVAILABLE');
     }
 
+    // Option and add-on PRICES come from the package, never from the request:
+    // the browser only says which variant and which add-ons were picked. A
+    // client-sent price let anyone book a tour for a few baisa.
+    const pkgVariants = Array.isArray(packageData.variants) ? packageData.variants : [];
+    let variantPriceSrv, variantPerExtraSrv;
+    if (variantName && pkgVariants.length) {
+      const v = pkgVariants.find(x => x && x.name === variantName);
+      if (!v) throw new BookingError(400, "The selected option is no longer available. — الخيار المحدد لم يعد متاحاً.", 'VARIANT_UNAVAILABLE');
+      variantPriceSrv = Math.max(0, parseFloat(v.priceAdult) || 0) || undefined;
+      if (v.priceChild != null) variantPerExtraSrv = v.priceChild;
+    }
+    const pkgAddons = Array.isArray(packageData.addons) ? packageData.addons : [];
+    const picked = new Set((Array.isArray(addons) ? addons : []).map(a => a && a.name).filter(Boolean));
+    addonsSrv = pkgAddons.filter(a => a && picked.has(a.name))
+      .map(a => ({ name: a.name, price: Math.max(0, parseFloat(a.price) || 0) }));
+
     try {
-      ({ totalAmount, people } = rules.calculatePackagePrice({ packageData, participants, adultCount, childCount, variantPrice, addons }));
+      ({ totalAmount, people } = rules.calculatePackagePrice({ packageData, participants, adultCount, childCount,
+        variantPrice: variantPriceSrv, variantPerExtra: variantPerExtraSrv, addons: addonsSrv }));
     } catch (e) {
       throw new BookingError(400, e.message, e.code || 'PRICING_ERROR');
     }
@@ -241,7 +259,7 @@ async function createBooking(touristId, body, guest = null) {
       adultCount: parseInt(adultCount) || 1,
       childCount: parseInt(childCount) || 0,
       variantName: variantName || null,
-      addons: Array.isArray(addons) ? addons : [],
+      addons: addonsSrv,
     }),
   };
 

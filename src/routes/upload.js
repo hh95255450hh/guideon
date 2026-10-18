@@ -6,6 +6,13 @@ const SupabaseDB = require('../models/SupabaseDB');
 const { uploadBuffer, deleteByUrl } = require('../services/storageService');
 
 const router = express.Router();
+
+// Generic image/video uploads feed listings, events and the homepage. Tourists
+// never use them, and a 50 MB video endpoint open to every account was free
+// storage for anyone who signed up.
+const PUBLISHERS = new Set(['guide', 'company', 'team', 'admin', 'staff']);
+const requirePublisher = (req, res, next) => PUBLISHERS.has(req.session && req.session.userType)
+  ? next() : res.status(403).json({ success: false, message: 'Not allowed for this account. — غير متاح لهذا الحساب.' });
 const users  = new SupabaseDB('users');
 
 /**
@@ -115,7 +122,14 @@ router.delete('/gallery', requireLogin, async (req, res) => {
   try {
     const { url } = req.body;
     const user    = await users.findById(req.session.userId);
-    const gallery = (user.galleryPhotos || []).filter(u => u !== url);
+    const current = Array.isArray(user && user.galleryPhotos) ? user.galleryPhotos : [];
+    // Only a photo in the caller's OWN gallery may be deleted. This used to
+    // delete any storage URL it was given — another guide's photos, receipts,
+    // message attachments — for any signed-in account.
+    if (!url || !current.includes(url)) {
+      return res.status(404).json({ success: false, message: 'Photo not found in your gallery. — الصورة غير موجودة في معرضك.' });
+    }
+    const gallery = current.filter(u => u !== url);
     deleteByUrl(url).catch(() => {});
     await users.update(req.session.userId, { galleryPhotos: gallery });
     res.json({ success: true, gallery });
@@ -127,7 +141,7 @@ router.delete('/gallery', requireLogin, async (req, res) => {
 
 // POST /api/upload/image — generic image upload (homepage slides, etc.)
 // Returns { success, url } with NO side effects on the user's profile.
-router.post('/image', requireLogin, safeMulter(upload.single('photo')), async (req, res) => {
+router.post('/image', requireLogin, requirePublisher, safeMulter(upload.single('photo')), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
   try {
     const { url } = await uploadBuffer({
@@ -161,7 +175,7 @@ const uploadVid = multer({
 
 // POST /api/upload/video-file — generic video upload (homepage slides, etc.)
 // Returns { success, url }. Use a short, muted, web-optimised clip.
-router.post('/video-file', requireLogin, safeMulter(uploadVid.single('video')), async (req, res) => {
+router.post('/video-file', requireLogin, requirePublisher, safeMulter(uploadVid.single('video')), async (req, res) => {
   if (!req.file) return res.status(400).json({ success: false, message: 'No video uploaded (use mp4/webm/mov, max 50 MB).' });
   try {
     const { url } = await uploadBuffer({

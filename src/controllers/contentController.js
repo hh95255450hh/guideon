@@ -95,6 +95,17 @@ exports.save = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid content payload.' });
     }
 
+    // Blog bodies are rendered as HTML on public pages: keep formatting, drop
+    // scripts, event handlers and unsafe URLs before they are stored.
+    if (key === 'blog' && Array.isArray(value.posts)) {
+      const { sanitizeHtml } = require('../utils/sanitizeHtml');
+      for (const p of value.posts) {
+        if (!p || typeof p !== 'object') continue;
+        if (typeof p.body_ar === 'string') p.body_ar = sanitizeHtml(p.body_ar);
+        if (typeof p.body_en === 'string') p.body_en = sanitizeHtml(p.body_en);
+      }
+    }
+
     const dbKey = 'content_' + key;
     const patch = { value, updated_by: req.session.userId, updatedAt: new Date().toISOString() };
     const existing = await settings.findById(dbKey);

@@ -109,7 +109,7 @@ router.get('/messages/thread',        requirePermission('delete_messages'), admi
 // Content management — regions / trails / blog (admin or staff)
 const content = require('../controllers/contentController');
 router.get('/content/:key',        content.get);
-router.put('/content/:key',        content.save);
-router.post('/content/:key/reset', content.reset);
+router.put('/content/:key',        requirePermission('manage_content'), content.save);
+router.post('/content/:key/reset', requirePermission('manage_content'), content.reset);
 
 module.exports = router;

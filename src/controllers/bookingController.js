@@ -143,6 +143,21 @@ exports.updateStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid status transition.' });
     }
 
+    // Which states each change may start from (admin is not limited). Without
+    // this a provider could "confirm" a pay-first booking still awaiting
+    // payment (skipping the platform's payment), or revive a cancelled or
+    // completed booking.
+    if (userType !== 'admin') {
+      const FROM = {
+        confirmed: isProvider ? ['pending'] : ['quoted'],
+        cancelled: ['pending', 'quoted', 'confirmed', 'awaiting_payment'],
+      };
+      if (FROM[status] && !FROM[status].includes(booking.status)) {
+        return res.status(400).json({ success: false,
+          message: 'This booking can no longer be changed that way. — لا يمكن تغيير هذا الحجز بهذه الطريقة.' });
+      }
+    }
+
     // Tourist can only CONFIRM (accept) a booking that the guide has quoted.
     // On acceptance the agreed price becomes the booking total.
     if (status === 'confirmed' && userType === 'tourist') {

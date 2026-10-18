@@ -135,10 +135,12 @@ function priceFromTiers(tiers, adults) {
  * and uses simple base+extra semantics with the variant's own price.
  * Returns { totalAmount, people } or throws { code, message }.
  */
-function calculatePackagePrice({ packageData, participants, adultCount, childCount, variantPrice, addons }) {
+function calculatePackagePrice({ packageData, participants, adultCount, childCount, variantPrice, variantPerExtra, addons }) {
   const maxGroup = parseInt(packageData.max_group_size) || 50;
-  const addonsTotal = Array.isArray(addons) ? addons.reduce((s, a) => s + (parseFloat(a.price) || 0), 0) : 0;
-  const discount = packageData.discountPercent || 0;
+  // Never negative: a negative add-on would lower the price below the tour's.
+  const addonsTotal = Array.isArray(addons) ? addons.reduce((s, a) => s + Math.max(0, parseFloat(a.price) || 0), 0) : 0;
+  // A provider-set discount is capped at 90% so a typo can't make a tour free.
+  const discount = Math.min(90, Math.max(0, parseFloat(packageData.discountPercent) || 0));
   const tiers = Array.isArray(packageData.pricing_tiers) ? packageData.pricing_tiers : [];
   const tiered = packageData.pricing_mode === 'tiered' && tiers.length && !variantPrice;
 
@@ -162,7 +164,7 @@ function calculatePackagePrice({ packageData, participants, adultCount, childCou
     people = Math.max(2, parseInt(participants) || parseInt(adultCount) || 2);
     if (people > maxGroup) throw { code: 'GROUP_TOO_LARGE', message: `This tour accepts at most ${maxGroup} people.` };
     const basePrice = parseFloat(variantPrice) || packageData.price_adult || 0;
-    const perExtra  = packageData.price_child || 0;
+    const perExtra  = variantPerExtra != null ? Math.max(0, parseFloat(variantPerExtra) || 0) : (packageData.price_child || 0);
     const extras    = Math.max(0, people - 2);
     subtotal = basePrice + (perExtra * extras) + addonsTotal;
   }

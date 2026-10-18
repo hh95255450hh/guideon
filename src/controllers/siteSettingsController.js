@@ -1,5 +1,6 @@
 const SupabaseDB = require('../models/SupabaseDB');
 const settings = new SupabaseDB('site_settings', 'key');
+const { hasPermission } = require('../config/permissions');
 
 // Only these keys are public. The table also holds internal configuration —
 // commission rates and the VAT number today, and whatever an admin saves there
@@ -76,6 +77,12 @@ exports.update = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Admin only.' });
     }
     const { key } = req.params;
+    // Commission rates are money; everything else here is public site content.
+    // Any staff role could change both before.
+    const need = key === 'commission' ? 'manage_finance' : 'manage_content';
+    if (!req.user || !hasPermission(req.user, need)) {
+      return res.status(403).json({ success: false, message: `Permission denied. This action requires: ${need}` });
+    }
     if (!['hero','carousel','activities','pageHeroes','theme','footer','navbar','commission'].includes(key)) {
       return res.status(400).json({ success: false, message: 'Unknown setting key.' });
     }
