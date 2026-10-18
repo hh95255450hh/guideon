@@ -1163,3 +1163,9 @@ fort/castle، والكلمة المميِّزة وحدها مع «Oman». الن
 - **ذاكرة:** خطة الرحلة 6 ساعات لنفس الطلب؛ البحث لنفس اليوم؛ ملخص التقييمات حتى تتغير التقييمات.
 - **السقف العام اليومي** 800 استدعاء (AI_DAILY_GLOBAL).
 - **تنبيه:** مفتاح Anthropic مشترك بين Guideon ورشد (نفس الرصيد). نفد الرصيد 2026-10-14 — اشحن من console.anthropic.com وفعّل Auto-reload.
+
+## الأيقونات: Bootstrap Icons (2026-10-18)
+- مكتبة Bootstrap Icons 1.11.3 مستضافة ذاتياً في `public/vendor/bootstrap-icons/` (رخصة MIT)، وتُحمَّل في كل الصفحات عبر gd-navbar.js و common-widgets.js.
+- استُبدل نحو 820 إيموجي كانت تُستخدم كأيقونات (في HTML الصفحات وقوالب innerHTML) بـ `<i class="bi bi-…" aria-hidden="true"></i>`. النصوص العادية (alert / textContent / رسائل) لم تُلمس.
+- **للأيقونات الجديدة:** استخدم `<i class="bi bi-اسم-الأيقونة" aria-hidden="true"></i>` من https://icons.getbootstrap.com بدل الإيموجي.
+- **النشر:** الموقع الآن على خادم LightNode دبي (130.94.45.155) — لا يوجد عليه webhook نشر تلقائي ولا /opt/deploy.sh بعد؛ النشر يدوي: `cd /opt/guideon && git pull --ff-only && cd deploy && docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build app && docker restart guideon-nginx`.
