@@ -1168,4 +1168,9 @@ fort/castle، والكلمة المميِّزة وحدها مع «Oman». الن
 - مكتبة Bootstrap Icons 1.11.3 مستضافة ذاتياً في `public/vendor/bootstrap-icons/` (رخصة MIT)، وتُحمَّل في كل الصفحات عبر gd-navbar.js و common-widgets.js.
 - استُبدل نحو 820 إيموجي كانت تُستخدم كأيقونات (في HTML الصفحات وقوالب innerHTML) بـ `<i class="bi bi-…" aria-hidden="true"></i>`. النصوص العادية (alert / textContent / رسائل) لم تُلمس.
 - **للأيقونات الجديدة:** استخدم `<i class="bi bi-اسم-الأيقونة" aria-hidden="true"></i>` من https://icons.getbootstrap.com بدل الإيموجي.
-- **النشر:** الموقع الآن على خادم LightNode دبي (130.94.45.155) — لا يوجد عليه webhook نشر تلقائي ولا /opt/deploy.sh بعد؛ النشر يدوي: `cd /opt/guideon && git pull --ff-only && cd deploy && docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build app && docker restart guideon-nginx`.
+- **النشر:** الموقع الآن على خادم LightNode دبي (130.94.45.155). إن لم يصل الدفع إلى الموقع تلقائياً، النشر اليدوي: `cd /opt/guideon && git pull --ff-only && cd deploy && docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build app && docker restart guideon-nginx`.
+
+## فحص شامل (2026-10-18)
+- 47 صفحة 200، كل الـAPI العامة سليمة، لا حقول حساسة في القوائم العامة، ترويسات الأمان و TLS سليمة (guideon حتى 2027-01، rushd حتى 2026-12)، منافذ قاعدة البيانات مغلقة خارجياً، 15 حاوية سليمة، نسخ احتياطي يومي يعمل، المراقبة كل 5 د OK.
+- أُصلح: طلبات /api/auth/me المكررة (3-4 لكل صفحة → طلب مشترك)، والبحث الذكي الغامض يفتح قائمة المرشدين بدل رسالة خطأ.
+- متبقٍّ: رصيد Anthropic فارغ (كل ميزات الذكاء الاصطناعي متوقفة عدا البحث المحلي)؛ ساعة الخادم الجديد كانت متقدمة ~8 ساعات قبل تصحيحها (أسماء نسخ 19 أكتوبر)؛ الخادم القديم ODP ما زال يعمل.
