@@ -20,11 +20,11 @@ test('nginx: public storage objects are cached, and that block comes first', () 
 });
 
 // This file is the live config for every site on the VPS, not only Guideon.
-// The Rushd and Wafa vhosts once existed only on the server; a reset to the
+// The Rushd vhosts once existed only on the server (Wafa was retired 2026-10-18); a reset to the
 // repo would have taken rushd.om offline.
 test('nginx: every site served from the VPS is in the repo copy', () => {
   for (const host of ['server_name guideon.om', 'server_name rushd.om;', 'server_name www.rushd.om;',
-                      'server_name rushd.guideon.om;', 'server_name wafa.guideon.om;']) {
+                      'server_name rushd.guideon.om;']) {
     assert.ok(conf.includes(host), `missing vhost: ${host}`);
   }
   assert.ok(conf.includes('proxy_pass http://rushd-app:4000;'), 'rushd.om must proxy to rushd-app');
