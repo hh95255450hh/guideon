@@ -187,7 +187,7 @@ app.use((req, res, next) => {
 // .html page instead of 404ing.
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/') || req.path.startsWith('/data/')) res.set('X-Robots-Tag', 'noindex');
-  if (req.method === 'GET' && /^\/[a-z][a-z-]*$/.test(req.path)) {
+  if ((req.method === 'GET' || req.method === 'HEAD') && /^\/[a-z][a-z-]*$/.test(req.path)) {
     const file = path.join(__dirname, '..', 'public', req.path.slice(1) + '.html');
     if (fs.existsSync(file)) {
       const q = req.originalUrl.indexOf('?');
