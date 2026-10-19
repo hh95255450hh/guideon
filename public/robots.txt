@@ -1,6 +1,22 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+# Public read-only data the pages render from. Google renders guide, tour,
+# company and region pages with JavaScript; with all of /api/ blocked it saw
+# empty pages (Search Console: Soft 404 / crawled-not-indexed). AI endpoints,
+# accounts, bookings and payments stay blocked.
+Allow: /api/guides
+Allow: /api/companies
+Allow: /api/packages
+Allow: /api/reviews
+Allow: /api/content
+Allow: /api/site-settings
+Allow: /api/teams
+Allow: /api/stats/public
+Allow: /api/qa
+# Code fragments Google picked up as links (e.g. ?id=${g.id}) → not pages.
+Disallow: /*${
+Disallow: /*%7B
 Disallow: /admin
 Disallow: /admin.html
 Disallow: /tourist-dashboard
@@ -34,6 +50,22 @@ User-agent: cohere-ai
 User-agent: Bytespider
 Allow: /
 Disallow: /api/
+# Public read-only data the pages render from. Google renders guide, tour,
+# company and region pages with JavaScript; with all of /api/ blocked it saw
+# empty pages (Search Console: Soft 404 / crawled-not-indexed). AI endpoints,
+# accounts, bookings and payments stay blocked.
+Allow: /api/guides
+Allow: /api/companies
+Allow: /api/packages
+Allow: /api/reviews
+Allow: /api/content
+Allow: /api/site-settings
+Allow: /api/teams
+Allow: /api/stats/public
+Allow: /api/qa
+# Code fragments Google picked up as links (e.g. ?id=${g.id}) → not pages.
+Disallow: /*${
+Disallow: /*%7B
 Disallow: /admin
 Disallow: /admin.html
 Disallow: /tourist-dashboard

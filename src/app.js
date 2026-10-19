@@ -12,6 +12,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const path = require('path');
+const fs = require('fs');
 
 const authRoutes    = require('./routes/auth');
 const guideRoutes   = require('./routes/guides');
@@ -176,6 +177,22 @@ app.use((req, res, next) => {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
+  }
+  next();
+});
+
+// Search hygiene. Google may now fetch the public read-only API (robots.txt
+// allows it so pages render with their data) — but raw JSON must never become
+// a search result itself. Short page links (/teams, /about) 301 to the real
+// .html page instead of 404ing.
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/data/')) res.set('X-Robots-Tag', 'noindex');
+  if (req.method === 'GET' && /^\/[a-z][a-z-]*$/.test(req.path)) {
+    const file = path.join(__dirname, '..', 'public', req.path.slice(1) + '.html');
+    if (fs.existsSync(file)) {
+      const q = req.originalUrl.indexOf('?');
+      return res.redirect(301, req.path + '.html' + (q >= 0 ? req.originalUrl.slice(q) : ''));
+    }
   }
   next();
 });

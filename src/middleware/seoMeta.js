@@ -290,6 +290,10 @@ const STATIC_PAGES = {
   '/cancellation.html': { name: 'Cancellation Policy' },
   '/terms.html':        { name: 'Terms of Service' },
   '/privacy.html':      { name: 'Privacy Policy' },
+  // Reached with ?return= / ?type= variants; one canonical per page.
+  '/login.html':        { name: 'Log in' },
+  '/register.html':     { name: 'Create an account' },
+  '/search.html':       { name: 'Find a Guide' },
 };
 // FAQ rich results: built from the questions in the page itself (it used to be
 // assembled in the browser, which crawlers may never run).
