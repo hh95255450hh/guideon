@@ -1186,3 +1186,10 @@ fort/castle، والكلمة المميِّزة وحدها مع «Oman». الن
 - **المكتبات:** `npm audit fix` — proxy-addr (حرج)، sharp، compression، busboy، fast-copy → 0 ثغرات.
 - **أُصلح لاحقاً (2026-10-19):** رموز إعادة كلمة المرور والتحقق من البريد صارت تُخزَّن مجزّأة (SHA-256) — الروابط القديمة غير المستخدمة تنتهي ويُطلب رابط جديد؛ المشاهدات تُحسب مرة لكل زائر لكل 30 دقيقة ولا تُحسب مشاهدة صاحب الرحلة؛ حجم بيانات أحداث التحليلات محدود. CLAUDE.md محدَّث (الخادم الجديد، نماذج الذكاء، قواعد الأمان).
 - **متبقٍّ:** الخادم القديم ODP ما زال يعمل (مُصلح، لكن الأفضل إيقافه وإلغاء الاشتراك).
+
+## تحسين الظهور في Google (2026-10-19)
+- **بيانات منظمة (JSON-LD) على كل صفحة عامة:** صفحات المحافظات = TouristDestination + معالمها (TouristAttraction مع الإحداثيات)؛ المقالات = BlogPosting؛ الأسئلة الشائعة = FAQPage (صار يُبنى في الخادم بدل المتصفح)؛ صفحة المحافظات = ItemList؛ المدونة = Blog؛ + مسار تنقل (Breadcrumb) لكل صفحة. (كانت موجودة سابقاً: المرشد Person، الرحلة Product+Offer، الشركة TravelAgency، صفحات الهبوط /tour-guides و /ar.)
+- **canonical + Open Graph + Twitter** لـ 13 صفحة ثابتة كانت بدونها؛ وإزالة الوصف المكرر في صفحات المحافظات.
+- **sitemap:** أُضيفت about و explore (المجموع ~223 رابطاً).
+- الكود: `src/middleware/seoMeta.js` (STATIC_PAGES + regionMeta + blogMeta)، اختبار `test/seo-static-meta.test.js`.
+- **مطلوب من المالك:** Google Search Console → إرسال `https://guideon.om/sitemap.xml` وطلب فهرسة الصفحات الرئيسية؛ إنشاء Google Business Profile؛ روابط من مواقع موثوقة (وزارة التراث والسياحة / Visit Oman / الشركاء).
