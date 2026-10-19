@@ -245,17 +245,7 @@ search.addEventListener('input', () => {
   noResults.classList.toggle('d-none', visibleCount > 0);
 });
 
-// FAQ Schema.org for rich snippets in Google
-const faqs = [];
-document.querySelectorAll('.faq-item').forEach(item => {
-  const q = item.querySelector('.faq-q span').textContent.trim();
-  const a = [...item.querySelectorAll('.faq-a p')].map(p => p.textContent.trim()).join(' ');
-  if (q && a) faqs.push({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } });
-});
-const ld = document.createElement('script');
-ld.type = 'application/ld+json';
-ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs });
-document.head.appendChild(ld);
+// FAQ structured data is rendered on the server (src/middleware/seoMeta.js).
 </script>
 </body>
 </html>
