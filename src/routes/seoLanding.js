@@ -247,9 +247,10 @@ function relatedLinks(currentSlug, lang) {
   const cats = CATEGORIES.filter(c => c.slug !== currentSlug).slice(0, 6)
     .map(c => `<a href="${pre}/tours/${c.slug}">${esc(t.catTours(name(c)))}</a>`).join('');
   const comp = `<a href="${pre}/tour-companies">${esc(t.allCompanies)}</a>`;
+  const hubLink = `<a href="${pre}/tour-guides">${esc(lang === 'ar' ? 'كل المرشدين في عُمان' : 'All tour guides in Oman')}</a>`;
   return `
     <h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">${t.exploreMore}</h2>
-    <div class="seo-links">${places}${cats}${comp}</div>`;
+    <div class="seo-links">${hubLink}${places}${cats}${comp}</div>`;
 }
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -594,6 +595,96 @@ async function renderCompanies(req, res, next, lang) {
   }
 }
 
+// ── Hub: /tour-guides and /ar/tour-guides ──
+// The head term "tour guide in Oman" / "مرشد سياحي في عُمان" had no page of its
+// own: /tour-guides answered 404 while 48 place pages sat underneath it. This
+// hub targets the head term, lists the best-rated verified guides, and links
+// every destination and trip type, so authority flows down to the long tail.
+function hubFAQ(lang, nGuides) {
+  if (lang === 'ar') return [
+    { q: 'كيف أجد مرشدًا سياحيًا في عُمان؟', a: `يضمّ Guideon ${nGuides} مرشدًا سياحيًا موثّقًا في محافظات السلطنة. اختر الوجهة أو نوع الرحلة، قارن المرشدين حسب التقييم واللغة والسعر، ثم احجز بأمان وادفع بالريال العُماني.` },
+    { q: 'هل المرشدون على Guideon مرخّصون؟', a: 'يراجع فريق Guideon كل مرشد قبل ظهوره، ويُظهر شارة «مرخّص من الوزارة» لمن يحمل ترخيص وزارة التراث والسياحة.' },
+    { q: 'كم يكلّف المرشد السياحي في عُمان؟', a: 'يحدد كل مرشد سعره اليومي ويظهر في ملفه بالريال العُماني، ويمكنك طلب رحلة مخصّصة للحصول على عرض سعر قبل الدفع.' },
+    { q: 'بأي لغات يتحدث المرشدون؟', a: 'العربية والإنجليزية في الغالب، ومرشدون يتحدثون الألمانية والفرنسية والإيطالية والروسية والصينية وغيرها — يمكنك التصفية حسب اللغة.' },
+  ];
+  return [
+    { q: 'How do I find a tour guide in Oman?', a: `Guideon lists ${nGuides} verified local tour guides across the Sultanate. Pick a destination or trip type, compare guides by rating, language and price, then book securely and pay in Omani rials.` },
+    { q: 'Are the guides on Guideon licensed?', a: 'Every guide is reviewed by the Guideon team before appearing, and guides holding a Ministry of Heritage and Tourism licence carry a "Ministry licensed" badge.' },
+    { q: 'How much does a private tour guide in Oman cost?', a: 'Each guide sets a daily rate shown on their profile in OMR. You can also request a custom trip and get a price offer before paying anything.' },
+    { q: 'What languages do Omani tour guides speak?', a: 'Mostly Arabic and English, with guides speaking German, French, Italian, Russian, Chinese and more. You can filter guides by language.' },
+  ];
+}
+
+async function renderHub(req, res, next, lang) {
+  const ar = lang === 'ar', t = T[lang], pre = ar ? '/ar' : '';
+  try {
+    const all = await verifiedGuides();
+    const top = all.slice().sort((a, b) =>
+      ((Number(b.rating) || 0) - (Number(a.rating) || 0)) || ((Number(b.totalReviews) || 0) - (Number(a.totalReviews) || 0)));
+    const n = all.length;
+    const canonical = `${APP_URL}${pre}/tour-guides`;
+    const altUrl = `${APP_URL}${ar ? '' : '/ar'}/tour-guides`;
+    const title = ar
+      ? 'مرشد سياحي في عُمان — احجز مرشدين محليين مرخّصين | Guideon'
+      : 'Tour Guides in Oman — Book Licensed Local Guides | Guideon';
+    const description = ar
+      ? `احجز مرشدًا سياحيًا محليًا في سلطنة عُمان: ${n} مرشدًا موثّقًا في مسقط ونزوى وصلالة ومسندم والرمال وغيرها. قارن التقييم واللغة والسعر واحجز بأمان.`
+      : `Book a private local tour guide in Oman: ${n} verified, Ministry-licensed guides in Muscat, Nizwa, Salalah, Musandam, Wahiba Sands and more. Compare rating, language and price.`;
+    const h1 = ar ? 'مرشدون سياحيون في سلطنة عُمان' : 'Tour Guides in Oman';
+    const intro = ar
+      ? 'اكتشف عُمان مع مرشد محلي يعرفها: قلاع نزوى وبهلاء، وأخوار مسندم، ورمال الشرقية، وخريف صلالة، وأودية جبال الحجر. كل مرشد على Guideon موثّق، ويحمل كثير منهم ترخيص وزارة التراث والسياحة.'
+      : 'See Oman with a local who knows it: the forts of Nizwa and Bahla, the fjords of Musandam, the Wahiba Sands, the Salalah khareef and the wadis of the Hajar mountains. Every guide on Guideon is verified, and many hold a Ministry of Heritage and Tourism licence.';
+
+    const counts = PLACES.map(p => ({ p, c: all.filter(g => guideServesPlace(g, p)).length }))
+      .filter(x => x.c > 0).sort((a, b) => b.c - a.c);
+    const placeLinks = counts.map(({ p, c }) =>
+      `<a href="${pre}/tour-guides/${p.slug}">${esc(t.guidesIn(ar ? p.ar : p.en))} <span class="text-muted">(${c})</span></a>`).join('');
+    const catLinks = CATEGORIES.filter(c => all.some(g => guideMatchesCategory(g, c)))
+      .map(c => `<a href="${pre}/tours/${c.slug}">${esc(t.catTours(ar ? c.ar : c.en))}</a>`).join('');
+    const faqs = hubFAQ(lang, n);
+
+    const bodyHtml = `
+      <div class="crumbs"><a href="${ar ? '/?lang=ar' : '/'}">${t.home}</a> › ${esc(h1)}</div>
+      <p class="text-muted">${ar ? `${n} مرشدًا موثّقًا في ${counts.length} وجهة.` : `${n} verified guides across ${counts.length} destinations.`}</p>
+      <div class="my-3"><a href="/search.html" class="btn btn-teal">${esc(t.browseAll)}</a></div>
+      <h2 class="fw-700 mt-4 mb-2" style="font-size:1.2rem">${ar ? 'المرشدون حسب الوجهة' : 'Guides by destination'}</h2>
+      <div class="seo-links">${placeLinks}</div>
+      ${catLinks ? `<h2 class="fw-700 mt-4 mb-2" style="font-size:1.2rem">${ar ? 'حسب نوع الرحلة' : 'By type of trip'}</h2><div class="seo-links">${catLinks}</div>` : ''}
+      <h2 class="fw-700 mt-5 mb-3" style="font-size:1.2rem">${ar ? 'أعلى المرشدين تقييمًا' : 'Top-rated guides'}</h2>
+      <div class="row g-3">${top.slice(0, 24).map(g => guideCard(g, lang)).join('')}</div>
+      <div class="my-4"><a href="${pre}/tour-companies" class="btn btn-outline-secondary">${esc(t.allCompanies)}</a></div>
+      <section class="mt-5">
+        <h2 class="fw-700 mb-3" style="font-size:1.2rem">${ar ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
+        ${faqs.map(f => `<details class="seo-faq"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}
+      </section>`;
+
+    const jsonld = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'BreadcrumbList', itemListElement: [
+          { '@type': 'ListItem', position: 1, name: t.home, item: APP_URL + '/' },
+          { '@type': 'ListItem', position: 2, name: h1, item: canonical },
+        ]},
+        { '@type': 'ItemList', name: h1, numberOfItems: n,
+          itemListElement: top.slice(0, 24).map((g, i) => ({ '@type': 'ListItem', position: i + 1,
+            url: `${APP_URL}/guide-profile.html?id=${g.id}`, name: g.fullName })) },
+        { '@type': 'FAQPage', mainEntity: faqs.map(f => ({ '@type': 'Question', name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+      ],
+    };
+
+    res.set('Cache-Control', 'public, max-age=600');
+    res.type('html').send(shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex: n === 0 }));
+  } catch (e) {
+    console.error('[seoLanding:hub]', e.message);
+    next();
+  }
+}
+
+router.get('/tour-guides',             (req, res, next) => renderHub(req, res, next, 'en'));
+router.get('/ar/tour-guides',          (req, res, next) => renderHub(req, res, next, 'ar'));
+// No category hub of its own: the guide hub lists every trip type.
+router.get(['/tours', '/ar/tours'],    (req, res) => res.redirect(301, req.path.startsWith('/ar') ? '/ar/tour-guides' : '/tour-guides'));
 router.get('/tour-guides/:place',       (req, res, next) => renderPlace(req, res, next, 'en'));
 router.get('/ar/tour-guides/:place',    (req, res, next) => renderPlace(req, res, next, 'ar'));
 router.get('/tour-guides/:place/:category',    (req, res, next) => renderCombo(req, res, next, 'en'));

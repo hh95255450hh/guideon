@@ -37,7 +37,8 @@ test('seo: slugs are unique and URL-safe', () => {
 test('seo: landing router registers both EN and AR routes', () => {
   const router = require('../src/routes/seoLanding');
   const paths = router.stack.map(l => l.route && l.route.path).filter(Boolean);
-  for (const p of ['/tour-guides/:place', '/ar/tour-guides/:place', '/tours/:category', '/ar/tours/:category']) {
+  for (const p of ['/tour-guides', '/ar/tour-guides', // hub for the head term "tour guide in Oman"
+                   '/tour-guides/:place', '/ar/tour-guides/:place', '/tours/:category', '/ar/tours/:category']) {
     assert.ok(paths.includes(p), `missing route ${p}`);
   }
 });

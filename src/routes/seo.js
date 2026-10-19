@@ -38,6 +38,8 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/cancellation.html', changefreq: 'yearly', priority: 0.4 },
       { loc: '/instant.html',      changefreq: 'weekly', priority: 0.8 },
       { loc: '/about.html',        changefreq: 'monthly',priority: 0.7 },
+      { loc: '/tour-guides',       changefreq: 'daily',  priority: 0.95 },
+      { loc: '/ar/tour-guides',    changefreq: 'daily',  priority: 0.95 },
       { loc: '/explore.html',      changefreq: 'weekly', priority: 0.8 },
     ];
 
