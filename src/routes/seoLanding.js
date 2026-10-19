@@ -75,8 +75,36 @@ const T = {
   },
 };
 
+// Representative coordinates per geographic destination (TouristDestination schema).
+const GEO = {
+  muscat:[23.5859,58.4059], nizwa:[22.9333,57.5333], bahla:[22.9643,57.3005],
+  'jabal-shams':[23.2300,57.2600], 'al-hamra':[23.1167,57.2997], salalah:[17.0194,54.0897],
+  musandam:[26.1900,56.2400], khasab:[26.1794,56.2477], sur:[22.5667,59.5289],
+  'wadi-shab':[22.8406,59.2369], 'wahiba-sands':[22.1500,58.8000], 'wadi-bani-khalid':[22.6322,59.1100],
+  ibra:[22.6908,58.5333], sohar:[24.3473,56.7094], rustaq:[23.3908,57.4244],
+  nakhal:[23.3953,57.8250], 'jabal-akhdar':[23.0700,57.6600], ibri:[23.2254,56.5158],
+  'daymaniyat-islands':[23.8500,58.0900],
+};
+
+// Three real, useful Q&A per destination — rendered visibly on the page AND
+// emitted as FAQPage JSON-LD (extra unique content + feeds the AI answer
+// engines that robots.txt explicitly welcomes).
+function destinationFAQ(place, lang) {
+  const nm = lang === 'ar' ? place.ar : place.en;
+  if (lang === 'ar') return [
+    { q:`ما أفضل وقت لزيارة ${nm}؟`, a:`الأشهر الأبرد من أكتوبر إلى أبريل مثالية لاستكشاف ${nm} وأنشطتها الخارجية. وتتميّز صلالة باستثناء موسم الخريف الأخضر من يونيو إلى سبتمبر.` },
+    { q:`هل أحتاج مرشدًا مرخّصًا في ${nm}؟`, a:`يمكنك الاستكشاف بنفسك، لكنّ مرشدًا محليًا مرخّصًا يضيف الأمان والوصول إلى الأماكن والسياق الثقافي. يعرض Guideon مرشدين موثّقين في ${nm}، بعضهم مرخّص من الوزارة.` },
+    { q:`كيف أحجز مرشدًا في ${nm}؟`, a:`تصفّح المرشدين الموثّقين في هذه الصفحة، قارن حسب التقييم واللغة والسعر، اطلب رحلة مخصّصة لتحصل على عرض سعر، ثم احجز بأمان عبر Guideon.` },
+  ];
+  return [
+    { q:`When is the best time to visit ${nm}?`, a:`The cooler months from October to April are ideal for exploring ${nm} and its outdoor activities. Salalah is the exception, prized for its green khareef monsoon season from June to September.` },
+    { q:`Do I need a licensed guide in ${nm}?`, a:`You can explore on your own, but a licensed local guide adds safety, access and cultural context. Guideon lists verified guides for ${nm}, including Ministry-licensed professionals.` },
+    { q:`How do I book a guide in ${nm}?`, a:`Browse the verified guides on this page, compare them by rating, language and price, request a custom trip to get a price offer, then book securely through Guideon.` },
+  ];
+}
+
 // Shared page shell — consistent header/footer + the site stylesheet.
-function shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex }) {
+function shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtml, jsonld, noindex, image }) {
   const ar = lang === 'ar';
   const t = T[lang];
   const enUrl = ar ? altUrl : canonical;
@@ -97,11 +125,14 @@ function shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtm
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${esc(canonical)}">
-<meta property="og:image" content="${APP_URL}/logo.png">
+<meta property="og:image" content="${esc(image || APP_URL + '/logo.png')}">
 <meta property="og:site_name" content="Guideon">
 <meta property="og:locale" content="${ar ? 'ar_OM' : 'en_US'}">
 <meta property="og:locale:alternate" content="${ar ? 'en_US' : 'ar_OM'}">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
+<meta name="twitter:image" content="${esc(image || APP_URL + '/logo.png')}">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="stylesheet" href="/css/bootstrap.min.css">
 <link rel="stylesheet" href="/css/style.css?v=40">
@@ -124,6 +155,11 @@ function shell({ lang, title, description, canonical, altUrl, h1, intro, bodyHtm
   .crumbs a{color:#0f7b6c;text-decoration:none}
   .langsw{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:20px;padding:5px 14px;font-size:.82rem;font-weight:700;text-decoration:none}
   .langsw:hover{background:rgba(255,255,255,.25);color:#fff}
+  .seo-faq{background:#fff;border:1px solid #e7eaee;border-radius:12px;padding:12px 16px;margin-bottom:8px}
+  .seo-faq summary{font-weight:700;color:#0f1c3e;cursor:pointer;list-style:none}
+  .seo-faq summary::-webkit-details-marker{display:none}
+  .seo-faq[open] summary{color:#0f7b6c}
+  .seo-faq p{margin:8px 0 0;color:#475569;line-height:1.7}
 </style>
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 </head>
@@ -263,17 +299,38 @@ async function renderPlace(req, res, next, lang) {
       .map(c => `<a href="${ar ? '/ar' : ''}/tour-guides/${place.slug}/${c.slug}">${esc(ar ? `رحلات ${c.ar} في ${place.ar}` : `${c.en} tours in ${place.en}`)}</a>`)
       .join('');
 
+    const faqs = destinationFAQ(place, lang);
     const bodyHtml = `
       <div class="crumbs"><a href="${ar ? '/?lang=ar' : '/'}">${t.home}</a> › <a href="/regions.html">${t.destinations}</a> › ${esc(ar ? place.ar : place.en)}</div>
       <p class="text-muted">${countLine}</p>
       <div class="my-3"><a href="${searchHref}" class="btn btn-teal">${esc(t.searchFilter(ar ? place.ar : place.en))}</a></div>
       ${cardsHtml}
       ${comboLinks ? `<h2 class="fw-700 mt-5 mb-2" style="font-size:1.2rem">${esc(ar ? `أنواع الرحلات في ${place.ar}` : `Tour types in ${place.en}`)}</h2><div class="seo-links">${comboLinks}</div>` : ''}
+      <section class="mt-5">
+        <h2 class="fw-700 mb-3" style="font-size:1.2rem">${esc(ar ? `أسئلة شائعة عن ${place.ar}` : `FAQ about ${place.en}`)}</h2>
+        ${faqs.map(f => `<details class="seo-faq"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}
+      </section>
       ${relatedLinks(place.slug, lang)}`;
+
+    const geo = GEO[place.slug];
+    const destination = {
+      '@type': 'TouristDestination',
+      name: ar ? place.ar : place.en,
+      description: ar ? place.blurbAr : cap(place.blurb),
+      url: canonical,
+      image: `${APP_URL}/logo.png`,
+      touristType: ar ? 'سيّاح' : 'Tourists',
+      containedInPlace: { '@type': 'AdministrativeArea', name: ar ? place.govAr : place.gov,
+        containedInPlace: { '@type': 'Country', name: ar ? 'عُمان' : 'Oman' } },
+      ...(geo ? { geo: { '@type': 'GeoCoordinates', latitude: geo[0], longitude: geo[1] } } : {}),
+    };
+    const faqPage = { '@type': 'FAQPage', mainEntity: faqs.map(f => ({
+      '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
 
     const jsonld = {
       '@context': 'https://schema.org',
       '@graph': [
+        destination,
         { '@type': 'BreadcrumbList', itemListElement: [
           { '@type': 'ListItem', position: 1, name: t.home, item: APP_URL + '/' },
           { '@type': 'ListItem', position: 2, name: t.destinations, item: APP_URL + '/regions.html' },
@@ -285,6 +342,7 @@ async function renderPlace(req, res, next, lang) {
             url: `${APP_URL}/guide-profile.html?id=${g.id}`,
             name: g.fullName,
           })) },
+        faqPage,
       ],
     };
 
