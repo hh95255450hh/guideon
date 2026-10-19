@@ -1193,3 +1193,12 @@ fort/castle، والكلمة المميِّزة وحدها مع «Oman». الن
 - **sitemap:** أُضيفت about و explore (المجموع ~223 رابطاً).
 - الكود: `src/middleware/seoMeta.js` (STATIC_PAGES + regionMeta + blogMeta)، اختبار `test/seo-static-meta.test.js`.
 - **مطلوب من المالك:** Google Search Console → إرسال `https://guideon.om/sitemap.xml` وطلب فهرسة الصفحات الرئيسية؛ إنشاء Google Business Profile؛ روابط من مواقع موثوقة (وزارة التراث والسياحة / Visit Oman / الشركاء).
+
+## تقرير الفهرسة في Search Console (2026-10-19) وإصلاحاته
+الحالة قبل الإصلاح: 62 صفحة مفهرسة، 163 غير مفهرسة. الأسباب الحقيقية وما أُصلح:
+- **www.guideon.om كان يعرض نسخة كاملة من الموقع** → صفحات مكررة واختيار Google لنسخة www. الآن تحويل 301 إلى guideon.om (nginx).
+- **robots.txt كان يحجب كل /api/** → Google يعرض صفحات المرشدين/الرحلات/المحافظات فارغة (Soft 404 / «تم الزحف ولم تُفهرس»). الآن مسموح بقراءة البيانات العامة فقط (guides, companies, packages, reviews, content, site-settings, teams, stats/public, qa)؛ الذكاء الاصطناعي والحسابات والحجوزات والدفع محجوبة. ردود JSON عليها `X-Robots-Tag: noindex`.
+- **روابط 404 وهمية** من نصوص الكود (`?id=${g.id}`) → محجوبة في robots.txt؛ والروابط القصيرة مثل /teams تُحوّل 301 إلى /teams.html.
+- **صفحات مكررة بلا canonical** (login/register/search مع معاملات، regions, faq, blog, terms…) → canonical واحد لكل صفحة.
+- طبيعي ولا يحتاج إصلاحاً: تحويلات http→https، صفحات لوحات التحكم المحجوبة عمداً، صفحات الهبوط الفارغة (noindex مقصود).
+- **مطلوب:** في Search Console الضغط على «التحقق من الإصلاح» لكل سبب، وإعادة إرسال sitemap. وحث المرشدين على إكمال ملفاتهم (ملف بلا نبذة = محتوى ضعيف لا يُفهرس).
