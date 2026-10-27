@@ -150,12 +150,14 @@ async function notify(opts) {
           let sent = null;
           try { sent = await whatsapp.sendText(user.phone, waBody); } catch (_) {}
           // Outside the 24h window free-text is rejected → fall back to the
-          // approved template (guideon_alert: {{1}}=title, {{2}}=details+link).
+          // approved template ({{1}}=title, {{2}}=details+link).
           if (!sent) {
-            const tplName = process.env.WHATSAPP_TEMPLATE_NAME || 'guideon_alert';
+            // Company-branded template; the platform name reaches the reader
+            // through the notification text and link, not the template chrome.
+            const tplName = process.env.WHATSAPP_TEMPLATE_NAME || 'vision_alert';
             const tplLang = process.env.WHATSAPP_TEMPLATE_LANG || 'ar';
             const clean = s => String(s || '').replace(/\s+/g, ' ').trim();
-            const p1 = clean(opts.titleAr || opts.title).slice(0, 250) || 'Guideon';
+            const p1 = clean(opts.titleAr || opts.title).slice(0, 250) || 'إشعار';
             const p2 = clean(`${opts.bodyAr || opts.body || ''} ${link}`).slice(0, 600) || link;
             whatsapp.sendTemplate(user.phone, tplName, tplLang, [p1, p2]).catch(() => {});
           }
