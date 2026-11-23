@@ -293,10 +293,14 @@ async function renderPlace(req, res, next, lang) {
       ? `${n} مرشدًا موثّقًا يغطّون ${esc(place.ar)} ومحافظة ${esc(place.govAr)}.`
       : `${n} verified guide${n === 1 ? '' : 's'} serving ${esc(place.en)} and the wider ${esc(place.gov)} governorate.`;
 
-    // Link the combos this place actually supports, so the long-tail pages are
-    // reachable by crawl and not only via the sitemap.
+    // Link only the combos that clear MIN_COMBO, so the long-tail pages are
+    // reachable by crawl and not only via the sitemap. Linking a sub-threshold
+    // combo hands Google a page we then serve noindex: it burns crawl budget
+    // and fills Search Console with "excluded by noindex" rows for pages we
+    // never wanted indexed. A combo starts being linked automatically as soon
+    // as MIN_COMBO guides cover the pair.
     const comboLinks = CATEGORIES
-      .filter(c => matches.some(g => guideMatchesCategory(g, c)))
+      .filter(c => matches.filter(g => guideMatchesCategory(g, c)).length >= MIN_COMBO)
       .map(c => `<a href="${ar ? '/ar' : ''}/tour-guides/${place.slug}/${c.slug}">${esc(ar ? `رحلات ${c.ar} في ${place.ar}` : `${c.en} tours in ${place.en}`)}</a>`)
       .join('');
 

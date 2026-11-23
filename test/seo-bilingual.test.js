@@ -176,3 +176,14 @@ test('seo: home page links to the Arabic landing pages and declares sameAs', () 
   assert.ok(html.includes('/ar/tour-guides/nizwa'), 'home must link into the Arabic landing set');
   assert.ok(html.includes('"sameAs"'), 'Organization schema should declare sameAs');
 });
+// A place page must never LINK a combo it would then serve noindex: Google
+// crawls the link, gets a noindex page, and Search Console fills up with
+// "excluded by noindex" rows for pages we never wanted indexed.
+test('seo: place pages only link combos that clear MIN_COMBO', () => {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'seoLanding.js'), 'utf8');
+  const block = src.slice(src.indexOf('const comboLinks'), src.indexOf('const comboLinks') + 300);
+  assert.ok(block.includes('length >= MIN_COMBO'),
+    'comboLinks must filter by MIN_COMBO, not by "any guide matches"');
+  assert.ok(!block.includes('matches.some(g => guideMatchesCategory'),
+    'the old unfiltered link list is back');
+});
