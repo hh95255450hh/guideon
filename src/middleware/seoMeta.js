@@ -429,7 +429,27 @@ function exploreBody() { return guidesBody('cardScroll', 24); }
 async function teamsBody() {
   const teams = (await users.findAllWhere({ userType: 'team' }))
     .filter(t => t.isVerified && !t.isSuspended);   // NULL isSuspended = active
-  if (!teams.length) return null;
+  // No team has registered yet. The page is in the sitemap, so an empty
+  // container is exactly the Soft 404 we are clearing: it would stay one until
+  // the first team signs up. Describe the vertical and invite teams instead —
+  // which is what the page is for at this stage anyway. It switches to the
+  // real list on its own as soon as a team is verified.
+  if (!teams.length) {
+    return [['teamsGrid',
+      `<section><h2>Event teams in Oman</h2>`
+      + `<p>Guideon lists Omani crews who run events and activities — cultural shows,`
+      + ` sports days, music nights, adventure outings, children's programmes, food`
+      + ` experiences and arts workshops — across all the governorates of the Sultanate.`
+      + ` Each team is verified before it appears here, and you book it the same way you`
+      + ` book a guide: pick a date, agree the details in chat, and pay through the`
+      + ` platform.</p>`
+      + `<h3>Run a team? List it on Guideon</h3>`
+      + `<p>Registration is free and you are paid per booking — there is no subscription.`
+      + ` <a href="/register.html?type=team">Register your team</a> or`
+      + ` <a href="/contact.html">talk to us first</a>.</p>`
+      + `<p>Looking for a licensed private guide instead?`
+      + ` <a href="/search.html">Browse verified guides</a>.</p></section>`]];
+  }
   return [['teamsGrid', teams.slice(0, 24).map(t =>
     `<div class="col-12 col-sm-6 col-lg-3"><a href="/team-profile.html?id=${esc(t.id)}">`
     + `<h3>${esc(t.teamName || t.fullName || '')}</h3>`
