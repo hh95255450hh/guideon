@@ -236,7 +236,20 @@ async function regionMeta(id) {
     { name: 'Regions of Oman', url: `${APP_URL}/regions.html` },
     { name, url },
   ]);
-  return { title, description, image, url, jsonld: [jsonld, breadcrumb], ogType: 'website' };
+  // The region's own words. All 11 region pages reached the crawler with ~32
+  // words of chrome and an empty intro, because the page fills these from
+  // regions.json in the browser.
+  const hls = Array.isArray(r.highlights_en) ? r.highlights_en : [];
+  const body = [
+    ['rName', esc(name)],
+    ['rTag', esc(r.tagline_en || '')],
+    ['rIntro', esc(r.intro_en || '')],
+    ['rHighlights', hls.map(h => `<span class="chip">${esc(h)}</span>`).join('')],
+    ['hAbout', esc(`About ${name}`)],
+    ['rSites', esc(`${landmarks.length || r.sites || 0} sites of interest`)],
+    ['rTime', esc(r.best_time_en ? `Best time: ${r.best_time_en}` : '')],
+  ];
+  return { title, description, image, url, jsonld: [jsonld, breadcrumb], ogType: 'website', body };
 }
 async function blogMeta(id) {
   if (!_posts) _posts = loadJson('blog.json', 'posts');
@@ -265,7 +278,15 @@ async function blogMeta(id) {
     { name: 'Blog', url: `${APP_URL}/blog.html` },
     { name: p.title_en || p.title_ar || 'Article', url },
   ]);
-  return { title, description, image, url, jsonld: [jsonld, breadcrumb], ogType: 'article' };
+  // The article itself. Without this the crawler received ~10 words: a cine
+  // header placeholder and an empty <article>. body_en is our own authored
+  // HTML from blog.json, not user input, so it goes in as markup.
+  const body = [
+    ['pTitle', esc(p.title_en || p.title_ar || '')],
+    ['pMeta', esc([p.author_en, p.date, p.read_minutes && `${p.read_minutes} min read`].filter(Boolean).join(' · '))],
+    ['pBody', p.body_en || p.body_ar || ''],
+  ];
+  return { title, description, image, url, jsonld: [jsonld, breadcrumb], ogType: 'article', body };
 }
 
 // Served for an entity page whose id doesn't exist — a REAL 404 (+noindex) so
@@ -348,16 +369,20 @@ function trailsBody() {
 // Put the rendered list inside its container, keeping the container's own
 // attributes. A missing or renamed container leaves the page untouched rather
 // than corrupting it.
-function injectBody(html, pair) {
-  if (!pair) return html;
-  const [id, inner] = pair;
-  if (!inner) return html;
-  const re = new RegExp(`(<([a-z]+)[^>]*\\bid="${id}"[^>]*>)([\\s\\S]*?)(</\\2>)`, 'i');
-  if (!re.test(html)) {
-    console.warn(`[seoMeta] container #${id} not found — server-rendered body skipped`);
-    return html;
+function injectBody(html, pairs) {
+  if (!pairs) return html;
+  // A single [id, html] pair, or a list of them.
+  const list = Array.isArray(pairs[0]) ? pairs : [pairs];
+  for (const [id, inner] of list) {
+    if (!inner) continue;
+    const re = new RegExp(`(<([a-z]+)[^>]*\\bid="${id}"[^>]*>)([\\s\\S]*?)(</\\2>)`, 'i');
+    if (!re.test(html)) {
+      console.warn(`[seoMeta] container #${id} not found — server-rendered body skipped`);
+      continue;
+    }
+    html = html.replace(re, (m, open, _tag, _old, close) => open + inner + close);
   }
-  return html.replace(re, (m, open, _tag, _old, close) => open + inner + close);
+  return html;
 }
 
 const staticCache = {};
@@ -411,7 +436,11 @@ module.exports = async function seoMeta(req, res, next) {
       return;
     }
 
-    const out = inject(html, metaBlock(meta));
+    let out = inject(html, metaBlock(meta));
+    // Same reason as the static list pages: the crawler may never run the
+    // script that fills these containers, so render what we already have.
+    // The page's own script overwrites them on load.
+    if (meta.body) out = injectBody(out, meta.body);
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.type('html').send(out);
   } catch (e) {

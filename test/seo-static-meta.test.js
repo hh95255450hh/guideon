@@ -82,3 +82,39 @@ test('seo: sitemap omits the thin utility screens', () => {
   }
   assert.ok(block.includes("'/register.html'"), 'register.html should stay listed');
 });
+
+// Entity pages had the same Soft 404 shape: a blog article reached the crawler
+// as ~10 words (empty <article>), every region page as ~32. Run the real
+// middleware and check the HTML that actually goes out.
+test('seo: entity pages ship their content server-rendered', async () => {
+  const run = (p, id) => new Promise((resolve, reject) => {
+    const req = { path: p, method: 'GET', query: { id } };
+    const res = {
+      statusCode: 200,
+      set() { return this; }, status(c) { this.statusCode = c; return this; },
+      type() { return this; }, send(h) { resolve({ html: h, code: this.statusCode }); },
+    };
+    seo(req, res, () => reject(new Error(`${p}?id=${id} fell through to next()`)));
+  });
+
+  const words = h => {
+    const b = (h.match(/<body[\s\S]*<\/body>/i) || [''])[0];
+    const t = b.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ')
+               .replace(/<[^>]*>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+    return t ? t.split(' ').length : 0;
+  };
+
+  const post = await run('/blog-post.html', 'first-time-oman');
+  assert.strictEqual(post.code, 200);
+  assert.ok(post.html.includes('Muscat'), 'article body missing from the server HTML');
+  assert.ok(words(post.html) > 200, `blog post is still thin: ${words(post.html)} words`);
+
+  const region = await run('/region.html', 'muscat');
+  assert.strictEqual(region.code, 200);
+  assert.ok(region.html.includes('royal capital'), 'region tagline missing');
+  assert.ok(words(region.html) > 120, `region page is still thin: ${words(region.html)} words`);
+
+  // A bad id must still be a real 404, not a thin 200.
+  const missing = await run('/blog-post.html', 'no-such-post');
+  assert.strictEqual(missing.code, 404, 'unknown id must stay a real 404');
+});
