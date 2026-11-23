@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const email = require('../services/emailService');
 const audit = require('../services/auditService');
+const idx   = require('../services/indexNowPing');
 const { ROLES, PERMISSIONS, getEffectivePermissions } = require('../config/permissions');
 
 const users    = new SupabaseDB('users');
@@ -921,6 +922,7 @@ exports.verifyTeam = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Team not found.' });
     }
     await users.update(id, { isVerified: true });
+    idx.ping(idx.teamPages(id));
     audit.logAction(req, { action: 'verifyTeam', targetType: 'user', targetId: id, details: { name: team.teamName } });
     res.json({ success: true, message: `${team.teamName} has been verified and is now public.` });
   } catch (err) { res.status(500).json({ success: false, message: 'Server error.' }); }
@@ -1146,6 +1148,8 @@ exports.verifyGuide = async (req, res) => {
       }
     }
     await users.update(id, { isVerified: true });
+    // Now publicly listed — tell the engines rather than waiting for a crawl.
+    idx.ping(idx.guidePages(id));
     audit.logAction(req, { action: 'verifyGuide', targetType: 'user', targetId: id, details: { name: guide.fullName, forced: req.body?.force === true } });
     email.sendGuideVerified({ email: guide.email, name: guide.fullName }).catch(() => {});
     res.json({ success: true, message: `${guide.fullName} has been verified and is now visible in search results.` });
@@ -1162,6 +1166,7 @@ exports.verifyCompany = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Company not found.' });
     }
     await users.update(id, { isVerified: true });
+    idx.ping(idx.companyPages(id));
     audit.logAction(req, { action: 'verifyCompany', targetType: 'user', targetId: id, details: { name: company.companyName } });
     email.sendCompanyVerified({ email: company.email, name: company.fullName, companyName: company.companyName }).catch(() => {});
     res.json({ success: true, message: `${company.companyName} has been approved and is now listed on the platform.` });
@@ -2121,6 +2126,53 @@ exports.deleteInvoice = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('[admin:deleteInvoice]', err.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+};
+
+// ── IndexNow ──────────────────────────────────────────────────────────────
+// Bing, Yandex, Naver, Seznam and Yep share this protocol; Google does not
+// participate, so this is not a substitute for Search Console.
+const indexNow = require('../services/indexNow');
+
+// GET /api/admin/indexnow/status — configuration only, never the key itself.
+exports.indexNowStatus = async (req, res) => {
+  const enabled = indexNow.isEnabled();
+  let keyFileOk = null;
+  if (enabled) {
+    try {
+      const r = await fetch(indexNow.keyLocation(), { method: 'GET' });
+      keyFileOk = r.status === 200;
+    } catch { keyFileOk = false; }
+  }
+  res.json({
+    success: true,
+    enabled,
+    host: indexNow.HOST,
+    keyLocation: enabled ? indexNow.keyLocation() : null,
+    keyFileReachable: keyFileOk,
+    note: 'Google does not participate in IndexNow — use Search Console for Google.',
+  });
+};
+
+// POST /api/admin/indexnow/submit-all — push every sitemap URL in one request.
+exports.indexNowSubmitAll = async (req, res) => {
+  try {
+    if (!indexNow.isEnabled()) {
+      return res.status(400).json({ success: false, message: 'INDEXNOW_KEY is not set on the server.' });
+    }
+    const appUrl = (process.env.APP_URL || 'https://guideon.om').replace(/\/$/, '');
+    const r = await fetch(appUrl + '/sitemap.xml');
+    if (!r.ok) return res.status(502).json({ success: false, message: 'Could not read the sitemap.' });
+    const xml = await r.text();
+    const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+    if (!urls.length) return res.status(502).json({ success: false, message: 'Sitemap contained no URLs.' });
+    const out = await indexNow.submit(urls);
+    audit.logAction(req, { action: 'indexNowSubmitAll', targetType: 'seo', targetId: indexNow.HOST,
+      details: { found: urls.length, submitted: out.submitted, status: out.status } });
+    res.json({ success: out.ok, found: urls.length, ...out });
+  } catch (err) {
+    console.error('[indexNowSubmitAll]', err.message);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 };

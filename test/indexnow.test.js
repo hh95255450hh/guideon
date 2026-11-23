@@ -69,3 +69,59 @@ test('indexnow: app mounts the key route', () => {
   const app = fs.readFileSync(path.join(SRC, 'src', 'app.js'), 'utf8');
   assert.ok(app.includes("require('./routes/indexNow')"), 'app.js must mount the IndexNow key route');
 });
+
+// -- Real-time announcements (services/indexNowPing.js) -----------------
+// The weekly script covers steady state; these fire the moment a page becomes
+// public, and must never slow down or break the request that triggered them.
+const readSrc = p => fs.readFileSync(path.join(SRC, 'src', p), 'utf8');
+
+test('indexnow: ping never blocks or breaks a request', () => {
+  const idx = require('../src/services/indexNowPing');
+  // With no key configured it must be a silent no-op, not a throw.
+  assert.doesNotThrow(() => idx.ping('/guide-profile.html?id=x'));
+  assert.doesNotThrow(() => idx.ping(null));
+  assert.doesNotThrow(() => idx.ping([null, undefined, '']));
+  assert.doesNotThrow(() => idx.ping(['/a', '/b']));
+});
+
+test('indexnow: callers must not await the ping', () => {
+  for (const f of ['controllers/adminController.js', 'controllers/packageController.js']) {
+    const src = readSrc(f);
+    assert.ok(!/await\s+idx\.ping/.test(src),
+      `${f}: awaiting the ping would make a search engine's latency the user's latency`);
+  }
+});
+
+test('indexnow: a tour is only announced once it is public', () => {
+  const src = readSrc('controllers/packageController.js');
+  const pings = src.split('\n').filter(l => l.includes('idx.ping('));
+  assert.ok(pings.length >= 2, 'create and update should both announce');
+  for (const line of pings) {
+    assert.ok(/isPublished/.test(line),
+      `an unpublished tour must not be announced: ${line.trim()}`);
+  }
+});
+
+test('indexnow: the submit-all endpoint is POST and super-admin only', () => {
+  const src = readSrc('routes/admin.js');
+  const line = src.split('\n').find(l => l.includes('indexnow/submit-all'));
+  assert.ok(line, 'submit-all route is missing');
+  assert.ok(line.includes('router.post('), 'must be POST — a GET can be fired by an <img> tag');
+  assert.ok(line.includes('requireSuperAdmin'), 'must be super-admin only');
+});
+
+test('indexnow: the status endpoint never returns the key', () => {
+  const src = readSrc('controllers/adminController.js');
+  const body = src.slice(src.indexOf('exports.indexNowStatus'), src.indexOf('exports.indexNowSubmitAll'));
+  assert.ok(!/indexNow\.KEY/.test(body), 'the key itself must never be returned');
+  assert.ok(body.includes('keyLocation'), 'the key LOCATION is public and useful');
+});
+
+test('indexnow: repeat announcements of the same URL are suppressed', async () => {
+  // The protocol asks you not to re-submit URLs you have not changed.
+  const src = readSrc('services/indexNowPing.js');
+  assert.ok(/REPEAT_MS/.test(src) && /lastSent/.test(src),
+    'there must be a guard against re-announcing an unchanged URL');
+  assert.ok(/BATCH_MS/.test(src), 'a burst of edits should coalesce into one request');
+  assert.ok(/unref/.test(src), 'the batch timer must never hold the process open');
+});

@@ -19,6 +19,10 @@ router.get('/activity', admin.recentActivity);
 // CSRF guard applies) and limited to the super admin.
 router.post('/email-test',              requireSuperAdmin, admin.emailTest);
 router.post('/whatsapp-test',           requireSuperAdmin, admin.whatsappTest);
+// Announce every sitemap URL to the IndexNow engines. POST + super-admin: it
+// is an outbound push, and a GET could be fired by an <img> on any page.
+router.post('/indexnow/submit-all',     requireSuperAdmin, admin.indexNowSubmitAll);
+router.get('/indexnow/status',          requireSuperAdmin, admin.indexNowStatus);
 router.post('/reminder-test',           requireSuperAdmin, admin.reminderTest);
 router.post('/compress-storage',        requireSuperAdmin, admin.compressStorage);
 router.get('/compress-storage/status',  requireSuperAdmin, admin.compressStorageStatus);

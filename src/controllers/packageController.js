@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const SupabaseDB = require('../models/SupabaseDB');
 const emailService = require('../services/emailService');
 const { sanitizeContact } = require('../utils/sanitizeContact');
+const idx = require('../services/indexNowPing');
 
 // Coerce a client-supplied group-size price table into safe, well-formed rows.
 // Guards the money math: only finite, non-negative numbers survive; bad rows drop.
@@ -233,6 +234,8 @@ exports.create = async (req, res) => {
       }));
     } catch (_) {}
 
+    // A tour only has a public page once it is published.
+    if (inserted && inserted.isPublished) idx.ping(idx.packagePages(inserted.id));
     res.status(201).json({ success: true, message: 'Package created. Publish it when ready.', package: inserted });
   } catch (err) {
     console.error('[packageController.create] FAILED:', err?.message || err, err?.code || '');
@@ -311,6 +314,7 @@ exports.update = async (req, res) => {
     if (droppedCols.length) {
       console.warn('[packages.update] Saved after dropping columns:', droppedCols.join(', '), '— run the pending migration.');
     }
+    if (updated && updated.isPublished) idx.ping(idx.packagePages(updated.id));
     res.json({ success: true, package: updated, _droppedCols: droppedCols.length ? droppedCols : undefined });
   } catch (err) {
     console.error('[packageController.update] FAILED:', err?.message || err);
