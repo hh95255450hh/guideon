@@ -186,7 +186,17 @@ async function companyMeta(id) {
     { name: 'Tourism Companies', url: `${APP_URL}/#companies` },
     { name, url },
   ]);
-  return { title, description, image, url, jsonld: [jsonld, breadcrumb] };
+  // Company profiles reached the crawler as 32 words of chrome. Everything
+  // here is provider-supplied text, so every value goes through esc() — it is
+  // rendered into the page's HTML, not into a JSON blob.
+  const svcs = Array.isArray(c.companyServices) ? c.companyServices.filter(Boolean) : [];
+  const body = [
+    ['cName', esc(name)],
+    ['cDescription', esc(c.companyDescription || description)],
+    ['cServices', svcs.map(s => `<span class="co-tag">${esc(s)}</span>`).join('')],
+    ['cDestinations', dests.map(d => `<span class="co-tag co-dest-tag">${esc(d)}</span>`).join('')],
+  ];
+  return { title, description, image, url, jsonld: [jsonld, breadcrumb], body };
 }
 
 // Region + blog-post pages are static HTML that render one shared title/desc for
