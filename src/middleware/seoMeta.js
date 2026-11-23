@@ -192,7 +192,7 @@ async function companyMeta(id) {
 // Region + blog-post pages are static HTML that render one shared title/desc for
 // every ?id= → Google sees mass duplicate content. Inject per-entity meta from
 // the static JSON so each region/post URL is unique.
-let _regions = null, _posts = null;
+let _regions = null, _posts = null, _trails = null;
 function loadJson(name, key) {
   try { return JSON.parse(fs.readFileSync(path.join(PUBLIC, 'data', name), 'utf8'))[key] || []; }
   catch { return []; }
@@ -278,9 +278,9 @@ function notFoundBlock() {
 
 const STATIC_PAGES = {
   '/about.html':        { name: 'About' },
-  '/regions.html':      { name: 'Regions of Oman', extra: regionsList },
-  '/blog.html':         { name: 'Blog', extra: blogList },
-  '/trails.html':       { name: 'Hiking Trails' },
+  '/regions.html':      { name: 'Regions of Oman', extra: regionsList, body: regionsBody },
+  '/blog.html':         { name: 'Blog', extra: blogList, body: blogBody },
+  '/trails.html':       { name: 'Hiking Trails', body: trailsBody },
   '/faq.html':          { name: 'FAQ', extra: faqList },
   '/contact.html':      { name: 'Contact' },
   '/how-it-works.html': { name: 'How it works' },
@@ -320,6 +320,46 @@ function blogList(url) {
       url: `${APP_URL}/blog-post.html?id=${p.slug}`, datePublished: p.date })),
   };
 }
+// ── Server-rendered list bodies ───────────────────────────────────────────
+// These three pages built their whole list in the browser, so the HTML a
+// crawler receives carried 14–40 words of boilerplate and nothing else.
+// Google does not spend a render budget on every page: it judged them on the
+// raw HTML and filed them as Soft 404 ("page looks empty"). The content all
+// comes from JSON files we already read on the server, so we render it into
+// the very container the page's own script fills. The script assigns
+// `innerHTML`, which REPLACES this markup the moment it runs — so there is no
+// duplication, and the page works identically with JavaScript off.
+//
+// Each entry returns [containerId, html]; keep the container id in sync with
+// the page's script.
+function blogBody() {
+  if (!_posts) _posts = loadJson('blog.json', 'posts');
+  return ['bGrid', _posts.map(p => `<article class="b-card"><a href="/blog-post.html?id=${esc(p.slug)}"><h2>${esc(p.title_en)}</h2><p>${esc(p.excerpt_en)}</p></a></article>`).join('')];
+}
+function regionsBody() {
+  if (!_regions) _regions = loadJson('regions.json', 'regions');
+  return ['regionGrid', _regions.map(r => `<article class="r-card"><a href="/region.html?id=${esc(r.id)}"><h2>${esc(r.name_en)} · ${esc(r.name_ar)}</h2><p>${esc(r.tagline_en)}</p><p>${esc(String(r.intro_en || '').slice(0, 300))}</p></a></article>`).join('')];
+}
+function trailsBody() {
+  if (!_trails) _trails = loadJson('trails.json', 'trails');
+  return ['tGrid', _trails.map(t => `<article class="t-card"><h2>${esc(t.name_en)} · ${esc(t.name_ar)}</h2><p>${esc(t.region_en)} — ${esc(t.difficulty)}, ${esc(t.distance_km)} km, ~${esc(t.duration_hours)} h</p><p>${esc(t.desc_en)}</p></article>`).join('')];
+}
+
+// Put the rendered list inside its container, keeping the container's own
+// attributes. A missing or renamed container leaves the page untouched rather
+// than corrupting it.
+function injectBody(html, pair) {
+  if (!pair) return html;
+  const [id, inner] = pair;
+  if (!inner) return html;
+  const re = new RegExp(`(<([a-z]+)[^>]*\\bid="${id}"[^>]*>)([\\s\\S]*?)(</\\2>)`, 'i');
+  if (!re.test(html)) {
+    console.warn(`[seoMeta] container #${id} not found — server-rendered body skipped`);
+    return html;
+  }
+  return html.replace(re, (m, open, _tag, _old, close) => open + inner + close);
+}
+
 const staticCache = {};
 function staticPage(reqPath) {
   if (staticCache[reqPath]) return staticCache[reqPath];
@@ -333,7 +373,8 @@ function staticPage(reqPath) {
   const jsonld = [crumbs([{ name: 'Guideon', url: APP_URL }, { name: def.name, url }])];
   if (def.extra) jsonld.push(def.extra(url, html));
   // Keep any structured data the page already has (e.g. the FAQ page's FAQPage).
-  const out = inject(html, metaBlock({ title, description, image: `${APP_URL}/media/hero/hero-1.jpg`, url, jsonld, ogType: 'website' }));
+  let out = inject(html, metaBlock({ title, description, image: `${APP_URL}/media/hero/hero-1.jpg`, url, jsonld, ogType: 'website' }));
+  if (def.body) out = injectBody(out, def.body());
   staticCache[reqPath] = out;
   return out;
 }

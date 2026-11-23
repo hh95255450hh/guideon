@@ -29,9 +29,11 @@ router.get('/sitemap.xml', async (req, res) => {
       { loc: '/contact.html',      changefreq: 'monthly',priority: 0.8 },
       { loc: '/terms.html',        changefreq: 'yearly', priority: 0.3 },
       { loc: '/privacy.html',      changefreq: 'yearly', priority: 0.3 },
-      { loc: '/login.html',        changefreq: 'monthly',priority: 0.5 },
       { loc: '/register.html',     changefreq: 'monthly',priority: 0.6 },
-      { loc: '/qr.html',           changefreq: 'monthly',priority: 0.4 },
+      // /login.html and /qr.html are deliberately NOT listed: they are utility
+      // screens with ~50 words of real content and nothing to answer a search
+      // with, and Search Console was filing them as Soft 404. They stay
+      // reachable and crawlable — we just stop telling Google they matter.
       { loc: '/regions.html',      changefreq: 'monthly',priority: 0.9 },
       { loc: '/teams.html',        changefreq: 'daily',  priority: 0.85 },
       { loc: '/blog.html',         changefreq: 'weekly', priority: 0.8 },
