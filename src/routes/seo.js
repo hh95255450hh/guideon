@@ -6,6 +6,33 @@ const packages = new SupabaseDB('tour_packages');
 
 const APP_URL = (process.env.APP_URL || 'https://guideon.om').replace(/\/$/, '');
 
+// ── lastmod for the pages that aren't database rows ───────────────────────
+// Google uses <lastmod> to decide what is worth re-crawling, and these pages
+// carried none at all — so an edited page could sit unvisited for weeks while
+// provider pages (which do carry one) were re-read regularly.
+//
+// A page's content changes when its template changes, when the data it renders
+// changes, or when the renderer that injects that data changes. Taking the
+// newest of those is the honest answer, and it stays honest: `git pull` only
+// rewrites the files that actually changed, so an untouched page keeps its old
+// date instead of claiming to be fresh on every deploy.
+const fsx   = require('fs');
+const pathx = require('path');
+const PUBLIC_DIR = pathx.join(__dirname, '..', '..', 'public');
+const RENDERER   = pathx.join(__dirname, '..', 'middleware', 'seoMeta.js');
+
+const mtime = f => { try { return fsx.statSync(f).mtime; } catch { return null; } };
+function newestOf(...files) {
+  const ds = files.map(mtime).filter(Boolean);
+  return ds.length ? new Date(Math.max(...ds.map(Number))) : null;
+}
+// A static page: its own HTML, plus the renderer, plus any data file it shows.
+function pageLastmod(loc, ...dataFiles) {
+  const file = loc.split('?')[0].replace(/^\//, '') || 'index.html';
+  return newestOf(pathx.join(PUBLIC_DIR, file), RENDERER,
+    ...dataFiles.map(d => pathx.join(PUBLIC_DIR, 'data', d)));
+}
+
 // Cache sitemap for 1 hour
 let sitemapCache = null;
 let sitemapCacheUntil = 0;
@@ -19,6 +46,7 @@ router.get('/sitemap.xml', async (req, res) => {
       return;
     }
 
+    // Each entry's lastmod is filled in below from its own files.
     const staticPages = [
       { loc: '/',                  changefreq: 'daily',  priority: 1.0 },
       { loc: '/search.html',       changefreq: 'daily',  priority: 0.9 },
@@ -49,9 +77,11 @@ router.get('/sitemap.xml', async (req, res) => {
     try {
       const fs = require('fs'); const path = require('path');
       const regions = JSON.parse(fs.readFileSync(path.join(__dirname,'..','..','public','data','regions.json'),'utf8')).regions;
-      regions.forEach(r => staticPages.push({ loc:`/region.html?id=${r.id}`, changefreq:'monthly', priority:0.75 }));
+      const regionMod = newestOf(path.join(__dirname,'..','..','public','region.html'), RENDERER, path.join(__dirname,'..','..','public','data','regions.json'));
+      regions.forEach(r => staticPages.push({ loc:`/region.html?id=${r.id}`, changefreq:'monthly', priority:0.75, lastmod: regionMod }));
       const posts = JSON.parse(fs.readFileSync(path.join(__dirname,'..','..','public','data','blog.json'),'utf8')).posts;
-      posts.forEach(p => staticPages.push({ loc:`/blog-post.html?id=${p.slug}`, changefreq:'monthly', priority:0.7 }));
+      const postMod = newestOf(path.join(__dirname,'..','..','public','blog-post.html'), RENDERER, path.join(__dirname,'..','..','public','data','blog.json'));
+      posts.forEach(p => staticPages.push({ loc:`/blog-post.html?id=${p.slug}`, changefreq:'monthly', priority:0.7, lastmod: p.date || postMod }));
     } catch (e) { /* JSON optional */ }
 
     const allGuides    = await users.findAllByField('userType', 'guide');
@@ -125,6 +155,12 @@ router.get('/sitemap.xml', async (req, res) => {
         { loc: en, changefreq, priority, alts, lastmod },
         { loc: ar, changefreq, priority, alts, lastmod },
       ];
+    });
+
+    // Fill in any lastmod not already set (the loops above set their own).
+    const DATA_FOR = { '/regions.html': ['regions.json'], '/blog.html': ['blog.json'], '/trails.html': ['trails.json'] };
+    staticPages.forEach(p => {
+      if (!p.lastmod) p.lastmod = pageLastmod(p.loc, ...(DATA_FOR[p.loc] || []));
     });
 
     const urls = [

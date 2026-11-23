@@ -187,3 +187,22 @@ test('seo: place pages only link combos that clear MIN_COMBO', () => {
   assert.ok(!block.includes('matches.some(g => guideMatchesCategory'),
     'the old unfiltered link list is back');
 });
+
+// Google uses <lastmod> to decide what to re-crawl, and the static and
+// JSON-backed pages carried none at all — an edited page could sit unvisited
+// for weeks. The sitemap route itself needs a database, so this checks the
+// source: every static entry must get a date, and it must come from the files
+// the page is actually built from (not Date.now(), which would claim every
+// page is fresh on every request and get the signal ignored).
+test('seo: the sitemap gives its non-DB pages a real lastmod', () => {
+  const src = fs.readFileSync(path.join(__dirname, '..', 'src', 'routes', 'seo.js'), 'utf8');
+  assert.ok(/function pageLastmod/.test(src), 'pageLastmod helper is gone');
+  assert.ok(src.includes('if (!p.lastmod) p.lastmod = pageLastmod('),
+    'static pages must be given a lastmod before being emitted');
+  assert.ok(/statSync/.test(src), 'lastmod must come from the files, not a constant');
+  assert.ok(!/lastmod:\s*(new Date\(\)|Date\.now\(\))/.test(src),
+    'lastmod must never be "now" — Google ignores a sitemap that claims every page is fresh');
+  // region and blog detail pages were the other two sets with no date.
+  assert.ok(src.includes('lastmod: regionMod'), 'region pages still have no lastmod');
+  assert.ok(src.includes('lastmod: p.date || postMod'), 'blog posts still have no lastmod');
+});
