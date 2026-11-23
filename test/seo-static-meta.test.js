@@ -118,3 +118,35 @@ test('seo: entity pages ship their content server-rendered', async () => {
   const missing = await run('/blog-post.html', 'no-such-post');
   assert.strictEqual(missing.code, 404, 'unknown id must stay a real 404');
 });
+
+// The last four thin pages need the database, so they are rendered behind a
+// cache with a fallback. The fallback matters more than the rendering: an SEO
+// improvement must never be able to take a live page down.
+test('seo: DB-backed pages fall back to the plain page when the query fails', async () => {
+  const seoLanding = require('../src/routes/seoLanding');
+  const real = seoLanding.verifiedProviders;
+  seoLanding.verifiedProviders = async () => { throw new Error('DB down'); };
+  try {
+    const req = { path: '/search.html', method: 'GET', query: {} };
+    const got = await new Promise((resolve, reject) => {
+      const res = { set() { return this; }, status() { return this; },
+                    type() { return this; }, send: resolve };
+      seo(req, res, () => reject(new Error('fell through to next()')));
+    });
+    assert.ok(got.includes('</html>'), 'a complete page must still be served');
+    assert.ok(got.includes('<link rel="canonical"'), 'meta injection must survive the failure');
+  } finally {
+    seoLanding.verifiedProviders = real;
+  }
+});
+
+// The Instant Guide page describes a live service; it must carry real text
+// rather than a cached "available now" list that would always be stale.
+test('seo: the Instant Guide page explains the service in the server HTML', () => {
+  const { _staticPage } = require('../src/middleware/seoMeta');
+  const html = _staticPage('/instant.html');
+  assert.ok(html, '/instant.html must be served by seoMeta');
+  assert.ok(html.includes('Ministry-licensed'), 'service explanation missing');
+  assert.ok(!/available now[\s\S]{0,200}guide-profile\.html/i.test(html),
+    'a cached list of live availability must not be baked into the page');
+});

@@ -701,3 +701,6 @@ router.get('/tour-companies/:place',    (req, res, next) => renderCompanies(req,
 router.get('/ar/tour-companies/:place', (req, res, next) => renderCompanies(req, res, next, 'ar'));
 
 module.exports = router;
+// seoMeta server-renders the same providers into search/explore, and sharing
+// this loader means one 5-minute cache for the whole site rather than two.
+module.exports.verifiedProviders = verifiedProviders;

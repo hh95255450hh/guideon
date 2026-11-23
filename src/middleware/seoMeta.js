@@ -315,16 +315,17 @@ const STATIC_PAGES = {
   '/faq.html':          { name: 'FAQ', extra: faqList },
   '/contact.html':      { name: 'Contact' },
   '/how-it-works.html': { name: 'How it works' },
-  '/teams.html':        { name: 'Event Teams' },
+  '/teams.html':        { name: 'Event Teams', asyncBody: teamsBody },
   '/plan-trip.html':    { name: 'Plan a Trip' },
-  '/explore.html':      { name: 'Explore Oman' },
+  '/explore.html':      { name: 'Explore Oman', asyncBody: exploreBody },
+  '/instant.html':      { name: 'Instant Guide', body: instantBody },
   '/cancellation.html': { name: 'Cancellation Policy' },
   '/terms.html':        { name: 'Terms of Service' },
   '/privacy.html':      { name: 'Privacy Policy' },
   // Reached with ?return= / ?type= variants; one canonical per page.
   '/login.html':        { name: 'Log in' },
   '/register.html':     { name: 'Create an account' },
-  '/search.html':       { name: 'Find a Guide' },
+  '/search.html':       { name: 'Find a Guide', asyncBody: searchBody },
 };
 // FAQ rich results: built from the questions in the page itself (it used to be
 // assembled in the browser, which crawlers may never run).
@@ -395,6 +396,72 @@ function injectBody(html, pairs) {
   return html;
 }
 
+// ── DB-backed bodies ──────────────────────────────────────────────────────
+// The last four thin pages. Unlike the JSON-backed ones these need the
+// database, so they are rendered behind a 5-minute cache and ALWAYS fall back
+// to the un-rendered page if the query fails — an SEO improvement must never
+// be able to take a page down.
+//
+// Only explicitly named public fields are rendered. These are user rows: never
+// spread one into markup (CLAUDE.md), and every value goes through esc().
+function providerCard(u, href) {
+  const specs = (Array.isArray(u.specialisations) ? u.specialisations : []).slice(0, 4);
+  const dests = (Array.isArray(u.destinations) ? u.destinations : []).slice(0, 4);
+  const rating = Number(u.rating) || 0;
+  return `<div class="col-12 col-sm-6 col-lg-4"><a href="${href}"><h3>${esc(u.fullName || '')}</h3>`
+    + (rating ? `<p>${rating.toFixed(1)} / 5</p>` : '')
+    + (specs.length ? `<p>${specs.map(esc).join(' · ')}</p>` : '')
+    + (dests.length ? `<p>${dests.map(esc).join(' · ')}</p>` : '')
+    + `</a></div>`;
+}
+async function guidesBody(containerId, limit) {
+  const { verifiedProviders } = require('../routes/seoLanding');
+  const guides = (await verifiedProviders('guide')).slice(0, limit);
+  if (!guides.length) return null;
+  return [[containerId, guides.map(g => providerCard(g, `/guide-profile.html?id=${esc(g.id)}`)).join('')]];
+}
+// Function declarations, not consts: STATIC_PAGES is built above this point
+// and a const here would be in its temporal dead zone — the app would throw
+// on boot, not on the first request.
+function searchBody()  { return guidesBody('guideGrid', 24); }
+function exploreBody() { return guidesBody('cardScroll', 24); }
+
+async function teamsBody() {
+  const teams = (await users.findAllWhere({ userType: 'team' }))
+    .filter(t => t.isVerified && !t.isSuspended);   // NULL isSuspended = active
+  if (!teams.length) return null;
+  return [['teamsGrid', teams.slice(0, 24).map(t =>
+    `<div class="col-12 col-sm-6 col-lg-3"><a href="/team-profile.html?id=${esc(t.id)}">`
+    + `<h3>${esc(t.teamName || t.fullName || '')}</h3>`
+    + (t.teamCategory    ? `<p>${esc(t.teamCategory)}</p>` : '')
+    + (t.teamGovernorate ? `<p>${esc(t.teamGovernorate)}</p>` : '')
+    + (t.teamDescription ? `<p>${esc(String(t.teamDescription).slice(0, 200))}</p>` : '')
+    + `</a></div>`).join('')]];
+}
+
+// The Instant Guide page is a LIVE service: who is available changes by the
+// minute and depends on where the visitor is standing. Serving a cached list
+// of "available now" guides would be stale the moment it was written, so this
+// page gets what it is actually about — an explanation of the service and
+// where it runs. The page's own script replaces this with the live list.
+function instantBody() {
+  const govs = ['Muscat', 'Dhofar', 'Musandam', 'Ad Dakhiliyah', 'Ash Sharqiyah',
+                'Al Batinah', 'Ad Dhahirah', 'Al Buraimi', 'Al Wusta'];
+  return [['list',
+    `<section><h2>Instant Guide — book a licensed local guide for today</h2>`
+    + `<p>Instant Guide connects you with a Ministry-licensed Omani tour guide who is`
+    + ` available right now and close to you. Share your location, see the guides nearby`
+    + ` with their rating and day rate, send a request, and the first to accept meets you`
+    + ` — usually within the hour. No advance booking and no itinerary needed.</p>`
+    + `<p>Every guide is verified by Guideon before they can appear here: licence checked,`
+    + ` identity confirmed, and reviewed by travellers after each trip. You pay through the`
+    + ` platform, so the price you see is the price you pay.</p>`
+    + `<h3>Where Instant Guide works</h3><p>${govs.map(esc).join(' · ')}</p>`
+    + `<p>Availability is live and changes through the day — turn on location to see who`
+    + ` is free near you now, or <a href="/search.html">browse all verified guides</a>`
+    + ` to book a full day in advance.</p></section>`]];
+}
+
 const staticCache = {};
 function staticPage(reqPath) {
   if (staticCache[reqPath]) return staticCache[reqPath];
@@ -414,6 +481,32 @@ function staticPage(reqPath) {
   return out;
 }
 
+// A static page whose body needs the database. The meta-injected shell is
+// cached forever by staticPage(); only the rendered rows expire, every 5
+// minutes — the same window seoLanding uses for its provider cache.
+//
+// If the query fails or is slow, we serve the shell exactly as before. A page
+// losing its server-rendered list costs us some SEO; a page returning 500
+// costs us the visitor.
+const DYN_TTL = 5 * 60 * 1000;
+const dynCache = {};
+async function dynamicPage(reqPath) {
+  const base = staticPage(reqPath);
+  const def = STATIC_PAGES[reqPath];
+  if (!base || !def || !def.asyncBody) return base;
+  const slot = dynCache[reqPath];
+  if (slot && Date.now() - slot.at < DYN_TTL) return slot.html;
+  try {
+    const pairs = await def.asyncBody();
+    const html = pairs ? injectBody(base, pairs) : base;
+    dynCache[reqPath] = { at: Date.now(), html };
+    return html;
+  } catch (e) {
+    console.warn(`[seoMeta] ${reqPath}: server-rendered body failed (${e.message}) — serving the plain page`);
+    return base;
+  }
+}
+
 const ENTITY_PAGES = {
   '/guide-profile.html':   { tpl: 'guide-profile.html',   meta: guideMeta },
   '/tour-package.html':    { tpl: 'tour-package.html',    meta: tourMeta },
@@ -425,7 +518,7 @@ const ENTITY_PAGES = {
 module.exports = async function seoMeta(req, res, next) {
   try {
     if (STATIC_PAGES[req.path] && req.method === 'GET') {
-      const out = staticPage(req.path);
+      const out = await dynamicPage(req.path);
       if (!out) return next();
       res.set('Cache-Control', 'no-cache');
       return res.type('html').send(out);
